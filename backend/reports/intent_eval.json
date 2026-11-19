@@ -1,0 +1,543 @@
+{
+  "evidence": "SIMULATED (synthetic corpus) + hand-written gold set; no customer data; offline, no LLM calls",
+  "stack_version": "intent-stack-1",
+  "model": {
+    "version": "nb-w12-c24-v1+seed1729+c66f992f",
+    "train_seed": 1729,
+    "test_seed": 9001,
+    "temperature": 19.5
+  },
+  "reference_day": "2026-11-19",
+  "gold": {
+    "dataset": "gold",
+    "n": 160,
+    "stack": {
+      "n": 160,
+      "accuracy": 0.95,
+      "macro_f1": 0.9556,
+      "per_label": {
+        "PAY_NOW": {
+          "support": 7,
+          "precision": 1.0,
+          "recall": 0.8571,
+          "f1": 0.9231
+        },
+        "PTP": {
+          "support": 16,
+          "precision": 0.9412,
+          "recall": 1.0,
+          "f1": 0.9697
+        },
+        "NEEDS_TIME": {
+          "support": 13,
+          "precision": 1.0,
+          "recall": 0.7692,
+          "f1": 0.8696
+        },
+        "ALREADY_PAID": {
+          "support": 11,
+          "precision": 0.9091,
+          "recall": 0.9091,
+          "f1": 0.9091
+        },
+        "CALLBACK": {
+          "support": 8,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "HARDSHIP": {
+          "support": 16,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "DISPUTE": {
+          "support": 10,
+          "precision": 1.0,
+          "recall": 0.9,
+          "f1": 0.9474
+        },
+        "STOP": {
+          "support": 16,
+          "precision": 0.9412,
+          "recall": 1.0,
+          "f1": 0.9697
+        },
+        "WRONG_NUMBER": {
+          "support": 7,
+          "precision": 1.0,
+          "recall": 0.8571,
+          "f1": 0.9231
+        },
+        "HUMAN": {
+          "support": 6,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "BALANCE_QUERY": {
+          "support": 6,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "LINK_REQUEST": {
+          "support": 9,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "STATEMENT_REQUEST": {
+          "support": 7,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "LANGUAGE_CHANGE": {
+          "support": 5,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "ABUSIVE": {
+          "support": 5,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "GREETING": {
+          "support": 8,
+          "precision": 1.0,
+          "recall": 0.875,
+          "f1": 0.9333
+        },
+        "UNKNOWN": {
+          "support": 10,
+          "precision": 0.6667,
+          "recall": 1.0,
+          "f1": 0.8
+        }
+      },
+      "accuracy_on_answered": 0.9793,
+      "abstain_rate": 0.0938,
+      "tiers": {
+        "rules": {
+          "n": 129,
+          "coverage_pct": 80.62,
+          "accuracy_pct": 97.67
+        },
+        "small_model": {
+          "n": 16,
+          "coverage_pct": 10.0,
+          "accuracy_pct": 100.0
+        },
+        "local_llm": {
+          "n": 0,
+          "coverage_pct": 0.0,
+          "accuracy_pct": null
+        },
+        "cloud_llm": {
+          "n": 0,
+          "coverage_pct": 0.0,
+          "accuracy_pct": null
+        },
+        "abstain": {
+          "n": 15,
+          "coverage_pct": 9.38,
+          "accuracy_pct": 66.67
+        }
+      },
+      "would_reach_llm_tier": {
+        "n": 15,
+        "pct": 9.38
+      },
+      "safety": {
+        "STOP": {
+          "support": 16,
+          "recall": 1.0,
+          "missed_as": {},
+          "false_positives_from": {
+            "PAY_NOW": 1
+          }
+        },
+        "HARDSHIP": {
+          "support": 16,
+          "recall": 1.0,
+          "missed_as": {},
+          "false_positives_from": {}
+        },
+        "ABUSIVE": {
+          "support": 5,
+          "recall": 1.0,
+          "missed_as": {},
+          "false_positives_from": {}
+        }
+      },
+      "needs_human_pct": 22.5,
+      "latency_ms": {
+        "p50": 0.4841,
+        "p95": 3.1005,
+        "max": 26.988,
+        "cached_mean": 0.0068
+      },
+      "legacy_projection_accuracy": 0.9563,
+      "date_entity_accuracy": {
+        "n": 25,
+        "exact": 24,
+        "pct": 96.0
+      },
+      "by_lang": {
+        "en": {
+          "n": 53,
+          "accuracy_pct": 92.45
+        },
+        "hi": {
+          "n": 21,
+          "accuracy_pct": 100.0
+        },
+        "hing": {
+          "n": 76,
+          "accuracy_pct": 94.74
+        },
+        "voice": {
+          "n": 10,
+          "accuracy_pct": 100.0
+        }
+      }
+    },
+    "legacy_rules": {
+      "n": 160,
+      "accuracy": 0.3375,
+      "macro_f1": 0.2652,
+      "abstain_rate": 0.65,
+      "safety": {
+        "STOP": {
+          "support": 16,
+          "recall": 0.5625,
+          "missed_as": {
+            "UNKNOWN": 7
+          },
+          "false_positives_from": {
+            "PAY_NOW": 1
+          }
+        },
+        "HARDSHIP": {
+          "support": 16,
+          "recall": 0.4375,
+          "missed_as": {
+            "NEEDS_TIME": 1,
+            "UNKNOWN": 8
+          },
+          "false_positives_from": {
+            "LINK_REQUEST": 1
+          }
+        },
+        "ABUSIVE": {
+          "support": 5,
+          "recall": 0.0,
+          "missed_as": {
+            "UNKNOWN": 5
+          },
+          "false_positives_from": {}
+        }
+      },
+      "latency_ms": {
+        "p50": 0.1384,
+        "p95": 0.7974
+      },
+      "legacy_projection_accuracy": 0.5938
+    },
+    "errors": [
+      {
+        "id": "g001",
+        "text": "ok ok paying right now, dont call again today",
+        "gold": "PAY_NOW",
+        "pred": "STOP",
+        "tier": "rules",
+        "legacy": "STOP"
+      },
+      {
+        "id": "g030",
+        "text": "diwali ke baad dekh lunga payment",
+        "gold": "NEEDS_TIME",
+        "pred": "UNKNOWN",
+        "tier": "abstain",
+        "legacy": "UNKNOWN"
+      },
+      {
+        "id": "g032",
+        "text": "cant pay rn, tight month",
+        "gold": "NEEDS_TIME",
+        "pred": "UNKNOWN",
+        "tier": "abstain",
+        "legacy": "UNKNOWN"
+      },
+      {
+        "id": "g044",
+        "text": "done. paid.",
+        "gold": "ALREADY_PAID",
+        "pred": "UNKNOWN",
+        "tier": "abstain",
+        "legacy": "UNKNOWN"
+      },
+      {
+        "id": "g094",
+        "text": "who is suresh? dont know any such person",
+        "gold": "WRONG_NUMBER",
+        "pred": "UNKNOWN",
+        "tier": "abstain",
+        "legacy": "UNKNOWN"
+      },
+      {
+        "id": "g139",
+        "text": "haan ji bataiye",
+        "gold": "GREETING",
+        "pred": "UNKNOWN",
+        "tier": "abstain",
+        "legacy": "UNKNOWN"
+      },
+      {
+        "id": "g155",
+        "text": "bhaiya salary aane do 7 ko, uske baad",
+        "gold": "NEEDS_TIME",
+        "pred": "PTP",
+        "tier": "rules",
+        "legacy": "PTP"
+      },
+      {
+        "id": "g160",
+        "text": "sir maine pay kiya tha phir bhi paise kat gaye do baar",
+        "gold": "DISPUTE",
+        "pred": "ALREADY_PAID",
+        "tier": "rules",
+        "legacy": "UNKNOWN"
+      }
+    ]
+  },
+  "synthetic_test": {
+    "dataset": "synthetic seed 9001",
+    "n": 1020,
+    "stack": {
+      "n": 1020,
+      "accuracy": 0.9892,
+      "macro_f1": 0.9892,
+      "per_label": {
+        "PAY_NOW": {
+          "support": 60,
+          "precision": 1.0,
+          "recall": 0.9833,
+          "f1": 0.9916
+        },
+        "PTP": {
+          "support": 60,
+          "precision": 1.0,
+          "recall": 0.9667,
+          "f1": 0.9831
+        },
+        "NEEDS_TIME": {
+          "support": 60,
+          "precision": 0.9677,
+          "recall": 1.0,
+          "f1": 0.9836
+        },
+        "ALREADY_PAID": {
+          "support": 60,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "CALLBACK": {
+          "support": 60,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "HARDSHIP": {
+          "support": 60,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "DISPUTE": {
+          "support": 60,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "STOP": {
+          "support": 60,
+          "precision": 0.9375,
+          "recall": 1.0,
+          "f1": 0.9677
+        },
+        "WRONG_NUMBER": {
+          "support": 60,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "HUMAN": {
+          "support": 60,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "BALANCE_QUERY": {
+          "support": 60,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "LINK_REQUEST": {
+          "support": 60,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "STATEMENT_REQUEST": {
+          "support": 60,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "LANGUAGE_CHANGE": {
+          "support": 60,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "ABUSIVE": {
+          "support": 60,
+          "precision": 1.0,
+          "recall": 0.9167,
+          "f1": 0.9565
+        },
+        "GREETING": {
+          "support": 60,
+          "precision": 1.0,
+          "recall": 0.95,
+          "f1": 0.9744
+        },
+        "UNKNOWN": {
+          "support": 60,
+          "precision": 0.9231,
+          "recall": 1.0,
+          "f1": 0.96
+        }
+      },
+      "accuracy_on_answered": 0.9937,
+      "abstain_rate": 0.0637,
+      "tiers": {
+        "rules": {
+          "n": 859,
+          "coverage_pct": 84.22,
+          "accuracy_pct": 99.42
+        },
+        "small_model": {
+          "n": 96,
+          "coverage_pct": 9.41,
+          "accuracy_pct": 98.96
+        },
+        "local_llm": {
+          "n": 0,
+          "coverage_pct": 0.0,
+          "accuracy_pct": null
+        },
+        "cloud_llm": {
+          "n": 0,
+          "coverage_pct": 0.0,
+          "accuracy_pct": null
+        },
+        "abstain": {
+          "n": 65,
+          "coverage_pct": 6.37,
+          "accuracy_pct": 92.31
+        }
+      },
+      "would_reach_llm_tier": {
+        "n": 65,
+        "pct": 6.37
+      },
+      "safety": {
+        "STOP": {
+          "support": 60,
+          "recall": 1.0,
+          "missed_as": {},
+          "false_positives_from": {
+            "ABUSIVE": 4
+          }
+        },
+        "HARDSHIP": {
+          "support": 60,
+          "recall": 1.0,
+          "missed_as": {},
+          "false_positives_from": {}
+        },
+        "ABUSIVE": {
+          "support": 60,
+          "recall": 0.9167,
+          "missed_as": {
+            "UNKNOWN": 1,
+            "STOP": 4
+          },
+          "false_positives_from": {}
+        }
+      },
+      "needs_human_pct": 17.84,
+      "latency_ms": {
+        "p50": 0.2488,
+        "p95": 1.6975,
+        "max": 38.629,
+        "cached_mean": 0.0631
+      },
+      "legacy_projection_accuracy": 0.9931
+    },
+    "legacy_rules": {
+      "n": 1020,
+      "accuracy": 0.2951,
+      "macro_f1": 0.3026,
+      "abstain_rate": 0.7245,
+      "safety": {
+        "STOP": {
+          "support": 60,
+          "recall": 0.65,
+          "missed_as": {
+            "UNKNOWN": 21
+          },
+          "false_positives_from": {
+            "ABUSIVE": 4
+          }
+        },
+        "HARDSHIP": {
+          "support": 60,
+          "recall": 0.5833,
+          "missed_as": {
+            "UNKNOWN": 25
+          },
+          "false_positives_from": {}
+        },
+        "ABUSIVE": {
+          "support": 60,
+          "recall": 0.0,
+          "missed_as": {
+            "UNKNOWN": 56,
+            "STOP": 4
+          },
+          "false_positives_from": {}
+        }
+      },
+      "latency_ms": {
+        "p50": 0.0902,
+        "p95": 0.5139
+      },
+      "legacy_projection_accuracy": 0.6637
+    }
+  },
+  "deterministic": true,
+  "decision": {
+    "stack_beats_current_rules_on_gold": true,
+    "ingestion_default": "stack",
+    "criteria": "gold accuracy and macro-F1 above the current rules, legacy-label projection accuracy not lower, STOP / HARDSHIP recall not lower"
+  }
+}
