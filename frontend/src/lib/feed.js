@@ -1,6 +1,6 @@
 // Classify a CRM envelope / audit row into a display kind for the live feed and the journey timeline.
 import {
-  Gavel, Send, CircleCheck, Eye, MessageSquareReply, AudioLines, MessagesSquare, Layers, BadgeCheck, CalendarClock, Hand,
+  Gavel, Send, Eye, MessageSquareReply, AudioLines, MessagesSquare, Layers, BadgeCheck, CalendarClock, Hand,
   Ban, Info, ShieldAlert, KeyRound, TrendingUp, FileBarChart, Copy,
 } from 'lucide-react'
 

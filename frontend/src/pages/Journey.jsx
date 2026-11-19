@@ -135,7 +135,7 @@ export default function Journey() {
   return (
     <>
       <PageHeader title="Live journey" sub="One synthetic borrower through every part of Kairos — watch the decisions, holds and envelopes appear as they happen."
-        chip={src ? (src.kind === 'mock' ? <span title={src.why}><Chip tone="warn">SIMULATED · offline mock</Chip></span> : <ProvChip prov={prov} title={src.why} />) : null}
+        chip={src ? (src.kind === 'mock' ? <span title={src.why}><Chip tone="warn">{/offline/i.test(src.why) ? 'SIMULATED · offline mock' : 'SIMULATED · built-in script'}</Chip></span> : <ProvChip prov={prov} title={src.why} />) : null}
         right={<>
           <span className="text-[12.5px] text-muted">Seed</span>
           <div className="w-20"><Input value={seed} onChange={(e) => setSeed(e.target.value)} /></div>

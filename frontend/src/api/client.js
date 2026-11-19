@@ -30,12 +30,10 @@ export function subscribeApiStatus(fn) {
   return () => listeners.delete(fn)
 }
 export function setApiStatus(patch) {
-  const next = { ...status, ...patch, checkedAt: Date.now() }
-  if (next.state === status.state && next.policyVersion === status.policyVersion && next.env === status.env) {
-    status = { ...status, checkedAt: next.checkedAt }
-    return
-  }
-  status = next
+  const next = { ...status, ...patch }
+  // keep the same object when nothing changed: useSyncExternalStore re-renders on every new snapshot
+  if (next.state === status.state && next.policyVersion === status.policyVersion && next.env === status.env) return
+  status = { ...next, checkedAt: Date.now() }
   listeners.forEach((fn) => fn())
 }
 
