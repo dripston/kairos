@@ -57,6 +57,7 @@ BRANCHES=(
   k06/deterministic-states     # K06 deterministic states
   frontend/live-api            # frontend wired to the live API
   k09/rl-v2                    # K09 learner v2
+  policy/ojas-pack             # Ojas policy pack (K01 v1.1.1, K10, K13, K15, K21, K24, T01) + conformance harness
 )
 
 BASE="origin/main"
