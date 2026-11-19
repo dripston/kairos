@@ -20,13 +20,15 @@ from kairos_backend.ledger import Instruction, stable_instruction_id  # noqa: E4
 from kairos_backend.machines import HITL_APPROVAL, TOUCH_HITL  # noqa: E402
 from tests.fsm.world import D, Coverage, add_borrower, at, new_ledger  # noqa: E402
 
-SEEDS = range(20)
+SEEDS = range(30)
 TPL = {"sms": "SMS_EN", "whatsapp": "WA_HI", "ivr": "IVR_HI"}
 
 
 def approval_state(dec, status) -> str:
+    """The approval's state as stored. A NULL decision is only legal while the touch is still pending
+    (FSM-F3: a withdrawn approval records decision='WITHDRAWN')."""
     if dec is None:
-        return "PENDING" if status == "PENDING_APPROVAL" else "WITHDRAWN"
+        return "PENDING" if status == "PENDING_APPROVAL" else f"NULL_DECISION_ON_{status}"
     return dec
 
 
@@ -156,6 +158,32 @@ class Harness:
         self.lg.record_stop(b, self.now, "sms")
         self.expect("STOP", touches, appr)
 
+    def _system_cancel(self, what, pred, call):
+        touches, appr = self.snap()
+        rows = {r["instruction_id"]: dict(r) for r in self.lg._conn().execute("SELECT * FROM touches")}
+        for iid in sorted(rows):
+            if pred(rows[iid]):
+                if touches[iid] == "PENDING_APPROVAL":
+                    appr[iid] = self.run(HITL_APPROVAL, self.cov_a, "PENDING", [("CANCEL_QUEUED", {})])
+                touches[iid] = self.run(TOUCH_HITL, self.cov_t, touches[iid], [("CANCEL_QUEUED", {})])
+        call()
+        self.expect(what, touches, appr)
+
+    def op_pause(self):
+        self._system_cancel("outbound pause", lambda r: True, lambda: self.lg.set_outbound_paused(True))
+        self.lg.set_outbound_paused(False)
+
+    def op_payment(self):
+        b = self.rng.choice(("A1", "A2"))
+        ob_id = f"{b}-{self.rng.choice('AB')}-1"
+        ob = self.lg._obligation(self.lg._conn(), ob_id)
+        due = ob["amount_due_paise"] - ob["amount_paid_paise"]
+        if due <= 0:
+            return
+        self.k += 1
+        self._system_cancel("payment clears EMI", lambda r: r["obligation_id"] == ob_id,
+                            lambda: self.lg.record_payment_verified(ob_id, due, self.now, f"P{self.k}", f"R{self.k}"))
+
     def op_dispatch(self):
         touches, appr = self.snap()
         p = self.pending()
@@ -175,7 +203,7 @@ class Harness:
         self.expect("template toggle changes no state", *before)
 
     OPS = (("op_reserve", 40), ("op_template", 5), ("op_approve", 15), ("op_reject", 6), ("op_tick", 6), ("op_cancel", 6),
-           ("op_stop", 2), ("op_dispatch", 5))
+           ("op_stop", 2), ("op_dispatch", 5), ("op_pause", 2), ("op_payment", 2))
 
 
 def run_seed(policy, path, seed):
@@ -218,17 +246,81 @@ def test_maker_cannot_check_and_reschedule_success_conform(policy, tmp_path):
     assert h.snap()[1][iid] == "PENDING"
     out = h.h.reschedule(iid, at(15), "maker", "supervisor", "later", now=at(9, 10))
     assert out["new"]["outcome"] != "REFUSED"
-    assert h.snap()[1][iid] == HITL_APPROVAL.step("PENDING", "RESCHEDULE")[0] == "RESCHEDULED"
+    assert h.snap()[1][iid] == HITL_APPROVAL.step("PENDING", "RESCHEDULE", {"new_slot_allowed": True})[0] == "RESCHEDULED"
     assert h.lg.touch(iid)["status"] == TOUCH_HITL.step("PENDING_APPROVAL", "HUMAN_CANCEL")[0] == "CANCELED"
     h.lg.close()
 
 
-@pytest.mark.xfail(strict=True, reason="FSM-F2: HITL.reschedule restores a CANCELED touch (CANCELED -> PENDING_APPROVAL "
-                                       "/ RESERVED) when the new slot is refused; CANCELED is final in k06.touch")
-def test_reschedule_refused_does_not_resurrect_a_canceled_touch(policy, tmp_path):
+# ---------- FSM-F2 (fixed): a refused reschedule keeps the original; CANCELED is never resurrected ----------
+def test_reschedule_refused_keeps_the_original_untouched(policy, tmp_path):
     h, iid = manual_env(policy, tmp_path)
+    before = dict(h.lg.touch(iid))
+    committed = h.lg.campaign_state("C1")["committed_paise"]
     out = h.h.reschedule(iid, at(21), "maker", "supervisor", "after hours", now=at(9, 10))  # outside the window
-    assert out["new"]["outcome"] == "REFUSED"
-    status = h.lg.touch(iid)["status"]
+    assert out["new"]["outcome"] == "REFUSED" and out["kept"] and out["status"] == "PENDING_APPROVAL"
+    after = h.lg.touch(iid)
+    assert (after["status"], after["reason"], after["updated_at"]) == (before["status"], before["reason"], before["updated_at"])
+    assert h.lg.campaign_state("C1")["committed_paise"] == committed
+    assert h.snap()[1][iid] == HITL_APPROVAL.step("PENDING", "RESCHEDULE", {"new_slot_allowed": False})[0] == "PENDING"
+    assert h.lg.borrower_state("A1")["touches"] == [after]    # no replacement row either
     h.lg.close()
-    assert status == "CANCELED", f"CANCELED -> {status} is not a declared transition"
+
+
+def test_reschedule_never_writes_canceled_to_live_in_strict_mode(policy, tmp_path, monkeypatch):
+    """Strict mode: every reschedule outcome (moved or refused) is a declared k06.touch+hitl transition."""
+    monkeypatch.setenv("KAIROS_FSM_STRICT", "1")
+    h, iid = manual_env(policy, tmp_path)
+    assert h.h.reschedule(iid, at(21), "maker", "supervisor", "after hours", now=at(9, 10))["kept"]
+    moved = h.h.reschedule(iid, at(15), "maker", "supervisor", "later", now=at(9, 11))
+    assert not moved["kept"] and moved["new"]["outcome"] == "PENDING_APPROVAL"
+    assert h.lg.touch(iid)["status"] == "CANCELED"
+    with pytest.raises(hitl_mod.Conflict):                    # a canceled touch cannot be moved again
+        h.h.reschedule(iid, at(16), "maker", "supervisor", "again", now=at(9, 12))
+    assert h.lg.touch(iid)["status"] == "CANCELED"
+    h.lg.close()
+
+
+def test_reschedule_precheck_does_not_count_the_moving_touch_as_a_duplicate(policy, tmp_path):
+    """Moving a manual send within its own day is not a duplicate of itself; the moved send still blocks a second one."""
+    h, iid = manual_env(policy, tmp_path)
+    moved = h.h.reschedule(iid, at(13), "maker", "supervisor", "same day, later", now=at(9, 10))
+    new = moved["new"]["instruction_id"]
+    assert moved["new"]["outcome"] == "PENDING_APPROVAL"
+    other = h.h.schedule_manual("A1", "sms", "SMS_EN", at(16), "maker", "operator", "second", 20,
+                                obligation_id=h.lg.touch(new)["obligation_id"], now=at(9, 20))["results"][0]
+    assert other["outcome"] == "REFUSED" and other["reason"] == "MANUAL_DUPLICATE"
+    h.lg.close()
+
+
+# ---------- FSM-F3 (fixed): a system cancellation records WITHDRAWN + its reason ----------
+@pytest.mark.parametrize("cause, reason", [("stop", "STOP_OPT_OUT"), ("k13_hold", "CALLBACK_PENDING"),
+                                           ("payment", "OBLIGATION_CLEARED"), ("pause", "OUTBOUND_PAUSED"),
+                                           ("hitl_pause", "MANUAL_PAUSE")])
+def test_system_cancel_withdraws_the_pending_approval_with_a_reason(policy, tmp_path, cause, reason):
+    from kairos_backend.exceptions import ExceptionEvent
+    h, iid = manual_env(policy, tmp_path)
+    ob = h.lg.touch(iid)["obligation_id"]
+    if cause == "stop":
+        h.lg.record_stop("A1", at(9, 30), "sms")
+    elif cause == "k13_hold":
+        h.lg.apply_exception("A1", ExceptionEvent("CALLBACK_REQUEST", "B1"), at(9, 30), ob)
+    elif cause == "payment":
+        o = h.lg._obligation(h.lg._conn(), ob)
+        h.lg.record_payment_verified(ob, o["amount_due_paise"] - o["amount_paid_paise"], at(9, 30), "PW1", "RW1")
+    elif cause == "pause":
+        h.lg.set_outbound_paused(True)
+    else:
+        h.h.act("A1", "pause", "ravi", "supervisor", "borrower in hospital", now=at(9, 30))
+    a = h.lg._conn().execute("SELECT * FROM hitl_approvals WHERE instruction_id=?", (iid,)).fetchone()
+    assert h.lg.touch(iid)["status"] == "CANCELED"
+    assert (a["decision"], a["decision_reason"], a["decided_by"]) == ("WITHDRAWN", reason, "system:ledger")
+    assert any(r["type"] == "APPROVAL_WITHDRAWN" and r["instruction_id"] == iid for r in h.lg.audit_log(borrower_id="A1"))
+    h.lg.close()
+
+
+def test_cancel_next_on_a_pending_send_records_the_human_decision(policy, tmp_path):
+    h, iid = manual_env(policy, tmp_path)
+    h.h.act("A1", "cancel_next", "asha", "operator", "not today", now=at(9, 30))
+    a = h.lg._conn().execute("SELECT decision, decided_by FROM hitl_approvals WHERE instruction_id=?", (iid,)).fetchone()
+    assert (h.lg.touch(iid)["status"], a["decision"], a["decided_by"]) == ("CANCELED", "CANCELED", "human:asha")
+    h.lg.close()

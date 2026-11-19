@@ -86,7 +86,7 @@ happens next.
 | [`k01.consent`](#k01consent-v1) | 1 | 3 | 13 | this branch | tests/fsm/test_conformance_holds.py |
 | [`k09.intent`](#k09intent-v1) | 1 | 8 | 12 | this branch | tests/fsm/test_conformance_intent.py |
 | [`k17.payment_claim`](#k17payment_claim-v010-draft) | 0.1.0-draft | 4 | 6 | origin/k17-k18/voice-engine | tests/fsm/test_conformance_voice.py |
-| [`k06.hitl.approval`](#k06hitlapproval-v010) | 0.1.0 | 9 | 23 | origin/k06/hitl-control | tests/fsm/test_conformance_hitl.py |
+| [`k06.hitl.approval`](#k06hitlapproval-v010) | 0.1.0 | 9 | 24 | origin/k06/hitl-control | tests/fsm/test_conformance_hitl.py |
 | [`k17.voice.disposition`](#k17voicedisposition-v010-draft) | 0.1.0-draft | 15 | 46 | origin/k17-k18/voice-engine | tests/fsm/test_conformance_voice.py |
 | [`k17.voice.call`](#k17voicecall-v1) | 1 | 4 | 7 | origin/k17-k18/voice-engine | tests/fsm/test_conformance_voice.py |
 | [`cm03.conversation`](#cm03conversation-v1) | 1 | 8 | 61 | origin/cm03/whatsapp-servicing | tests/fsm/test_conformance_cm03.py |
@@ -897,19 +897,19 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 > Declared from `origin/k06/hitl-control`. Its conformance test runs when that branch's code is present and is skipped otherwise.
 
-**Purpose.** A send that passed every guardrail but matches an approval rule waits for a person. Approval can only make outreach stricter: the Gate runs again at approval and at send time. RESCHEDULED is final here; the code can restore it when the new slot is refused (see findings).
+**Purpose.** A send that passed every guardrail but matches an approval rule waits for a person. Approval can only make outreach stricter: the Gate runs again at approval and at send time. A reschedule checks the new slot first and only then cancels the original; every final state records a decision (WITHDRAWN when a system event canceled the touch).
 
 ```mermaid
 stateDiagram-v2
     [*] --> NEW
-    WITHDRAWN : touch canceled by a system event
+    WITHDRAWN : touch canceled by a system event; decision='WITHDRAWN' + reason
     NEW --> PENDING : RESERVE [gate_send & approval_required]
     PENDING --> EXPIRED : APPROVE [!maker_is_checker & expired] / EXPIRE_DUE [expired]
     PENDING --> APPROVED : APPROVE [!maker_is_checker & !expired & gate_send]
     PENDING --> BLOCKED_AT_RECHECK : APPROVE [!maker_is_checker & !expired & !gate_send]
     PENDING --> REJECTED : REJECT
     PENDING --> CANCELED : HUMAN_CANCEL
-    PENDING --> RESCHEDULED : RESCHEDULE
+    PENDING --> RESCHEDULED : RESCHEDULE [new_slot_allowed]
     PENDING --> WITHDRAWN : CANCEL_QUEUED
     APPROVED --> [*]
     BLOCKED_AT_RECHECK --> [*]
@@ -920,7 +920,7 @@ stateDiagram-v2
     WITHDRAWN --> [*]
 ```
 
-States: `NEW`, `PENDING`, `APPROVED`, `BLOCKED_AT_RECHECK`, `REJECTED`, `EXPIRED`, `CANCELED`, `RESCHEDULED`, `WITHDRAWN`. Initial: `NEW`. Final: `APPROVED`, `BLOCKED_AT_RECHECK`, `CANCELED`, `EXPIRED`, `REJECTED`, `RESCHEDULED`, `WITHDRAWN`. Fingerprint `bfca9c7776c5`.
+States: `NEW`, `PENDING`, `APPROVED`, `BLOCKED_AT_RECHECK`, `REJECTED`, `EXPIRED`, `CANCELED`, `RESCHEDULED`, `WITHDRAWN`. Initial: `NEW`. Final: `APPROVED`, `BLOCKED_AT_RECHECK`, `CANCELED`, `EXPIRED`, `REJECTED`, `RESCHEDULED`, `WITHDRAWN`. Fingerprint `a64521be43ec`.
 
 Transitions (self-loops are events that are accepted and change nothing):
 
@@ -935,8 +935,9 @@ Transitions (self-loops are events that are accepted and change nothing):
 | PENDING | EXPIRE_DUE | expired | EXPIRED | touch CANCELED, budget released | HITL.expire_due / tick |
 | PENDING | EXPIRE_DUE | !expired | PENDING | — | not yet |
 | PENDING | HUMAN_CANCEL | — | CANCELED | touch CANCELED, budget released | HITL.cancel_scheduled / cancel_next |
-| PENDING | RESCHEDULE | — | RESCHEDULED | touch CANCELED; a NEW instruction through the full Gate | HITL.reschedule |
-| PENDING | CANCEL_QUEUED | — | WITHDRAWN | touch CANCELED; approval decision left NULL | STOP / holds / payment / pause cancel PENDING_APPROVAL like RESERVED |
+| PENDING | RESCHEDULE | new_slot_allowed | RESCHEDULED | touch CANCELED; a NEW instruction through the full Gate | HITL.reschedule: Ledger.preview(exclude=old) + HITL vetoes pass BEFORE anything is canceled (FSM-F2) |
+| PENDING | RESCHEDULE | !new_slot_allowed | PENDING | refusal returned; original untouched (kept) | HITL.reschedule pre-check: CANCELED is final, so a refused move never cancels (FSM-F2) |
+| PENDING | CANCEL_QUEUED | — | WITHDRAWN | touch CANCELED; decision='WITHDRAWN', decision_reason=<cancel reason>; APPROVAL_WITHDRAWN audited | STOP / holds / payment / pause cancel PENDING_APPROVAL like RESERVED (Ledger.cancel_hook, FSM-F3) |
 | APPROVED | APPROVE | — | APPROVED | — | Conflict NOT_PENDING_<status>: nothing changes |
 | APPROVED | REJECT | — | APPROVED | — | Conflict NOT_PENDING_<status>: nothing changes |
 | BLOCKED_AT_RECHECK | APPROVE | — | BLOCKED_AT_RECHECK | — | Conflict NOT_PENDING_<status>: nothing changes |

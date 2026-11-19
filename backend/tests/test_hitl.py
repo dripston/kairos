@@ -358,7 +358,7 @@ def test_cancel_and_reschedule(env):
     assert lg.touch(new)["scheduled_at"].startswith("2026-11-20T15:00")
     # moving outside the window is refused and the original stays where it was
     back = h.reschedule(new, at(21), "asha", "operator", "evening", now=NOW)
-    assert back["restored"] and back["new"]["reason"] == "CONTACT_WINDOW"
+    assert back["kept"] and back["status"] == "PENDING_APPROVAL" and back["new"]["reason"] == "CONTACT_WINDOW"
     assert lg.touch(new)["status"] == "PENDING_APPROVAL" and committed(lg) == 20
     assert len(h.list_approvals("supervisor", now=NOW)) == 1
     h.cancel_scheduled(new, "asha", "operator", "paid at branch", now=NOW)

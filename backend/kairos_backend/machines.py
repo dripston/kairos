@@ -594,10 +594,14 @@ def hitl_approval_machine() -> Machine:
         T("PENDING", "EXPIRE_DUE", "EXPIRED", "expired", "touch CANCELED, budget released", "HITL.expire_due / tick"),
         T("PENDING", "EXPIRE_DUE", "PENDING", "!expired", None, "not yet"),
         T("PENDING", "HUMAN_CANCEL", "CANCELED", None, "touch CANCELED, budget released", "HITL.cancel_scheduled / cancel_next"),
-        T("PENDING", "RESCHEDULE", "RESCHEDULED", None, "touch CANCELED; a NEW instruction through the full Gate",
-          "HITL.reschedule"),
-        T("PENDING", "CANCEL_QUEUED", "WITHDRAWN", None, "touch CANCELED; approval decision left NULL",
-          "STOP / holds / payment / pause cancel PENDING_APPROVAL like RESERVED"),
+        T("PENDING", "RESCHEDULE", "RESCHEDULED", "new_slot_allowed",
+          "touch CANCELED; a NEW instruction through the full Gate",
+          "HITL.reschedule: Ledger.preview(exclude=old) + HITL vetoes pass BEFORE anything is canceled (FSM-F2)"),
+        T("PENDING", "RESCHEDULE", "PENDING", "!new_slot_allowed", "refusal returned; original untouched (kept)",
+          "HITL.reschedule pre-check: CANCELED is final, so a refused move never cancels (FSM-F2)"),
+        T("PENDING", "CANCEL_QUEUED", "WITHDRAWN", None,
+          "touch CANCELED; decision='WITHDRAWN', decision_reason=<cancel reason>; APPROVAL_WITHDRAWN audited",
+          "STOP / holds / payment / pause cancel PENDING_APPROVAL like RESERVED (Ledger.cancel_hook, FSM-F3)"),
     ]
     tr += _loops(["APPROVED", "BLOCKED_AT_RECHECK", "REJECTED", "EXPIRED", "CANCELED", "WITHDRAWN"],
                  ["APPROVE", "REJECT"], "Conflict NOT_PENDING_<status>: nothing changes")
@@ -607,11 +611,12 @@ def hitl_approval_machine() -> Machine:
          "WITHDRAWN"], "NEW",
         ["APPROVED", "BLOCKED_AT_RECHECK", "REJECTED", "EXPIRED", "CANCELED", "RESCHEDULED", "WITHDRAWN"], tr,
         description=("A send that passed every guardrail but matches an approval rule waits for a person. Approval can "
-                     "only make outreach stricter: the Gate runs again at approval and at send time. RESCHEDULED is "
-                     "final here; the code can restore it when the new slot is refused (see findings)."),
+                     "only make outreach stricter: the Gate runs again at approval and at send time. A reschedule "
+                     "checks the new slot first and only then cancels the original; every final state records a "
+                     "decision (WITHDRAWN when a system event canceled the touch)."),
         enforced_by=["kairos_backend/hitl.py (k06/hitl-control): HITL._on_reserve / approve / reject / expire_due / cancel_scheduled / reschedule"],
         proven_by=["tests/fsm/test_conformance_hitl.py (runs when kairos_backend.hitl is present)"],
-        state_notes={"WITHDRAWN": "touch canceled by a system event"},
+        state_notes={"WITHDRAWN": "touch canceled by a system event; decision='WITHDRAWN' + reason"},
         source="branch:k06/hitl-control")
 
 

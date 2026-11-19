@@ -167,6 +167,9 @@ class Ledger:
         # transaction only after the Gate allowed the touch: (c, ins, decision) -> (status, decision).
         # It may only make things stricter: hold the touch as PENDING_APPROVAL, or veto it.
         self.reserve_hook = None
+        # Optional hook for system cancellations (hitl.HITL installs it): called inside _cancel_queued's
+        # transaction with (c, canceled_rows, reason) so a held approval records why it was withdrawn (FSM-F3).
+        self.cancel_hook = None
         # every connection this Ledger opens, in any thread, so close_all() can flush and close them
         # (graceful shutdown); a bumped generation makes threads reopen lazily afterwards.
         self._all_conns: list = []
@@ -755,6 +758,8 @@ class Ledger:
             self._release(c, t)
         c.execute(f"UPDATE touches SET status='CANCELED', reason=?, updated_at=? WHERE {q}",
                   (reason, self._iso(self.policy.now()), *QUEUED, *args))
+        if rows and self.cancel_hook is not None:
+            self.cancel_hook(c, rows, reason)
         return len(rows)
 
     # ---------- borrower events ----------
