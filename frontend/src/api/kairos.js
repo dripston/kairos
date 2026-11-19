@@ -63,6 +63,12 @@ export const getHitlAudit = ({ borrowerId, limit = 200, humanOnly } = {}, role, 
 export const getCases = ({ status = 'OPEN', borrowerId } = {}, role, o) =>
   request(`/hitl/cases${q({ status, borrower_id: borrowerId })}`, { ...o, role })
 
+// ---------- K06 global kill switch (main) ----------
+/** POST /control/outbound: pausing cancels everything queued on the backend (budget released); resuming lets the
+ * Supervisor replan, and every guardrail runs again before anything goes. */
+export const setOutboundPaused = (paused, { actor, reason }) =>
+  request('/control/outbound', { method: 'POST', body: { paused, actor: `human:${actor}`, reason } })
+
 // ---------- K26 reports (k26/report-pack) ----------
 /** @returns {Promise<import('./types').DailySegment>} */
 export const getDailySegment = ({ campaignId, day }, o) => request(`/reports/daily-segment${q({ campaign_id: campaignId, day })}`, o)

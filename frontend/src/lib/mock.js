@@ -241,7 +241,7 @@ export function makeHero() {
         'SMS delivered on Day 1 (read unknown). WhatsApp read on Day 2 evening; email bounced on Day 3.',
         'Borrower replied "Kal pay kar dunga" — promise to pay Loan A. No verified payment yet.',
       ],
-      channel: { best: 'whatsapp', window: '18:00–20:00', alts: ['SMS · 10:00', 'IVR · 11:00'], evidence: 'Strong (2 evening reads)' },
+      channel: { best: 'whatsapp', window: '17:00–19:00', alts: ['SMS · 10:00', 'IVR · 11:00'], evidence: 'Strong (2 evening reads)' },
       propensity: { p: 0.62, horizon: '7 days', intensity: 'LOW' },
       template: { id: 'WA_REMIND_HI_SOFT_02', lang: 'Hindi' },
     },

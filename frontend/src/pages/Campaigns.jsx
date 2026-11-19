@@ -106,7 +106,7 @@ function NewCampaign({ onClose }) {
   const [f, setF] = useState({
     name: '', purpose: '', source: 'CRM', cohorts: new Set(['C2', 'C3']), bands: new Set(['1–29', '30–59', '60–89', '90+']), langs: 'All', minOut: 0,
     csv: null, ex: { hold: true, other: true, stale: true },
-    capDay: 1, capWeek: 3, quiet: '20:00–08:00', gap: 24,
+    capDay: 1, capWeek: 3, quiet: '19:00–08:00', gap: 24,
     channels: { sms: true, whatsapp: true, email: false, ivr: false, voicebot: false },
     daily: 120, total: 1200, mode: 'ADAPTIVE', paidDone: true, promiseHold: true, giveUp: 6,
     startDay: state.day + 1, endDay: state.day + 10,
