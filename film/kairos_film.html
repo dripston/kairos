@@ -3,1439 +3,733 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kairos Explainer Film</title>
+<title>Kairos Launch Film</title>
 <script>
 /* =====================================================================
-   CONFIG: every number and name in the film lives here. Edit, save, reload.
-   All results are SIMULATED (synthetic borrowers, DEV simulator).
+   CONFIG: every number and name in the film. Edit, save, reload.
+   All results are SIMULATED (synthetic borrowers, DEV simulator). Sources: TRUTH_TABLE.md
    ===================================================================== */
 const CONFIG = {
   product: "Kairos",
   team: "The A Team",
   event: "CreditNirvana Agentathon 2026",
-  borrower: "Ravi",                       // synthetic borrower, invented name
   dataLabel: "SIMULATED data",
+  film: { bpm: 128 },                     // every scene is a whole number of bars on this grid
   numbers: {
-    // Headline (latest verified, SIMULATED): K09 vs the lender's own 10-day schedule (CN10),
-    // on test runs never used for tuning, same budget and caps.
-    recoveryX: "2",                       // "~2× money recovered per rupee spent"
-    recoveryRange: "1.7× to 2.3×",
+    recoveryX: "2",                       // "~2x money recovered per rupee spent" (K09 vs CN10, unseen seeds)
+    recoveryKairos: 517, recoveryBaseline: 272,
     recoveryExamples: "517 vs 272 · 530 vs 229 · 459 vs 268",
-    recoveryKairos: 517,                  // one fresh run, used for the bars
-    recoveryBaseline: 272,
-    repliesLift: "+80% to +105%",         // more replies per rupee
-    baselineDays: 10,
+    recoveryRange: "1.7× to 2.3×",
+    repliesLift: "+80% to +105%",
     ruleBreaches: 0,
-    decisions: 50000,
-    decisionsTime: "about 2 minutes",
-    attacksPassed: 49,
-    attacksTotal: 49,
-    voiceBots: 6,
-    languages: 8,
-    waResolvedPct: 73.2,                  // CM-03: WhatsApp chats resolved without a human
+    attacksPassed: 49, attacksTotal: 49,
+    fakesCaught: 127, fakesTotal: 127,
+    waResolvedPct: 73.2,
+    decisions: 50000, decisionsTime: "about 2 minutes",
+    policyCases: "148/148",               // POLICY_COVERAGE.md: K01 38, K10 33 (identity_mode k10), K13 25, K21 20, K24 32
+    understandingPct: 95,
     disclosuresBeforeOtp: 0,
-    stopHardshipRecallPct: 100,
-    policyCases: "148/148",               // VERIFY: no source on main yet; not shown on screen
-    fakesCaught: 127,
-    fakesTotal: 127,
-    concurrentChats: 500,
-    understandingPct: 95                  // Hinglish / Hindi / English message understanding
-  },
-  // What the narrator says for the numbers (keep in step with `numbers`).
-  spoken: {
-    lift: "About twice the money back for every rupee spent, and zero rule breaches.",
-    safety: "Forty-nine of forty-nine attacks blocked. Three in four chats, no human needed."
-  },
-  // The operator's day (chapter 2 and ?cut=operator). Scoreboard figures are ILLUSTRATIVE / SIMULATED.
-  operator: {
-    name: "Priya",                        // synthetic collections head
-    dueToday: 3412,
-    contactToday: 1986,
-    waitToday: 1426,
-    dayTarget: 2500000,                   // ₹ target for the day (illustrative)
-    dayCollected: 2610000,                // ₹ collected by close of play (illustrative)
-    savedExtras: 52400,                   // ₹ saved by not sending wasteful messages (illustrative)
-    dayStart: 9, dayEnd: 18,              // the "overs": 9 am to 6 pm
-    campaignDay: 6, campaignDays: 14,
-    partnerships: [["WhatsApp",42],["SMS",25],["Voice",21],["Email",12]],
-    playerOfMatch: "WhatsApp, evening slot",
-    hardshipBorrower: "B-3003",
-    commentary: [                         // [tag, line]; names are synthetic
-      ["SMART CAPTAINCY", "Kairos holds back on Asha today: resting works better. Smart captaincy."],
-      ["PROMISE", "Voice bot Ritu gets a promise for the 27th, read back and confirmed."],
-      ["SAFETY FIRST", "Safety first: Kiran said STOP, so every channel goes quiet."],
-      ["CHANGE OF BOWLING", "WhatsApp's form is dipping, so Kairos switches the bowling to SMS."],
-      ["FOUR!", "FOUR! Ravi pays ₹4,200 after an evening WhatsApp."]
-    ],
-    fourAmount: 4200
+    concurrentChats: 500
   }
 };
 </script>
 <style>
 :root{
-  --bg:#06101d; --bg2:#0a1a2e; --surface:#0e2034; --raised:#132a43; --line:#1e3a57; --line2:#2a4b6e;
-  --fg:#eef5fc; --muted:#93a9c2; --faint:#7d93ad;
-  --teal:#2dd4bf; --teal2:#14b8a6; --mint:#99f6e4; --wa:#4ade80; --sms:#60a5fa; --violet:#a78bfa;
-  --amber:#fbbf24; --red:#f87171; --ok:#34d399;
-  --sans: "Inter", -apple-system, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial,
-          "Noto Sans Devanagari", "Kohinoor Devanagari", sans-serif;
+  --bg:#05080f; --bg2:#0a1424; --surface:#0e1a2c; --raised:#13233a; --line:#1f3450; --line2:#2c4a6e;
+  --fg:#f4f8fd; --muted:#9db2c8; --faint:#7d93ad;
+  --teal:#2ee6c9; --teal2:#14b8a6; --mint:#a7f7e8; --sms:#60a5fa; --chat:#22c39b; --violet:#a78bfa;
+  --amber:#fbbf24; --red:#ff5d6c; --ok:#34d399;
+  --sans:"Inter",-apple-system,"SF Pro Display","Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans Devanagari","Kohinoor Devanagari",sans-serif;
 }
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:#000;color:var(--fg);font-family:var(--sans);overflow:hidden;
-  -webkit-font-smoothing:antialiased}
-#viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000}
+html,body{margin:0;height:100%;background:#000;color:var(--fg);font-family:var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased}
 #stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;
-  background:radial-gradient(1200px 700px at 78% 18%, rgba(45,212,191,.10), transparent 60%),
-             radial-gradient(900px 600px at 10% 90%, rgba(96,165,250,.08), transparent 60%),
-             linear-gradient(160deg,var(--bg2),var(--bg) 60%)}
-#stage::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
-  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
-  background-size:64px 64px;mask-image:radial-gradient(ellipse at center,#000 30%,transparent 80%)}
+  background:radial-gradient(1300px 800px at 70% 20%,rgba(46,230,201,.10),transparent 60%),radial-gradient(1000px 700px at 10% 95%,rgba(96,165,250,.10),transparent 60%),
+  linear-gradient(160deg,var(--bg2),var(--bg) 62%)}
+#cam{position:absolute;inset:0}
+#stage::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:7;background:radial-gradient(ellipse at 50% 45%,transparent 55%,rgba(0,0,0,.5))}
 .abs{position:absolute}
-#bokeh{position:absolute;inset:-60px;pointer-events:none}
-#bokeh i{position:absolute;border-radius:50%;filter:blur(40px);opacity:.22}
-#stage::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:7;
-  background:radial-gradient(ellipse at 50% 45%,transparent 58%,rgba(0,0,0,.42));}
-#morph{position:absolute;left:0;top:0;z-index:5;opacity:0;transform-origin:0 0;pointer-events:none;border:1px solid var(--line2);
-  background:linear-gradient(170deg,#0f2238,#08121f) center/cover no-repeat;box-shadow:0 40px 100px rgba(0,0,0,.5);will-change:transform,opacity}
-.shot{position:relative;overflow:hidden;border-radius:12px;border:1px solid var(--line2);background:#111}
-.shot img{position:absolute;display:block;transform-origin:0 0;will-change:transform}
-.shot::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(118deg,rgba(255,255,255,.08),rgba(255,255,255,0) 38%)}
-.realtag{font-size:15px;color:var(--faint);letter-spacing:.04em}
-.realtag b{color:var(--mint);font-weight:700;letter-spacing:.12em;font-size:13px;margin-right:8px;border:1px solid rgba(45,212,191,.5);padding:2px 6px;border-radius:5px}
-.backdrop{position:absolute;inset:-40px;background-size:cover;background-position:center;filter:blur(7px) saturate(.8);opacity:.16;pointer-events:none}
-#capText .spk{color:var(--mint);font-weight:750}
-.scene{position:absolute;inset:0;visibility:hidden;transform-origin:50% 45%;will-change:transform,opacity}
-#brand{position:absolute;left:80px;top:48px;font-weight:800;letter-spacing:.34em;font-size:22px;color:var(--fg);z-index:5}
-#brand i{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--teal);margin-right:14px;
-  box-shadow:0 0 18px var(--teal);vertical-align:2px}
-#chapter{position:absolute;right:80px;top:50px;font-size:20px;color:var(--muted);letter-spacing:.08em;z-index:5}
-#chapter b{color:var(--teal);font-weight:600;margin-right:10px}
-.kicker{font-size:24px;letter-spacing:.22em;text-transform:uppercase;color:var(--teal);font-weight:700}
-.title{font-size:80px;font-weight:750;letter-spacing:-.02em;line-height:1.02}
-.sub{font-size:36px;color:var(--muted);line-height:1.25}
-.chip{display:inline-flex;align-items:center;gap:10px;padding:8px 18px;border-radius:999px;font-size:22px;
-  border:1px solid var(--line2);background:rgba(19,42,67,.7);color:var(--muted);white-space:nowrap}
-.chip.teal{border-color:rgba(45,212,191,.5);color:var(--mint);background:rgba(20,184,166,.12)}
-.chip.amber{border-color:rgba(251,191,36,.5);color:#fde68a;background:rgba(251,191,36,.10)}
-.chip.red{border-color:rgba(248,113,113,.5);color:#fecaca;background:rgba(248,113,113,.10)}
-.chip.violet{border-color:rgba(167,139,250,.55);color:#ddd6fe;background:rgba(167,139,250,.12)}
-.card{position:absolute;background:linear-gradient(180deg,rgba(19,42,67,.92),rgba(14,32,52,.92));border:1px solid var(--line);
-  border-radius:28px;box-shadow:0 30px 80px rgba(0,0,0,.35)}
-.glow{position:absolute;width:700px;height:700px;border-radius:50%;pointer-events:none;
-  background:radial-gradient(circle,rgba(45,212,191,.16),transparent 65%)}
-
-/* phone */
-.phone{position:relative;width:380px;height:760px;border-radius:58px;background:#02070e;border:10px solid #22364f;
-  box-shadow:0 50px 90px -20px rgba(0,0,0,.7),0 0 0 1px #3a5170,inset 0 0 0 2px #0b1726}
-.phone::after{content:"";position:absolute;inset:0;border-radius:48px;pointer-events:none;z-index:5;
-  background:linear-gradient(115deg,rgba(255,255,255,.11) 0%,rgba(255,255,255,0) 30%,rgba(255,255,255,0) 72%,rgba(255,255,255,.05) 100%)}
-.phone::before{content:"";position:absolute;right:-15px;top:160px;width:5px;height:96px;border-radius:3px;background:linear-gradient(90deg,#2b405c,#16263a)}
-.phone .notch{position:absolute;left:50%;top:14px;width:120px;height:30px;border-radius:20px;background:#000;transform:translateX(-50%);z-index:4}
-.screen{position:absolute;inset:0;border-radius:48px;overflow:hidden;background:linear-gradient(170deg,#132a45,#07111f 70%)}
+.scene{position:absolute;inset:0;display:none;transform-origin:50% 50%;will-change:transform,opacity}
+#brand{position:absolute;left:72px;top:46px;font-weight:800;letter-spacing:.34em;font-size:20px;z-index:6;opacity:.85}
+#brand i{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--teal);margin-right:12px;box-shadow:0 0 16px var(--teal);vertical-align:1px}
+#pulse{position:absolute;inset:0;pointer-events:none;z-index:1;background:radial-gradient(900px 600px at 50% 55%,rgba(46,230,201,.22),transparent 70%);opacity:0}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:9}
+#leak{position:absolute;inset:-200px;pointer-events:none;z-index:8;opacity:0;mix-blend-mode:screen;
+  background:radial-gradient(600px 900px at 20% 40%,rgba(255,170,90,.55),transparent 70%),radial-gradient(700px 700px at 80% 60%,rgba(46,230,201,.45),transparent 70%)}
+/* kinetic type */
+.kt{font-weight:850;letter-spacing:-.04em;line-height:.98;font-size:140px;white-space:nowrap}
+.kt.xl{font-size:300px;letter-spacing:-.05em}.kt.l{font-size:190px}.kt.m{font-size:118px}.kt.s{font-size:70px}.kt.xs{font-size:46px;letter-spacing:-.02em}
+.accent{color:var(--teal)}.warn{color:var(--red)}.dim{color:#5b6f88}
+.center{position:absolute;left:0;right:0;text-align:center}
+.sub{font-size:34px;color:var(--muted);font-weight:500}
+.fine{font-size:20px;color:var(--faint);line-height:1.45}
+.chip{display:inline-flex;align-items:center;gap:10px;padding:10px 20px;border-radius:999px;font-size:26px;border:1px solid var(--line2);background:rgba(19,35,58,.85);color:var(--fg);white-space:nowrap}
+.chip.teal{border-color:rgba(46,230,201,.55);color:var(--mint);background:rgba(20,184,166,.14)}
+.chip.red{border-color:rgba(255,93,108,.6);color:#ffd0d5;background:rgba(255,93,108,.12)}
+.chip.ok{border-color:rgba(52,211,153,.6);color:#c9fbe6;background:rgba(52,211,153,.12)}
+.card{position:absolute;background:linear-gradient(180deg,rgba(19,35,58,.95),rgba(12,24,42,.95));border:1px solid var(--line);border-radius:26px;box-shadow:0 40px 90px rgba(0,0,0,.45)}
+.realtag{font-size:16px;color:var(--faint);letter-spacing:.04em}
+.realtag b{color:var(--mint);font-weight:800;letter-spacing:.14em;font-size:13px;margin-right:8px;border:1px solid rgba(46,230,201,.5);padding:2px 7px;border-radius:5px}
+#simlabel{font-size:20px;letter-spacing:.14em;font-weight:800;color:#ddd6fe;border:2px solid rgba(167,139,250,.7);background:rgba(167,139,250,.14);padding:8px 16px;border-radius:10px;text-transform:uppercase}
+.num{font-variant-numeric:tabular-nums}
+/* devices */
+.phone{position:relative;width:380px;height:760px;border-radius:58px;background:#02060c;border:10px solid #1d2c40;box-shadow:0 60px 110px -20px rgba(0,0,0,.75),0 0 0 1px #3a5170}
+.phone::after{content:"";position:absolute;inset:0;border-radius:48px;pointer-events:none;z-index:5;background:linear-gradient(115deg,rgba(255,255,255,.12),rgba(255,255,255,0) 32%)}
+.phone .notch{position:absolute;left:50%;top:14px;width:118px;height:30px;border-radius:20px;background:#000;transform:translateX(-50%);z-index:4}
+.screen{position:absolute;inset:0;border-radius:48px;overflow:hidden;background:linear-gradient(170deg,#13263f,#060d18 70%)}
 .statusbar{position:absolute;left:34px;right:30px;top:18px;font-size:17px;font-weight:600;color:#dbe7f5;display:flex;justify-content:space-between;z-index:3}
-
-/* captions */
-#cap{position:absolute;left:0;right:0;bottom:46px;display:flex;justify-content:center;z-index:8;pointer-events:none}
-#capText{max-width:1560px;text-align:center;font-size:40px;line-height:1.3;font-weight:520;color:#fff;
-  background:rgba(3,9,18,.66);padding:14px 30px;border-radius:18px;backdrop-filter:blur(6px);
-  transition:opacity .25s;opacity:0}
+.notif{position:absolute;left:14px;right:14px;height:84px;border-radius:22px;background:rgba(235,242,250,.14);border:1px solid rgba(255,255,255,.08);display:flex;gap:14px;align-items:center;padding:0 16px}
+.notif .ni{flex:none;width:44px;height:44px;border-radius:12px;background:#3b82f6;display:grid;place-items:center;font-size:20px;font-weight:800}
+.notif .nt{font-size:15px;color:#c8d6e6;font-weight:700;letter-spacing:.04em;display:flex;justify-content:space-between}
+.notif .nb{font-size:17px;margin-top:3px}
+.monitor{position:absolute;border-radius:18px;background:#05080e;border:14px solid #0d131c;outline:2px solid #2f3d50;box-shadow:0 60px 120px -20px rgba(0,0,0,.8);overflow:hidden}
+.monitor::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(118deg,rgba(255,255,255,.08),rgba(255,255,255,0) 36%)}
+.monitor img{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform,opacity;display:block}
+.stand{position:absolute;height:60px;background:linear-gradient(180deg,#2c394a,#141c27);clip-path:polygon(38% 0,62% 0,70% 100%,30% 100%)}
+.bub{max-width:300px;padding:12px 16px;border-radius:20px;font-size:18px;line-height:1.32;margin-bottom:12px}
+.bub.in{background:#1e2b3a;border-bottom-left-radius:6px}
+.bub.out{background:#0f5f6e;margin-left:auto;border-bottom-right-radius:6px}
+.wave{display:flex;gap:6px;align-items:center;justify-content:center;height:80px}
+.wave i{width:8px;border-radius:4px;background:var(--teal);display:block}
+.subtitle{display:inline-block;background:rgba(0,0,0,.72);padding:12px 26px;border-radius:12px;font-size:36px;line-height:1.35;font-weight:600}
+.subtitle small{display:block;font-size:26px;color:#d8e6f3;font-weight:500}
+.pill{position:absolute;width:280px;height:96px;border-radius:48px;border:2px solid var(--line2);background:var(--surface);display:grid;place-items:center;font-size:40px;font-weight:800;color:var(--muted)}
+.pill.sel{border-color:var(--teal);color:#03211c;background:var(--teal);box-shadow:0 0 50px rgba(46,230,201,.5)}
+.dot{position:absolute;width:16px;height:16px;border-radius:50%;background:#22324a}
+.dot.on{background:var(--teal);box-shadow:0 0 12px rgba(46,230,201,.7)}
+.chan{display:flex;align-items:center;justify-content:space-between;height:74px;padding:0 26px;border-radius:16px;background:#12243a;margin-top:14px;font-size:32px;font-weight:700;border:1px solid transparent}
+.chan .s{font-size:20px;font-weight:900;letter-spacing:.1em;color:var(--ok)}
+.chan.off{background:rgba(255,93,108,.08);border-color:rgba(255,93,108,.4);color:#8e9db0}
+.chan.off .s{color:var(--red)}
+.stamp{position:absolute;padding:14px 26px;border:5px solid var(--red);color:var(--red);border-radius:14px;font-weight:900;font-size:44px;letter-spacing:.04em;background:rgba(10,4,8,.88);rotate:-6deg}
+.rule{display:inline-flex;align-items:center;gap:12px;font-size:28px;font-weight:650;padding:12px 22px;border-radius:14px;background:rgba(52,211,153,.10);border:1px solid rgba(52,211,153,.45);margin:0 12px 14px 0}
+.rule b{color:var(--ok)}
+.stream{position:absolute;overflow:hidden}
+.srow{position:absolute;left:0;right:0;height:52px;display:flex;align-items:center;gap:10px;padding:0 14px;font-size:17px;white-space:nowrap;border-radius:10px;background:rgba(14,26,44,.9);border:1px solid var(--line)}
+.srow .ok{color:var(--ok);font-weight:800;margin-left:auto}
+.bar{position:absolute;height:64px;border-radius:12px;display:flex;align-items:center;padding-left:20px;font-size:26px;font-weight:800;white-space:nowrap;overflow:hidden}
+.aislot{position:absolute;overflow:hidden}
+.aislot video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}
+.aislot.ready video{opacity:1}
+.aislot.ready .fallback{display:none}
+#cursor{position:absolute;width:44px;height:44px;z-index:6;opacity:0;pointer-events:none}
+.btn{display:inline-grid;place-items:center;height:68px;padding:0 36px;border-radius:16px;font-size:28px;font-weight:800;border:2px solid var(--line2);color:var(--fg);background:var(--raised)}
+.btn.pri{background:var(--teal);border-color:var(--teal);color:#03211c}
+.btn.done{background:var(--ok);border-color:var(--ok)}
+/* captions (optional; off by default: the type is the copy, Hindi subtitles are burned in) */
+#cap{position:absolute;left:0;right:0;bottom:40px;display:flex;justify-content:center;z-index:8;pointer-events:none}
+#capText{max-width:1500px;text-align:center;font-size:34px;line-height:1.3;font-weight:600;background:rgba(0,0,0,.7);padding:10px 24px;border-radius:14px;opacity:0;transition:opacity .2s}
 #capText.show{opacity:1}
 body.nocap #cap{display:none}
-
-/* ---------- Scene 1 ---------- */
-.notif{position:absolute;left:14px;right:14px;height:84px;border-radius:22px;background:rgba(235,242,250,.14);
-  backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);display:flex;gap:14px;align-items:center;padding:0 16px}
-.notif .ni{flex:none;width:44px;height:44px;border-radius:12px;background:#3b82f6;display:grid;place-items:center;font-size:22px;font-weight:800;color:#fff}
-.notif .nt{font-size:15px;color:#c8d6e6;font-weight:700;letter-spacing:.04em;display:flex;justify-content:space-between}
-.notif .nt span{font-weight:500;color:#9fb3c9}
-.notif .nb{font-size:17px;color:#fff;margin-top:3px;line-height:1.25}
-.track{position:absolute;height:30px;border-radius:15px;background:#0b1a2c;border:1px solid var(--line2);overflow:hidden}
-.fill{position:absolute;left:0;top:0;bottom:0;border-radius:15px;background:linear-gradient(90deg,var(--teal2),var(--teal))}
-.coin{position:absolute;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fde68a,#f59e0b 70%);
-  color:#7c4a03;font-weight:900;font-size:24px;display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.4)}
-
-/* ---------- Scene 2 ---------- */
-.rowlab{position:absolute;font-size:28px;color:var(--fg);font-weight:600;display:flex;align-items:center;gap:14px}
-.rowlab i{width:14px;height:14px;border-radius:50%;display:inline-block}
-.dayh{position:absolute;font-size:20px;color:var(--faint);text-align:center;width:120px;letter-spacing:.06em}
-.cell{position:absolute;width:120px;height:70px;border-radius:16px;border:1px dashed rgba(147,169,194,.15)}
-.cell.sch{border:1px solid var(--line2);background:rgba(19,42,67,.6)}
-.cell .flash{position:absolute;inset:-1px;border-radius:16px;background:var(--teal);opacity:0}
-.cell .mark{position:absolute;inset:0;display:grid;place-items:center;font-size:30px;font-weight:800;opacity:0}
-.cell.sch .env{position:absolute;inset:0;display:grid;place-items:center;font-size:15px;color:var(--muted);letter-spacing:.04em}
-.cell.fired .env{opacity:0}
-.cell.fired.no{background:rgba(30,45,64,.55);border-color:#26384d}
-.cell.fired.no .mark{color:#4b6280;opacity:1}
-.cell.fired.yes{background:rgba(52,211,153,.18);border-color:rgba(52,211,153,.6)}
-.cell.fired.yes .mark{color:var(--ok);opacity:1}
-#s2play{position:absolute;width:3px;border-radius:2px;background:var(--amber);box-shadow:0 0 18px var(--amber)}
-
-/* ---------- Scene 3 ---------- */
-.dot{position:absolute;width:14px;height:14px;border-radius:50%;background:#2a3d55;transition:background .25s}
-.dot.on{background:var(--teal);box-shadow:0 0 10px rgba(45,212,191,.6)}
-.bcard{padding:34px 38px}
-.avatar{width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,#1e40af,#0d9488);display:grid;place-items:center;
-  font-size:40px;font-weight:800;color:#fff}
-.facts{margin-top:26px;display:grid;gap:16px}
-.fact{display:flex;gap:16px;align-items:center;font-size:27px;color:#d8e4f1}
-.fact b{width:12px;height:12px;border-radius:50%;flex:none}
-.pill{position:absolute;width:260px;height:88px;border-radius:44px;border:2px solid var(--line2);background:var(--surface);
-  display:grid;place-items:center;font-size:36px;font-weight:700;color:var(--muted);transition:all .2s}
-.pill.sel{border-color:var(--teal);color:#04201c;background:var(--teal);box-shadow:0 0 40px rgba(45,212,191,.45)}
-.pill.dim{opacity:.35}
-.optcol{position:absolute;width:250px}
-.optcol h4{margin:0 0 16px;font-size:22px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);font-weight:700}
-.opt{height:62px;border-radius:16px;border:1px solid var(--line);background:rgba(14,32,52,.8);margin-bottom:12px;padding:0 18px;
-  display:flex;align-items:center;font-size:24px;color:var(--muted);transition:all .18s}
-.opt.hl{border-color:var(--line2);background:var(--raised);color:var(--fg)}
-.opt.sel{border-color:var(--teal);background:rgba(20,184,166,.18);color:var(--fg);box-shadow:0 0 24px rgba(45,212,191,.25)}
-.opt.dim{opacity:.35}
-.decision{display:flex;align-items:center;gap:26px;padding:0 34px}
-.decision .big{font-size:34px;font-weight:700}
-.decision .checks{font-size:22px;color:var(--mint)}
-
-/* ---------- Scene 4 ---------- */
-.step{position:absolute;left:0;width:1040px;height:84px;display:flex;align-items:center;gap:26px;transition:opacity .3s}
-.step .n{flex:none;width:52px;height:52px;border-radius:50%;border:2px solid var(--line2);display:grid;place-items:center;
-  font-size:22px;font-weight:700;color:var(--muted);background:var(--bg);transition:all .25s}
-.step .tx{font-size:32px;font-weight:600;color:var(--muted);transition:color .25s}
-.step .tx small{display:block;font-size:21px;font-weight:500;color:var(--faint);margin-top:2px}
-.step.pend{opacity:.35}
-.step.act .n{border-color:var(--teal);background:var(--teal);color:#04201c;box-shadow:0 0 30px rgba(45,212,191,.5)}
-.step.act .tx{color:var(--fg)}
-.step.done .n{border-color:var(--teal2);color:var(--teal)}
-.step.done .tx{color:#c3d3e4}
-#s4rail{position:absolute;left:25px;width:2px;background:var(--line2)}
-.app{position:absolute;inset:0;padding:64px 20px 20px}
-.apphead{display:flex;align-items:center;gap:12px;padding:12px 8px 16px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:18px}
-.apphead .av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#fff;font-size:18px}
-.apphead .nm{font-size:19px;font-weight:700}
-.apphead .st{font-size:14px;color:var(--muted)}
-.bub{max-width:280px;padding:12px 16px;border-radius:20px;font-size:18px;line-height:1.32;margin-bottom:12px}
-.bub.in{background:#1f3550;border-bottom-left-radius:6px}
-.bub.out{background:#0f766e;margin-left:auto;border-bottom-right-radius:6px}
-.bub.wa-in{background:#1e2b3a}
-.bub.wa-out{background:#0f5f6e;margin-left:auto;border-bottom-right-radius:6px}
-.bub .tr{display:block;font-size:14px;color:#a7bfd6;margin-top:4px}
-.meta{font-size:14px;color:var(--muted);margin:-4px 0 14px}
-.tag{display:inline-block;font-size:14px;font-weight:700;letter-spacing:.06em;padding:5px 10px;border-radius:8px}
-.wave{display:flex;gap:6px;align-items:center;justify-content:center;height:70px;margin:8px 0 18px}
-.wave i{width:8px;border-radius:4px;background:var(--teal);display:block}
-.rem{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-radius:16px;background:#12263d;margin-bottom:12px;font-size:18px;position:relative}
-.rem .strike{position:absolute;left:12px;top:50%;height:3px;background:var(--red);width:0}
-
-/* ---------- Scene 5 ---------- */
-.scard{width:530px;height:500px;padding:34px}
-.scard h3{margin:0;font-size:34px;line-height:1.15;font-weight:750}
-.scard .k{font-size:18px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);font-weight:700;margin-bottom:12px}
-.chan{display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 20px;border-radius:14px;background:#12263d;margin-top:12px;
-  font-size:23px;transition:all .35s;border:1px solid transparent}
-.chan .s{font-size:16px;font-weight:800;letter-spacing:.08em;color:var(--ok)}
-.chan.off{background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.35);color:#9aa9ba}
-.chan.off .s{color:var(--red)}
-.receipt{position:relative;margin-top:22px;border-radius:18px;background:#f4f7fb;color:#0b1a2c;padding:20px 24px 92px;overflow:hidden;transition:box-shadow .3s}
-.receipt.bad,.shot.bad{box-shadow:0 0 0 4px var(--red)}
-.receipt .ok{font-weight:800;color:#15803d;font-size:20px}
-.receipt .amt{font-size:40px;font-weight:800;margin:6px 0}
-.receipt .ln{font-size:17px;color:#475569}
-.scan{position:absolute;left:0;right:0;height:4px;background:var(--teal);box-shadow:0 0 18px var(--teal)}
-.stamp{position:absolute;right:18px;bottom:18px;width:300px;padding:10px;text-align:center;border:4px solid var(--red);color:var(--red);
-  border-radius:12px;font-weight:900;font-size:20px;letter-spacing:.04em;background:rgba(255,255,255,.94);rotate:-5deg}
-.human{display:flex;align-items:center;gap:16px;margin-top:20px;padding:16px;border-radius:18px;background:rgba(251,191,36,.10);border:1px solid rgba(251,191,36,.45)}
-.human .av{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#b45309);display:grid;place-items:center;font-size:28px}
-
-/* ---------- Scene 6 ---------- */
-.btn{display:inline-grid;place-items:center;height:72px;padding:0 40px;border-radius:18px;font-size:28px;font-weight:700;border:2px solid var(--line2);color:var(--fg);
-  background:var(--raised);transition:all .2s}
-.btn.pri{background:var(--teal);border-color:var(--teal);color:#04201c}
-.btn.pri.pressed{background:var(--ok);border-color:var(--ok);transform:scale(.96)}
-.logrow{display:flex;gap:26px;align-items:center;font-size:24px;padding:16px 26px;border-radius:16px;background:rgba(14,32,52,.85);border:1px solid var(--line);margin-bottom:12px}
-.logrow .tm{font-family:ui-monospace,Menlo,monospace;color:var(--faint);font-size:21px}
-#s6cursor{position:absolute;width:40px;height:40px;z-index:6}
-#s6ripple{position:absolute;width:30px;height:30px;border-radius:50%;border:3px solid var(--mint);margin:-15px 0 0 -15px;opacity:0}
-
-/* ---------- Scene 7 ---------- */
-.lane{position:absolute;left:0;width:760px;height:74px;border-radius:18px;background:rgba(14,32,52,.75);border:1px solid var(--line)}
-.lane .lb{position:absolute;left:20px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;width:190px}
-.lane .lb b{font-size:22px}
-.lane .lb span{font-size:15px;color:var(--faint)}
-.fdot{position:absolute;width:20px;height:20px;border-radius:50%;margin:-10px 0 0 -10px}
-.seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;color:#04121f;overflow:hidden;white-space:nowrap}
-
-/* ---------- Scene 8 ---------- */
-.num{font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:-.03em}
-.tile{width:405px;height:150px;padding:22px 26px}
-.tile .num{font-size:52px;color:var(--fg)}
-.tile p{margin:6px 0 0;font-size:21px;color:var(--muted);line-height:1.3}
-.bar{position:absolute;height:54px;border-radius:12px;display:flex;align-items:center;padding-left:18px;font-size:21px;font-weight:700;white-space:nowrap}
-#simlabel{font-size:20px;letter-spacing:.14em;font-weight:800;color:#ddd6fe;border:2px solid rgba(167,139,250,.7);background:rgba(167,139,250,.14);
-  padding:8px 18px;border-radius:10px;text-transform:uppercase}
-
-/* ---------- Scene 9 ---------- */
-.center{position:absolute;left:0;right:0;text-align:center}
-
-/* ---------- operator chapter ---------- */
-.laptop{position:absolute}
-.laptop::after{content:"";position:absolute;left:-60px;right:-60px;bottom:-46px;height:70px;pointer-events:none;
-  background:radial-gradient(ellipse at center,rgba(0,0,0,.6),transparent 70%)}
-.laptop .lid::after{content:"";position:absolute;inset:0;border-radius:12px;pointer-events:none;
-  background:linear-gradient(120deg,rgba(255,255,255,.09),rgba(255,255,255,0) 35%)}
-.laptop .lid::before{content:"";position:absolute;left:50%;top:-8px;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:#0a1220;box-shadow:0 0 0 1px #2c3e55}
-.laptop .lid{position:relative;width:920px;height:580px;border-radius:26px 26px 10px 10px;background:#0b1626;border:12px solid #10161f;outline:2px solid #3a4a5e;
-  transform-origin:50% 100%;box-shadow:0 40px 100px rgba(0,0,0,.5)}
-.laptop .lscreen{position:absolute;inset:0;border-radius:12px;overflow:hidden;background:linear-gradient(170deg,#0f2238,#08121f);padding:26px 30px}
-.laptop .base{position:relative;width:1060px;height:26px;margin-left:-70px;border-radius:2px 2px 30px 30px;background:linear-gradient(180deg,#a9b6c6 0%,#6b7a8f 35%,#2f3b4c 100%)}
-.laptop .base::before{content:"";position:absolute;left:50%;top:0;width:160px;height:9px;margin-left:-80px;border-radius:0 0 10px 10px;background:#4a586c}
-.mug{width:96px;height:104px;border-radius:10px 10px 30px 30px;background:linear-gradient(180deg,#e8eef5,#b8c6d6);position:absolute}
-.mug::after{content:"";position:absolute;right:-30px;top:20px;width:34px;height:46px;border:9px solid #c9d5e2;border-left:0;border-radius:0 26px 26px 0}
-.steam{position:absolute;width:8px;height:44px;border-radius:6px;background:linear-gradient(180deg,transparent,rgba(255,255,255,.35))}
-.mini{border-radius:16px;background:rgba(19,42,67,.85);border:1px solid var(--line);padding:14px 16px}
-.mini .ml{font-size:15px;letter-spacing:.12em;color:var(--faint);font-weight:700}
-.mini .mv{font-size:40px;font-weight:800;margin-top:2px}
-.drow{display:flex;justify-content:space-between;font-size:19px;padding:10px 14px;border-radius:12px;background:rgba(14,32,52,.9);margin-bottom:8px}
-.live{display:inline-block;width:14px;height:14px;border-radius:50%;background:#ef4444;margin-right:12px;box-shadow:0 0 14px #ef4444;vertical-align:1px}
-.bhead{display:flex;align-items:center;gap:18px;height:72px;padding:0 30px;border-bottom:1px solid var(--line);font-weight:800;letter-spacing:.08em;font-size:24px}
-.bhead .team{color:#04201c;background:var(--teal);padding:6px 14px;border-radius:8px}
-.bhead .team2{color:var(--fg)}
-.bhead .bday{font-size:18px;color:var(--muted)}
-.livepill{font-size:16px;color:#fff;background:#dc2626;padding:6px 12px;border-radius:8px;letter-spacing:.1em}
-.slab{font-size:17px;letter-spacing:.16em;color:var(--muted);font-weight:800}
-.slab i{font-style:normal;letter-spacing:.02em;font-weight:500;color:var(--faint);margin-left:10px;font-size:16px}
-.stats{display:flex;gap:12px}
-.stat{width:190px;height:142px;border-radius:16px;background:rgba(8,20,35,.7);border:1px solid var(--line);padding:14px 16px}
-.stat .slab{font-size:15px}
-.stat .slab i{display:block;margin:2px 0 0;font-size:14px}
-.stat .sv{font-size:36px;font-weight:800;margin-top:10px;font-variant-numeric:tabular-nums;white-space:nowrap}
-.stat .sv small{display:block;font-size:15px;font-weight:500;color:var(--faint)}
-.stat.good{border-color:rgba(52,211,153,.6);background:rgba(52,211,153,.10)}
-.stat.good .sv{color:var(--ok)}
-.partbar{position:relative;height:52px;border-radius:14px;overflow:hidden;background:#0b1a2c;margin-top:12px}
-.fourpop{font-size:44px;font-weight:900;color:var(--amber);text-shadow:0 0 24px rgba(251,191,36,.6)}
-.cm{position:absolute;left:0;right:0;height:104px;border-radius:14px;background:rgba(8,20,35,.75);border:1px solid var(--line);padding:12px 16px;overflow:hidden}
-.cmh{display:flex;justify-content:space-between;align-items:center}
-.cmtag{font-size:14px;font-weight:900;letter-spacing:.1em;padding:3px 10px;border-radius:6px;color:#04201c}
-.cmt{font-size:14px;color:var(--faint);font-variant-numeric:tabular-nums}
-.cmx{font-size:20px;line-height:1.3;margin-top:6px;color:#e2ecf6}
-#bug{position:absolute;left:50%;top:34px;transform:translateX(-50%);display:flex;align-items:stretch;height:52px;border-radius:12px;overflow:hidden;
-  background:rgba(6,16,29,.92);border:1px solid var(--line2);font-size:22px;font-weight:700;z-index:6;opacity:0;box-shadow:0 10px 30px rgba(0,0,0,.4)}
-#bug>span{display:flex;align-items:center;padding:0 16px;border-left:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
-#bug .bl{background:#dc2626;color:#fff;border:0;font-size:16px;letter-spacing:.1em}
-#bug .bt{background:var(--teal);color:#04201c;letter-spacing:.08em}
-#bug .bs{color:var(--muted);font-weight:600}
-#bug .bs b{color:var(--fg);margin-left:8px}
-.gc{display:inline-flex;align-items:center;gap:10px;font-size:22px;padding:10px 16px;border-radius:12px;background:rgba(52,211,153,.10);border:1px solid rgba(52,211,153,.4);margin:10px 10px 0 0}
-.gc b{color:var(--ok)}
-.fcard{position:absolute;top:300px;width:320px;height:520px;padding:22px 22px;transition:border-color .25s,box-shadow .25s,transform .25s}
-.fcard.on{border-color:var(--teal);box-shadow:0 0 0 2px rgba(45,212,191,.5),0 30px 80px rgba(0,0,0,.35)}
-.fcard h5{margin:12px 0 16px;font-size:27px;line-height:1.15}
-.fcard .ic{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:24px;font-weight:900;color:#04201c}
-.tl{display:flex;gap:12px;align-items:center;font-size:17px;color:#d5e2ef;margin-bottom:12px}
-.tl i{width:12px;height:12px;border-radius:50%;flex:none}
-.why{font-size:17px;color:#cfdceb;margin:8px 0;line-height:1.3}
-.why b{color:var(--ok)}
-.file{display:flex;align-items:center;gap:10px;font-size:18px;padding:9px 12px;border-radius:10px;background:rgba(8,20,35,.7);margin-bottom:8px}
-.file i{font-style:normal;font-size:12px;font-weight:900;background:var(--sms);color:#04121f;padding:3px 6px;border-radius:5px}
-.seg2{display:grid;grid-template-columns:1.4fr 1fr 1fr;font-size:16px;padding:8px 6px;border-bottom:1px solid var(--line);color:#cfdceb}
-.seg2.h{color:var(--faint);font-weight:700;letter-spacing:.06em;font-size:13px}
-.lbar{display:flex;align-items:center;gap:10px;font-size:16px;color:#cfdceb;margin-bottom:12px}
-.lbar span{width:120px}
-.lbar i{height:16px;border-radius:8px;display:block}
+/* controls */
+#ui{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);width:min(1200px,calc(100vw - 32px));z-index:20;background:rgba(6,12,22,.9);border:1px solid #23405f;
+  border-radius:18px;padding:12px 16px 10px;font-size:14px;color:#cfe0f1;backdrop-filter:blur(8px);transition:opacity .35s;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+#ui.idle{opacity:0;pointer-events:none}
 #groups{display:flex;gap:6px;margin-bottom:8px;align-items:center}
 #groups button{font:inherit;font-size:12px;height:26px;border-radius:13px;border:1px solid #2a4b6e;background:transparent;color:#cfe0f1;padding:0 12px;cursor:pointer}
 #groups button.cur{background:#0f5f58;border-color:var(--teal)}
 #groups .sp{flex:1}
 #groups a{font-size:12px;color:#93a9c2;text-decoration:none;border:1px solid #2a4b6e;border-radius:13px;padding:4px 12px}
-#groups a.cur{color:#04201c;background:var(--teal);border-color:var(--teal)}
-
-/* ---------- controls ---------- */
-#ui{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);width:min(1200px,calc(100vw - 32px));z-index:20;
-  background:rgba(6,14,26,.88);border:1px solid #23405f;border-radius:18px;padding:12px 16px 10px;font-size:14px;color:#cfe0f1;
-  backdrop-filter:blur(8px);transition:opacity .35s;box-shadow:0 20px 50px rgba(0,0,0,.5)}
-#ui.idle{opacity:0;pointer-events:none}
-#chapters{display:flex;gap:3px;margin-bottom:10px;position:relative}
-#chapters button{position:relative;height:30px;border:0;border-radius:6px;background:#132a43;color:#93a9c2;font:inherit;font-size:12px;cursor:pointer;
-  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0 6px}
-#chapters button .pf{position:absolute;left:0;top:0;bottom:0;background:rgba(45,212,191,.28);pointer-events:none}
+#groups a.cur{color:#03211c;background:var(--teal);border-color:var(--teal)}
+#chapters{display:flex;gap:3px;margin-bottom:10px}
+#chapters button{position:relative;height:28px;border:0;border-radius:6px;background:#132a43;color:#93a9c2;font:inherit;font-size:11px;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0 4px}
+#chapters button .pf{position:absolute;left:0;top:0;bottom:0;background:rgba(46,230,201,.28);pointer-events:none}
 #chapters button span{position:relative}
 #chapters button.cur{color:#fff;outline:1px solid var(--teal)}
 .ctr{display:flex;align-items:center;gap:10px}
 .ctr button{font:inherit;color:#e6f0fa;background:#173451;border:1px solid #2a4b6e;border-radius:10px;height:34px;padding:0 14px;cursor:pointer}
 .ctr button.on{background:#0f5f58;border-color:var(--teal)}
-#bPlay{width:90px;background:var(--teal);color:#04201c;border-color:var(--teal);font-weight:700}
+#bPlay{width:90px;background:var(--teal);color:#03211c;border-color:var(--teal);font-weight:700}
 #scrub{flex:1;accent-color:var(--teal)}
 #time{font-variant-numeric:tabular-nums;min-width:96px;text-align:center}
 #hint{margin-top:6px;font-size:12px;color:#6f86a1;text-align:center}
+#more{display:flex;gap:10px;align-items:center}
+#bMenu{display:none}
 body.record #ui{display:none}
 body.record{cursor:none}
-body.record #hold{display:none}
-@media (max-width:760px){ #hint{display:none} .ctr{flex-wrap:wrap} }
+body.compact #ui{left:0;right:0;bottom:0;width:auto;transform:none;border-radius:0;border:0;padding:14px 10px 8px;box-shadow:none;backdrop-filter:none;
+  background:linear-gradient(180deg,rgba(4,8,16,0),rgba(4,8,16,.9) 40%)}
+body.compact #hint{display:none}
+body.compact #panel{display:none;position:absolute;right:8px;bottom:46px;width:min(380px,calc(100vw - 16px));max-height:calc(100vh - 64px);overflow:auto;
+  background:rgba(6,12,22,.97);border:1px solid #23405f;border-radius:12px;padding:10px;box-shadow:0 12px 30px rgba(0,0,0,.55)}
+body.compact #ui.open #panel{display:block}
+body.compact #groups{flex-wrap:wrap}
+body.compact #groups .sp{flex-basis:100%;height:0}
+body.compact #chapters{flex-direction:column;gap:2px;margin:6px 0 8px}
+body.compact #chapters button{flex:none!important;width:100%;height:24px;text-align:left;padding:0 8px;font-size:12px}
+body.compact #more{flex-wrap:wrap;gap:6px}
+body.compact .ctr{gap:8px}
+body.compact .ctr button{height:28px;padding:0 10px;font-size:12px;border-radius:8px}
+body.compact #bPlay{width:34px;padding:0;font-size:13px}
+body.compact #bMenu{display:inline-block;width:34px;padding:0;font-size:18px;line-height:1}
+body.compact #time{font-size:12px;min-width:82px}
+@media (prefers-reduced-motion: reduce){ #flash,#leak,#pulse{display:none} }
 </style>
 </head>
-<body>
-<div id="viewport"><div id="stage">
-
-  <div id="bokeh"><i style="left:12%;top:18%;width:260px;height:260px;background:#2dd4bf"></i><i style="left:78%;top:12%;width:340px;height:340px;background:#3b82f6"></i>
-    <i style="left:66%;top:70%;width:220px;height:220px;background:#a78bfa"></i><i style="left:6%;top:72%;width:300px;height:300px;background:#0ea5a4"></i></div>
+<body class="nocap">
+<div id="viewport"><div id="stage"><div id="cam">
+  <div id="pulse"></div>
   <div id="brand"><i></i><span data-k="product" data-upper="1">KAIROS</span></div>
-  <div id="chapter"><b id="chapNum">01</b><span id="chapName">The problem</span></div>
 
-  <!-- ============ 1. THE PROBLEM ============ -->
-  <section class="scene" id="s1">
-    <div class="glow" style="left:150px;top:150px"></div>
-    <div class="abs" data-in="0" data-fx="rise" style="left:330px;top:150px">
-      <div class="phone" id="s1phone"><div class="notch"></div>
-        <div class="screen">
-          <div class="statusbar"><span>10:02</span><span>●●● 5G</span></div>
-          <div class="abs" style="left:0;right:0;top:78px;text-align:center;font-size:84px;font-weight:300;color:#e8f0f9">10:02</div>
-          <div class="abs" style="left:0;right:0;top:182px;text-align:center;font-size:20px;color:#b9c9da">Thursday</div>
-          <div class="abs" id="s1stack" style="left:0;right:0;top:222px;height:480px"></div>
-          <div class="abs" data-in="7.0" data-fx="fade" style="left:0;right:0;bottom:22px;text-align:center">
-            <span class="tag" style="background:rgba(248,113,113,.18);color:#fecaca">SEEN · NO REPLY</span></div>
-        </div>
-      </div>
-    </div>
-    <div class="abs" style="left:860px;top:210px;width:980px">
-      <div class="title" data-in="0.3" style="font-size:118px">Meet <span data-k="borrower">Ravi</span>.</div>
-      <div data-in="1.1" style="margin-top:22px;display:flex;gap:18px;align-items:center">
-        <span class="sub" style="font-size:40px">His EMI is a few days late.</span><span class="chip violet">synthetic borrower</span></div>
-    </div>
-    <div class="abs" data-in="3.0" style="left:860px;top:470px;display:flex;align-items:baseline;gap:26px">
-      <span class="num" id="s1count" style="font-size:150px;color:var(--amber)">1</span>
-      <span style="font-size:42px;font-weight:650">identical reminders today<br><span style="color:var(--muted);font-weight:500;font-size:34px">Replies: <b style="color:var(--red)">0</b></span></span>
-    </div>
-    <div class="abs" data-in="0.9" style="left:860px;top:720px;width:900px;height:140px">
-      <div style="font-size:26px;color:var(--muted);margin-bottom:16px">Lender's budget, spent on every one</div>
-      <div class="track" style="left:0;top:52px;width:900px"><div class="fill" id="s1fill" style="width:100%"></div></div>
-      <div id="s1coins"></div>
-    </div>
-  </section>
-
-  <!-- ============ 2. WHY IT HAPPENS ============ -->
-  <section class="scene" id="s2">
-    <div class="abs" style="left:120px;top:136px">
-      <div class="kicker" data-in="0.1">The usual way</div>
-      <div class="title" data-in="0.3" style="margin-top:14px">A fixed calendar.</div>
-      <div class="sub" data-in="2.9" style="margin-top:16px">Same message. Everyone. Every channel.</div>
-    </div>
-    <div class="abs" id="s2grid" data-in="0.8" data-fx="fade" style="left:120px;top:380px;width:1680px;height:400px"></div>
-    <div class="abs" style="left:120px;top:812px;display:flex;gap:18px">
-      <span class="chip red" data-in="6.6" data-fx="pop" style="font-size:28px;padding:10px 24px">Costly</span>
-      <span class="chip red" data-in="7.2" data-fx="pop" style="font-size:28px;padding:10px 24px">Annoying</span>
-      <span class="chip red" data-in="7.8" data-fx="pop" style="font-size:28px;padding:10px 24px">Mostly ignored</span>
-    </div>
-  </section>
-
-  <!-- ============ 3. KAIROS DECIDES ============ -->
-  <section class="scene" id="s3">
-    <div class="abs" style="left:120px;top:116px">
-      <div class="kicker" data-in="0.1"><span data-k="product">Kairos</span> decides</div>
-      <div class="title" data-in="0.3" style="margin-top:14px">Every borrower. Every day.</div>
-      <div class="sub" data-in="1.8" style="margin-top:14px;color:var(--mint)">First question: contact, or wait?</div>
-    </div>
-    <div class="abs" data-in="1.2" data-fx="fade" style="left:1240px;top:118px;width:580px;height:200px">
-      <div id="s3dots" class="abs" style="left:0;top:0;width:580px;height:156px"></div>
-      <div class="abs" style="left:0;top:166px;font-size:18px;color:var(--faint)">each dot is a borrower · <span style="color:var(--teal)">teal: contact today</span> · grey: wait</div>
-    </div>
-
-    <div class="card bcard" data-in="0.9" data-fx="left" style="left:120px;top:370px;width:540px;height:420px">
-      <div style="display:flex;gap:22px;align-items:center">
-        <div class="avatar">R</div>
-        <div><div style="font-size:40px;font-weight:750" data-k="borrower">Ravi</div><span class="chip violet" style="font-size:18px;padding:4px 12px">synthetic</span></div>
-      </div>
-      <div class="facts">
-        <div class="fact"><b style="background:var(--amber)"></b>EMI 6 days late</div>
-        <div class="fact"><b style="background:var(--sms)"></b>Read the SMS, no reply</div>
-        <div class="fact"><b style="background:var(--wa)"></b>Usually free in the evening</div>
-        <div class="fact"><b style="background:var(--violet)"></b>Prefers Hindi</div>
-      </div>
-    </div>
-    <svg class="abs" data-in="2.6" data-fx="fade" style="left:660px;top:370px" width="100" height="420">
-      <path d="M0 210 C 50 210, 40 112, 96 112" stroke="#2a4b6e" stroke-width="3" fill="none"/>
-      <path d="M0 210 C 50 210, 40 272, 96 272" stroke="#2a4b6e" stroke-width="3" fill="none"/>
-    </svg>
-    <div class="pill" id="s3contact" data-in="2.7" data-fx="pop" style="left:752px;top:438px">Contact</div>
-    <div class="pill" id="s3wait" data-in="2.9" data-fx="pop" style="left:752px;top:598px">Wait</div>
-
-    <div class="optcol" data-in="6.4" style="left:1080px;top:376px"><h4>Channel</h4>
-      <div class="opt">SMS</div><div class="opt">WhatsApp</div><div class="opt">Email</div><div class="opt">Voice call</div></div>
-    <div class="optcol" data-in="7.6" style="left:1350px;top:376px"><h4>Time</h4>
-      <div class="opt">Morning</div><div class="opt">Afternoon</div><div class="opt">Evening, 7:30 pm</div><div class="opt">Not today</div></div>
-    <div class="optcol" data-in="8.8" style="left:1620px;top:376px;width:230px"><h4>Message</h4>
-      <div class="opt">Due reminder</div><div class="opt">Gentle check-in</div><div class="opt">Pay-link</div><div class="opt">Firm notice</div></div>
-
-    <div class="card decision" data-in="11.4" style="left:1040px;top:752px;width:800px;height:108px;border-color:rgba(45,212,191,.55)">
-      <div><div class="big">WhatsApp · 7:30 pm · check-in, Hindi</div>
-      <div class="checks">Checked twice by Aladdin: ✓ consent ✓ quiet hours ✓ cap ✓ budget</div></div>
-    </div>
-  </section>
-
-  <!-- ============ 4. RAVI'S JOURNEY ============ -->
-  <section class="scene" id="s4">
-    <div class="glow" style="left:60px;top:200px"></div>
-    <div class="abs" data-in="0" data-fx="left" style="left:220px;top:150px">
-      <div class="phone"><div class="notch"></div>
-        <div class="screen">
-          <div class="statusbar"><span id="s4clock">10:02</span><span>●●● 5G</span></div>
-          <!-- A: SMS -->
-          <div class="app" data-in="0.2" data-out="3.4" data-fx="fade">
-            <div class="apphead"><div class="av" style="background:#3b82f6">L</div><div><div class="nm">Lender</div><div class="st">SMS · registered sender</div></div></div>
-            <div class="bub in">Hi Ravi, your EMI for Loan A is due. You can pay securely with the link in the lender's app.</div>
-            <div class="meta">Read 10:02</div>
-            <span class="tag" data-in="1.4" data-fx="pop" style="background:rgba(147,169,194,.15);color:#cbd5e1">NO REPLY</span>
-          </div>
-          <!-- B: WhatsApp -->
-          <div class="app" data-in="3.5" data-out="8.4" data-fx="fade" style="background:linear-gradient(180deg,#0d1826,#07111f)">
-            <div class="apphead"><div class="av" style="background:#0e7490">L</div><div><div class="nm">Lender · verified</div><div class="st">WhatsApp chat · 7:32 pm</div></div></div>
-            <div class="bub wa-in" data-in="3.9" data-fx="rise">Namaste Ravi ji. Just checking in about your EMI. Can we help?</div>
-            <div class="bub wa-out" data-in="6.6" data-fx="rise">need time, salary late hai</div>
-            <div class="bub wa-in" data-in="7.7" data-fx="rise">No problem. We'll call you to fix a date that works.</div>
-          </div>
-          <!-- C: Voice -->
-          <div class="app" data-in="8.5" data-out="22.1" data-fx="fade" style="background:linear-gradient(180deg,#10223a,#07111f)">
-            <div style="text-align:center;margin-top:6px"><div class="avatar" style="margin:0 auto;width:74px;height:74px;font-size:30px;background:linear-gradient(135deg,#0d9488,#6d28d9)">◉</div>
-              <div style="font-size:20px;font-weight:700;margin-top:10px">Voice bot · Ritu</div><div style="font-size:15px;color:var(--muted)">Sarvam · Hindi · on call</div></div>
-            <div class="wave" id="s4wave"></div>
-            <div class="bub in" data-in="11.6" data-fx="rise" style="font-size:17px">रवि जी, क्या आप 27 तारीख तक भुगतान कर पाएँगे?<span class="tr">Can you pay by the 27th?</span></div>
-            <div class="bub out" data-in="15.9" data-fx="rise" style="font-size:17px">Haan, 27 tareekh tak kar dunga.<span class="tr" style="color:#c7f3ec">Yes, I'll pay by the 27th.</span></div>
-            <div class="bub in" data-in="18.5" data-fx="rise" style="font-size:17px">ठीक है, तो 27 तारीख पक्की। धन्यवाद!<span class="tr">Okay, the 27th is confirmed. Thank you!</span></div>
-          </div>
-          <!-- D: Paused -->
-          <div class="app" data-in="22.2" data-out="23.5" data-fx="fade">
-            <div class="apphead" style="border:0"><div><div class="nm" style="font-size:22px">Kairos · Ravi's queue</div><div class="st">Promise: pay by the 27th</div></div></div>
-            <div class="rem"><span>SMS · tomorrow</span><span class="tag" style="background:rgba(251,191,36,.15);color:#fde68a">❚❚ PAUSED</span></div>
-            <div class="rem"><span>WhatsApp · Saturday</span><span class="tag" style="background:rgba(251,191,36,.15);color:#fde68a">❚❚ PAUSED</span></div>
-            <div class="rem"><span>Voice · Monday</span><span class="tag" style="background:rgba(251,191,36,.15);color:#fde68a">❚❚ PAUSED</span></div>
-            <div style="font-size:17px;color:var(--muted);margin-top:14px;text-align:center">No nudges until the 27th</div>
-          </div>
-          <!-- E: Verified -->
-          <div class="app" data-in="23.6" data-fx="fade">
-            <div style="text-align:center;margin:6px 0 18px"><div style="width:84px;height:84px;margin:0 auto;border-radius:50%;background:var(--ok);display:grid;place-items:center;font-size:48px;color:#04201c;font-weight:900">✓</div>
-              <div style="font-size:23px;font-weight:750;margin-top:12px">Payment verified</div><div style="font-size:16px;color:var(--muted)">Loan A · confirmed by the bank</div></div>
-            <div style="font-size:14px;letter-spacing:.12em;color:var(--faint);margin:0 4px 8px">LOAN A REMINDERS</div>
-            <div class="rem"><span>WhatsApp · Saturday</span><span class="tag" style="background:rgba(248,113,113,.15);color:#fecaca">CANCELLED</span><i class="strike"></i></div>
-            <div class="rem"><span>Voice · Monday</span><span class="tag" style="background:rgba(248,113,113,.15);color:#fecaca">CANCELLED</span><i class="strike"></i></div>
-            <div style="font-size:14px;letter-spacing:.12em;color:var(--faint);margin:16px 4px 8px">LOAN B</div>
-            <div class="rem" style="border:1px solid rgba(45,212,191,.4)"><span>WhatsApp · next week</span><span class="tag" style="background:rgba(45,212,191,.15);color:var(--mint)">STILL SCHEDULED</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="abs" style="left:760px;top:120px">
-      <div class="kicker" data-in="0.1">How it works</div>
-      <div class="title" data-in="0.3" style="margin-top:14px;font-size:72px">One borrower's journey.</div>
-    </div>
-    <div class="abs" id="s4steps" style="left:760px;top:300px;width:1060px;height:560px">
-      <div id="s4rail" style="top:26px;height:470px"></div>
-      <div class="step" style="top:0"><div class="n">1</div><div class="tx">SMS read, no reply<small>Delivered and read is not a reply</small></div></div>
-      <div class="step" style="top:94px"><div class="n">2</div><div class="tx">WhatsApp, in the evening<small>When Ravi is usually free</small></div></div>
-      <div class="step" style="top:188px"><div class="n">3</div><div class="tx">Ravi: “need time”<small>Understood, even in Hinglish</small></div></div>
-      <div class="step" style="top:282px"><div class="n">4</div><div class="tx">Voice bot agrees a date and reads it back<small>In Hindi, with the Ritu voice</small></div></div>
-      <div class="step" style="top:376px"><div class="n">5</div><div class="tx">Reminders pause<small>No pressure while he has a plan</small></div></div>
-      <div class="step" style="top:470px"><div class="n">6</div><div class="tx">Payment verified: only that loan's reminders cancel<small>Loan B keeps its own schedule</small></div></div>
-    </div>
-  </section>
-
-
-  <!-- ============ 4b. ON THE RECORD (real CRM screen) ============ -->
-  <section class="scene" id="s4b">
-    <div class="abs" style="left:120px;top:110px">
-      <div class="kicker" data-in="0.1">On the record</div>
-      <div class="title" data-in="0.3" style="margin-top:12px;font-size:64px">Every step, in the CRM.</div>
-    </div>
-    <div class="laptop" data-in="0.0" data-fx="fade" style="left:150px;top:262px">
-      <div class="lid"><div class="lscreen" style="padding:0;background:#0f1518">
-        <img src="assets/real/crm_borrower.jpg" alt="Kairos CRM borrower page (synthetic borrower)" style="position:absolute;left:0;top:0;width:896px;transform-origin:0 0"
-             data-kb="0,0,1,-262,-372,1.55,3.6,8.6">
+  <!-- k1 COLD OPEN -->
+  <section class="scene" id="k1">
+    <div class="aislot" data-slot="slot_phone_night" style="inset:0;opacity:.5"><div class="fallback"></div></div>
+    <div class="abs" data-beat="0" data-fx="fade" data-depth="1.4" style="left:300px;top:150px">
+      <div class="phone" id="k1phone"><div class="notch"></div><div class="screen">
+        <div class="statusbar"><span>23:47</span><span>●●● 5G</span></div>
+        <div class="abs" style="left:0;right:0;top:76px;text-align:center;font-size:84px;font-weight:300">23:47</div>
+        <div class="abs" id="k1stack" style="left:0;right:0;top:220px;height:520px;overflow:hidden"></div>
       </div></div>
-      <div class="base"></div>
     </div>
-    <div class="abs" style="left:1210px;top:300px;width:600px">
-      <div data-in="4.4" data-fx="right" style="margin-bottom:16px"><span class="chip" style="font-size:24px;border-color:rgba(52,211,153,.6);color:#bbf7d0;background:rgba(52,211,153,.12)">✓ Loan A · EMI cleared, verified by the bank</span></div>
-      <div data-in="5.0" data-fx="right" style="margin-bottom:16px"><span class="chip red" style="font-size:24px">Loan A reminder · cancelled</span></div>
-      <div data-in="5.6" data-fx="right" style="margin-bottom:28px"><span class="chip teal" style="font-size:24px">Loan B reminder · still scheduled</span></div>
-      <div data-in="6.4" data-fx="fade" style="font-size:22px;color:var(--muted);line-height:1.4">Delivery, the borrower's words and the bank's confirmation are kept apart. Only a verified payment clears an EMI.</div>
-    </div>
-    <div class="abs realtag" data-in="1.0" data-fx="fade" style="left:150px;top:900px"><b>REAL SCREEN</b>Kairos CRM · synthetic borrower B-1042 · SIMULATED data</div>
-  </section>
-
-  <!-- ============ 5. SAFETY ============ -->
-  <section class="scene" id="s5">
-    <div class="abs" style="left:120px;top:116px">
-      <div class="kicker" data-in="0.1">Safety first</div>
-      <div class="title" data-in="0.3" style="margin-top:14px">Safe by design.</div>
-    </div>
-    <div class="abs" data-in="1.8" data-fx="pop" style="left:760px;top:182px"><span class="chip violet" style="font-size:24px;padding:10px 20px"><b style="color:#fff">Aladdin</b>&nbsp;· our supervisor · checks every message, twice</span></div>
-    <div class="card scard" data-in="5.9" style="left:120px;top:300px">
-      <div class="k">Opt-out</div><h3>STOP means stop.<br>Everywhere.</h3>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 4px"><span class="chip red" data-in="8.2" data-fx="pop" style="font-size:18px;padding:5px 12px">Blocked by Aladdin: STOP</span><div class="bub out" style="margin:0;font-weight:800;letter-spacing:.06em">STOP</div></div>
-      <div class="chan" id="c1">SMS <span class="s">ON</span></div>
-      <div class="chan" id="c2">WhatsApp <span class="s">ON</span></div>
-      <div class="chan" id="c3">Email <span class="s">ON</span></div>
-      <div class="chan" id="c4">Voice call <span class="s">ON</span></div>
-    </div>
-    <div class="card scard" data-in="9.4" style="left:695px;top:300px">
-      <div class="k">Fraud check</div><h3>Fake payment proof?<br>Caught.</h3>
-      <div class="shot" id="s5receipt" style="margin-top:18px;height:290px">
-        <img src="assets/real/cm03_fake_caught.jpg" alt="Kairos CM-03 console: edited payment screenshot flagged" style="width:1632px;left:-858px;top:-56px" data-kb="0,0,1,0,-190,1,9.8,15.8">
-        <div class="scan" id="s5scan"></div>
-        <div class="stamp" data-in="11.2" data-fx="pop">EDITED SCREENSHOT<br><span style="font-size:15px">FRAUD SUSPECT · HANDED OFF</span></div>
-      </div>
-      <div class="realtag" style="margin-top:10px"><b>REAL SCREEN</b>CM-03 console</div>
-    </div>
-    <div class="card scard" data-in="12.0" style="left:1270px;top:300px">
-      <div class="k">Hardship</div><h3>Hardship goes<br>to a person.</h3>
-      <div class="bub wa-out" data-in="12.6" data-fx="rise" style="margin:20px 0 0 auto;max-width:340px">Meri naukri chali gayi<span class="tr" style="color:#bbf7d0">I lost my job</span></div>
-      <div class="human" data-in="13.5" data-fx="rise"><div class="av">👤</div>
-        <div><div style="font-size:24px;font-weight:700">Handed to a human officer</div><div style="font-size:18px;color:#fde68a">Bots stop · reminders paused</div></div></div>
-    </div>
-    <div class="abs" data-in="14.5" style="left:0;right:0;top:834px;text-align:center">
-      <span class="chip teal" style="font-size:24px">🔒 Nothing is shared until identity is confirmed with a one-time code</span></div>
-  </section>
-
-  <!-- ============ 6. PEOPLE IN CHARGE ============ -->
-  <section class="scene" id="s6">
-    <div class="backdrop" data-depth="0.4" style="background-image:url(assets/real/journey_report.jpg);opacity:.05"></div>
-    <div class="abs" style="left:120px;top:116px">
-      <div class="kicker" data-in="0.1">Human in the loop</div>
-      <div class="title" data-in="0.3" style="margin-top:14px">People stay in charge.</div>
-    </div>
-    <div class="card" data-in="0.7" style="left:360px;top:320px;width:1200px;height:300px;padding:38px 44px">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div style="font-size:22px;letter-spacing:.16em;color:var(--faint);font-weight:700">APPROVAL NEEDED</div>
-        <span class="chip amber" id="s6status">Waiting for a supervisor</span></div>
-      <div style="font-size:40px;font-weight:700;margin-top:18px">Voice calls for 1,240 borrowers, 31 to 60 days late</div>
-      <div style="font-size:24px;color:var(--muted);margin-top:8px">Within budget · quiet hours respected · consent checked</div>
-      <div style="display:flex;gap:18px;margin-top:30px">
-        <span class="btn pri" id="s6approve">Approve</span><span class="btn">Hold</span><span class="btn">Override</span></div>
-    </div>
-    <svg id="s6cursor" viewBox="0 0 24 24"><path d="M3 2l7 19 2.6-7.4L20 11z" fill="#fff" stroke="#0b1a2c" stroke-width="1.4"/></svg>
-    <div id="s6ripple"></div>
-    <div class="abs" style="left:360px;top:660px;width:1200px">
-      <div class="logrow" data-in="3.6"><span class="tm">17:42</span><span>Supervisor approved the voice calls · Aladdin re-checked: send eligible</span><span class="chip teal" style="margin-left:auto;font-size:18px">audited</span></div>
-      <div class="logrow" data-in="4.4"><span class="tm">17:43</span><span>Operator put 3 accounts on hold</span><span class="chip teal" style="margin-left:auto;font-size:18px">audited</span></div>
+    <div class="abs" style="left:840px;top:250px">
+      <div class="kt m" data-beat="0" data-hit="stab">Same message.</div>
+      <div class="kt m" data-beat="4" data-hit="stab">Every borrower.</div>
+      <div class="kt m accent" data-beat="8" data-hit="stab">Every day.</div>
+      <div class="sub" data-beat="12" data-hit="tom" data-fx="up" style="margin-top:44px;font-size:40px"><b class="num" id="k1n" style="color:var(--fg)">0</b> reminders · <b class="warn">0 replies</b></div>
     </div>
   </section>
 
-  <!-- ============ 7. IT LEARNS ============ -->
-  <section class="scene" id="s7">
-    <div class="abs" style="left:120px;top:116px">
-      <div class="kicker" data-in="0.1">Learning</div>
-      <div class="title" data-in="0.3" style="margin-top:14px">It learns from every reply.</div>
-    </div>
-    <div class="card" data-in="0.5" style="left:120px;top:290px;width:880px;height:580px;padding:28px 30px">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div style="font-size:24px;font-weight:700">Replies per message, by channel</div>
-        <div style="display:flex;gap:16px;font-size:18px;color:var(--muted)">
-          <span><i style="display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--wa)"></i> WhatsApp</span>
-          <span><i style="display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--sms)"></i> SMS</span>
-          <span><i style="display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--violet)"></i> Voice</span></div>
-      </div>
-      <svg class="abs" id="s7chart" style="left:30px;top:80px" width="820" height="290" viewBox="0 0 820 290"></svg>
-      <div class="abs" id="s7call" data-in="5.6" data-fx="pop" style="left:300px;top:92px">
-        <span class="chip teal" style="font-size:21px">WhatsApp got worse → <span data-k="product">Kairos</span> switched by itself</span></div>
-      <div class="abs" style="left:30px;top:410px;width:820px">
-        <div style="font-size:20px;color:var(--muted);margin-bottom:10px">Where <span data-k="product">Kairos</span> sends messages</div>
-        <div class="abs" id="s7bar" style="left:0;top:38px;width:820px;height:56px;border-radius:14px;overflow:hidden;background:#0b1a2c">
-          <div class="seg" id="sgW" style="background:var(--wa)"></div><div class="seg" id="sgS" style="background:var(--sms)"></div><div class="seg" id="sgV" style="background:var(--violet)"></div></div>
-        <div class="abs" style="left:0;top:104px;font-size:16px;color:var(--faint)">Illustrative · from a SIMULATED campaign</div>
-      </div>
-    </div>
-    <div class="abs" data-in="7.9" style="left:1040px;top:290px;width:760px;height:580px">
-      <div style="font-size:24px;font-weight:700;margin-bottom:6px">Borrowers move between layers</div>
-      <div style="font-size:18px;color:var(--muted)">No reply: step up · Replied or paid: step back down</div>
-      <div id="s7lanes" class="abs" style="left:0;top:86px;width:760px;height:340px"></div>
-      <div class="abs" style="left:0;top:446px;width:760px;display:flex;flex-wrap:wrap;gap:12px">
-        <span class="chip" data-in="12.8" data-fx="pop" style="font-size:20px"><b style="color:var(--fg)">Region A</b> evenings work best</span>
-        <span class="chip" data-in="13.4" data-fx="pop" style="font-size:20px"><b style="color:var(--fg)">Region B</b> voice calls in Tamil</span>
-        <span class="chip teal" data-in="14.0" data-fx="pop" style="font-size:20px"><b data-k="borrower">Ravi</b> WhatsApp after 7 pm</span>
-      </div>
+  <!-- k2 THE PROBLEM -->
+  <section class="scene" id="k2">
+    <div class="abs" id="k2grid" style="left:120px;top:150px;width:1680px;height:780px;opacity:.28"></div>
+    <div class="center kt l" data-beat="1" data-outbeat="4" data-hit="stab" style="top:330px">Expensive.</div>
+    <div class="center sub" data-beat="1.5" data-outbeat="4" style="top:560px">₹ <b class="num warn" data-count="spend" data-atbeat="1.5" data-cbeats="2.5">0</b> spent on reminders nobody reads</div>
+    <div class="center kt l" data-beat="4" data-outbeat="7" data-hit="stab" style="top:330px">Annoying.</div>
+    <div class="center kt l warn" data-beat="7" data-outbeat="12" data-hit="stab" style="top:330px">Ignored.</div>
+    <div class="center" data-beat="7.5" data-outbeat="12" style="top:580px"><span class="chip red" style="font-size:30px">0 replies</span></div>
+    <div class="center kt s" data-beat="12" data-fx="up" data-hit="whoosh" style="top:430px">There's a better way.</div>
+  </section>
+
+  <!-- k3 MEET KAIROS (drop 1) -->
+  <section class="scene" id="k3">
+    <div class="aislot" data-slot="slot_data_flow" style="inset:0;opacity:.6"><div class="fallback"><svg id="k3flow" width="1920" height="1080" viewBox="0 0 1920 1080"></svg></div></div>
+    <div class="center kt s" data-beat="0" data-hit="impact" style="top:300px;color:var(--muted)">Meet</div>
+    <div class="center kt xl" data-beat="0" style="top:380px;text-shadow:0 0 80px rgba(46,230,201,.45)"><span data-k="product">Kairos</span>.</div>
+    <div class="center sub" data-beat="4" data-fx="up" style="top:720px">The decision engine for collections.</div>
+  </section>
+
+  <!-- k4 IT DECIDES -->
+  <section class="scene" id="k4">
+    <div class="aislot" data-slot="slot_city_timelapse" style="inset:0;opacity:.35"><div class="fallback"></div></div>
+    <div class="abs" id="k4dots" style="left:880px;top:190px;width:920px;height:700px"></div>
+    <div class="abs" style="left:120px;top:260px">
+      <div class="kt m" data-beat="0" data-hit="stab">It decides.</div>
+      <div class="kt m accent" data-beat="2" data-hit="tom">Per person.</div>
+      <div class="kt m accent" data-beat="4" data-hit="tom">Per day.</div>
+      <div class="fine" data-beat="5" data-fx="fade" style="margin-top:30px">each dot is a borrower · teal: contact today · grey: wait</div>
     </div>
   </section>
 
-  <!-- ============ 8. PROOF (payoff): one promise, three proof groups ============ -->
-  <section class="scene" id="s8">
-    <div class="abs" style="left:120px;top:116px">
-      <div class="kicker" data-in="0.1">Proof</div>
-      <div class="title" data-in="0.3" style="margin-top:14px">How do we know?</div>
+  <!-- k5 CONTACT OR WAIT -->
+  <section class="scene" id="k5">
+    <div class="card" data-beat="0" data-fx="left" style="left:120px;top:300px;width:520px;height:400px;padding:36px">
+      <div style="display:flex;gap:20px;align-items:center"><div style="width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,#1e40af,#0d9488);display:grid;place-items:center;font-size:40px;font-weight:800">R</div>
+        <div><div style="font-size:40px;font-weight:800">Ravi</div><span class="chip" style="font-size:16px;padding:4px 12px">synthetic borrower</span></div></div>
+      <div style="margin-top:30px;font-size:27px;line-height:1.9;color:#d8e4f1">EMI 6 days late<br>Read the SMS · no reply<br>Free in the evening · prefers Hindi</div>
     </div>
-    <div class="abs" data-in="0.4" data-fx="fade" style="right:120px;top:196px"><span id="simlabel" data-k="dataLabel">SIMULATED data</span></div>
-    <div class="card" data-in="0.6" style="left:120px;top:290px;width:1080px;height:310px;padding:26px 36px">
-      <div class="slab" style="color:var(--teal)">1 · MORE BACK PER RUPEE</div>
-      <div class="num" data-in="5.4" data-fx="pop" style="font-size:132px;color:var(--teal);line-height:1.05;width:300px;transform-origin:0 50%">~<span data-k="numbers.recoveryX">2</span>×</div>
-      <div style="font-size:25px;font-weight:650;margin-top:6px;width:440px;line-height:1.25">money recovered for every rupee spent, vs the lender's own <span data-k="numbers.baselineDays">10</span>-day schedule</div>
-      <div class="bar" id="s8b1" style="left:500px;top:74px;background:#2a3d55;color:#cbd5e1"><span>Lender's schedule · <span data-k="numbers.recoveryBaseline">272</span></span></div>
-      <div class="bar" id="s8b2" style="left:500px;top:146px;background:linear-gradient(90deg,var(--teal2),var(--teal));color:#04201c"><span><span data-k="product">Kairos</span> · <span data-k="numbers.recoveryKairos">517</span></span></div>
-      <div class="abs" data-in="6.6" data-fx="fade" style="left:500px;top:218px;font-size:18px;color:var(--muted);width:540px;line-height:1.4">₹ recovered per ₹ spent · one fresh test run · same budget and caps<br><b style="color:var(--fg)" data-k="numbers.repliesLift">+80% to +105%</b> more replies per rupee · more verified payments on every fresh test</div>
-    </div>
-    <div class="card" data-in="6.8" style="left:1240px;top:290px;width:560px;height:310px;padding:26px 36px;border-color:rgba(52,211,153,.5)">
-      <div class="slab" style="color:var(--ok)">2 · SAFE BY DESIGN</div>
-      <div class="num" style="font-size:120px;color:var(--ok);line-height:1.05"><span data-count="ruleBreaches" data-at="7.0" data-cdur=".1">0</span></div>
-      <div style="font-size:30px;font-weight:700">rule breaches</div>
-      <div data-in="10.4" data-fx="fade" style="font-size:21px;color:var(--muted);margin-top:8px;line-height:1.35"><b style="color:var(--fg)"><span data-k="numbers.attacksPassed">49</span>/<span data-k="numbers.attacksTotal">49</span></b> attacks blocked · <b style="color:var(--fg)"><span data-k="numbers.fakesCaught">127</span>/<span data-k="numbers.fakesTotal">127</span></b> fake proofs caught</div>
-    </div>
-    <div class="abs slab" data-in="11.0" data-fx="fade" style="left:120px;top:624px;color:var(--sms)">3 · RUNS ITSELF, PEOPLE IN CHARGE</div>
-    <div class="abs" style="left:120px;top:656px;display:flex;gap:21px">
-      <div class="card tile" data-in="11.2" style="position:relative;width:546px"><div class="num"><span data-count="waResolvedPct" data-dec="1" data-at="11.2" data-cdur="1.2">0</span>%</div><p>of WhatsApp chats resolved without a human; the hard ones go to people</p></div>
-      <div class="card tile" data-in="11.6" style="position:relative;width:546px"><div class="num"><span data-count="decisions" data-at="11.6" data-cdur="1.4">0</span></div><p>daily decisions in <span data-k="numbers.decisionsTime">about 2 minutes</span>; same input, same result</p></div>
-      <div class="card tile" data-in="12.0" style="position:relative;width:546px"><div class="num"><span data-k="numbers.voiceBots">6</span> · <span data-k="numbers.languages">8</span></div><p>voice bots · Indian languages, with a human handoff</p></div>
-    </div>
-    <div class="abs" data-in="12.8" data-fx="fade" style="left:120px;top:830px;width:1680px;font-size:18px;color:var(--faint);line-height:1.5">
-      Also verified: <span data-k="numbers.understandingPct">95</span>% message understanding, <span data-k="numbers.stopHardshipRecallPct">100</span>% STOP and hardship recall · <span data-k="numbers.disclosuresBeforeOtp">0</span> disclosures before the one-time code · <span data-k="numbers.concurrentChats">500</span> chats at once.<br>
-      Kairos vs the lender's own 10-day schedule (CN10) on test runs never used for tuning: ₹ recovered per ₹ spent <span data-k="numbers.recoveryExamples">517 vs 272</span> (<span data-k="numbers.recoveryRange">1.7× to 2.3×</span>), same budget cap (Kairos spent less of it). All figures SIMULATED.</div>
-  </section>
-
-  <!-- ================= CHAPTER 2: THE OPERATOR'S DAY ================= -->
-  <!-- Operator cut intro (only in ?cut=operator) -->
-  <section class="scene" id="oi">
-    <div class="glow" style="left:610px;top:100px"></div>
-    <div class="center" data-in="0.2" style="top:250px"><span class="kicker"><span data-k="product">Kairos</span>, for the collections team</span></div>
-    <div class="center title" data-in="0.5" style="top:310px;font-size:124px">A day at the desk.</div>
-    <div class="center" data-in="3.4" style="top:520px;display:flex;justify-content:center;gap:24px;align-items:center">
-      <div class="avatar" style="background:linear-gradient(135deg,#b45309,#0d9488)">P</div>
-      <div style="text-align:left"><div style="font-size:46px;font-weight:750" data-k="operator.name">Priya</div>
-        <div style="font-size:26px;color:var(--muted)">runs collections for a lender &nbsp;<span class="chip violet" style="font-size:18px;padding:4px 12px">synthetic</span></div></div>
+    <div class="pill" id="k5c" style="left:720px;top:360px">Contact</div>
+    <div class="pill" id="k5w" style="left:720px;top:500px">Wait</div>
+    <div class="abs" style="left:1100px;top:300px">
+      <div class="kt m" data-beat="0" data-hit="stab">Contact.</div>
+      <div class="kt m dim" data-beat="2" data-hit="tom">Or wait.</div>
+      <div data-beat="5" data-hit="stab" data-fx="pop" style="margin-top:40px"><span class="chip teal" style="font-size:30px">✓ WhatsApp · 7:30 pm · Hindi</span></div>
     </div>
   </section>
 
-  <!-- O1. Morning, coffee -->
-  <section class="scene" id="o1">
-    <div class="abs" style="left:120px;top:116px">
-      <div class="kicker" data-in="0.1"><span class="opchap">Chapter 2 · </span>The operator's day</div>
-      <div class="title" data-in="0.3" style="margin-top:14px;font-size:104px">9:00 am.</div>
-      <div class="sub" data-in="1.0" style="margin-top:16px">Meet <b style="color:var(--fg)" data-k="operator.name">Priya</b>, collections head.
-        <span class="chip violet" style="font-size:18px;padding:4px 12px;vertical-align:6px">synthetic</span></div>
+  <!-- k6 EVERY CHANNEL -->
+  <section class="scene" id="k6">
+    <div class="abs" style="left:120px;top:150px;width:1680px;display:grid;grid-template-columns:repeat(4,1fr);gap:28px">
+      <div data-beat="0" data-hit="stab"><div class="kt s">SMS.</div><div class="card" style="position:relative;margin-top:24px;height:430px;padding:26px">
+        <div class="bub in" style="font-size:20px">Hi Ravi, your EMI is due. Pay securely in the lender's app.</div><div class="fine">Read 10:02 · no reply</div></div></div>
+      <div data-beat="1.5" data-hit="stab"><div class="kt s">WhatsApp.</div><div class="card" style="position:relative;margin-top:24px;height:430px;padding:26px">
+        <div class="bub in" style="font-size:20px">Namaste Ravi ji, can we help with your EMI?</div><div class="bub out" style="font-size:20px">need time, salary late hai</div><div class="fine">7:32 pm · replied</div></div></div>
+      <div data-beat="3" data-hit="stab"><div class="kt s">Voice.</div><div class="card" style="position:relative;margin-top:24px;height:430px;padding:26px;text-align:center">
+        <div style="font-size:24px;font-weight:800;margin-top:20px">Ritu · voice agent</div><div class="fine">Sarvam · 8 languages</div><div class="wave" id="k6wave" style="margin-top:60px"></div></div></div>
+      <div data-beat="4.5" data-hit="stab"><div class="kt s accent">Human.</div><div class="card" style="position:relative;margin-top:24px;height:430px;padding:26px">
+        <div style="font-size:24px;font-weight:800">Handed to a person</div><div class="fine" style="margin-top:10px">Job loss, disputes, anything sensitive goes to the lender's team.</div>
+        <div class="chip ok" style="margin-top:40px;font-size:20px">Bots step back</div></div></div>
     </div>
-    <div class="abs" data-in="4.2" style="left:120px;top:470px;width:660px">
-      <div style="font-size:56px;font-weight:750;line-height:1.1">Today's plan is<br><span style="color:var(--teal)">already done.</span></div>
-      <div data-in="7.8" style="font-size:30px;color:var(--muted);margin-top:22px">Who to contact, when and how.<br><b style="color:var(--fg)">Nothing for her to set up.</b></div>
-    </div>
-    <div class="abs" data-in="1.2" data-fx="fade" style="left:660px;top:742px">
-      <div class="mug" style="left:0;top:0"></div>
-      <div class="steam o1st" style="left:22px;top:-56px"></div><div class="steam o1st" style="left:44px;top:-64px"></div><div class="steam o1st" style="left:66px;top:-56px"></div>
-    </div>
-    <div class="laptop" data-in="1.6" data-fx="right" style="left:880px;top:220px">
-      <div class="lid"><div class="lscreen">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div><div style="font-size:16px;letter-spacing:.2em;color:var(--teal);font-weight:800">KAIROS · TODAY</div>
-            <div style="font-size:32px;font-weight:750;margin-top:4px">Good morning, <span data-k="operator.name">Priya</span></div></div>
-          <span class="chip teal" data-in="2.8" data-fx="pop" style="font-size:19px">✓ Plan ready</span></div>
-        <div style="display:grid;grid-template-columns:1.25fr 1fr 1fr 1fr;gap:12px;margin-top:20px">
-          <div class="mini" data-in="2.4"><div class="ml">DUE TODAY</div><div class="mv"><span data-count="operator.dueToday" data-at="2.4" data-cdur="1.4">0</span></div></div>
-          <div class="mini" data-in="3.0"><div class="ml">CONTACT</div><div class="mv" style="color:var(--teal)"><span data-count="operator.contactToday" data-at="3.0" data-cdur="1.2">0</span></div></div>
-          <div class="mini" data-in="3.4"><div class="ml">WAIT</div><div class="mv" style="color:var(--muted)"><span data-count="operator.waitToday" data-at="3.4" data-cdur="1.2">0</span></div></div>
-          <div class="mini" data-in="3.8"><div class="ml">TO SET UP</div><div class="mv" style="color:var(--ok)">0</div></div>
+    <div class="center sub" data-beat="6" data-fx="up" style="top:800px">Kairos picks one. Or none.</div>
+  </section>
+
+  <!-- k6b RITU, LIVE: the agent switches language -->
+  <section class="scene" id="k6b">
+    <div class="abs" data-beat="0" data-fx="left" data-depth="1.3" style="left:200px;top:150px">
+      <div class="phone"><div class="notch"></div><div class="screen">
+        <div class="statusbar"><span>19:41</span><span>●●● 5G</span></div>
+        <div class="abs" style="left:20px;right:20px;top:70px;text-align:center">
+          <div style="width:84px;height:84px;margin:0 auto;border-radius:50%;background:linear-gradient(135deg,#0d9488,#6d28d9);display:grid;place-items:center;font-size:34px">◉</div>
+          <div style="font-size:22px;font-weight:800;margin-top:12px">Ritu · Kairos voice agent</div>
+          <div class="fine" id="k6blang">Hindi · on call</div>
+          <div class="wave" id="k6bwave" style="margin-top:22px"></div>
         </div>
-        <div style="font-size:15px;letter-spacing:.14em;color:var(--faint);font-weight:700;margin:22px 0 10px" data-in="5.0">DECIDED BY KAIROS · WHO · WHEN · HOW</div>
-        <div class="drow" data-in="5.4"><span><b>Ravi</b> · WhatsApp</span><span style="color:var(--muted)">7:30 pm · check-in, Hindi</span></div>
-        <div class="drow" data-in="5.9"><span><b>Asha</b> · wait</span><span style="color:var(--muted)">resting works better today</span></div>
-        <div class="drow" data-in="6.4"><span><b>B-2001</b> · voice bot (Advait)</span><span style="color:var(--muted)">11:00 am · promise follow-up</span></div>
-        <div class="drow" data-in="6.9"><span><b>Kiran</b> · blocked by Aladdin</span><span style="color:var(--muted)">said STOP · all channels quiet</span></div>
+        <div class="abs" style="left:20px;right:20px;top:420px">
+          <div class="bub out" data-beat="11" data-fx="up" style="font-size:18px">Yes please, send it.</div>
+          <div class="bub in" data-beat="15" data-fx="up" data-hit="click" style="font-size:18px;border:1px solid rgba(46,230,201,.5)">🔗 Payment link · pay securely<br><span class="fine" style="font-size:14px">sent on WhatsApp · 19:42</span></div>
+        </div>
       </div></div>
-      <div class="base"></div>
+    </div>
+    <div class="abs" style="left:760px;top:190px">
+      <div class="kt s" data-beat="0" data-hit="stab">Ritu, our voice agent.</div>
+      <div class="kt s accent" data-beat="2" data-fx="up" style="margin-top:22px;line-height:1.3">हिंदी</div>
+      <div class="kt s accent" data-beat="12" data-fx="up" data-hit="stab" style="margin-top:10px">→ English.</div>
+      <div class="sub" data-beat="13" data-fx="up" style="margin-top:10px">Switches language mid-call.</div>
+    </div>
+    <div class="center" data-beat="0.5" data-outbeat="11" style="top:780px;left:660px;right:40px"><div class="subtitle">नमस्ते! आपकी EMI की तारीख कल है। क्या मैं आपको पेमेंट लिंक भेज दूँ?<small>Hello! Your EMI is due tomorrow. Shall I send you the payment link?</small></div></div>
+    <div class="center" data-beat="12" style="top:800px;left:660px;right:40px"><div class="subtitle">Sure, sending your payment link on WhatsApp right now.</div></div>
+  </section>
+
+  <!-- k7 ALADDIN -->
+  <section class="scene" id="k7">
+    <div class="abs" style="left:120px;top:200px">
+      <div class="kt m" data-beat="0.5" data-hit="stab">Checked by <span class="accent">Aladdin.</span></div>
+      <div class="kt l" data-beat="5.5" data-hit="stab" style="margin-top:10px">Twice. <span class="accent">✓✓</span></div>
+    </div>
+    <div class="abs" style="left:120px;top:690px;width:1680px">
+      <span class="rule" data-beat="2" data-hit="tick" data-fx="pop"><b>✓</b> Consent</span><span class="rule" data-beat="2.5" data-hit="tick" data-fx="pop"><b>✓</b> Quiet hours</span>
+      <span class="rule" data-beat="3" data-hit="tick" data-fx="pop"><b>✓</b> Daily cap</span><span class="rule" data-beat="3.5" data-hit="tick" data-fx="pop"><b>✓</b> Budget</span>
+      <span class="rule" data-beat="4" data-hit="tick" data-fx="pop"><b>✓</b> STOP list</span><span class="rule" data-beat="4.5" data-hit="tick" data-fx="pop"><b>✓</b> Approved template</span>
+      <div class="fine" data-beat="6" data-fx="fade" style="margin-top:10px">Aladdin = the Kairos supervisor: checks when planning, and again just before sending.</div>
     </div>
   </section>
 
-  <!-- O2. The cricket scoreboard -->
-  <section class="scene" id="o2">
-    <div class="abs" style="left:120px;top:112px">
-      <div class="kicker" data-in="0.1"><span class="live"></span>Live · illustrative / SIMULATED</div>
-      <div class="title" data-in="0.3" style="margin-top:12px;font-size:64px">The collections scoreboard.</div>
+  <!-- k8 STOP -->
+  <section class="scene" id="k8">
+    <div class="abs" style="left:120px;top:220px">
+      <div class="kt m" data-beat="0.5" data-hit="stab">STOP means stop.</div>
+      <div class="kt l accent" data-beat="3.5" data-hit="stab">Everywhere.</div>
     </div>
-    <div class="card" data-in="0.6" style="left:120px;top:262px;width:1060px;height:640px;overflow:hidden">
-      <div class="bhead"><span class="team">KAIROS XI</span><span style="color:var(--faint)">vs</span><span class="team2">TODAY'S DUES</span>
-        <span class="bday" style="margin-left:auto">DAY <span data-k="operator.campaignDay">6</span> OF <span data-k="operator.campaignDays">14</span></span><span class="livepill">● LIVE</span></div>
-      <div class="abs" style="left:30px;top:96px"><div class="slab">RUNS <i>₹ collected today</i></div>
-        <div class="num" id="o2runs" style="font-size:120px;line-height:1.08">₹0</div></div>
-      <div class="abs fourpop" id="o2four" style="left:700px;top:150px;opacity:0">FOUR! +₹4,200</div>
-      <div class="abs stats" style="left:30px;top:296px">
-        <div class="stat" data-in="1.4"><div class="slab">OVERS<i>time of day</i></div><div class="sv" id="o2ov"></div></div>
-        <div class="stat" data-in="2.6"><div class="slab">RUN RATE<i>₹ per hour</i></div><div class="sv" id="o2rr"></div></div>
-        <div class="stat" data-in="4.6"><div class="slab">REQUIRED<i>to hit today's target</i></div><div class="sv" id="o2req"></div></div>
-        <div class="stat good" data-in="9.6" data-fx="pop"><div class="slab">WICKETS<i>rule breaches</i></div><div class="sv"><span data-k="numbers.ruleBreaches">0</span><small>all day</small></div></div>
-        <div class="stat" data-in="13.7"><div class="slab">EXTRAS<i>₹ saved, no waste</i></div><div class="sv" id="o2ex"></div></div>
-      </div>
-      <div class="abs" data-in="8.0" style="left:30px;top:474px;width:1000px"><div class="slab">PARTNERSHIPS <i>channels doing the work</i></div>
-        <div class="partbar" id="o2part"></div></div>
-      <div class="abs" style="left:30px;top:590px;font-size:15px;color:var(--faint)">Illustrative figures · SIMULATED day</div>
-    </div>
-    <div class="card" data-in="1.8" style="left:1220px;top:262px;width:580px;height:640px;padding:22px 24px;overflow:hidden">
-      <div class="slab" style="margin-bottom:14px"><span class="live" style="width:10px;height:10px"></span>LIVE COMMENTARY</div>
-      <div id="o2feed" class="abs" style="left:24px;right:24px;top:66px;bottom:10px"></div>
+    <div class="abs" style="left:1260px;top:200px;width:540px">
+      <div style="display:flex;justify-content:flex-end" data-beat="0" data-hit="stamp" data-fx="pop"><div class="bub out" style="font-size:34px;font-weight:900;letter-spacing:.08em;margin:0">STOP</div></div>
+      <div class="chan" id="k8c1">SMS <span class="s">ON</span></div><div class="chan" id="k8c2">WhatsApp <span class="s">ON</span></div>
+      <div class="chan" id="k8c3">Email <span class="s">ON</span></div><div class="chan" id="k8c4">Voice <span class="s">ON</span></div>
+      <div data-beat="4" data-fx="pop" style="margin-top:18px"><span class="chip red">Blocked by Aladdin · all channels</span></div>
     </div>
   </section>
 
-  <!-- O3. Only the big calls come to the human -->
-  <section class="scene" id="o3">
-    <div class="backdrop" data-depth="0.4" style="background-image:url(assets/real/api_docs.jpg);opacity:.05"></div>
-    <div class="abs" style="left:120px;top:170px;width:820px">
-      <div class="kicker" data-in="0.1">Human in the loop</div>
-      <div class="title" data-in="0.3" style="margin-top:14px;font-size:78px">Only the big calls<br>come to her.</div>
-      <div class="sub" data-in="1.4" style="margin-top:24px">Everything routine runs on its own.</div>
-      <div data-in="8.0" data-fx="pop" style="margin-top:40px"><span class="chip teal" style="font-size:26px;padding:10px 22px">Her only job here: one tap</span></div>
+  <!-- k9 FAKE PROOF (real CM-03 console) -->
+  <section class="scene" id="k9">
+    <div class="monitor" data-beat="0" data-fx="right" style="left:700px;top:170px;width:1100px;height:640px">
+      <img src="assets/real/cm03_fake_caught.jpg" alt="Kairos CM-03 console: edited payment screenshot flagged as fraud suspect" style="width:1920px" data-kb="-30,-60,0.6,-1300,-560,1.25" data-kbbeat="1.5,3">
+      <div class="stamp" data-beat="3" data-fx="pop" style="left:560px;top:420px">FRAUD SUSPECT</div>
     </div>
-    <div class="card" data-in="2.2" data-fx="right" style="left:1000px;top:200px;width:800px;padding:30px 34px">
-      <div style="display:flex;align-items:center;gap:14px"><div class="avatar" style="width:52px;height:52px;font-size:22px">K</div>
-        <div><div style="font-size:20px;font-weight:800;letter-spacing:.1em;color:var(--amber)">1 DECISION NEEDS YOU</div><div style="font-size:16px;color:var(--faint)">Kairos · just now</div></div>
-        <span class="chip amber" id="o3status" style="margin-left:auto;font-size:18px">Waiting for you</span></div>
-      <div style="font-size:32px;font-weight:700;margin-top:20px;line-height:1.2">A borrower (<span data-k="operator.hardshipBorrower">B-3003</span>) reported a job loss.</div>
-      <div style="font-size:24px;color:var(--muted);margin-top:10px;line-height:1.35">Approve a gentle call from a senior team member, tomorrow at 11:00? No payment ask. Reminders stay paused.</div>
-      <div style="display:flex;gap:16px;margin-top:24px"><span class="btn pri" id="o3approve">Approve</span><span class="btn">Not now</span></div>
+    <div class="stand" data-beat="0" data-fx="fade" style="left:1150px;top:808px;width:200px"></div>
+    <div class="abs" style="left:120px;top:300px">
+      <div class="kt m" data-beat="0" data-hit="stab">Fake proof?</div>
+      <div class="kt l warn" data-beat="3" data-hit="stamp">Caught.</div>
     </div>
-    <div class="abs" style="left:1000px;top:600px;width:800px">
-      <div class="slab" data-in="8.6" data-fx="fade">ALADDIN RE-CHECKS BEFORE ANYTHING GOES OUT</div>
-      <div><span class="gc" data-in="9.0" data-fx="pop"><b>✓</b> Consent</span><span class="gc" data-in="9.4" data-fx="pop"><b>✓</b> Quiet hours</span>
-        <span class="gc" data-in="9.8" data-fx="pop"><b>✓</b> Contact limits</span><span class="gc" data-in="10.2" data-fx="pop"><b>✓</b> Hardship rules</span></div>
-      <div data-in="11.2" style="margin-top:18px;font-size:26px;font-weight:700;color:var(--mint)">✓ Scheduled: tomorrow 11:00 · senior team member</div>
-    </div>
-    <svg class="abs" id="o3cursor" viewBox="0 0 24 24" style="width:40px;height:40px;z-index:6"><path d="M3 2l7 19 2.6-7.4L20 11z" fill="#fff" stroke="#0b1a2c" stroke-width="1.4"/></svg>
-    <div class="abs" id="o3ripple" style="width:30px;height:30px;border-radius:50%;border:3px solid var(--mint);margin:-15px 0 0 -15px;opacity:0"></div>
+    <div class="abs realtag" data-beat="1" data-fx="fade" style="left:700px;top:880px"><b>REAL SCREEN</b>Kairos CM-03 console · edited screenshot detected · synthetic borrower</div>
   </section>
 
-  <!-- O4. Everything at their fingertips -->
-  <section class="scene" id="o4">
-    <div class="abs" style="left:120px;top:116px">
-      <div class="kicker" data-in="0.1">At her fingertips</div>
-      <div class="title" data-in="0.3" style="margin-top:14px;font-size:72px">Everything, one click away.</div>
+  <!-- k10 ON THE RECORD (real CRM) -->
+  <section class="scene" id="k10">
+    <div class="monitor" data-beat="0" data-fx="left" style="left:120px;top:170px;width:1100px;height:640px">
+      <img src="assets/real/crm_borrower.jpg" alt="Kairos CRM borrower page: Loan A cleared, Loan B reminder pending" style="width:1920px" data-kb="0,0,0.573,-560,-835,1.45" data-kbbeat="1,5">
     </div>
-    <div class="card fcard" data-in="0.6" style="left:120px">
-      <div class="ic" style="background:var(--teal)">◉</div><h5>Any borrower's full story</h5>
-      <div class="shot" style="height:300px"><img src="assets/real/crm_borrower.jpg" alt="CRM borrower page" style="width:1240px;left:-250px;top:-40px" data-kb="0,0,1,-30,-120,1.08"></div>
-      <div class="realtag" style="margin-top:12px"><b>REAL</b>CRM · one click</div>
+    <div class="stand" data-beat="0" data-fx="fade" style="left:570px;top:808px;width:200px"></div>
+    <div class="abs" style="left:1290px;top:260px">
+      <div class="kt s" data-beat="0" data-hit="stab">Every step.</div>
+      <div class="kt s accent" data-beat="2" data-hit="stab">On the record.</div>
+      <div data-beat="4" data-hit="tick" data-fx="right" style="margin-top:40px"><span class="chip ok">✓ Loan A cleared · bank-verified</span></div>
+      <div data-beat="5" data-hit="tick" data-fx="right" style="margin-top:14px"><span class="chip teal">Loan B · reminder still due</span></div>
     </div>
-    <div class="card fcard" data-in="0.85" style="left:460px">
-      <div class="ic" style="background:var(--sms)">?</div><h5>Why each decision was made</h5>
-      <div class="shot" style="height:300px;background:#fff"><img src="assets/real/journey_report.jpg" alt="Journey report: every decision with its reason" style="width:1240px;left:-270px;top:-100px" data-kb="0,0,1,0,-160,1.04"></div>
-      <div class="realtag" style="margin-top:12px"><b>REAL</b>decision log</div>
-    </div>
-    <div class="card fcard" data-in="1.1" style="left:800px">
-      <div class="ic" style="background:var(--amber)">≡</div><h5>The lender's report pack, auto-made</h5>
-      <div class="file"><i>CSV</i>AICI</div><div class="file"><i>CSV</i>Data Dump</div><div class="file"><i>CSV</i>Trails</div>
-      <div class="file"><i>CSV</i>FTD</div><div class="file"><i>CSV</i>Hourly</div>
-      <div style="font-size:15px;color:var(--faint);margin-top:8px">In the lender's own formats</div>
-    </div>
-    <div class="card fcard" data-in="1.35" style="left:1140px">
-      <div class="ic" style="background:var(--violet)">▦</div><h5>Daily segment report</h5>
-      <div class="seg2 h"><span>SEGMENT</span><span>SPEND</span><span>REPLIES</span></div>
-      <div class="seg2"><span>Pre-due</span><span>₹6k</span><span>288</span></div>
-      <div class="seg2"><span>1–30 days</span><span>₹18k</span><span>412</span></div>
-      <div class="seg2"><span>31–60 days</span><span>₹9k</span><span>133</span></div>
-      <div class="seg2"><span>61–90 days</span><span>₹4k</span><span>51</span></div>
-      <div style="font-size:15px;color:var(--faint);margin-top:12px">Every day, per segment · illustrative</div>
-    </div>
-    <div class="card fcard" data-in="1.6" style="left:1480px">
-      <div class="ic" style="background:var(--wa)">↗</div><h5>What Kairos is learning</h5>
-      <div class="lbar"><span>Evening WhatsApp</span><i style="width:120px;background:var(--wa)"></i></div>
-      <div class="lbar"><span>Voice, Tamil</span><i style="width:96px;background:var(--violet)"></i></div>
-      <div class="lbar"><span>Morning SMS</span><i style="width:64px;background:var(--sms)"></i></div>
-      <div class="lbar"><span>Email</span><i style="width:30px;background:#94a3b8"></i></div>
-      <div style="font-size:15px;color:var(--faint);margin-top:14px">Per region and per borrower · illustrative</div>
-    </div>
-    <svg class="abs" id="o4cursor" viewBox="0 0 24 24" style="width:40px;height:40px;z-index:6"><path d="M3 2l7 19 2.6-7.4L20 11z" fill="#fff" stroke="#0b1a2c" stroke-width="1.4"/></svg>
+    <div class="abs realtag" data-beat="1" data-fx="fade" style="left:120px;top:880px"><b>REAL SCREEN</b>Kairos CRM · synthetic borrower B-1042 · SIMULATED</div>
   </section>
 
-  <!-- O5. Match result, end of day -->
-  <section class="scene" id="o5">
-    <div class="abs" data-in="0" data-fx="fade" data-out="10.0" style="left:0;top:0;width:1920px;height:1080px">
-      <div class="abs" style="left:120px;top:116px">
-        <div class="kicker" data-in="0.1">Close of play · 6:00 pm</div>
-        <div class="title" data-in="0.3" style="margin-top:14px">Match result.</div>
-      </div>
-      <div class="card" data-in="0.8" style="left:120px;top:290px;width:1040px;height:480px;padding:34px 40px">
-        <div style="font-size:64px;font-weight:850;color:var(--teal);letter-spacing:.02em"><span data-k="product">Kairos</span> won</div>
-        <div style="font-size:26px;color:var(--muted);margin-top:6px">on ₹ recovered for every ₹1 spent, vs the lender's fixed schedule</div>
-        <div class="bar" id="o5b1" style="left:40px;top:190px;background:linear-gradient(90deg,var(--teal2),var(--teal));color:#04201c;height:70px;font-size:26px"><span><span data-k="product">Kairos</span> · about <span data-k="numbers.recoveryX">2</span>×</span></div>
-        <div class="bar" id="o5b2" style="left:40px;top:280px;background:#2a3d55;color:#cbd5e1;height:70px;font-size:26px">Fixed schedule · 1×</div>
-        <div class="abs" style="left:40px;top:380px;font-size:19px;color:var(--faint);width:960px">Fresh test runs: <span data-k="numbers.recoveryExamples">517 vs 272</span> (<span data-k="numbers.recoveryRange">1.7× to 2.3×</span>) · SIMULATED</div>
-      </div>
-      <div class="card" data-in="6.6" data-fx="pop" style="left:1200px;top:290px;width:600px;height:220px;padding:28px 32px">
-        <div class="slab">PLAYER OF THE MATCH</div>
-        <div style="display:flex;gap:18px;align-items:center;margin-top:18px"><div style="font-size:64px">🏆</div>
-          <div style="font-size:38px;font-weight:800;line-height:1.1" data-k="operator.playerOfMatch">WhatsApp, evening slot</div></div>
-      </div>
-      <div class="card" data-in="8.0" data-fx="pop" style="left:1200px;top:540px;width:600px;height:230px;padding:28px 32px;border-color:rgba(52,211,153,.6)">
-        <div class="slab">WICKETS · RULE BREACHES</div>
-        <div class="num" style="font-size:110px;color:var(--ok);line-height:1.05"><span data-k="numbers.ruleBreaches">0</span></div>
-        <div style="font-size:22px;color:var(--muted)">all day, every channel</div>
-      </div>
+  <!-- k11 IT LEARNS -->
+  <section class="scene" id="k11">
+    <div class="abs" style="left:120px;top:250px">
+      <div class="kt m" data-beat="1" data-hit="stab">It learns.</div>
+      <div class="kt l accent" data-beat="2.5" data-hit="stab">Live.</div>
     </div>
-    <div class="abs" data-in="10.3" data-fx="fade" style="left:0;top:0;width:1920px;height:1080px">
-      <div class="laptop" style="left:500px;top:150px">
-        <div class="lid" id="o5lid"><div class="lscreen" style="display:grid;place-items:center;text-align:center">
-          <div><div style="font-size:72px;color:var(--ok)">✓</div>
-            <div style="font-size:42px;font-weight:800">Day complete</div>
-            <div style="font-size:26px;color:var(--muted);margin-top:10px"><span id="o5total">₹0</span> collected · target <span id="o5target">₹0</span></div>
-            <div style="font-size:16px;color:var(--faint);margin-top:8px">illustrative · SIMULATED</div></div>
-        </div></div>
-        <div class="base"></div>
-      </div>
-      <div class="center" data-in="11.6" style="top:800px;font-size:44px;font-weight:700">6:02 pm. <span style="color:var(--teal)"><span data-k="operator.name">Priya</span> heads home on time.</span></div>
+    <div class="monitor" data-beat="0" data-fx="right" style="left:880px;top:200px;width:920px;height:560px">
+      <img src="assets/real/live_4.jpg" alt="Kairos live view: what Kairos is learning, reply rates per channel" style="width:1920px" data-kb="-1209,-578,1.06,-1235,-596,1.09">
+    </div>
+    <svg class="abs" id="k11chart" data-beat="3" data-fx="fade" style="left:880px;top:790px" width="920" height="120" viewBox="0 0 920 120"></svg>
+    <div class="abs" data-beat="5" data-fx="pop" style="left:1380px;top:780px"><span class="chip teal" style="font-size:20px">WhatsApp dipped → switched by itself</span></div>
+    <div class="abs realtag" data-beat="1" data-fx="fade" style="left:880px;top:930px"><b>REAL SCREEN</b>/demo/live · what Kairos is learning · SIMULATED</div>
+  </section>
+
+  <!-- k12 AUTOPILOT (real /demo/live frames + live overlays) -->
+  <section class="scene" id="k12">
+    <div class="aislot" data-slot="slot_ops_desk" style="inset:0;opacity:.35;filter:blur(6px)"><div class="fallback"></div></div>
+    <div class="center kt xl" id="k12title" data-beat="0" data-outbeat="3.5" data-hit="stab" style="top:360px">Autopilot.</div>
+    <div class="monitor" id="k12mon" data-beat="3.5" data-fx="pop" style="left:120px;top:140px;width:1240px;height:698px">
+      <img class="lf" src="assets/real/live_1.jpg" alt="Kairos live collections, day 2" style="width:1440px;top:-150px">
+      <img class="lf" src="assets/real/live_2.jpg" alt="" style="width:1440px;top:-150px">
+      <img class="lf" src="assets/real/live_3.jpg" alt="" style="width:1440px;top:-150px">
+      <img class="lf" src="assets/real/live_4.jpg" alt="Kairos live collections, day 8" style="width:1440px;top:-150px">
+    </div>
+    <div class="stand" data-beat="3.5" data-fx="fade" style="left:640px;top:836px;width:200px"></div>
+    <div class="abs realtag" data-beat="4" data-fx="fade" style="left:120px;top:900px"><b>REAL SCREEN</b>/demo/live · decision river, “Checked by Aladdin”, money over the campaign · SIMULATED</div>
+    <div class="card" data-beat="4" data-fx="right" style="left:1400px;top:140px;width:400px;height:520px;padding:18px">
+      <div style="font-size:15px;letter-spacing:.16em;font-weight:800;color:var(--muted)">DECISIONS · LIVE</div>
+      <div class="stream" id="k12stream" style="left:18px;right:18px;top:52px;bottom:18px"></div>
+    </div>
+    <div class="card" data-beat="5" data-fx="right" style="left:1400px;top:680px;width:400px;height:158px;padding:18px 22px">
+      <div style="font-size:15px;letter-spacing:.16em;font-weight:800;color:var(--muted)">CHECKED BY ALADDIN</div>
+      <div class="num" style="font-size:54px;font-weight:850;color:var(--ok)" id="k12checks">0</div>
+      <div class="fine" style="font-size:16px">rule breaches: <b style="color:var(--ok)">0</b> · illustrative count</div>
+    </div>
+    <div class="card" id="k12card" data-beat="12" data-fx="up" data-hit="whoosh" style="left:520px;top:300px;width:880px;padding:30px 36px;z-index:3">
+      <div style="font-size:20px;font-weight:800;letter-spacing:.12em;color:var(--amber)">1 DECISION NEEDS YOU</div>
+      <div style="font-size:34px;font-weight:750;margin-top:12px">A borrower reported a job loss.</div>
+      <div class="sub" style="font-size:24px;margin-top:6px">Gentle call from a senior colleague, tomorrow 11:00? No payment ask.</div>
+      <div style="display:flex;gap:16px;margin-top:22px"><span class="btn pri" id="k12approve">Approve</span><span class="btn">Not now</span></div>
+    </div>
+    <div class="aislot" data-slot="slot_hand_tap" data-beat="13" data-outbeat="17" data-fx="fade" style="left:1420px;top:680px;width:380px;height:214px;border-radius:16px;z-index:4"><div class="fallback"></div></div>
+    <div class="abs" style="left:520px;top:640px;z-index:4">
+      <div class="kt s" data-beat="16" data-hit="stab">One tap.</div>
+      <div class="kt s accent" data-beat="18" data-hit="stab">Aladdin re-checks.</div>
     </div>
   </section>
 
-  <!-- ============ 9. CLOSE ============ -->
-  <section class="scene" id="s9">
-    <div class="glow" style="left:610px;top:90px;width:700px;height:700px;background:radial-gradient(circle,rgba(45,212,191,.22),transparent 65%)"></div>
-    <div class="center" data-in="0.3" data-fx="pop" style="top:250px;font-size:190px;font-weight:800;letter-spacing:-.03em"><span data-k="product">Kairos</span>.</div>
-    <div class="center" style="top:500px;font-size:62px;font-weight:650">
-      <span data-in="1.3" style="display:inline-block">Right message.</span>&nbsp;<span data-in="2.2" style="display:inline-block">Right time.</span></div>
-    <div class="center" data-in="3.2" style="top:590px;font-size:62px;font-weight:650;color:var(--teal)">Or none at all.</div>
-    <div class="center" data-in="4.4" data-fx="fade" style="top:760px;font-size:30px;color:var(--muted)">
-      <span data-k="team">The A Team</span> · <span data-k="event">CreditNirvana Agentathon 2026</span></div>
-    <div class="center" data-in="4.9" data-fx="fade" style="top:812px;font-size:20px;color:var(--faint)">Synthetic borrowers · SIMULATED results</div>
+  <!-- k13 PROOF 1: money (drop 2) -->
+  <section class="scene" id="k13">
+    <div class="abs" data-beat="0" data-fx="fade" style="right:120px;top:120px"><span id="simlabel" data-k="dataLabel">SIMULATED data</span></div>
+    <div class="abs kt xl accent" data-beat="0" data-hit="impact" style="left:120px;top:170px">~<span data-k="numbers.recoveryX">2</span>×</div>
+    <div class="abs kt s" data-beat="1" style="left:130px;top:500px">money recovered per ₹ spent</div>
+    <div class="bar" id="k13b1" style="left:130px;top:640px;background:#2a3d55;color:#cbd5e1"><span>Lender's own schedule · <span data-k="numbers.recoveryBaseline">272</span></span></div>
+    <div class="bar" id="k13b2" style="left:130px;top:724px;background:linear-gradient(90deg,var(--teal2),var(--teal));color:#03211c"><span><span data-k="product">Kairos</span> · <span data-k="numbers.recoveryKairos">517</span></span></div>
+    <div class="abs fine" data-beat="4" data-fx="fade" style="left:130px;top:830px;width:1500px">₹ recovered per ₹ spent vs the lender's own 10-day schedule, on test runs never used for tuning: <span data-k="numbers.recoveryExamples">517 vs 272</span> (<span data-k="numbers.recoveryRange">1.7× to 2.3×</span>). Same budget cap (Kairos spent less of it). <b data-k="numbers.repliesLift">+80% to +105%</b> more replies per rupee.</div>
   </section>
 
-  <!-- Operator cut close (only in ?cut=operator) -->
-  <section class="scene" id="oc">
-    <div class="glow" style="left:610px;top:90px;width:700px;height:700px;background:radial-gradient(circle,rgba(45,212,191,.22),transparent 65%)"></div>
-    <div class="center" data-in="0.3" data-fx="pop" style="top:250px;font-size:190px;font-weight:800;letter-spacing:-.03em"><span data-k="product">Kairos</span>.</div>
-    <div class="center" data-in="1.4" style="top:500px;font-size:62px;font-weight:650">Collections on autopilot.</div>
-    <div class="center" data-in="2.6" style="top:590px;font-size:62px;font-weight:650;color:var(--teal)">You just watch the score.</div>
-    <div class="center" data-in="3.8" data-fx="fade" style="top:760px;font-size:30px;color:var(--muted)">
-      <span data-k="team">The A Team</span> · <span data-k="event">CreditNirvana Agentathon 2026</span></div>
-    <div class="center" data-in="4.3" data-fx="fade" style="top:812px;font-size:20px;color:var(--faint)">Synthetic people · illustrative / SIMULATED figures</div>
+  <!-- k14 PROOF 2: safe -->
+  <section class="scene" id="k14">
+    <div class="abs" style="right:120px;top:120px"><span id="simlabel2" class="sim2" style="font-size:20px;letter-spacing:.14em;font-weight:800;color:#ddd6fe;border:2px solid rgba(167,139,250,.7);background:rgba(167,139,250,.14);padding:8px 16px;border-radius:10px">SIMULATED DATA</span></div>
+    <div class="abs kt xl" data-beat="0" data-hit="stab" style="left:120px;top:170px;color:var(--ok)"><span data-k="numbers.ruleBreaches">0</span></div>
+    <div class="abs kt m" data-beat="0.5" style="left:400px;top:260px">rule breaches.</div>
+    <div class="abs" style="left:130px;top:560px">
+      <div data-beat="3" data-hit="tick" data-fx="right"><span class="chip ok" style="font-size:34px"><b><span data-k="numbers.attacksPassed">49</span>/<span data-k="numbers.attacksTotal">49</span></b>&nbsp;attacks blocked</span></div>
+      <div data-beat="4" data-hit="tick" data-fx="right" style="margin-top:20px"><span class="chip ok" style="font-size:34px"><b><span data-k="numbers.fakesCaught">127</span>/<span data-k="numbers.fakesTotal">127</span></b>&nbsp;fake payment proofs caught</span></div>
+      <div data-beat="5" data-hit="tick" data-fx="right" style="margin-top:20px"><span class="chip ok" style="font-size:34px"><b><span data-k="numbers.policyCases">148/148</span></b>&nbsp;lender-policy test cases pass</span></div>
+    </div>
   </section>
 
-  <div id="bug"><span class="bl">● LIVE</span><span class="bt">KAIROS XI</span><span id="bugRuns">₹0</span>
-    <span class="bs">RR<b id="bugRR"></b></span><span class="bs">W<b data-k="numbers.ruleBreaches">0</b></span><span class="bs" id="bugClock"></span></div>
+  <!-- k15 PROOF 3: runs itself -->
+  <section class="scene" id="k15">
+    <div class="abs" style="right:120px;top:120px"><span style="font-size:20px;letter-spacing:.14em;font-weight:800;color:#ddd6fe;border:2px solid rgba(167,139,250,.7);background:rgba(167,139,250,.14);padding:8px 16px;border-radius:10px">SIMULATED DATA</span></div>
+    <div class="abs kt xl" data-beat="0" data-hit="stab" style="left:120px;top:170px"><span class="num" data-count="waResolvedPct" data-dec="1" data-atbeat="0" data-cbeats="2">0</span>%</div>
+    <div class="abs kt s" data-beat="1" style="left:130px;top:500px">of chats resolved without a human</div>
+    <div class="abs" style="left:130px;top:620px">
+      <div data-beat="3" data-hit="tick" data-fx="right"><span class="chip teal" style="font-size:34px"><b class="num" data-count="decisions" data-atbeat="3" data-cbeats="1.5">0</b>&nbsp;decisions in <span data-k="numbers.decisionsTime">about 2 minutes</span></span></div>
+      <div data-beat="4" data-hit="tick" data-fx="right" style="margin-top:20px"><span class="chip teal" style="font-size:34px">Hard cases go to people · nothing shared before a one-time code</span></div>
+    </div>
+    <div class="abs fine" data-beat="5" data-fx="fade" style="left:130px;top:900px;width:1660px">CM-03 eval: 732 of 1,000 scripted chats (67.3% counting only bank-confirmed claims) · <span data-k="numbers.understandingPct">95</span>% message understanding · <span data-k="numbers.concurrentChats">500</span> chats at once · all figures SIMULATED. Sources: TRUTH_TABLE.md</div>
+  </section>
 
-  <div id="morph"></div>
+  <!-- k16 FINAL HIT, SILENCE, LOGO STING -->
+  <section class="scene" id="k16">
+    <div class="center kt m" data-beat="0" data-outbeat="1" data-hit="impact" style="top:400px">Right message. Right time.</div>
+    <div class="center kt xl" data-beat="2" style="top:250px;text-shadow:0 0 90px rgba(46,230,201,.5)"><span data-k="product">Kairos</span>.</div>
+    <div class="center kt s accent" data-beat="5" data-fx="up" style="top:600px">Or none at all.</div>
+    <div class="center sub" data-beat="7" data-fx="fade" style="top:760px;font-size:28px"><span data-k="team">The A Team</span> · <span data-k="event">CreditNirvana Agentathon 2026</span></div>
+    <div class="center fine" data-beat="8" data-fx="fade" style="top:812px">Synthetic data · SIMULATED results · Voices: AI-generated with Sarvam bulbul:v3 · Original music</div>
+  </section>
+
+  <svg id="cursor" viewBox="0 0 24 24"><path d="M3 2l7 19 2.6-7.4L20 11z" fill="#fff" stroke="#0b1a2c" stroke-width="1.4"/></svg>
   <div id="cap"><div id="capText"></div></div>
+</div>
+  <div id="leak"></div>
+  <div id="flash"></div>
 </div></div>
 
 <div id="ui">
-  <div id="groups"></div>
-  <div id="chapters"></div>
+  <div id="panel"><div id="groups"></div><div id="chapters"></div><div id="moreSlot"></div></div>
   <div class="ctr">
     <button id="bPlay">▶ Play</button>
-    <span id="time">0:00 / 2:00</span>
-    <input type="range" id="scrub" min="0" max="120" step="0.01" value="0" aria-label="Scrub">
-    <button id="bCC" class="on" title="C">Captions</button>
-    <button id="bMusic" class="on" title="M">Music</button>
-    <button id="bVO" class="on" title="V">Voices</button>
-    <button id="bVoice" title="N">Browser voice: off</button>
-    <button id="bRec" title="R">Record mode</button>
+    <span id="time">0:00 / 0:00</span>
+    <input type="range" id="scrub" min="0" max="100" step="0.01" value="0" aria-label="Scrub">
+    <div id="more">
+      <button id="bMusic" class="on" title="M">Music</button>
+      <button id="bVO" class="on" title="V">Voice</button>
+      <button id="bCC" title="C">Captions</button>
+      <button id="bRec" title="R">Record mode</button>
+    </div>
+    <button id="bMenu" title="More controls" aria-label="More controls" aria-expanded="false">⋯</button>
   </div>
-  <div id="hint">Space play/pause · ← → scene · C captions · M music · V voices · N browser voice · R record mode (Esc exits; restarts at 0:00 with sound)</div>
+  <div id="hint">Space play/pause · ← → scene · M music · V voice · C captions · R record mode (Esc exits; restarts at 0:00 with sound)</div>
 </div>
 
 <script>
-/* ---------------- scenes and voice-over (cue times are seconds from scene start) ---------------- */
-const B = CONFIG.borrower, P = CONFIG.product;
-const SPEAKERS = {ravi:B, ravi_inner:`${B} (thinking)`, ritu:"Ritu · voice bot", priya:null};
-/* Cue = [seconds from scene start, caption, speaker?, text for TTS?]. No speaker = narrator.
-   compose.py reads this table, so music, voices and foley follow the same timings. */
+/* ---------------- scene table: lengths in bars on the CONFIG.film.bpm grid; vo = [line, seconds from scene start] ----------------
+   music/compose.py reads this table and every data-beat / data-hit in the sections below. */
 const ALL_SCENES = [
-  {id:"s1", name:"The problem", dur:13, cues:[
-    [0.3, `Meet ${B}. His EMI is a few days late.`],
-    [3.3, `This morning he got the same reminder for the fifth time.`],
-    [7.0, `He stopped reading after the second.`],
-    [9.6, `And the lender paid for all five.`]]},
-  {id:"s2", name:"Why it happens", dur:11, cues:[
-    [0.3, `Most collections still run on a fixed calendar:`],
-    [3.4, `the same message, to everyone, on every channel.`],
-    [6.8, `Costly, annoying, mostly ignored. ${P} fixes that.`]]},
-  {id:"s3", name:`${P} decides`, dur:14, cues:[
-    [0.3, `${P} changes that.`],
-    [1.8, `Every day, for every borrower, it first asks: contact, or wait?`],
-    [7.0, `And if it's contact, it picks the channel, the time and the message`],
-    [11.4, `most likely to get a reply.`]]},
-  {id:"s4", name:`${B}'s journey`, dur:29, cues:[
-    [0.3, `${B} read an SMS but didn't reply.`],
-    [3.5, `So ${P} tried WhatsApp in the evening.`],
-    [6.6, `Need time… salary late hai.`, "ravi_inner", `Need time. Salary late hai.`],
-    [8.8, `Then Ritu, our voice bot, called.`],
-    [11.6, `रवि जी, क्या आप 27 तारीख तक भुगतान कर पाएँगे? (Can you pay by the 27th?)`, "ritu", `रवि जी, क्या आप सत्ताईस तारीख तक भुगतान कर पाएँगे?`],
-    [15.9, `Haan, 27 tareekh tak kar dunga. (Yes, I'll pay by the 27th.)`, "ravi", `Haan, sattaees tareekh tak kar doonga.`],
-    [18.5, `ठीक है, तो 27 तारीख पक्की। धन्यवाद! (Okay, the 27th is confirmed. Thank you!)`, "ritu", `ठीक है, तो सत्ताईस तारीख पक्की। धन्यवाद!`],
-    [22.2, `Reminders paused.`],
-    [23.6, `When his payment was verified, only that loan's reminders stopped.`]]},
-  {id:"s4b", name:"On the record", dur:9, cues:[
-    [0.4, `Every step lands in the lender's CRM, with the evidence:`],
-    [4.5, `Loan A cleared, its reminder cancelled. Loan B stays on track.`]]},
-  {id:"s5", name:"Safety", dur:16, cues:[
-    [0.3, `Safety comes first.`],
-    [1.8, `Aladdin, our supervisor, checks every message. Twice.`],
-    [6.3, `Reply STOP on one channel, and every channel stops.`],
-    [9.9, `A fake payment screenshot is caught.`],
-    [12.4, `Lost your job? A person takes over, not a bot.`]]},
-  {id:"s6", name:"People in charge", dur:7, cues:[
-    [0.3, `And the lender's team can approve, hold or override anything.`],
-    [4.3, `Every step is on record.`]]},
-  {id:"s7", name:"It learns", dur:18, cues:[
-    [0.3, `${P} learns from every reply.`],
-    [2.6, `Midway through a campaign, WhatsApp starts working less well.`],
-    [6.4, `${P} notices, and switches on its own.`],
-    [9.3, `Borrowers move from cheap messages, to WhatsApp, to a call, to a person,`],
-    [14.2, `and it learns what works in each region, for each borrower.`]]},
-  {id:"s8", name:"Proof", dur:16, cues:[
-    [0.3, `How do we know? We tested it against the lender's own schedule, on unseen data.`],
-    [5.8, CONFIG.spoken.lift],
-    [10.6, CONFIG.spoken.safety]]},
-  {id:"s9", name:"Close", dur:7, noCaption:true, cues:[
-    [0.6, `${P}. Right message. Right time. Or none at all.`]]}
+  {id:"k1", name:"Cold open", bars:4, mode:"intro", vo:[["vo01_problem",1.0]]},
+  {id:"k2", name:"The problem", bars:4, mode:"build", vo:[["vo02_pain",0.1]]},
+  {id:"k3", name:"Meet Kairos", bars:2, drop:true, vo:[["vo03_meet",0.05]]},
+  {id:"k4", name:"It decides", bars:2, mode:"drive", vo:[["vo04_decides",0.15]]},
+  {id:"k5", name:"Contact or wait", bars:2, mode:"drive"},
+  {id:"k6", name:"Every channel", bars:2, mode:"drive", vo:[["vo05_channels",0.1]]},
+  {id:"k6b", name:"Ritu, live", bars:5, mode:"groove", vo:[["agent01_hi",0.25],["agent02_en",5.6]]},
+  {id:"k7", name:"Aladdin", bars:2, mode:"tight", vo:[["vo06_aladdin",0.1]]},
+  {id:"k8", name:"STOP", bars:2, mode:"tight", vo:[["vo07_stop",0.1]]},
+  {id:"k9", name:"Fake proof", bars:2, mode:"tight", vo:[["vo08_fake",0.1]]},
+  {id:"k10", name:"On the record", bars:2, mode:"tight"},
+  {id:"k11", name:"It learns", bars:2, mode:"lift", vo:[["vo09_learns",0.1]]},
+  {id:"k12", name:"Autopilot", bars:6, mode:"breakdown"},
+  {id:"k13", name:"Proof: money", bars:2, drop:true, vo:[["vo10_proof",0.25]]},
+  {id:"k14", name:"Proof: safe", bars:2, mode:"drive"},
+  {id:"k15", name:"Proof: hands-free", bars:2, mode:"drive"},
+  {id:"k16", name:"Logo", bars:4, final:true, vo:[["vo11_end",0.99]]}
 ];
-const OPC = CONFIG.operator, PR = OPC.name, DAYH = OPC.dayEnd-OPC.dayStart;
-SPEAKERS.priya = PR;
-ALL_SCENES.push(
-  {id:"oi", name:"A day at the desk", dur:7, cues:[
-    [0.3, `This is collections from the other side of the desk.`],
-    [3.6, `Meet ${PR}. She runs collections for a lender.`]]},
-  {id:"o1", name:"Morning, coffee", dur:12, cues:[
-    [0.3, `Now, the other side of the desk. Meet ${PR}.`],
-    [4.2, `Nine a.m., coffee in hand. Today's plan is already done:`],
-    [8.4, `who to contact, when and how. Nothing to set up.`]],
-   opCues:[
-    [0.3, `Nine a.m. ${PR} opens ${P}, coffee in hand.`],
-    [4.2, `Today's plan is already done:`],
-    [8.4, `who to contact, when and how. Nothing to set up.`]]},
-  {id:"o2", name:"The scoreboard", dur:24, cues:[
-    [0.3, `Then she just watches the score.`],
-    [2.4, `Runs are rupees collected. Run rate: money per hour, against today's target.`],
-    [8.0, `Partnerships: the channels at work. Wickets: rule breaches. Zero, all day.`],
-    [13.7, `Extras: money saved on messages that wouldn't have worked.`],
-    [17.6, `And ball by ball, the commentary says what ${P} did, and why.`],
-    [21.8, `Zero wickets, again.`, "priya"]]},
-  {id:"o3", name:"Only the big calls", dur:14, bug:true, cues:[
-    [0.3, `Only the big calls come to her.`],
-    [2.3, `Someone lost their job. ${P} suggests a gentle call from a senior colleague.`],
-    [7.5, `Approve.`, "priya"],
-    [8.6, `Aladdin re-checks before anything goes out.`]]},
-  {id:"o4", name:"At her fingertips", dur:12, bug:true, cues:[
-    [0.3, `Everything else, at her fingertips:`],
-    [2.8, `any borrower's story in one click, and why each decision was made,`],
-    [7.0, `the lender's reports, ready-made, and what ${P} is learning.`]]},
-  {id:"o5", name:"Match result", dur:14, cues:[
-    [0.3, `Six p.m. Match result.`],
-    [2.1, `Against the fixed schedule, ${P} brings back about twice the money per rupee.`],
-    [6.9, `Player of the match: evening WhatsApp. Wickets: zero.`],
-    [10.8, `${PR} closes the laptop, and goes home on time.`]]},
-  {id:"oc", name:"Close", dur:6, noCaption:true, cues:[
-    [0.6, `${P}. Collections on autopilot. You just watch the score.`]]}
-);
-const GROUP = {s1:"borrower",s2:"borrower",s3:"borrower",s4:"borrower",s4b:"borrower",s5:"borrower",s6:"borrower",s7:"borrower",
-  oi:"operator",o1:"operator",o2:"operator",o3:"operator",o4:"operator",o5:"operator",s8:"close",s9:"close",oc:"close"};
-const GROUP_NAME = {borrower:"Borrower's story", operator:"Operator's day", close:"Proof & close"};
 const CUTS = {
-  full:     ["s1","s2","s3","s4","s4b","s5","s6","s7","o1","o2","o3","o4","o5","s8","s9"],
-  operator: ["oi","o1","o2","o3","o4","o5","oc"]
+  hero:   ["k1","k2","k3","k4","k5","k6","k6b","k7","k8","k9","k10","k11","k12","k13","k14","k15","k16"],
+  teaser: ["k1","k3","k6","k8","k12","k13","k16"]
 };
-const QS = new URLSearchParams(location.search);
-const CUT = CUTS[QS.get('cut')] ? QS.get('cut') : 'full';
-const DEF = Object.fromEntries(ALL_SCENES.map(d=>[d.id,d]));
-const SCENES = CUTS[CUT].map(id=>{const d=DEF[id]; return {...d, group:GROUP[id], cues:(CUT==='operator'&&d.opCues)?d.opCues:d.cues};});
-let acc = 0;
-SCENES.forEach((s,i)=>{ s.start=acc; s.end=acc+s.dur; acc=s.end; s.idx=i; });
-const TOTAL = acc;
+const VO_TEXT = { /* captions for the Sarvam bulbul:v3 lines (audio/vo_sarvam/lines.json) */
+  vo01_problem:"Every day, lenders send the same reminder to every borrower.", vo02_pain:"It's expensive. It's annoying. And it gets ignored.",
+  vo03_meet:"Meet Kairos.", vo04_decides:"It decides, for each person, each day, whether to reach out, or wait.",
+  vo05_channels:"SMS. WhatsApp. Voice. Or a human.", agent01_hi:"Ritu: नमस्ते! आपकी EMI की तारीख कल है। क्या मैं आपको पेमेंट लिंक भेज दूँ?",
+  agent02_en:"Ritu: Sure, sending your payment link on WhatsApp right now.", vo06_aladdin:"Every decision is checked by Aladdin. Twice.",
+  vo07_stop:"Say stop, and it stops. Everywhere.", vo08_fake:"Fake payment proof? Caught.", vo09_learns:"And it learns, live, from every reply.",
+  vo10_proof:"Twice the money recovered for every rupee spent. Zero rule breaches.", vo11_end:"Kairos. The right message, at the right time. Or none at all."};
+const VO_DUR = {vo01_problem:3.9,vo02_pain:3.99,vo03_meet:1.15,vo04_decides:4.15,vo05_channels:2.56,agent01_hi:4.95,agent02_en:3.41,
+  vo06_aladdin:3.26,vo07_stop:2.52,vo08_fake:2.05,vo09_learns:2.93,vo10_proof:4.78,vo11_end:4.66};
+const GROUP = {k1:"problem",k2:"problem",k3:"kairos",k4:"kairos",k5:"kairos",k6:"kairos",k6b:"kairos",k7:"kairos",k8:"kairos",k9:"kairos",k10:"kairos",k11:"kairos",
+  k12:"autopilot",k13:"proof",k14:"proof",k15:"proof",k16:"proof"};
+const GROUP_NAME = {problem:"Problem",kairos:"Kairos",autopilot:"Autopilot",proof:"Proof & logo"};
 
 /* ---------------- helpers ---------------- */
-const $ = (q,r=document)=>r.querySelector(q), $$=(q,r=document)=>[...r.querySelectorAll(q)];
+const $=(q,r=document)=>r.querySelector(q), $$=(q,r=document)=>[...r.querySelectorAll(q)];
 const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
-const easeOut=x=>1-Math.pow(1-x,3);
-const easeIO=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
-const backOut=x=>{const c1=1.5,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2);};
-const prog=(lt,a,d)=>clamp((lt-a)/d);
-const lerp=(a,b,p)=>a+(b-a)*p;
+const easeOut=x=>1-Math.pow(1-x,3), expo=x=>x>=1?1:1-Math.pow(2,-10*x), easeIO=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const backOut=x=>{const c1=1.6,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2);};
+const prog=(lt,a,d)=>clamp((lt-a)/d), lerp=(a,b,p)=>a+(b-a)*p;
 const hash=(a,b)=>{let h=Math.sin(a*127.1+b*311.7)*43758.5453;return h-Math.floor(h);};
-const mq=matchMedia('(prefers-reduced-motion: reduce)');
-let RM=mq.matches; mq.addEventListener&&mq.addEventListener('change',e=>RM=e.matches);
+const mq=matchMedia('(prefers-reduced-motion: reduce)'); let RM=mq.matches; mq.addEventListener&&mq.addEventListener('change',e=>RM=e.matches);
 const M=()=>RM?0:1;
-const get=(path)=>path.split('.').reduce((o,k)=>o==null?o:o[k],CONFIG);
+const get=p=>p.split('.').reduce((o,k)=>o==null?o:o[k],CONFIG);
 const fmt=n=>Math.round(n).toLocaleString('en-IN');
-const inr=n=>'₹'+fmt(n), lakh=n=>'₹'+(n/1e5).toFixed(1)+'L';
 const mmss=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
+const BEAT=60/CONFIG.film.bpm, BAR=4*BEAT;
 
-/* fill CONFIG text */
-$$('[data-k]').forEach(el=>{const v=get(el.dataset.k); if(v!=null) el.textContent = el.dataset.upper?String(v).toUpperCase():v;});
-$$('[data-count]').forEach(el=>{const k=el.dataset.count; el._target=+get(k.includes('.')?k:'numbers.'+k)||0;});
-document.title = CUT==='operator' ? `${P} Operator Cut` : `${P} Explainer Film`;
-if(CUT==='operator') $$('.opchap').forEach(e=>e.style.display='none');
+/* ---------------- cut + timeline ---------------- */
+const QS=new URLSearchParams(location.search);
+const CUT=CUTS[QS.get('cut')]?QS.get('cut'):'hero';
+const DEF=Object.fromEntries(ALL_SCENES.map(d=>[d.id,d]));
+const SCENES=CUTS[CUT].map(id=>({...DEF[id],group:GROUP[id]}));
+let acc=0; SCENES.forEach((s,i)=>{s.idx=i;s.start=acc;s.dur=s.bars*BAR;s.end=acc+s.dur;acc=s.end;});
+const TOTAL=acc;
+document.title = CUT==='teaser'?'Kairos Launch Teaser':'Kairos Launch Film';
 
-/* ---------------- build dynamic parts ---------------- */
-// S1 notifications + coins
-const S1T=[1.0,2.6,4.2,5.8,7.4];
-const s1stack=$('#s1stack');
-const s1cards=S1T.map(()=>{const d=document.createElement('div');d.className='notif';
+/* fill CONFIG text, convert beats to seconds */
+$$('[data-k]').forEach(el=>{const v=get(el.dataset.k); if(v!=null) el.textContent=el.dataset.upper?String(v).toUpperCase():v;});
+$$('[data-beat]').forEach(el=>{el.dataset.in=(+el.dataset.beat*BEAT).toFixed(4); if(!el.dataset.fx) el.dataset.fx=el.classList.contains('kt')?'slam':'up';});
+$$('[data-outbeat]').forEach(el=>{el.dataset.out=(+el.dataset.outbeat*BEAT).toFixed(4);});
+$$('[data-count]').forEach(el=>{const k=el.dataset.count; el._target=k==='spend'?184000:+get('numbers.'+k)||0;
+  el.dataset.at=(+(el.dataset.atbeat||0)*BEAT); el.dataset.cdur=(+(el.dataset.cbeats||3)*BEAT);});
+$$('[data-kbbeat]').forEach(el=>{const [a,b]=el.dataset.kbbeat.split(',').map(Number); const k=el.dataset.kb.split(','); k[6]=a*BEAT; k[7]=b*BEAT; el.dataset.kb=k.join(',');});
+
+/* ---------------- builders ---------------- */
+const K1T=[0,2,4,6,8,10,12,14].map(b=>b*BEAT);
+const k1cards=K1T.map(()=>{const d=document.createElement('div');d.className='notif';
   d.innerHTML='<div class="ni">✉</div><div style="flex:1"><div class="nt">LENDER · SMS <span>now</span></div><div class="nb">Your EMI is overdue. Please pay now.</div></div>';
-  s1stack.appendChild(d);return d;});
-const s1coins=S1T.map(()=>{const c=document.createElement('div');c.className='coin';c.textContent='₹';$('#s1coins').appendChild(c);return c;});
+  $('#k1stack').appendChild(d);return d;});
+const k2cells=[];for(let r=0;r<6;r++)for(let c=0;c<14;c++){const d=document.createElement('div');d.className='abs';
+  Object.assign(d.style,{left:c*120+'px',top:r*130+'px',width:'100px',height:'100px',borderRadius:'22px',background:'#1b2d45',display:'grid',placeItems:'center',fontSize:'36px'});
+  d.textContent='✉';$('#k2grid').appendChild(d);k2cells.push(d);}
+const k4dots=[];for(let r=0;r<12;r++)for(let c=0;c<16;c++){const d=document.createElement('div');d.className='dot';d.style.left=(c*58)+'px';d.style.top=(r*58)+'px';$('#k4dots').appendChild(d);k4dots.push(d);}
+function waveBars(sel,n){const w=$(sel);const out=[];for(let i=0;i<n;i++){const b=document.createElement('i');w.appendChild(b);out.push(b);}return out;}
+const k6bars=waveBars('#k6wave',18), k6bbars=waveBars('#k6bwave',22);
+{let svg='';for(let i=0;i<14;i++){const y=80+i*70, a=40+30*Math.sin(i);svg+=`<path class="fl" d="M-50 ${y} C 500 ${y-a}, 1300 ${y+a}, 1980 ${y}" stroke="${i%3?'#2ee6c9':'#60a5fa'}" stroke-opacity="${.15+.05*(i%4)}" stroke-width="${1+i%3}" fill="none" stroke-dasharray="40 30"/>`;}$('#k3flow').innerHTML=svg;}
+const k3lines=$$('#k3flow .fl');
+{const pts=(f)=>Array.from({length:14},(_,i)=>`${i?'L':'M'}${(i/13*900+10).toFixed(1)} ${(110-f(i)*100).toFixed(1)}`).join(' ');
+ $('#k11chart').innerHTML=`<path id="k11wa" d="${pts(i=>i<7?.75:.3)}" stroke="#22c39b" stroke-width="4" fill="none" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+  <path id="k11sms" d="${pts(i=>.35+i*.02)}" stroke="#60a5fa" stroke-width="4" fill="none" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>`;}
+const STREAM=["B-2041 · WhatsApp 7:30 pm","B-1187 · wait · resting","B-3310 · SMS 9:30 am","B-0762 · voice · Hindi","B-2208 · STOP · all quiet","B-1499 · WhatsApp 6 pm",
+  "B-0315 · SMS 10 am","B-2874 · wait · paid today","B-1726 · voice · Tamil","B-0903 · to a person","B-3052 · WhatsApp 8 pm","B-1640 · SMS 11 am"];
+const k12rows=STREAM.map((txt,i)=>{const d=document.createElement('div');d.className='srow';
+  d.innerHTML=`<span>${txt}</span><span class="ok">Aladdin ✓</span>`;$('#k12stream').appendChild(d);return d;});
+const k12frames=$$('#k12mon .lf');
 
-// S2 grid
-const S2rows=[["SMS","var(--sms)",[0,2,4,6,8]],["WhatsApp","var(--wa)",[1,3,5,7,9]],["Email","#94a3b8",[0,3,6,9]],["Voice call","var(--violet)",[4,9]]];
-const S2yes={"0-2":1,"1-7":1};
-const grid=$('#s2grid'); const s2cells=[]; const GX=230, CW=140, RH=86, GY=48;
-for(let c=0;c<10;c++){const h=document.createElement('div');h.className='dayh';h.style.left=(GX+c*CW)+'px';h.style.top='0px';h.textContent='DAY '+(c+1);grid.appendChild(h);}
-S2rows.forEach(([name,col,days],r)=>{
-  const l=document.createElement('div');l.className='rowlab';l.style.left='0px';l.style.top=(GY+r*RH)+'px';l.style.height='70px';
-  l.innerHTML=`<i style="background:${col}"></i>${name}`;grid.appendChild(l);
-  for(let c=0;c<10;c++){const d=document.createElement('div');const sch=days.includes(c);d.className='cell'+(sch?' sch':'');
-    d.style.left=(GX+c*CW)+'px';d.style.top=(GY+r*RH)+'px';
-    if(sch){const yes=S2yes[r+'-'+c];d.innerHTML='<div class="flash"></div><div class="env">SAME MSG</div><div class="mark">'+(yes?'✓':'✕')+'</div>';
-      s2cells.push({el:d,c,yes,fl:d.firstChild});}
-    grid.appendChild(d);}
-});
-const play2=document.createElement('div');play2.id='s2play';play2.style.top='36px';play2.style.height=(4*RH+8)+'px';grid.appendChild(play2);
+/* ---------------- AI b-roll slots: play assets/ai/<slot>.mp4 if present, else the rendered fallback ---------------- */
+const slots=$$('.aislot').map(el=>{const v=document.createElement('video');v.muted=true;v.playsInline=true;v.loop=true;v.preload='auto';
+  v.src=`assets/ai/${el.dataset.slot}.mp4`; v.addEventListener('loadeddata',()=>el.classList.add('ready')); v.addEventListener('error',()=>{});
+  el.insertBefore(v,el.firstChild); return {el,v,scene:el.closest('.scene').id};});
 
-// S3 dot field
-const dots=[];const df=$('#s3dots');
-for(let r=0;r<6;r++)for(let c=0;c<22;c++){const d=document.createElement('div');d.className='dot';d.style.left=(c*26)+'px';d.style.top=(r*26)+'px';df.appendChild(d);dots.push(d);}
-const s3cols=$$('#s3 .optcol').map(c=>$$('.opt',c));
-const S3SEL=[1,2,1], S3AT=[6.6,7.8,9.0];
-
-// S4 waveform
-const wave=$('#s4wave');const bars=[];for(let i=0;i<22;i++){const b=document.createElement('i');wave.appendChild(b);bars.push(b);}
-const S4T=[0.3,3.5,6.6,8.8,22.2,23.6]; const s4steps=$$('#s4 .step');
-const strikes=$$('#s4 .strike');
-
-// S7 chart
-const chart=$('#s7chart'); const CH={w:820,h:290,x0:40,y0:20,y1:250};
-const days=14; const X=d=>CH.x0+(d/(days-1))*(CH.w-CH.x0-20); const Y=v=>CH.y1-(v/0.30)*(CH.y1-CH.y0);
-const series={wa:[.20,.22,.23,.24,.23,.24,.22,.12,.09,.08,.08,.07,.08,.07], sms:[.10,.11,.10,.11,.12,.11,.12,.13,.14,.14,.15,.15,.15,.16], vo:[.14,.15,.15,.14,.16,.15,.16,.18,.19,.20,.20,.21,.21,.22]};
-let svg=`<g stroke="#1e3a57" stroke-width="1">`;
-[0,.1,.2,.3].forEach(v=>svg+=`<line x1="${CH.x0}" x2="${CH.w-20}" y1="${Y(v)}" y2="${Y(v)}"/>`);
-svg+=`</g><g fill="#5d7591" font-size="15">`;
-[0,.1,.2,.3].forEach(v=>svg+=`<text x="0" y="${Y(v)+5}">${Math.round(v*100)}%</text>`);
-[0,6,13].forEach(d=>svg+=`<text x="${X(d)}" text-anchor="${d===13?'end':d===0?'start':'middle'}" y="${CH.h-8}">Day ${d+1}</text>`);
-svg+=`</g>`;
-const col={wa:'#4ade80',sms:'#60a5fa',vo:'#a78bfa'};
-for(const k in series){const pts=series[k].map((v,i)=>`${i?'L':'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(' ');
-  svg+=`<path id="ln_${k}" d="${pts}" fill="none" stroke="${col[k]}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>`;}
-svg+=`<g id="s7drop" opacity="0"><line x1="${X(7)}" x2="${X(7)}" y1="${CH.y0}" y2="${CH.y1}" stroke="#f87171" stroke-width="2" stroke-dasharray="6 6"/>
-  <circle cx="${X(7)}" cy="${Y(.12)}" r="10" fill="#f87171"/><circle cx="${X(7)}" cy="${Y(.12)}" r="20" fill="none" stroke="#f87171" stroke-width="2"/></g>`;
-chart.innerHTML=svg;
-const lns=['wa','sms','vo'].map(k=>$('#ln_'+k));
-
-// S7 lanes + dots
-const LANES=[["SMS & email","cheapest","var(--teal)"],["WhatsApp","chat","var(--wa)"],["Voice bot","Ritu / Advait","var(--violet)"],["Person","human officer","var(--amber)"]];
-const lanesEl=$('#s7lanes'); const LH=74, LG=14;
-LANES.forEach(([a,b],i)=>{const l=document.createElement('div');l.className='lane';l.style.top=(i*(LH+LG))+'px';
-  l.innerHTML=`<div class="lb"><b>${a}</b><span>${b}</span></div>`;lanesEl.appendChild(l);});
-const ND=16, NSTEP=6; const fdots=[], seqs=[];
-for(let j=0;j<ND;j++){const d=document.createElement('div');d.className='fdot';d.style.left=(250+j*31)+'px';lanesEl.appendChild(d);fdots.push(d);
-  const s=[0];for(let k=1;k<=NSTEP;k++){const cur=s[k-1],r=hash(j+1,k+3);let nx=cur;
-    if(cur===3) nx = r<.55?3:0; else if(r<.42) nx=cur+1; else if(r<.68) nx=Math.max(0,cur-1);
-    s.push(nx);} seqs.push(s);}
-const laneColor=["#2dd4bf","#4ade80","#a78bfa","#fbbf24"];
-
-/* ---------------- generic animators ---------------- */
+/* ---------------- animators ---------------- */
 SCENES.forEach(s=>{s.el=$('#'+s.id); s.reveals=$$('[data-in]',s.el); s.counts=$$('[data-count]',s.el); s.kbs=$$('[data-kb]',s.el); s.deps=$$('[data-depth]',s.el);});
 $$('.scene').forEach(el=>{if(!SCENES.some(s=>s.el===el)) el.style.display='none';});
 function reveal(el,lt){
-  const a=+el.dataset.in, d=+(el.dataset.dur||0.7), fx=el.dataset.fx||'rise';
-  const raw=prog(lt,a,d), p=fx==='pop'?backOut(raw):easeOut(raw);
-  let o=easeOut(raw);
-  if(el.dataset.out){o*=1-prog(lt,+el.dataset.out,0.4);}
-  el.style.opacity=o;
-  const k=(1-p)*M();
-  el.style.translate = fx==='rise'?`0 ${36*k}px`: fx==='down'?`0 ${-36*k}px`: fx==='left'?`${-70*k}px 0`: fx==='right'?`${70*k}px 0`:'0 0';
-  el.style.scale = fx==='pop'? String(RM?1:Math.max(0.01,0.8+0.2*p)) : '1';
-  el.style.visibility = o<=0.001?'hidden':'visible';
+  const a=+el.dataset.in, fx=el.dataset.fx;
+  const dur=fx==='slam'?0.26:fx==='pop'?0.32:0.4;
+  const raw=prog(lt,a,dur);
+  let o=fx==='slam'?prog(lt,a,0.07):easeOut(raw);
+  if(el.dataset.out) o*=1-prog(lt,+el.dataset.out,0.12);
+  el.style.opacity=o; el.style.visibility=o<=0.001?'hidden':'visible';
+  const m=M(); let tr='0 0', sc='1';
+  if(fx==='slam'){ const p=expo(raw); sc=String(1+(1-p)*0.45*m); tr=`0 ${(1-p)*-18*m}px`; }
+  else if(fx==='pop'){ sc=String(m?Math.max(.01,.75+.25*backOut(raw)):1); }
+  else if(fx==='up'){ tr=`0 ${(1-expo(raw))*60*m}px`; }
+  else if(fx==='left'){ tr=`${(1-expo(raw))*-120*m}px 0`; }
+  else if(fx==='right'){ tr=`${(1-expo(raw))*120*m}px 0`; }
+  el.style.translate=tr; el.style.scale=sc;
 }
-function count(el,lt){const a=+el.dataset.at, d=+(el.dataset.cdur||1.6), dec=+(el.dataset.dec||0), v=el._target*easeOut(prog(lt,a,d));
-  el.textContent = dec ? v.toFixed(dec) : fmt(v);}
-function kb(el,lt,dur){const k=el.dataset.kb.split(',').map(Number), a=k[6]||0, b=k[7]||dur, p=RM?0:easeIO(prog(lt,a,b-a));
+function count(el,lt){const v=el._target*expo(prog(lt,+el.dataset.at,+el.dataset.cdur)), d=+(el.dataset.dec||0); el.textContent=d?v.toFixed(d):fmt(v);}
+function kb(el,lt,dur){const k=el.dataset.kb.split(',').map(Number), a=k[6]||0, b=k[7]||dur, p=RM?1:easeIO(prog(lt,a,b-a));
   el.style.transform=`translate(${lerp(k[0],k[3],p)}px,${lerp(k[1],k[4],p)}px) scale(${lerp(k[2],k[5],p)})`;}
-
-/* ---------------- per-scene effects ---------------- */
+const B=n=>n*BEAT;
 const FX={
-  s1(lt){
-    s1cards.forEach((c,i)=>{const p=easeOut(prog(lt,S1T[i],.4));let y=0,depth=0;
-      for(let j=i+1;j<S1T.length;j++){const q=easeOut(prog(lt,S1T[j],.45));y+=q*92;depth+=q;}
-      c.style.opacity=p*(1-.12*depth); c.style.transform=`translateY(${y-28*(1-p)*M()}px) scale(${1-.05*(1-p)})`;});
-    let ang=0;S1T.forEach(tt=>{const d=lt-tt;if(d>0&&d<.6)ang+=Math.sin(d*55)*3*(1-d/.6);});
-    $('#s1phone').style.transform=`rotate(${ang*M()}deg)`;
-    $('#s1count').textContent=Math.max(1,S1T.filter(x=>lt>=x).length);
-    let spent=0;S1T.forEach(tt=>spent+=easeOut(prog(lt,tt+.1,.5)));
-    $('#s1fill').style.width=(100-spent*11)+'%';
-    s1coins.forEach((c,i)=>{const d=lt-(S1T[i]+.15);if(d<0){c.style.opacity=0;return;}
-      const x0=900*(1-(i+1)*.11)-22; const y=RM?0:.5*1500*d*d; c.style.left=(x0+(RM?0:50*d))+'px';c.style.top=(46+y)+'px';
-      c.style.transform=`rotate(${RM?0:260*d}deg)`;c.style.opacity=(RM?1-prog(d,.3,.6):1-prog(d,.45,.4));});
+  k1(lt){
+    k1cards.forEach((c,i)=>{const p=expo(prog(lt,K1T[i],.22)); let y=0; for(let j=i+1;j<K1T.length;j++) y+=expo(prog(lt,K1T[j],.25))*92;
+      c.style.opacity=p; c.style.transform=`translateY(${y-30*(1-p)*M()}px) scale(${1-.06*(1-p)})`;});
+    let a=0; K1T.forEach(t=>{const d=lt-t; if(d>0&&d<.4) a+=Math.sin(d*60)*3*(1-d/.4);}); $('#k1phone').style.transform=`rotate(${a*M()}deg)`;
+    $('#k1n').textContent=K1T.filter(t=>lt>=t).length;
   },
-  s2(lt){
-    const p=prog(lt,1.0,7.0); play2.style.left=(GX-6+p*10*CW)+'px'; play2.style.opacity=(lt>0.9&&p<1)?1:0;
-    s2cells.forEach(o=>{const tf=1.0+7.0*(o.c+.5)/10;const on=lt>=tf;
-      o.el.classList.toggle('fired',on);o.el.classList.toggle('no',on&&!o.yes);o.el.classList.toggle('yes',on&&!!o.yes);
-      o.fl.style.opacity=on?Math.exp(-(lt-tf)*4)*.9:0;});
+  k2(lt){ const step=Math.floor(lt/(BEAT/2)); k2cells.forEach((c,i)=>{const on=hash(i,step)<.18; c.style.background=on?'#2b4a70':'#1b2d45'; c.style.color=on?'#fff':'#40597a';}); },
+  k3(lt){ k3lines.forEach((l,i)=>l.style.strokeDashoffset=String(-(lt*(220+i*15)))); },
+  k4(lt){ const step=Math.floor(lt/(BEAT/2)); k4dots.forEach((d,i)=>d.classList.toggle('on',lt>0.1&&hash(i,step)<.38)); },
+  k5(lt){ const c=$('#k5c'), w=$('#k5w'); let sel=-1; if(lt<B(5)) sel=Math.floor(lt/(BEAT/2))%2; else sel=0;
+    c.classList.toggle('sel',sel===0); w.classList.toggle('sel',sel===1); w.style.opacity=lt>=B(5)?.35:1; },
+  k6(lt){ k6bars.forEach((b,i)=>b.style.height=(lt>B(3)&&!RM?12+50*Math.abs(Math.sin(lt*7+i*.7)*Math.sin(lt*2.1+i*.3)):12)+'px'); },
+  k6b(lt){ const talking=(lt>0.25&&lt<5.2)||(lt>5.6&&lt<9.0);
+    k6bbars.forEach((b,i)=>b.style.height=(talking&&!RM?12+56*Math.abs(Math.sin(lt*8+i*.6)*Math.sin(lt*2.7+i*.4)):10)+'px');
+    $('#k6blang').textContent=lt<5.6?'Hindi · on call':'English · on call'; },
+  k8(lt){ [1.5,2,2.5,3].forEach((b,i)=>{const el=$('#k8c'+(i+1)), off=lt>=B(b); el.classList.toggle('off',off); el.lastElementChild.textContent=off?'OFF':'ON';}); },
+  k11(lt){ const p=prog(lt,B(3),B(2.5)); $('#k11wa').style.strokeDashoffset=1-p; $('#k11sms').style.strokeDashoffset=1-p; },
+  k12(lt){
+    const mon=$('#k12mon');
+    // real /demo/live frames: crossfade day 2 -> day 8 as the campaign runs
+    k12frames.forEach((f,i)=>{const a=B(4+i*4), o=i===0?1:easeIO(prog(lt,a,0.6)); f.style.opacity=o;});
+    const z=RM?1:1+0.06*prog(lt,B(4),B(16))+0.35*Math.pow(prog(lt,B(20),B(4)),2);
+    k12frames.forEach(f=>{f.style.transformOrigin='22% 10%'; f.style.transform=`scale(${z})`;});
+    // decision stream
+    const step=Math.floor(Math.max(0,lt-B(4))/(BEAT/2));
+    k12rows.forEach((r,i)=>{const pos=((i-step)%k12rows.length+k12rows.length)%k12rows.length; r.style.top=(pos*60)+'px'; r.style.opacity=pos<7?1:0;});
+    $('#k12checks').textContent=fmt(lt<B(5)?0:12480+Math.floor((lt-B(5))*1460));
+    // approval card + tap
+    const ap=$('#k12approve'), done=lt>=B(15); ap.classList.toggle('done',done); ap.textContent=done?'Approved ✓ · Aladdin re-checked':'Approve';
+    const cur=$('#cursor'); const bx=520+36+ap.offsetLeft+ap.offsetWidth/2, by=300+30+ap.offsetTop+ap.offsetHeight/2;
+    const cp=RM?1:easeIO(prog(lt,B(13),B(1.8))); cur.style.left=lerp(1700,bx,cp)+'px'; cur.style.top=lerp(1000,by,cp)+'px';
+    cur.style.opacity=(lt>B(12.5)&&lt<B(17))?1:0;
+    $('#k12card').style.opacity=String(+$('#k12card').style.opacity*(1-prog(lt,B(19),0.3)));
   },
-  s3(lt){
-    const tick=Math.floor(lt*1.6);
-    dots.forEach((d,i)=>d.classList.toggle('on',hash(i,tick)<.36));
-    const c=$('#s3contact'),w=$('#s3wait');
-    let sel=-1; if(lt>=3.0&&lt<5.2) sel=Math.floor((lt-3)/.36)%2; else if(lt>=5.2) sel=0;
-    c.classList.toggle('sel',sel===0); w.classList.toggle('sel',sel===1);
-    w.classList.toggle('dim',lt>=5.2); c.classList.remove('dim');
-    s3cols.forEach((opts,ci)=>{const a=S3AT[ci];opts.forEach((o,oi)=>{
-      const scanning=lt>=a&&lt<a+1.2, done=lt>=a+1.2;
-      o.classList.toggle('hl',scanning&&Math.floor((lt-a)/.24)%4===oi);
-      o.classList.toggle('sel',done&&oi===S3SEL[ci]); o.classList.toggle('dim',done&&oi!==S3SEL[ci]);});});
-  },
-  s4(lt){
-    s4steps.forEach((s,i)=>{const on=lt>=S4T[i], next=i<5?lt>=S4T[i+1]:false;
-      s.classList.toggle('act',on&&!next); s.classList.toggle('done',next); s.classList.toggle('pend',!on);});
-    const inCall=lt>=8.5&&lt<22.2;
-    bars.forEach((b,i)=>{const h=inCall&&!RM?10+50*Math.abs(Math.sin(lt*6+i*.7)*Math.sin(lt*2.3+i*.31)):10;b.style.height=h+'px';});
-    $('#s4clock').textContent= lt<3.5?'10:02': lt<8.5?'7:32': lt<23.6?'7:41':'9:15';
-    strikes.forEach((s,i)=>s.style.width=(easeOut(prog(lt,25.2+i*.35,.6))*(100-8))+'%');
-  },
-  s5(lt){
-    [7.0,7.35,7.7,8.05].forEach((t,i)=>{const el=$('#c'+(i+1));const off=lt>=t;el.classList.toggle('off',off);el.lastElementChild.textContent=off?'OFF':'ON';});
-    const sc=$('#s5scan'); const scanning=lt>=10.0&&lt<11.2; sc.style.opacity=scanning?1:0;
-    sc.style.top=(((lt-10.0)%0.6)/0.6*100)+'%';
-    $('#s5receipt').classList.toggle('bad',lt>=11.2);
-  },
-  s6(lt){
-    const cur=$('#s6cursor'), rip=$('#s6ripple'), ap=$('#s6approve');
-    const bx=360+1+ap.offsetLeft+ap.offsetWidth/2, by=320+1+ap.offsetTop+ap.offsetHeight/2; // card origin + offset inside card
-    const p=RM?1:easeIO(prog(lt,1.4,1.3)); const x=lerp(1560,bx,p), y=lerp(900,by,p);
-    cur.style.left=x+'px'; cur.style.top=y+'px'; cur.style.opacity=lt>1.2&&lt<5.6?1:0;
-    const cp=prog(lt,2.8,.6); rip.style.left=bx+'px'; rip.style.top=by+'px';
-    rip.style.opacity=lt>=2.8?(1-cp):0; rip.style.transform=`scale(${1+cp*4})`;
-    const done=lt>=2.9; ap.classList.toggle('pressed',done); ap.textContent=done?'Approved ✓':'Approve';
-    const st=$('#s6status'); st.textContent=done?'Approved by supervisor':'Waiting for a supervisor'; st.className='chip '+(done?'teal':'amber');
-  },
-  s7(lt){
-    const dp=prog(lt,0.6,5.0); lns.forEach(l=>l.style.strokeDashoffset=1-dp);
-    $('#s7drop').setAttribute('opacity',easeOut(prog(lt,0.6+5.0*7.2/13,.4)));
-    const q=easeIO(prog(lt,5.8,1.6));
-    const W=lerp(55,18,q), S=lerp(30,44,q), V=100-W-S;
-    const sw=[['sgW',W,'WhatsApp'],['sgS',S,'SMS'],['sgV',V,'Voice']]; let x=0;
-    sw.forEach(([id,v,n])=>{const e=$('#'+id);e.style.left=x+'%';e.style.width=v+'%';e.textContent=`${n} ${Math.round(v)}%`;x+=v;});
-    const T0=9.0, SL=1.5; const raw=(lt-T0)/SL; const k=clamp(Math.floor(raw)+1,0,NSTEP); const tp=RM?1:easeIO(clamp((raw-Math.floor(raw))/.55));
-    fdots.forEach((d,j)=>{const s=seqs[j]; const cur=s[k], prev=s[Math.max(0,k-1)]; const ff= lt<T0?0:(k>=NSTEP&&raw>NSTEP?1:tp);
-      const lane=lt<T0?0:lerp(prev,cur,ff); d.style.top=(lane*(LH+LG)+LH/2)+'px';
-      const li=Math.round(lane); d.style.background=laneColor[li]; d.style.boxShadow=`0 0 12px ${laneColor[li]}`;});
-  },
-  s8(lt){
-    const base=270, N=CONFIG.numbers;
-    $('#s8b1').style.width=(base*easeOut(prog(lt,1.4,1.0)))+'px'; /* lender bar */
-    $('#s8b1').style.opacity=prog(lt,1.4,.2);
-    $('#s8b2').style.width=(base*(N.recoveryKairos/N.recoveryBaseline)*easeOut(prog(lt,5.4,1.8)))+'px';
-    $('#s8b2').style.opacity=prog(lt,5.4,.2);
-  },
-  s9(){}, oi(){}, oc(){}, s4b(){},
-  o1(lt){
-    $$('#o1 .o1st').forEach((e,i)=>{const ph=(lt*0.7+i*0.33)%1; e.style.opacity=RM?.5:Math.sin(ph*Math.PI)*.9;
-      e.style.transform=`translateY(${RM?0:-30*ph}px) scaleX(${1+.4*Math.sin(lt*3+i)})`;});
-  },
-  o2(lt){
-    const h=opHours('o2',lt), st=opStats(h);
-    $('#o2runs').textContent=inr(Math.round(st.r*easeOut(prog(lt,0.8,1.2))/100)*100);
-    $('#o2runs').style.color= (lt>=O2T[4]&&lt<O2T[4]+1.4)?'var(--amber)':'var(--fg)';
-    $('#o2rr').textContent=lakh(st.rr)+'/hr';
-    $('#o2req').textContent= st.need>0 ? lakh(st.req)+'/hr' : 'Done ✓';
-    $('#o2ov').innerHTML=clockStr(h)+`<small>day ${OPC.campaignDay} of ${OPC.campaignDays}</small>`;
-    $('#o2ex').textContent=inr(Math.round(st.ex/100)*100);
-    const g=easeOut(prog(lt,8.2,1.4)); let x=0;
-    partSegs.forEach(([el,v])=>{el.style.left=(x*g)+'%'; el.style.width=(v*g)+'%'; x+=v;});
-    feed.forEach((c,i)=>{const p=easeOut(prog(lt,O2T[i],.45));let y=0,depth=0;
-      for(let j=i+1;j<feed.length;j++){const q=easeOut(prog(lt,O2T[j],.5));y+=q*112;depth+=q;}
-      c.style.opacity=p*(1-.1*depth); c.style.transform=`translateY(${y-24*(1-p)*M()}px)`;});
-    const d=lt-O2T[4], f=$('#o2four'); f.style.opacity= d<0?0: d<1.6?1-prog(d,1.0,.6):0;
-    f.style.transform=`translateY(${RM?0:-40*clamp(d/1.6)}px) scale(${RM?1:.8+.2*backOut(clamp(d/.4))})`;
-  },
-  o3(lt){
-    const cur=$('#o3cursor'), rip=$('#o3ripple'), ap=$('#o3approve');
-    const bx=1000+1+ap.offsetLeft+ap.offsetWidth/2, by=200+1+ap.offsetTop+ap.offsetHeight/2;
-    const p=RM?1:easeIO(prog(lt,6.0,1.3)); cur.style.left=lerp(1640,bx,p)+'px'; cur.style.top=lerp(960,by,p)+'px';
-    cur.style.opacity=lt>5.8&&lt<9.4?1:0;
-    const cp=prog(lt,7.5,.6); rip.style.left=bx+'px'; rip.style.top=by+'px'; rip.style.opacity=lt>=7.5?1-cp:0; rip.style.transform=`scale(${1+cp*4})`;
-    const done=lt>=7.6; ap.classList.toggle('pressed',done); ap.textContent=done?'Approved ✓':'Approve';
-    const st=$('#o3status'); st.textContent=done?'Approved by '+PR:'Waiting for you'; st.className='chip '+(done?'teal':'amber');
-  },
-  o4(lt){
-    const cards=$$('#o4 .fcard'); let k=-1; O4T.forEach((tt,i)=>{if(lt>=tt)k=i;});
-    cards.forEach((c,i)=>c.classList.toggle('on',i===k));
-    const cx=i=>120+i*340+230, cy=i=>300+470;
-    const cur=$('#o4cursor'); cur.style.opacity=k>=0?1:0;
-    if(k>=0){const p=RM?1:easeIO(prog(lt,O4T[k],.5)); const from=k>0?k-1:k;
-      cur.style.left=lerp(cx(from),cx(k),p)+'px'; cur.style.top=lerp(cy(from),cy(k),p)+'px';}
-  },
-  o5(lt){
-    const N=CONFIG.numbers, base=330;
-    $('#o5b2').style.width=(base*easeOut(prog(lt,1.6,1.0)))+'px'; $('#o5b2').style.opacity=prog(lt,1.6,.2);
-    $('#o5b1').style.width=(base*(N.recoveryKairos/N.recoveryBaseline)*easeOut(prog(lt,2.4,1.6)))+'px'; $('#o5b1').style.opacity=prog(lt,2.4,.2);
-    $('#o5total').textContent=inr(OPC.dayCollected); $('#o5target').textContent=inr(OPC.dayTarget);
-    const q=easeIO(prog(lt,11.0,1.3)), lid=$('#o5lid');
-    if(RM){lid.style.transform='none'; lid.style.opacity=1-q;}
-    else {lid.style.transform=`perspective(1800px) rotateX(${-86*q}deg)`; lid.style.opacity=1; lid.firstElementChild.style.opacity=1-q*.9;}
-  }
+  k13(lt){ const base=330, N=CONFIG.numbers; $('#k13b1').style.width=(base*expo(prog(lt,B(2),0.5)))+'px';
+    $('#k13b2').style.width=(base*(N.recoveryKairos/N.recoveryBaseline)*expo(prog(lt,B(3),0.6)))+'px';
+    $('#k13b1').style.opacity=prog(lt,B(2),.1); $('#k13b2').style.opacity=prog(lt,B(3),.1); }
 };
 
-/* ---------------- operator chapter: illustrative match clock and score ---------------- */
-function opHours(id,lt){ return id==='o1'?0: id==='o2'?1+7*clamp(lt/24): id==='o3'?8.1+0.25*clamp(lt/13): id==='o4'?8.4+0.35*clamp(lt/12): DAYH; }
-function opRuns(h){const x=clamp(h/DAYH); return OPC.dayCollected*(0.75*x+0.25*(1-Math.pow(1-x,2)));}
-function opStats(h){const r=Math.round(opRuns(h)/100)*100, need=Math.max(0,OPC.dayTarget-r);
-  return {r, rr:r/Math.max(h,.5), need, req:need/Math.max(DAYH-h,.25), ex:OPC.savedExtras*clamp(h/DAYH)};}
-function clockStr(h){const m=Math.round((OPC.dayStart+h)*60), H=Math.floor(m/60), Mi=m%60;
-  return `${((H+11)%12)+1}:${String(Mi).padStart(2,'0')} ${H>=12?'pm':'am'}`;}
-const O2T=[2.6,6.4,10.2,14.0,18.6], O4T=[2.8,4.9,7.0,8.6,10.0];
-const partCol={WhatsApp:'var(--wa)',SMS:'var(--sms)',Voice:'var(--violet)',Email:'#94a3b8'};
-const partSegs=OPC.partnerships.map(([n,v])=>{const e=document.createElement('div');e.className='seg';e.style.background=partCol[n]||'var(--teal)';
-  e.textContent=`${n} ${v}%`;$('#o2part').appendChild(e);return [e,v];});
-const tagCol=['var(--teal)','var(--violet)','var(--red)','var(--sms)','var(--amber)'];
-const feed=OPC.commentary.map(([tag,txt],i)=>{const e=document.createElement('div');e.className='cm';
-  e.innerHTML=`<div class="cmh"><span class="cmtag" style="background:${tagCol[i%5]}">${tag}</span><span class="cmt">${clockStr(opHours('o2',O2T[i]))}</span></div><div class="cmx"></div>`;
-  e.querySelector('.cmx').textContent=txt; $('#o2feed').appendChild(e); return e;});
-
-/* ---------------- render ---------------- */
-const capEl=$('#capText'); let lastCue=null;
-const chapBtns=[], groupBtns=[];
+/* ---------------- render: whip transitions, punch-ins on drops, flash + light leak, beat pulse, camera shake ---------------- */
+const TR=0.3, capEl=$('#capText'), chapBtns=[], groupBtns=[]; let lastCue=null;
+const ENERGY={intro:.35,build:.45,drop:1,drive:.8,groove:.5,tight:.75,lift:.6,breakdown:.3};
 function sceneAt(t){for(const s of SCENES) if(t<s.end) return s; return SCENES[SCENES.length-1];}
-const TR=0.9; // cross-dissolve length (s)
-const MORPHS={ // shared-element morphs: [x,y,w,h,radius] in stage px
-  's4>s4b':{a:[220,150,380,760,48], b:[162,274,896,556,12], img:'assets/real/crm_borrower.jpg'},
-  'o1>o2':{a:[892,232,896,556,12], b:[120,262,1060,640,28]}};
-const morphEl=$('#morph'), bokeh=$('#bokeh');
-function morph(a,b,p){const m=a&&b&&MORPHS[a.id+'>'+b.id];
-  if(!m||RM){morphEl.style.opacity=0;return;}
-  const e=easeIO(p), r=m.a.map((v,i)=>lerp(v,m.b[i],e));
-  morphEl.style.width=m.b[2]+'px'; morphEl.style.height=m.b[3]+'px'; morphEl.style.borderRadius=r[4]+'px';
-  morphEl.style.transform=`translate(${r[0]}px,${r[1]}px) scale(${r[2]/m.b[2]},${r[3]/m.b[3]})`;
-  morphEl.style.backgroundImage=m.img?`url(${m.img})`:'';
-  morphEl.style.opacity=Math.min(1,1.6*Math.sin(Math.PI*p));}
-function drawScene(s,t,o,xs,blur){
-  const lt=t-s.start, L=Math.max(lt,0), q=clamp(lt/s.dur), dir=s.idx%2?1:-1;
-  const dx=RM?0:dir*16*q, dy=RM?0:-8*q, sc=RM?1:(1+0.025*q)*xs;
-  s.el.style.display='block'; s.el.style.visibility='visible'; s.el.style.opacity=o; s._o=o;
-  s.el.style.transform=`translate(${dx}px,${dy}px) scale(${sc})`;
-  s.el.style.filter=(!RM&&blur>0.05)?`blur(${blur.toFixed(2)}px)`:'none';
-  s.deps.forEach(e=>{const d=+e.dataset.depth-1; e.style.transform=`translate(${dx*d*3}px,${dy*d*3}px)`;});
-  s.reveals.forEach(r=>reveal(r,L)); s.counts.forEach(c=>count(c,L)); s.kbs.forEach(k=>kb(k,L,s.dur)); FX[s.id](L);
+function drawScene(s,t,o,x,sc,blur){
+  const lt=t-s.start, L=Math.max(lt,0), q=clamp(lt/s.dur);
+  s.el.style.display='block'; s.el.style.opacity=o;
+  const drift=RM?1:1+0.035*q;
+  s.el.style.transform=`translateX(${RM?0:x}px) scale(${(RM?1:sc)*drift})`;
+  s.el.style.filter=(!RM&&blur>0.1)?`blur(${blur.toFixed(1)}px)`:'none';
+  s.deps.forEach(e=>{const d=+e.dataset.depth-1; e.style.transform=`translate(${RM?0:-30*d*q}px,${RM?0:-14*d*q}px)`;});
+  s.reveals.forEach(r=>reveal(r,L)); s.counts.forEach(c=>count(c,L)); s.kbs.forEach(k=>kb(k,L,s.dur)); FX[s.id]&&FX[s.id](L);
+  slots.forEach(sl=>{ if(sl.scene!==s.id) return; const v=sl.v; if(!sl.el.classList.contains('ready')) return;
+    if(playing&&v.paused) v.play().catch(()=>{}); if(!playing&&!v.paused) v.pause();
+    if(v.duration&&Math.abs(v.currentTime-(L%v.duration))>0.4) try{v.currentTime=L%v.duration;}catch(e){} });
 }
 function render(t){
   const sc=sceneAt(t), i=sc.idx, prev=SCENES[i-1], next=SCENES[i+1], h=TR/2, shown=new Set([sc]);
-  let o=i===0?easeOut(prog(t,0,.8)):1, xs=1, bl=0, other=null;
-  if(prev && t<sc.start+h){const p=prog(t,sc.start-h,TR), e=easeIO(p); other=prev;
-    drawScene(prev,t,1-e,1+.04*e,6*e); o*=e; xs=.97+.03*e; bl=6*(1-e); morph(prev,sc,p);}
-  else if(next && t>sc.end-h){const p=prog(t,next.start-h,TR), e=easeIO(p); other=next;
-    drawScene(next,t,e,.97+.03*e,6*(1-e)); o*=1-e; xs=1+.04*e; bl=6*e; morph(sc,next,p);}
-  else morph(null);
-  if(other) shown.add(other);
-  drawScene(sc,t,o,xs,bl);
-  if(other){ (other.idx>i?other:sc).el.style.zIndex=2; (other.idx>i?sc:other).el.style.zIndex=1; } else sc.el.style.zIndex=1;
-  SCENES.forEach(s=>{if(!shown.has(s)) s.el.style.display='none';});
-  if(!RM) bokeh.style.transform=`translate(${Math.sin(t*.05)*30}px,${Math.cos(t*.04)*20}px)`;
-  // broadcast score bug (operator scenes)
-  const bug=$('#bug');
-  if(sc.bug){const hh=opHours(sc.id,t-sc.start), st=opStats(hh); bug.style.opacity=sc._o;
-    $('#bugRuns').textContent=inr(st.r); $('#bugRR').textContent=lakh(st.rr)+'/hr'; $('#bugClock').textContent=clockStr(hh);}
-  else bug.style.opacity=0;
-  // captions (speaker name for character lines)
-  const lt=t-sc.start; let cue=null, ci=-1;
-  sc.cues.forEach((c,k)=>{if(lt>=c[0]){cue=c;ci=k;}});
-  const key=cue?sc.id+':'+ci:null;
-  if(key!==lastCue){
-    capEl.textContent='';
-    if(cue&&!sc.noCaption){
-      if(cue[2]){const b=document.createElement('b');b.className='spk';b.textContent=(SPEAKERS[cue[2]]||cue[2])+': ';capEl.appendChild(b);}
-      capEl.appendChild(document.createTextNode(cue[1])); capEl.classList.add('show');}
-    else capEl.classList.remove('show');
-    if(cue&&playing&&!seeking) speak(cue[3]||cue[1]);
-    lastCue=key;
+  let o=i===0?1:1, x=0, s=1, bl=0;
+  const punch=sc.drop||sc.final;
+  if(prev&&t<sc.start+h){const p=prog(t,sc.start-h,TR), e=easeIO(p); shown.add(prev);
+    drawScene(prev,t,1-e,-160*e,1+.08*e,10*e); o=e; x=punch?0:160*(1-e); s=punch?1+.25*(1-e):.96+.04*e; bl=10*(1-e);}
+  else if(next&&t>sc.end-h){const p=prog(t,next.start-h,TR), e=easeIO(p); shown.add(next);
+    const np=next.drop||next.final; drawScene(next,t,e,np?0:160*(1-e),np?1+.25*(1-e):.96+.04*e,10*(1-e)); o=1-e; x=-160*e; s=1+.08*e; bl=10*e;}
+  drawScene(sc,t,o,x,s,bl);
+  SCENES.forEach(z=>{z.el.style.zIndex=z===sc?2:1; if(!shown.has(z)) z.el.style.display='none';});
+  slots.forEach(sl=>{if(!shown.has(SCENES.find(z=>z.id===sl.scene))&&!sl.v.paused) sl.v.pause();});
+  // flash, light leak, camera shake on drops / final; beat pulse by energy
+  const lt=t-sc.start, mode=sc.mode||(sc.drop?'drop':sc.final?'final':'drive');
+  const big=sc.drop||sc.final||i===0;
+  const fl=$('#flash'), lk=$('#leak'), cam=$('#cam');
+  if(!RM){
+    let f=big&&lt<0.4?0.75*Math.exp(-lt/0.09):0;
+    if(sc.final&&lt>=B(2)&&lt<B(2)+0.4) f=Math.max(f,0.6*Math.exp(-(lt-B(2))/0.1));
+    fl.style.opacity=f;
+    lk.style.opacity=(sc.drop&&lt<1.4)?Math.sin(Math.PI*lt/1.4)*.55:0; lk.style.transform=`translateX(${(lt/1.4)*400-200}px)`;
+    const sh=big&&lt<0.3?(1-lt/0.3)*10:0; cam.style.transform=sh?`translate(${(hash(t,1)-.5)*sh}px,${(hash(t,2)-.5)*sh}px)`:'none';
+    const ph=(lt%BEAT); $('#pulse').style.opacity=(ENERGY[mode]||0)*0.9*Math.exp(-ph/0.13);
   }
-  // chrome
-  $('#chapNum').textContent=String(sc.idx+1).padStart(2,'0'); $('#chapName').textContent=sc.name;
+  if(sc.final&&lt>=B(1)&&lt<B(2)){ sc.el.style.opacity=0; } // the beat of silence is black
+  // captions (optional): the VO line playing now
+  let cue=null; for(const z of SCENES){ for(const [k,off] of (z.vo||[])){ const a=z.start+off; if(t>=a&&t<a+VO_DUR[k]+0.2) cue=k; } }
+  if(cue!==lastCue){ capEl.textContent=cue?VO_TEXT[cue]:''; capEl.classList.toggle('show',!!cue); lastCue=cue; }
   $('#time').textContent=`${mmss(t)} / ${mmss(TOTAL)}`;
   if(!dragging) $('#scrub').value=t;
-  chapBtns.forEach((b,k)=>{const s=SCENES[k];b.classList.toggle('cur',s===sc);b.firstChild.style.width=(clamp((t-s.start)/s.dur)*100)+'%';});
+  chapBtns.forEach((b,k)=>{const z=SCENES[k];b.classList.toggle('cur',z===sc);b.firstChild.style.width=(clamp((t-z.start)/z.dur)*100)+'%';});
   groupBtns.forEach(([b,g])=>b.classList.toggle('cur',g===sc.group));
 }
 
-/* ---------------- playback ---------------- */
+/* ---------------- playback: the soundtrack is the master clock ---------------- */
 let t=0, playing=false, last=null, seeking=false, dragging=false;
-/* Soundtrack: music/*.m4a rendered by music/compose.py from this scene table. When it plays it is the master clock. */
 const AUDIO_FILES={both:`music/soundtrack_${CUT}.m4a`, music:`music/kairos_theme_${CUT}.m4a`, vo:`music/vo_${CUT}.m4a`};
-let musicOn=true, voTrackOn=true, audioOK=true, curSrc=null;
+let musicOn=true, voOn=true, audioOK=true, curSrc=null;
 const audio=new Audio(); audio.preload='auto';
 audio.addEventListener('error',()=>{ if(curSrc){ audioOK=false; curSrc=null; audioButtons(); } });
 audio.addEventListener('loadedmetadata',()=>{ try{audio.currentTime=t;}catch(e){} if(playing&&t<TOTAL) audio.play().catch(()=>{}); });
-function wantSrc(){ return !audioOK?null: musicOn&&voTrackOn?AUDIO_FILES.both: musicOn?AUDIO_FILES.music: voTrackOn?AUDIO_FILES.vo:null; }
-function syncAudio(force){
-  const src=wantSrc();
-  if(src!==curSrc){ curSrc=src; if(!src){ audio.pause(); return; } audio.src=src; return; }
+function wantSrc(){ return !audioOK?null: musicOn&&voOn?AUDIO_FILES.both: musicOn?AUDIO_FILES.music: voOn?AUDIO_FILES.vo:null; }
+function syncAudio(force){ const src=wantSrc();
+  if(src!==curSrc){ curSrc=src; if(!src){audio.pause();return;} audio.src=src; return; }
   if(!src) return;
   if(force||Math.abs(audio.currentTime-t)>0.25){ try{audio.currentTime=t;}catch(e){} }
-  if(playing&&t<TOTAL){ if(audio.paused) audio.play().catch(()=>{}); } else if(!audio.paused) audio.pause();
-}
+  if(playing&&t<TOTAL){ if(audio.paused) audio.play().catch(()=>{}); } else if(!audio.paused) audio.pause(); }
 function frame(now){
-  if(playing){ if(last!=null) t+=Math.min(0.25,(now-last)/1000); last=now; /* cap jumps after a hidden tab */
-    if(curSrc&&!audio.paused&&audio.readyState>=3){ const at=audio.currentTime, d=at-t;
-      if(Math.abs(d)>1.0){ try{audio.currentTime=t;}catch(e){} } else if(Math.abs(d)>0.08) t=at; }
+  if(playing){ if(last!=null) t+=Math.min(0.25,(now-last)/1000); last=now;
+    if(curSrc&&!audio.paused&&audio.readyState>=3){ const d=audio.currentTime-t; if(Math.abs(d)>1){ try{audio.currentTime=t;}catch(e){} } else if(Math.abs(d)>0.06) t=audio.currentTime; }
     if(t>=TOTAL){t=TOTAL;pause();} } else last=null;
   render(t); seeking=false; requestAnimationFrame(frame);
 }
-function play(){ if(t>=TOTAL) seek(0); playing=true; last=null; $('#bPlay').textContent='❚❚ Pause'; syncAudio(true); poke(); }
-function pause(){ playing=false; $('#bPlay').textContent='▶ Play'; stopSpeech(); syncAudio(); showUI(); }
-function seek(x){ t=clamp(x,0,TOTAL); seeking=true; lastCue='(seek)'; stopSpeech(); if(curSrc){ try{audio.currentTime=t;}catch(e){} } }
-function sceneJump(d){ const sc=sceneAt(t); const i=clamp(sc.idx+d,0,SCENES.length-1); seek(SCENES[i].start+0.001); }
-
-/* ---------------- narration (browser speechSynthesis, off by default) ---------------- */
-let voiceOn=false, voice=null;
-function pickVoice(){ if(!('speechSynthesis' in window)) return;
-  const vs=speechSynthesis.getVoices();
-  voice=vs.find(v=>v.lang==='en-IN')||vs.find(v=>/en[-_]IN/i.test(v.lang))||vs.find(v=>/India/i.test(v.name))||vs.find(v=>v.lang==='en-GB')||vs.find(v=>/^en/i.test(v.lang))||null;
-  $('#bVoice').title = voice?`Voice: ${voice.name} (${voice.lang})`:'No voice available';
-}
-if('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }
-function speak(text){ if(!voiceOn||!('speechSynthesis' in window)) return; speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(text.replace(/[“”]/g,'')); if(voice){u.voice=voice;u.lang=voice.lang;} else u.lang='en-IN'; u.rate=1.02; speechSynthesis.speak(u); }
-function stopSpeech(){ if('speechSynthesis' in window) speechSynthesis.cancel(); }
+function play(){ if(t>=TOTAL) seek(0); playing=true; last=null; playLabel(); syncAudio(true); poke(); }
+function pause(){ playing=false; playLabel(); syncAudio(); showUI(); }
+function seek(x){ t=clamp(x,0,TOTAL); seeking=true; lastCue='(seek)'; if(curSrc){ try{audio.currentTime=t;}catch(e){} } }
+function sceneJump(d){ const sc=sceneAt(t); seek(SCENES[clamp(sc.idx+d,0,SCENES.length-1)].start+0.001); }
 
 /* ---------------- UI ---------------- */
-[...new Set(SCENES.map(s=>s.group))].forEach(g=>{const first=SCENES.find(s=>s.group===g), b=document.createElement('button');
-  b.textContent=GROUP_NAME[g]+' · '+mmss(first.start); b.onclick=()=>seek(first.start+0.001); $('#groups').appendChild(b); groupBtns.push([b,g]);});
+[...new Set(SCENES.map(s=>s.group))].forEach(g=>{const f=SCENES.find(s=>s.group===g), b=document.createElement('button');
+  b.textContent=GROUP_NAME[g]+' · '+mmss(f.start); b.onclick=()=>seek(f.start+0.001); $('#groups').appendChild(b); groupBtns.push([b,g]);});
 {const sp=document.createElement('span');sp.className='sp';$('#groups').appendChild(sp);
- [['full','Full film'],['operator','Operator cut']].forEach(([k,n])=>{const a=document.createElement('a');a.textContent=n;a.href='?cut='+k;a.className=CUT===k?'cur':'';$('#groups').appendChild(a);});}
-SCENES.forEach(s=>{const b=document.createElement('button');b.style.flex=s.dur;b.innerHTML='<i class="pf"></i><span>'+(s.idx+1)+' · '+s.name+'</span>';
-  b.title=`${mmss(s.start)} ${s.name}`; b.onclick=()=>{seek(s.start+0.001);}; $('#chapters').appendChild(b); chapBtns.push(b);});
+ [['hero','Hero cut'],['teaser','Teaser']].forEach(([k,n])=>{const a=document.createElement('a');a.textContent=n;a.href='?cut='+k;a.className=CUT===k?'cur':'';$('#groups').appendChild(a);});}
+SCENES.forEach(s=>{const b=document.createElement('button');b.style.flex=s.bars;b.innerHTML='<i class="pf"></i><span>'+(s.idx+1)+' · '+s.name+'</span>';
+  b.title=`${mmss(s.start)} ${s.name}`; b.onclick=()=>seek(s.start+0.001); $('#chapters').appendChild(b); chapBtns.push(b);});
 $('#bPlay').onclick=()=>playing?pause():play();
 const scrub=$('#scrub'); scrub.max=TOTAL;
-scrub.addEventListener('input',()=>{dragging=true;seek(+scrub.value);});
-scrub.addEventListener('change',()=>{dragging=false;});
+scrub.addEventListener('input',()=>{dragging=true;seek(+scrub.value);}); scrub.addEventListener('change',()=>{dragging=false;});
 function setCC(on){document.body.classList.toggle('nocap',!on);$('#bCC').classList.toggle('on',on);}
 $('#bCC').onclick=()=>setCC(document.body.classList.contains('nocap'));
-function setVoice(on){voiceOn=on;$('#bVoice').classList.toggle('on',on);$('#bVoice').textContent='Browser voice: '+(on?'on':'off');if(!on)stopSpeech();else lastCue=null;}
-function audioButtons(){ $('#bMusic').classList.toggle('on',musicOn&&audioOK); $('#bVO').classList.toggle('on',voTrackOn&&audioOK);
-  $('#bMusic').textContent=audioOK?'Music':'Music: run compose.py'; $('#bVO').textContent=audioOK?'Voices':'Voices: n/a'; }
-function setMusic(on){musicOn=on;audioButtons();syncAudio(true);}
-function setVO(on){voTrackOn=on;audioButtons();syncAudio(true);}
-$('#bMusic').onclick=()=>setMusic(!musicOn); $('#bVO').onclick=()=>setVO(!voTrackOn);
-$('#bVoice').onclick=()=>setVoice(!voiceOn);
+function audioButtons(){ $('#bMusic').classList.toggle('on',musicOn&&audioOK); $('#bVO').classList.toggle('on',voOn&&audioOK);
+  $('#bMusic').textContent=audioOK?'Music':'Music: run compose.py'; }
+function setMusic(on){musicOn=on;audioButtons();syncAudio(true);} function setVO(on){voOn=on;audioButtons();syncAudio(true);}
+$('#bMusic').onclick=()=>setMusic(!musicOn); $('#bVO').onclick=()=>setVO(!voOn);
 let recTimer=null;
-function enterRecord(){document.body.classList.add('record');musicOn=true;voTrackOn=true;audioButtons();pause();seek(0);syncAudio(true);clearTimeout(recTimer);recTimer=setTimeout(play,1500);}
+function enterRecord(){document.body.classList.add('record');musicOn=voOn=true;audioButtons();pause();seek(0);syncAudio(true);clearTimeout(recTimer);recTimer=setTimeout(play,1500);}
 function exitRecord(){document.body.classList.remove('record');clearTimeout(recTimer);showUI();}
 $('#bRec').onclick=enterRecord;
 addEventListener('keydown',e=>{
-  if(e.target.tagName==='INPUT'&&e.key!==' ') return;
-  const k=e.key.toLowerCase();
+  if(e.target.tagName==='INPUT'&&e.key!==' ') return; const k=e.key.toLowerCase();
   if(e.key===' '){e.preventDefault();playing?pause():play();}
-  else if(e.key==='ArrowRight'){sceneJump(1);} else if(e.key==='ArrowLeft'){sceneJump(-1);}
-  else if(k==='c'){setCC(document.body.classList.contains('nocap'));}
-  else if(k==='n'){setVoice(!voiceOn);}
-  else if(k==='m'){setMusic(!musicOn);}
-  else if(k==='v'){setVO(!voTrackOn);}
-  else if(k==='r'){document.body.classList.contains('record')?exitRecord():enterRecord();}
-  else if(e.key==='Escape'){exitRecord();}
+  else if(e.key==='ArrowRight') sceneJump(1); else if(e.key==='ArrowLeft') sceneJump(-1);
+  else if(k==='c') setCC(document.body.classList.contains('nocap')); else if(k==='m') setMusic(!musicOn); else if(k==='v') setVO(!voOn);
+  else if(k==='r') document.body.classList.contains('record')?exitRecord():enterRecord(); else if(e.key==='Escape') exitRecord();
   poke();
 });
 let idleTimer=null; const ui=$('#ui');
 function showUI(){ui.classList.remove('idle');}
-function poke(){showUI();clearTimeout(idleTimer);idleTimer=setTimeout(()=>{if(playing)ui.classList.add('idle');},2500);}
-addEventListener('mousemove',poke);
-
-/* fit 1920x1080 stage into the window */
-function fit(){const s=Math.min(innerWidth/1920,innerHeight/1080);const st=$('#stage');
+function poke(){showUI();clearTimeout(idleTimer);idleTimer=setTimeout(()=>{if(playing&&!ui.classList.contains('open'))ui.classList.add('idle');},2000);}
+addEventListener('mousemove',poke); addEventListener('touchstart',poke,{passive:true});
+const moreEl=$('#more'), ctrEl=$('#ui .ctr'), bMenu=$('#bMenu');
+function playLabel(){const c=document.body.classList.contains('compact'); $('#bPlay').textContent=playing?(c?'❚❚':'❚❚ Pause'):(c?'▶':'▶ Play'); $('#bPlay').title=(playing?'Pause':'Play')+' (Space)';}
+function applyCompact(){const c=innerWidth<1100; document.body.classList.toggle('compact',c);
+  if(c&&moreEl.parentElement!==$('#moreSlot')) $('#moreSlot').appendChild(moreEl);
+  if(!c&&moreEl.parentElement!==ctrEl){ ctrEl.insertBefore(moreEl,bMenu); ui.classList.remove('open'); } playLabel();}
+bMenu.onclick=e=>{e.stopPropagation(); const o=!ui.classList.contains('open'); ui.classList.toggle('open',o); bMenu.setAttribute('aria-expanded',String(o)); poke();};
+document.addEventListener('click',e=>{ if(!ui.contains(e.target)){ ui.classList.remove('open'); bMenu.setAttribute('aria-expanded','false'); } });
+function fit(){const s=Math.min(innerWidth/1920,innerHeight/1080), st=$('#stage');
   st.style.transform=`translate(${(innerWidth-1920*s)/2}px,${(innerHeight-1080*s)/2}px) scale(${s})`;}
-addEventListener('resize',fit); fit();
-
-/* URL options: ?t=38  ?scene=4  ?autoplay=1  ?record=1  ?cc=0 */
-const qs=new URLSearchParams(location.search);
-if(qs.has('t')) seek(+qs.get('t'));
-if(qs.has('scene')){const v=qs.get('scene'); let i=isNaN(+v)?SCENES.findIndex(s=>s.id===v):+v-1; if(i>=0) seek(SCENES[clamp(i,0,SCENES.length-1)].start+0.001);}
-if(qs.has('group')){const f=SCENES.find(s=>s.group===qs.get('group')); if(f) seek(f.start+0.001);}
-if(qs.get('cc')==='0') setCC(false);
-if(qs.get('record')==='1') enterRecord(); else if(qs.get('autoplay')==='1') play();
-window.KAIROS_FILM={seek:x=>{seek(x);render(t);},play,pause,get t(){return t;},TOTAL,SCENES,CUT,audio}; // for testing
+addEventListener('resize',()=>{fit();applyCompact();}); fit(); applyCompact();
+if(QS.has('t')) seek(+QS.get('t'));
+if(QS.has('scene')){const v=QS.get('scene'); const i=isNaN(+v)?SCENES.findIndex(s=>s.id===v):+v-1; if(i>=0) seek(SCENES[clamp(i,0,SCENES.length-1)].start+0.001);}
+if(QS.get('cc')==='1') setCC(true);
+if(QS.get('record')==='1') enterRecord(); else if(QS.get('autoplay')==='1') play();
+window.KAIROS_FILM={seek:x=>{seek(x);render(t);},play,pause,get t(){return t;},TOTAL,SCENES,CUT,audio,BEAT};
 requestAnimationFrame(frame);
 </script>
 </body>

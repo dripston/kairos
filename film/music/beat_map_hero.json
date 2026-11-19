@@ -1,0 +1,683 @@
+{
+ "cut": "hero",
+ "bpm": 128.0,
+ "beat_s": 0.46875,
+ "bar_s": 1.875,
+ "runtime_s": 88.125,
+ "drops_s": [
+  15.0,
+  69.375
+ ],
+ "final_hit_s": [
+  80.625
+ ],
+ "sections": [
+  {
+   "scene": "k1",
+   "name": "Cold open",
+   "mode": "intro",
+   "start": 0.0,
+   "end": 7.5,
+   "bars": 4,
+   "chords": [
+    "Dm",
+    "Dm",
+    "Bb",
+    "A"
+   ]
+  },
+  {
+   "scene": "k2",
+   "name": "The problem",
+   "mode": "build",
+   "start": 7.5,
+   "end": 15.0,
+   "bars": 4,
+   "chords": [
+    "Dm",
+    "Bb",
+    "Gm",
+    "A"
+   ]
+  },
+  {
+   "scene": "k3",
+   "name": "Meet Kairos",
+   "mode": "drop",
+   "start": 15.0,
+   "end": 18.75,
+   "bars": 2,
+   "chords": [
+    "Dm",
+    "Bb"
+   ]
+  },
+  {
+   "scene": "k4",
+   "name": "It decides",
+   "mode": "drive",
+   "start": 18.75,
+   "end": 22.5,
+   "bars": 2,
+   "chords": [
+    "Dm",
+    "Bb"
+   ]
+  },
+  {
+   "scene": "k5",
+   "name": "Contact or wait",
+   "mode": "drive",
+   "start": 22.5,
+   "end": 26.25,
+   "bars": 2,
+   "chords": [
+    "Dm",
+    "Bb"
+   ]
+  },
+  {
+   "scene": "k6",
+   "name": "Every channel",
+   "mode": "drive",
+   "start": 26.25,
+   "end": 30.0,
+   "bars": 2,
+   "chords": [
+    "Dm",
+    "Bb"
+   ]
+  },
+  {
+   "scene": "k6b",
+   "name": "Ritu, live",
+   "mode": "groove",
+   "start": 30.0,
+   "end": 39.375,
+   "bars": 5,
+   "chords": [
+    "Bb",
+    "F",
+    "C",
+    "Dm",
+    "Bb"
+   ]
+  },
+  {
+   "scene": "k7",
+   "name": "Aladdin",
+   "mode": "tight",
+   "start": 39.375,
+   "end": 43.125,
+   "bars": 2,
+   "chords": [
+    "Dm",
+    "Dm"
+   ]
+  },
+  {
+   "scene": "k8",
+   "name": "STOP",
+   "mode": "tight",
+   "start": 43.125,
+   "end": 46.875,
+   "bars": 2,
+   "chords": [
+    "Dm",
+    "Dm"
+   ]
+  },
+  {
+   "scene": "k9",
+   "name": "Fake proof",
+   "mode": "tight",
+   "start": 46.875,
+   "end": 50.625,
+   "bars": 2,
+   "chords": [
+    "Dm",
+    "Dm"
+   ]
+  },
+  {
+   "scene": "k10",
+   "name": "On the record",
+   "mode": "tight",
+   "start": 50.625,
+   "end": 54.375,
+   "bars": 2,
+   "chords": [
+    "Dm",
+    "Dm"
+   ]
+  },
+  {
+   "scene": "k11",
+   "name": "It learns",
+   "mode": "lift",
+   "start": 54.375,
+   "end": 58.125,
+   "bars": 2,
+   "chords": [
+    "Bb",
+    "C"
+   ]
+  },
+  {
+   "scene": "k12",
+   "name": "Autopilot",
+   "mode": "breakdown",
+   "start": 58.125,
+   "end": 69.375,
+   "bars": 6,
+   "chords": [
+    "Bb",
+    "F",
+    "C",
+    "Dm",
+    "Bb",
+    "A"
+   ]
+  },
+  {
+   "scene": "k13",
+   "name": "Proof: money",
+   "mode": "drop",
+   "start": 69.375,
+   "end": 73.125,
+   "bars": 2,
+   "chords": [
+    "Dm",
+    "Bb"
+   ]
+  },
+  {
+   "scene": "k14",
+   "name": "Proof: safe",
+   "mode": "drive",
+   "start": 73.125,
+   "end": 76.875,
+   "bars": 2,
+   "chords": [
+    "Dm",
+    "Bb"
+   ]
+  },
+  {
+   "scene": "k15",
+   "name": "Proof: hands-free",
+   "mode": "drive",
+   "start": 76.875,
+   "end": 80.625,
+   "bars": 2,
+   "chords": [
+    "Dm",
+    "Bb"
+   ]
+  },
+  {
+   "scene": "k16",
+   "name": "Logo",
+   "mode": "final",
+   "start": 80.625,
+   "end": 88.125,
+   "bars": 4,
+   "chords": [
+    "Dm",
+    "D",
+    "D",
+    "D"
+   ],
+   "final_hit": 80.625,
+   "silence": [
+    81.094,
+    81.562
+   ],
+   "logo_sting": 81.562
+  }
+ ],
+ "vo": [
+  {
+   "line": "vo01_problem",
+   "scene": "k1",
+   "t": 1.0,
+   "dur": 3.9,
+   "speaker": "advait",
+   "text": "Every day, lenders send the same reminder to every borrower."
+  },
+  {
+   "line": "vo02_pain",
+   "scene": "k2",
+   "t": 7.6,
+   "dur": 3.99,
+   "speaker": "advait",
+   "text": "It's expensive. It's annoying. And it gets ignored."
+  },
+  {
+   "line": "vo03_meet",
+   "scene": "k3",
+   "t": 15.05,
+   "dur": 1.15,
+   "speaker": "advait",
+   "text": "Meet Kairos."
+  },
+  {
+   "line": "vo04_decides",
+   "scene": "k4",
+   "t": 18.9,
+   "dur": 4.15,
+   "speaker": "advait",
+   "text": "It decides, for each person, each day, whether to reach out, or wait."
+  },
+  {
+   "line": "vo05_channels",
+   "scene": "k6",
+   "t": 26.35,
+   "dur": 2.56,
+   "speaker": "advait",
+   "text": "SMS. WhatsApp. Voice. Or a human."
+  },
+  {
+   "line": "agent01_hi",
+   "scene": "k6b",
+   "t": 30.25,
+   "dur": 4.95,
+   "speaker": "ritu",
+   "text": "नमस्ते! आपकी EMI की तारीख कल है। क्या मैं आपको पेमेंट लिंक भेज दूँ?"
+  },
+  {
+   "line": "agent02_en",
+   "scene": "k6b",
+   "t": 35.6,
+   "dur": 3.41,
+   "speaker": "ritu",
+   "text": "Sure, sending your payment link on WhatsApp right now."
+  },
+  {
+   "line": "vo06_aladdin",
+   "scene": "k7",
+   "t": 39.475,
+   "dur": 3.26,
+   "speaker": "advait",
+   "text": "Every decision is checked by Aladdin. Twice."
+  },
+  {
+   "line": "vo07_stop",
+   "scene": "k8",
+   "t": 43.225,
+   "dur": 2.52,
+   "speaker": "advait",
+   "text": "Say stop, and it stops. Everywhere."
+  },
+  {
+   "line": "vo08_fake",
+   "scene": "k9",
+   "t": 46.975,
+   "dur": 2.05,
+   "speaker": "advait",
+   "text": "Fake payment proof? Caught."
+  },
+  {
+   "line": "vo09_learns",
+   "scene": "k11",
+   "t": 54.475,
+   "dur": 2.93,
+   "speaker": "advait",
+   "text": "And it learns, live, from every reply."
+  },
+  {
+   "line": "vo10_proof",
+   "scene": "k13",
+   "t": 69.625,
+   "dur": 4.78,
+   "speaker": "advait",
+   "text": "Twice the money recovered for every rupee spent. Zero rule breaches."
+  },
+  {
+   "line": "vo11_end",
+   "scene": "k16",
+   "t": 81.615,
+   "dur": 4.66,
+   "speaker": "advait",
+   "text": "Kairos. The right message, at the right time. Or none at all."
+  }
+ ],
+ "hits": [
+  {
+   "scene": "k1",
+   "beat": 0.0,
+   "t": 0.0,
+   "kind": "stab"
+  },
+  {
+   "scene": "k1",
+   "beat": 4.0,
+   "t": 1.875,
+   "kind": "stab"
+  },
+  {
+   "scene": "k1",
+   "beat": 8.0,
+   "t": 3.75,
+   "kind": "stab"
+  },
+  {
+   "scene": "k1",
+   "beat": 12.0,
+   "t": 5.625,
+   "kind": "tom"
+  },
+  {
+   "scene": "k2",
+   "beat": 1.0,
+   "t": 7.969,
+   "kind": "stab"
+  },
+  {
+   "scene": "k2",
+   "beat": 4.0,
+   "t": 9.375,
+   "kind": "stab"
+  },
+  {
+   "scene": "k2",
+   "beat": 7.0,
+   "t": 10.781,
+   "kind": "stab"
+  },
+  {
+   "scene": "k2",
+   "beat": 12.0,
+   "t": 13.125,
+   "kind": "whoosh"
+  },
+  {
+   "scene": "k3",
+   "beat": 0.0,
+   "t": 15.0,
+   "kind": "impact"
+  },
+  {
+   "scene": "k4",
+   "beat": 0.0,
+   "t": 18.75,
+   "kind": "stab"
+  },
+  {
+   "scene": "k4",
+   "beat": 2.0,
+   "t": 19.688,
+   "kind": "tom"
+  },
+  {
+   "scene": "k4",
+   "beat": 4.0,
+   "t": 20.625,
+   "kind": "tom"
+  },
+  {
+   "scene": "k5",
+   "beat": 0.0,
+   "t": 22.5,
+   "kind": "stab"
+  },
+  {
+   "scene": "k5",
+   "beat": 2.0,
+   "t": 23.438,
+   "kind": "tom"
+  },
+  {
+   "scene": "k5",
+   "beat": 5.0,
+   "t": 24.844,
+   "kind": "stab"
+  },
+  {
+   "scene": "k6",
+   "beat": 0.0,
+   "t": 26.25,
+   "kind": "stab"
+  },
+  {
+   "scene": "k6",
+   "beat": 1.5,
+   "t": 26.953,
+   "kind": "stab"
+  },
+  {
+   "scene": "k6",
+   "beat": 3.0,
+   "t": 27.656,
+   "kind": "stab"
+  },
+  {
+   "scene": "k6",
+   "beat": 4.5,
+   "t": 28.359,
+   "kind": "stab"
+  },
+  {
+   "scene": "k6b",
+   "beat": 0.0,
+   "t": 30.0,
+   "kind": "stab"
+  },
+  {
+   "scene": "k6b",
+   "beat": 12.0,
+   "t": 35.625,
+   "kind": "stab"
+  },
+  {
+   "scene": "k6b",
+   "beat": 15.0,
+   "t": 37.031,
+   "kind": "click"
+  },
+  {
+   "scene": "k7",
+   "beat": 0.5,
+   "t": 39.609,
+   "kind": "stab"
+  },
+  {
+   "scene": "k7",
+   "beat": 2.0,
+   "t": 40.312,
+   "kind": "tick"
+  },
+  {
+   "scene": "k7",
+   "beat": 2.5,
+   "t": 40.547,
+   "kind": "tick"
+  },
+  {
+   "scene": "k7",
+   "beat": 3.0,
+   "t": 40.781,
+   "kind": "tick"
+  },
+  {
+   "scene": "k7",
+   "beat": 3.5,
+   "t": 41.016,
+   "kind": "tick"
+  },
+  {
+   "scene": "k7",
+   "beat": 4.0,
+   "t": 41.25,
+   "kind": "tick"
+  },
+  {
+   "scene": "k7",
+   "beat": 4.5,
+   "t": 41.484,
+   "kind": "tick"
+  },
+  {
+   "scene": "k7",
+   "beat": 5.5,
+   "t": 41.953,
+   "kind": "stab"
+  },
+  {
+   "scene": "k8",
+   "beat": 0.0,
+   "t": 43.125,
+   "kind": "stamp"
+  },
+  {
+   "scene": "k8",
+   "beat": 0.5,
+   "t": 43.359,
+   "kind": "stab"
+  },
+  {
+   "scene": "k8",
+   "beat": 3.5,
+   "t": 44.766,
+   "kind": "stab"
+  },
+  {
+   "scene": "k9",
+   "beat": 0.0,
+   "t": 46.875,
+   "kind": "stab"
+  },
+  {
+   "scene": "k9",
+   "beat": 3.0,
+   "t": 48.281,
+   "kind": "stamp"
+  },
+  {
+   "scene": "k10",
+   "beat": 0.0,
+   "t": 50.625,
+   "kind": "stab"
+  },
+  {
+   "scene": "k10",
+   "beat": 2.0,
+   "t": 51.562,
+   "kind": "stab"
+  },
+  {
+   "scene": "k10",
+   "beat": 4.0,
+   "t": 52.5,
+   "kind": "tick"
+  },
+  {
+   "scene": "k10",
+   "beat": 5.0,
+   "t": 52.969,
+   "kind": "tick"
+  },
+  {
+   "scene": "k11",
+   "beat": 1.0,
+   "t": 54.844,
+   "kind": "stab"
+  },
+  {
+   "scene": "k11",
+   "beat": 2.5,
+   "t": 55.547,
+   "kind": "stab"
+  },
+  {
+   "scene": "k12",
+   "beat": 0.0,
+   "t": 58.125,
+   "kind": "stab"
+  },
+  {
+   "scene": "k12",
+   "beat": 12.0,
+   "t": 63.75,
+   "kind": "whoosh"
+  },
+  {
+   "scene": "k12",
+   "beat": 16.0,
+   "t": 65.625,
+   "kind": "stab"
+  },
+  {
+   "scene": "k12",
+   "beat": 18.0,
+   "t": 66.562,
+   "kind": "stab"
+  },
+  {
+   "scene": "k13",
+   "beat": 0.0,
+   "t": 69.375,
+   "kind": "impact"
+  },
+  {
+   "scene": "k14",
+   "beat": 0.0,
+   "t": 73.125,
+   "kind": "stab"
+  },
+  {
+   "scene": "k14",
+   "beat": 3.0,
+   "t": 74.531,
+   "kind": "tick"
+  },
+  {
+   "scene": "k14",
+   "beat": 4.0,
+   "t": 75.0,
+   "kind": "tick"
+  },
+  {
+   "scene": "k14",
+   "beat": 5.0,
+   "t": 75.469,
+   "kind": "tick"
+  },
+  {
+   "scene": "k15",
+   "beat": 0.0,
+   "t": 76.875,
+   "kind": "stab"
+  },
+  {
+   "scene": "k15",
+   "beat": 3.0,
+   "t": 78.281,
+   "kind": "tick"
+  },
+  {
+   "scene": "k15",
+   "beat": 4.0,
+   "t": 78.75,
+   "kind": "tick"
+  },
+  {
+   "scene": "k16",
+   "beat": 0.0,
+   "t": 80.625,
+   "kind": "impact"
+  }
+ ],
+ "loudness": {
+  "music": {
+   "peak_dbfs": -1.12,
+   "rms_dbfs": -11.4
+  },
+  "soundtrack": {
+   "peak_dbfs": -1.0,
+   "rms_dbfs": -13.14
+  },
+  "vo_target": "-16 LUFS (RMS approx.)",
+  "duck": "-9 dB, 20 ms attack, 250 ms release"
+ }
+}

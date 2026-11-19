@@ -41,6 +41,9 @@ can't seek the soundtrack with it, so use `serve.py`.
 | Browser voice (built-in speech, a fallback; off by default) | N |
 | Record mode: hides controls and cursor, turns music and voices on, restarts at 0:00 after 1.5 s | R (Esc exits) |
 
+In windows narrower than 1100 px (e.g. the app's browser pane) the controls shrink to a bottom bar: play/pause,
+time, scrubber and a "⋯" menu with the scene list and toggles. They hide after 2 s of playback and come back on mouse move.
+
 URL options: `?cut=operator`, `?scene=4` or `?scene=o2`, `?group=operator`, `?t=38`, `?autoplay=1`,
 `?record=1`, `?cc=0`. The soundtrack is the master clock while it plays (drift under 30 ms in testing).
 The film follows the system "Reduce motion" setting: no camera drift, blur, morphs or flying elements, only

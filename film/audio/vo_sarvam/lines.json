@@ -1,0 +1,93 @@
+{
+ "vo01_problem": {
+  "speaker": "advait",
+  "lang": "en-IN",
+  "pace": 1.05,
+  "text": "Every day, lenders send the same reminder to every borrower.",
+  "status": "ok vo/vo01_problem.wav"
+ },
+ "vo02_pain": {
+  "speaker": "advait",
+  "lang": "en-IN",
+  "pace": 1.05,
+  "text": "It's expensive. It's annoying. And it gets ignored.",
+  "status": "ok vo/vo02_pain.wav"
+ },
+ "vo03_meet": {
+  "speaker": "advait",
+  "lang": "en-IN",
+  "pace": 0.95,
+  "text": "Meet Kairos.",
+  "status": "ok vo/vo03_meet.wav"
+ },
+ "vo04_decides": {
+  "speaker": "advait",
+  "lang": "en-IN",
+  "pace": 1.05,
+  "text": "It decides, for each person, each day, whether to reach out, or wait.",
+  "status": "ok vo/vo04_decides.wav"
+ },
+ "vo05_channels": {
+  "speaker": "advait",
+  "lang": "en-IN",
+  "pace": 1.1,
+  "text": "SMS. WhatsApp. Voice. Or a human.",
+  "status": "ok vo/vo05_channels.wav"
+ },
+ "vo06_aladdin": {
+  "speaker": "advait",
+  "lang": "en-IN",
+  "pace": 1.05,
+  "text": "Every decision is checked by Aladdin. Twice.",
+  "status": "ok vo/vo06_aladdin.wav"
+ },
+ "vo07_stop": {
+  "speaker": "advait",
+  "lang": "en-IN",
+  "pace": 1.05,
+  "text": "Say stop, and it stops. Everywhere.",
+  "status": "ok vo/vo07_stop.wav"
+ },
+ "vo08_fake": {
+  "speaker": "advait",
+  "lang": "en-IN",
+  "pace": 1.05,
+  "text": "Fake payment proof? Caught.",
+  "status": "ok vo/vo08_fake.wav"
+ },
+ "vo09_learns": {
+  "speaker": "advait",
+  "lang": "en-IN",
+  "pace": 1.05,
+  "text": "And it learns, live, from every reply.",
+  "status": "ok vo/vo09_learns.wav"
+ },
+ "vo10_proof": {
+  "speaker": "advait",
+  "lang": "en-IN",
+  "pace": 1.0,
+  "text": "Twice the money recovered for every rupee spent. Zero rule breaches.",
+  "status": "ok vo/vo10_proof.wav"
+ },
+ "vo11_end": {
+  "speaker": "advait",
+  "lang": "en-IN",
+  "pace": 0.95,
+  "text": "Kairos. The right message, at the right time. Or none at all.",
+  "status": "ok vo/vo11_end.wav"
+ },
+ "agent01_hi": {
+  "speaker": "ritu",
+  "lang": "hi-IN",
+  "pace": 1.0,
+  "text": "नमस्ते! आपकी EMI की तारीख कल है। क्या मैं आपको पेमेंट लिंक भेज दूँ?",
+  "status": "ok vo/agent01_hi.wav"
+ },
+ "agent02_en": {
+  "speaker": "ritu",
+  "lang": "en-IN",
+  "pace": 1.0,
+  "text": "Sure, sending your payment link on WhatsApp right now.",
+  "status": "ok vo/agent02_en.wav"
+ }
+}

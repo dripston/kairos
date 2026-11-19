@@ -41,7 +41,7 @@ themselves, safely, and bring back more money for every rupee.
 | Scoreboard ₹ collected, run rate, required rate, extras, 3,412 due, 1,986 / 1,426 split, partnerships 42 / 25 / 21 / 12 | Operator sees the day at a glance | o1, o2, o3/o4 score bug | None (no live view on main yet; `/demo/live` is on branch `demo/live-collections`, not pushed) | Labelled "illustrative / SIMULATED" in frame | ILLUSTRATIVE |
 | Commentary lines (Asha rests, Kiran STOP, Ritu promise, switch to SMS, Ravi pays ₹4,200) | Every decision explained | o2 | Behaviours exist (K09 wait, STOP, K17 PTP, channel switch, verified payment); the lines are scripted | Synthetic names | ILLUSTRATIVE |
 | "1,240 borrowers" approval, audit times, segment report figures, region chips | Context | s6, o4, s7 | None | Labelled illustrative where numbers appear | ILLUSTRATIVE |
-| 148 / 148 of Ojas's policy cases | Policy coverage | not shown | Reported by the team; no document with this figure found on main | | VERIFY |
+| 148 / 148 of the lender-policy test cases pass | Kairos follows the lender's written rules | s8 footnote | `POLICY_COVERAGE.md` (Ojas policy pack, PR #25): K01 decision policy 38/38, K10 inbound WhatsApp 33/33, K13 exceptions 25/25, K21 propensity/intensity 20/20, K24 portfolio intake 32/32 | K10 passes only with `identity_mode="k10"`; the CM-03 default stays OTP (open decision K10-1). K21 scorecard is not yet wired into the Supervisor (K21-1). K24 script prints 32 PASS lines while its summary says 31/31 | VERIFIED |
 
 ## Real screens used (captured 19 Nov 2026 from `origin/main` 160fb45, synthetic data)
 
