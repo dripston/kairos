@@ -32,10 +32,6 @@ _F = [
             "Type channel as a Literal of policy channels (or validate against policy.raw['channels']) in the "
             "pydantic models; validate /gate/evaluate input with a pydantic model mirroring gate.Facts; map "
             "sqlite3.IntegrityError and TypeError to 422 in _call."),
-    Finding("RT-F04", "Stateless Gate judges the contact window on the caller's clock, not IST",
-            "MEDIUM", "Rehan (K06)", "gate._Ctx (today/hhmm from f.at); api.py POST /gate/evaluate",
-            "In gate._Ctx use local = policy.local(f.at) for today/hhmm/quiet-day (the Ledger already does this), "
-            "so 14:00Z (19:30 IST) is CONTACT_WINDOW, not SEND."),
     Finding("RT-F07", "Instruction-id replay never compares the payload: a reused id for another borrower or an "
             "unknown campaign is answered SEND / reserved=true", "MEDIUM", "Rehan (K06)",
             "ledger.reserve (prior-row short-circuit)",

@@ -73,3 +73,29 @@ def test_collection_purpose_needs_verified_overdue(policy):
 def test_pre_due_is_reminder_only(policy):
     f = Facts(at=datetime(2026, 11, 20, 11, 0), channel="sms", dpd=-2, purpose="collection")
     assert evaluate(policy, f).reason == "PURPOSE_NOT_ALLOWED"
+
+
+def test_gate_judges_time_in_ist_whatever_the_callers_offset(policy):
+    """RT-F04: day, window and quiet day come from IST; a naive `at` is IST."""
+    from datetime import timedelta, timezone
+
+    def reason(at, **kw):
+        d = evaluate(policy, Facts(at=at, channel="sms", dpd=12, **kw))
+        return d.decision, d.reason
+
+    utc = timezone.utc
+    assert reason(datetime(2026, 11, 20, 14, 0, tzinfo=utc)) == ("WAIT", "CONTACT_WINDOW")    # 19:30 IST
+    assert reason(datetime(2026, 11, 20, 5, 0, tzinfo=utc)) == ("SEND", "ELIGIBLE")           # 10:30 IST
+    assert reason(datetime(2026, 11, 20, 2, 29, tzinfo=utc)) == ("WAIT", "CONTACT_WINDOW")    # 07:59 IST
+    hawaii = timezone(timedelta(hours=-10))
+    assert reason(datetime(2026, 11, 21, 15, 0, tzinfo=hawaii)) == ("WAIT", "QUIET_DAY")      # Sun 06:30 IST
+    assert reason(datetime(2026, 11, 20, 19, 30)) == ("WAIT", "CONTACT_WINDOW")               # naive = IST
+    assert reason(datetime(2026, 11, 20, 10, 0)) == ("SEND", "ELIGIBLE")
+    # PTP date and hardship are compared on the IST clock too (aware and naive mixed is not a TypeError)
+    late = datetime(2026, 11, 20, 20, 0, tzinfo=utc)  # Sat 21 Nov 01:30 IST: a PTP for the 20th has ended
+    assert reason(late, ptp_date=date(2026, 11, 20)) == ("WAIT", "CONTACT_WINDOW")
+    assert reason(late, ptp_date=date(2026, 11, 21)) == ("WAIT", "PTP_HOLD")
+    assert reason(datetime(2026, 11, 20, 5, 0, tzinfo=utc),
+                  hardship_until=datetime(2026, 11, 20, 11, 0)) == ("WAIT", "HARDSHIP_HOLD")
+    assert reason(datetime(2026, 11, 20, 6, 0, tzinfo=utc),
+                  hardship_until=datetime(2026, 11, 20, 11, 0)) == ("SEND", "ELIGIBLE")

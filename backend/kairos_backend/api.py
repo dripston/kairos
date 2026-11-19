@@ -247,7 +247,8 @@ def put_template(t: TemplateIn):
 # ---------- decide / reserve / dispatch ----------
 @app.post("/gate/evaluate")
 def gate_evaluate(f: dict):
-    """Stateless check with caller-supplied facts (same fields as gate.Facts)."""
+    """Stateless check with caller-supplied facts (same fields as gate.Facts). `at` is judged in IST: an
+    offset-aware timestamp is converted, a naive one is taken to be IST (RT-F04)."""
     try:
         facts = Facts(**{**f, "at": datetime.fromisoformat(f["at"])})
     except (TypeError, KeyError, ValueError) as e:
