@@ -26,6 +26,9 @@ from pathlib import Path
 from typing import Annotated, Literal, Optional
 
 from fastapi import FastAPI, Header, HTTPException, Query, Response
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StrictBool, StrictFloat, StrictInt
@@ -42,6 +45,7 @@ from .lifecycle import Lifecycle, ShuttingDown, TickLoop
 from .ledger import CONFLICT_INSTRUCTION_ID, MAX_PAISE, Instruction, Ledger, PaymentError
 from .outcomes import OutcomeFinalizer
 from .policy import load_policy
+from .safejson import finite
 from . import reports
 from .voice import registry as voice_registry
 from .voice.ingest import VoiceIngester
@@ -94,7 +98,23 @@ async def lifespan(_app):
         await run_in_threadpool(lifecycle.shutdown, "LIFESPAN_SHUTDOWN")
 
 
-app = FastAPI(lifespan=lifespan, title="Kairos K06 · Supervisor guardrails + executor", version="0.2.0")
+class SafeJSONResponse(JSONResponse):
+    """Every JSON answer: a non-finite float (inf / nan, e.g. a stale-DPD age) is written as null instead of
+    failing the whole response with a 500 (safejson.finite; E2E QA 2026-11-20)."""
+
+    def render(self, content) -> bytes:
+        return json.dumps(finite(content), ensure_ascii=False, allow_nan=False, indent=None,
+                          separators=(",", ":")).encode("utf-8")
+
+
+app = FastAPI(lifespan=lifespan, title="Kairos K06 · Supervisor guardrails + executor", version="0.2.0",
+              default_response_class=SafeJSONResponse)
+
+
+@app.exception_handler(RequestValidationError)
+async def _validation_error(_request, exc: RequestValidationError):
+    """FastAPI's 422, but safe when the rejected input itself was Infinity / NaN (json accepts those words)."""
+    return SafeJSONResponse(status_code=422, content={"detail": jsonable_encoder(exc.errors())})
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 # CM-03 inbound WhatsApp servicing agent (SIMULATED, adapter dry-run): /cm03/*
@@ -263,8 +283,9 @@ class VoiceSelectIn(BaseModel):
 
 
 class GateFactsIn(BaseModel):
-    """gate.Facts over HTTP: numbers and flags must be JSON numbers / booleans ("12" is a 422, RT-F03)."""
-    model_config = ConfigDict(extra="forbid")
+    """gate.Facts over HTTP: numbers and flags must be JSON numbers / booleans ("12" is a 422, RT-F03).
+    Infinity / NaN are refused too (422): a NaN age or cost would slip past the Gate's comparisons."""
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
     at: datetime
     channel: Channel
     dpd: Optional[StrictInt]

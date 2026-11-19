@@ -38,6 +38,7 @@ from .exceptions import ExceptionEvent, ExceptionOutcome, handle
 from .gate import SEND, WAIT, Decision, Facts, evaluate
 from .pii import scrub
 from .policy import Policy
+from .safejson import dumps as safe_dumps
 
 __all__ = ["Ledger", "Instruction", "ReserveResult", "PaymentError", "stable_instruction_id", "MAX_PAISE", "check_paise",
            "CONFLICT_INSTRUCTION_ID", "PROVIDER_STATUSES"]
@@ -295,7 +296,7 @@ class Ledger:
             " VALUES (?,?,?,?,?,?,?,?,?,?)",
             (self._iso(at or self.policy.now()), actor, type_, borrower_id, instruction_id,
              decision.decision if decision else None, decision.reason if decision else detail.pop("reason", None),
-             decision.rule if decision else None, self.policy.version, json.dumps(detail, default=str)),
+             decision.rule if decision else None, self.policy.version, safe_dumps(detail, default=str)),
         )
 
     def _require_borrower(self, c, borrower_id: str) -> None:
@@ -373,7 +374,7 @@ class Ledger:
     def set_setting(self, key: str, value) -> None:
         with self.tx() as c:
             c.execute("INSERT INTO settings VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
-                      (key, json.dumps(value)))
+                      (key, safe_dumps(value)))
 
     def setting(self, key: str, default=None):
         r = self._conn().execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()

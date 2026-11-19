@@ -39,6 +39,7 @@ from spine.ledger import record_event
 from ..contracts import SYNTHETIC_COSTS, CrmSink, RecordingSink, crm_envelope
 from ..exceptions import ExceptionEvent
 from ..ledger import QUEUED, Instruction, Ledger
+from ..safejson import dumps as safe_dumps
 from .dispositions import (_EMAIL, _PHONE, DISPOSITIONS, UNCLEAR, Disposition, parse_disposition, report_level,
                            scrub_text)
 from .registry import agent_use_case, load_registry, load_thresholds, max_ptp_days, normalize_language
@@ -526,9 +527,9 @@ class VoiceIngester:
                        None if p["connected"] is None else int(p["connected"]), p["duration_seconds"], self.version,
                        p["status"], p["raw_status"], p["failure_reason"], p["interaction_id"],
                        lg._iso(p["ended_at"]) if p["ended_at"] else None,
-                       json.dumps(p["metadata"], default=str) if p["metadata"] else None,
+                       safe_dumps(p["metadata"], default=str) if p["metadata"] else None,
                        p["shape"], p["completion_status"], p["next_action_status"], p["retry_attempt"],
-                       p["variant_id"], json.dumps(self._attempt_detail(p), default=str)))
+                       p["variant_id"], safe_dumps(self._attempt_detail(p), default=str)))
         base = {"call_id": call_id, "attempt_id": p["attempt_id"], "shape": p["shape"], "call_status": p["status"],
                 "completion_status": p["completion_status"], "connected": p["connected"],
                 "terminal": p["terminal"], "next_action_status": p["next_action_status"],
@@ -614,7 +615,7 @@ class VoiceIngester:
             c.execute("UPDATE voice_calls SET status='DONE', disposition=?, effective_disposition=?, confidence=?,"
                       " rule=?, action=?, report_ordinal=?, report_label=?, detail=? WHERE call_id=?",
                       (d.disposition, v.effective, d.confidence, v.rule, v.action, ordinal, label,
-                       json.dumps(detail, default=str), call_id))
+                       safe_dumps(detail, default=str), call_id))
             lg._audit(c, ACTOR, "VOICE_DISPOSITION", bid, at=at, reason=v.rule, call_id=call_id,
                       disposition=d.disposition, effective=v.effective, confidence=d.confidence, action=v.action,
                       voice_policy_version=self.version)
