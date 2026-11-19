@@ -49,6 +49,7 @@ from kairos_backend.ledger import Ledger
 from kairos_backend.outcomes import OutcomeFinalizer
 from kairos_backend.policy import load_policy
 from kairos_backend.propensity import rule_propensity
+from kairos_backend.stop_risk import StopRiskModel
 from kairos_backend.supervisor import SupervisorFSM
 from replay import cn10
 from replay import settings as S
@@ -139,6 +140,9 @@ class KairosOptions:
     min_replies_per_inr: float = 0.0           # value floor on borrower-adjusted replies per rupee
     payment_lambda: float = 0.0                # fund order by (p_reply + λ·p_pay) per rupee (demo rule)
     value_floor_rel: Optional[float] = 0.5     # WAIT below φ × campaign-to-date realized replies per rupee
+    stop_penalty: float = 0.0                  # value = p_reply − μ·P(STOP) (StopRiskModel from ledger STOPs)
+    stop_max: Optional[float] = None           # WAIT when P(STOP) for the arm exceeds this
+    stop_strength: float = 1500.0              # StopRiskModel shrinkage strength
 
     @classmethod
     def from_dict(cls, d: Optional[dict]) -> "KairosOptions":
@@ -240,7 +244,11 @@ class StackRun:
                                         hier_strength=o.hier_strength, min_replies_per_inr=o.min_replies_per_inr)
             self.ranker = (ContextualLearner(base, BorrowerContextModel(self.ledger, recency=o.recency),
                                              affinity_strength=o.affinity_strength,
-                                             value_floor_rel=o.value_floor_rel) if context else base)
+                                             value_floor_rel=o.value_floor_rel,
+                                             stop_model=(StopRiskModel(self.ledger, strength=o.stop_strength)
+                                                         if (o.stop_penalty or o.stop_max is not None) else None),
+                                             stop_penalty=o.stop_penalty, stop_max=o.stop_max)
+                           if context else base)
         else:
             self.ranker = CadenceRanker("cn10/creditnirvana-10day" if arm == "cn10" else "fixed-cadence/k15-placeholder")
         self.fsm = SupervisorFSM(self.ledger, self.executor, self.ranker, self.sink, mode=Mode.SIMULATOR)
@@ -323,6 +331,8 @@ class StackRun:
                     # the Thompson draw: exploration picks the arm, it shouldn't randomise who is funded
                     c = r.chosen
                     value = c.posterior_mean
+                    if c.stop_risk is not None:
+                        value -= self.opts.stop_penalty * c.stop_risk
                     if self.opts.payment_lambda:
                         dpd = self._dpd(b.index, day) or 0
                         pb = dpd_band(dpd)

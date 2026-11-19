@@ -34,6 +34,7 @@ from typing import Any, Optional, Sequence
 
 from .contracts import CHANNELS, SLOTS, ArmScore, Candidate, Mode, Outcome, Ranking, replies_per_rupee
 from .learner import BetaBernoulliLearner
+from .stop_risk import StopRiskModel, segment_of
 from .outcomes import SCHEMA as OUTCOMES_SCHEMA
 
 ENGAGEMENT = ("new", "miss1", "miss2+", "replied")
@@ -184,15 +185,25 @@ class ContextualLearner:
     are finalized, a candidate whose borrower-adjusted replies per rupee is below phi x the campaign's
     realized replies per rupee so far (finalized replies / their touches' cost, from the ledger) WAITs,
     and its money stays in the pool (K01 pacing carries it forward). Scale-free: no absolute
-    threshold to tune per portfolio."""
+    threshold to tune per portfolio.
+
+    stop_model + stop_penalty=mu (optional) prices opt-out risk: each arm is valued at
+    (p_reply - mu * P(STOP | channel, borrower's contact number)) per rupee, so the value floor and the
+    budget order both see it; stop_max (optional) WAITs any arm whose STOP risk is above it."""
 
     def __init__(self, base: BetaBernoulliLearner, context: BorrowerContextModel,
                  affinity_strength: Optional[float] = None, value_floor_rel: Optional[float] = None,
-                 value_floor_warmup: int = 200):
+                 value_floor_warmup: int = 200, stop_model: Optional[StopRiskModel] = None,
+                 stop_penalty: float = 0.0, stop_max: Optional[float] = None):
         if affinity_strength is not None and affinity_strength <= 0:
             raise ValueError("affinity_strength must be > 0")
         if value_floor_rel is not None and value_floor_rel < 0:
             raise ValueError("value_floor_rel must be >= 0")
+        if (stop_penalty or stop_max is not None) and stop_model is None:
+            raise ValueError("stop_penalty / stop_max need a stop_model")
+        if stop_penalty < 0:
+            raise ValueError("stop_penalty must be >= 0")
+        self.stop_model, self.stop_penalty, self.stop_max = stop_model, float(stop_penalty), stop_max
         self.value_floor_rel = value_floor_rel
         self.value_floor_warmup = int(value_floor_warmup)
         self._realized_cache: dict = {}
@@ -260,20 +271,30 @@ class ContextualLearner:
         m0 = self.context.multiplier(bucket)
         aff = self.channel_affinity(borrower_id, when)
         floor_rpi = self.value_floor(when)
+        seg = None
+        if self.stop_model is not None:
+            seg = segment_of(self.stop_model.n_prior(borrower_id, when)) if borrower_id else "n0"
         scores = []
         for s in base.scores:
             a = aff.get(s.channel, 1.0)
             m = m0 * a
             p = s.p_used * m
-            rpi = replies_per_rupee(p, s.est_cost_paise)
+            ps = self.stop_model.p_stop(s.channel, seg, when) if seg is not None else None
+            value = p - self.stop_penalty * ps if ps is not None else p
+            rpi = replies_per_rupee(value, s.est_cost_paise)
             # the base arm must clear the reply floor on its own (as before); the borrower-adjusted p
             # must clear it too, and the value floor applies to the borrower-adjusted replies per rupee
             q = (s.channel in CHANNELS and s.slot in SLOTS and s.est_cost_paise > 0
-                 and s.p_used >= self.min_reply_prob and p >= self.min_reply_prob and rpi >= floor_rpi)
+                 and s.p_used >= self.min_reply_prob and p >= self.min_reply_prob and rpi >= floor_rpi
+                 and (ps is None or self.stop_max is None or ps <= self.stop_max) and value > 0)
             note = f"; × borrower {bucket} {m0:.2f}" + (f" × {s.channel} affinity {a:.2f}" if s.channel in aff else "")
+            if ps is not None:
+                note += f"; P(STOP) {ps:.4f} ({s.channel} {seg})" + (
+                    f", value {p:.4f} - {self.stop_penalty:g} x {ps:.4f}" if self.stop_penalty else "")
             scores.append(replace(s, p_used=p, posterior_mean=s.posterior_mean * m,
                                   sampled_p=None if s.sampled_p is None else s.sampled_p * m,
-                                  replies_per_inr=rpi, qualifies=bool(q), reason=f"{s.reason}{note}"))
+                                  replies_per_inr=rpi, qualifies=bool(q), reason=f"{s.reason}{note}",
+                                  stop_risk=ps))
         version = self.model_version
         qual = [(i, s) for i, s in enumerate(scores) if s.qualifies]
         if not qual:
