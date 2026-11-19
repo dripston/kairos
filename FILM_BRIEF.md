@@ -1,6 +1,6 @@
 # Kairos 2-minute film — brief (context store, not started)
 
-**Status:** deferred. Build after the product work lands. Keep adding to "Moments to capture" as features ship.
+**Status:** first cut built on branch `film/first-cut` (`film/kairos_film.html`, SCRIPT.md, SHOT_LIST.md). Next: voice-over, final numbers after the learner upgrade, live screen captures.
 
 ## Goal
 A 2-minute commercial-style film that a layman (judges, audience, a lender's ops head) understands. It shows

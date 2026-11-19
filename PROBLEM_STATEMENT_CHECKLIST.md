@@ -23,15 +23,15 @@ improved · ❌ not built yet. "PR #N" is on github.com/dripston/kairos. All num
 | 14 | Human in the loop | ✅ | Approvals, holds, manual sends, maker-checker, audit (PR #12) |
 | 15 | Voice channel with structured outcomes | ✅ | 6 Sarvam bots (Ritu, Advait), 8 languages, unified dispositions with confidence; Kairos-side registry, dispositions and confidence thresholds (PR #15, 1208 tests) |
 
-## CM-03: inbound WhatsApp servicing agent
+## CM-03: inbound WhatsApp servicing agent (PR #21, seeded eval of 1,000 conversations, SIMULATED)
 
-| # | Requirement | Status | Notes |
+| # | Requirement | Status | Evidence |
 |---|---|---|---|
-| 1 | ≥ 70% of conversations resolved without a human | ❌ | No inbound WhatsApp conversation agent in these PRs yet. Building blocks exist: intent classifier (PR #11), WhatsApp templates (PR #8), HITL handoff (PR #12) |
-| 2 | Every seeded fake caught | ❌ | Needs the inbound agent plus a fake-detection check (fake payment screenshots, impersonation) |
-| 3 | Zero disclosure before verification (OTP) | 🟡 | Voice bots and templates disclose nothing before identity; an OTP step for WhatsApp is Rehan's item |
-| 4 | First reply in under 30 s | ❌ | Not measured yet |
-| 5 | 500 concurrent conversations | ❌ | Not load-tested yet |
+| 1 | ≥ 70% of conversations resolved without a human | ✅ | 73.2% (99.5% of bot-resolvable). Caveat: 67.3% if only bank-confirmed payment claims count as resolved |
+| 2 | Every seeded fake caught | ✅ | 127 / 127, 0 false fraud flags (13 fake kinds incl. doctored screenshots, reused UTRs, injected instructions) |
+| 3 | Zero disclosure before verification (OTP) | ✅ | 0 violations; failed OTP stops before any media or account lookup |
+| 4 | First reply in under 30 s | ✅ | p95 1.6 ms engine time (excludes WhatsApp network transit) |
+| 5 | 500 concurrent conversations | ✅ | engine and HTTP: 0 errors, 0 cross-talk |
 
 ## Gates for every problem
 
@@ -43,7 +43,14 @@ improved · ❌ not built yet. "PR #N" is on github.com/dripston/kairos. All num
 
 ## Biggest gaps, in order
 
-1. **CM-03 inbound WhatsApp agent** (rows CM-03 1 to 5).
+1. Merge everything into main (integration branch in progress) and run the full journey once on the merged code.
 2. CM-02 opt-outs: K09 triggers more STOP replies than CN10; add an opt-out risk term to the value score.
 3. Merge the open PRs into main and run the full test suite once on the merged code.
 4. Frontend still uses mock data in places; wire the Control Room and CRM to the API.
+
+## Also built (beyond the brief)
+- Message understanding: rules → small offline model → optional LLM; 95% on 160 hand-written messages, 100% STOP/hardship recall (PR #22).
+- Auto-churn engine: cohorts, risk and reassignment rules, channel layers, stop states (PR #23).
+- Deterministic state machines for 19 lifecycles with conformance tests; found and is fixing 7 real bugs (PR #24).
+- Six multi-state Sarvam voice bots (Ritu / Advait, 8 languages) with confidence-thresholded outcomes (PR #15).
+- Live demo UI wired to the API (PR #20); Android and iPhone real-SMS demo paths (PRs #10, #18).
