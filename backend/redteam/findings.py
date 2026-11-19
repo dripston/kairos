@@ -1,0 +1,74 @@
+"""Known findings: guardrail gaps the suite found on main. Each is referenced by the attack(s)
+that demonstrate it (Attack.finding). Those attacks are expected to FAIL until the fix lands;
+pytest marks them xfail(strict=True), so a fix turns them into XPASS and forces the marker
+(and this entry) to be removed. Do not edit an attack to make a finding go away."""
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass
+from typing import Dict
+
+
+@dataclass(frozen=True)
+class Finding:
+    id: str
+    title: str
+    severity: str        # HIGH | MEDIUM | LOW
+    owner: str
+    where: str
+    fix: str
+
+    def as_dict(self) -> dict:
+        return asdict(self)
+
+
+_F = [
+    Finding("RT-F01", "Reconcile accepts negative / overflowing paise: a negative actual cost mints campaign budget",
+            "HIGH", "Rehan (K06)", "api.py POST /reconcile/{id}; ledger.reconcile",
+            "Validate actual_cost_paise >= 0 and <= a sane ceiling in the route (Query(ge=0, le=...)) and in "
+            "Ledger.reconcile (raise ValueError). Bound every *_paise model field (le=10**12) so SQLite never "
+            "overflows (PUT /campaigns with 2**63 is a 500 today)."),
+    Finding("RT-F02", "Unknown borrower ids are not rejected: 500 on some routes, 200 with writes on others",
+            "MEDIUM", "Rehan (K06)", "api.py events/*, /borrowers/{id}/lender, /control/supervisor-clear, /decide; "
+            "ledger._set_state / record_response / record_call / apply_exception",
+            "Add Ledger.require_borrower(id) (KeyError -> 404) at the top of every borrower-scoped mutator, and map "
+            "sqlite3.IntegrityError to 422 in api._call as a backstop. A STOP/opt-in for an unknown id must not 500."),
+    Finding("RT-F03", "Malformed enums and wrong-typed fields reach SQLite / the Gate and return 500",
+            "MEDIUM", "Rehan (K06)", "api.py OptInIn/BorrowerEventIn.channel, POST /gate/evaluate",
+            "Type channel as a Literal of policy channels (or validate against policy.raw['channels']) in the "
+            "pydantic models; validate /gate/evaluate input with a pydantic model mirroring gate.Facts; map "
+            "sqlite3.IntegrityError and TypeError to 422 in _call."),
+    Finding("RT-F04", "Stateless Gate judges the contact window on the caller's clock, not IST",
+            "MEDIUM", "Rehan (K06)", "gate._Ctx (today/hhmm from f.at); api.py POST /gate/evaluate",
+            "In gate._Ctx use local = policy.local(f.at) for today/hhmm/quiet-day (the Ledger already does this), "
+            "so 14:00Z (19:30 IST) is CONTACT_WINDOW, not SEND."),
+    Finding("RT-F05", "A future-dated LMS sync stamp disables the stale-DPD HOLD indefinitely",
+            "HIGH", "Rehan (K06)", "ledger._dpd_age_hours (max(0, ...)); api.py POST /spine/synced",
+            "Reject /spine/synced stamps later than now (+ small skew) with 422, and in _dpd_age_hours treat a "
+            "stamp later than the decision time as invalid (age = inf -> DPD_INVALID HOLD) instead of clamping to 0."),
+    Finding("RT-F06", "Bank-reference reuse check is exact-match: ' utr-1' / 'UTR-1<ZWSP>' pass as new references",
+            "HIGH", "Varun (K03)", "spine/ledger.apply_payment; payments.reference UNIQUE",
+            "Normalise references before the duplicate check and storage (NFKC, strip whitespace and zero-width/"
+            "format characters, upper-case); keep the raw value in a separate column for audit."),
+    Finding("RT-F07", "Instruction-id replay never compares the payload: a reused id for another borrower or an "
+            "unknown campaign is answered SEND / reserved=true", "MEDIUM", "Rehan (K06)",
+            "ledger.reserve (prior-row short-circuit)",
+            "On a prior row, compare borrower_id, obligation_id, channel, campaign_id and scheduled_at; on mismatch "
+            "return WAIT IDEMPOTENCY_CONFLICT (409 at the API) with reserved=false, and run the campaign "
+            "existence check before the replay short-circuit."),
+    Finding("RT-F08", "Ticket summaries and evidence ids store borrower names and phone numbers verbatim",
+            "HIGH", "Rehan (K06)", "ledger._ticket (summary_line_1/2, evidence_ids)",
+            "Redact before insert: replace the borrower's full_name with the borrower_id and mask phone-like digit "
+            "runs (>= 8 digits) and e-mails; add a shared redact() used by _ticket and _audit."),
+    Finding("RT-F09", "Free text is persisted unredacted into audit.reason and K03 events/payments",
+            "MEDIUM", "Rehan (K06) for audit + record_response; Varun (K03) for reverse_payment",
+            "ledger._audit (reason from reversal/pause), ledger.record_response (events.details), "
+            "spine.ledger.reverse_payment (payments.reversal_reason, events.details)",
+            "Apply the same redact() to free-text reasons before _audit and before writing events.details / "
+            "payments.reversal_reason; store raw borrower text only in a dedicated, access-controlled store if needed."),
+    Finding("RT-F10", "POST /spine/import opens any server-side path the caller names",
+            "MEDIUM", "Rehan (K06)", "api.py POST /spine/import",
+            "Resolve csv_path and require it to sit under an allowed data directory (e.g. backend/data); return 403 "
+            "otherwise; never echo rejected row values for files outside it."),
+]
+
+FINDINGS: Dict[str, Finding] = {f.id: f for f in _F}
