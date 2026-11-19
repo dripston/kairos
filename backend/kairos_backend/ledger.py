@@ -38,7 +38,10 @@ from .gate import SEND, WAIT, Decision, Facts, evaluate
 from .pii import scrub
 from .policy import Policy
 
-__all__ = ["Ledger", "Instruction", "ReserveResult", "PaymentError", "stable_instruction_id", "MAX_PAISE", "check_paise"]
+__all__ = ["Ledger", "Instruction", "ReserveResult", "PaymentError", "stable_instruction_id", "MAX_PAISE", "check_paise",
+           "CONFLICT_INSTRUCTION_ID"]
+
+CONFLICT_INSTRUCTION_ID = "CONFLICT_INSTRUCTION_ID"  # instruction id reused for a different touch (RT-F07)
 
 # statuses that may reach (or already reached) the borrower -> count toward caps and budget
 LIVE = ("RESERVED", "DISPATCHING", "UNCERTAIN", "SENT", "DELIVERED")
@@ -495,8 +498,12 @@ class Ledger:
 
     def reserve(self, ins: Instruction, actor: str = "supervisor") -> ReserveResult:
         """Check every rule and, if allowed, reserve the touch and its cost — atomically.
-        Re-submitting the same instruction_id never creates a second reservation."""
+        Re-submitting the same instruction_id never creates a second reservation. A caller-supplied id
+        that is already reserved for another borrower, EMI, channel or campaign is CONFLICT_INSTRUCTION_ID,
+        reserved=False (RT-F07). A derived id has no campaign in it, so two campaigns proposing the same
+        slot still collapse onto one touch (E03)."""
         ins.est_cost_paise = check_paise(ins.est_cost_paise, "est_cost_paise")
+        explicit_id = ins.instruction_id is not None
         if ins.instruction_id is None:
             ins.instruction_id = stable_instruction_id(ins.borrower_id, ins.obligation_id, ins.channel,
                                                        self._loc(ins.at), ins.version)
@@ -504,6 +511,11 @@ class Ledger:
             self._require_borrower(c, ins.borrower_id)
             prior = c.execute("SELECT * FROM touches WHERE instruction_id=?", (ins.instruction_id,)).fetchone()
             if prior is not None:
+                same = ["borrower_id", "obligation_id", "channel"] + (["campaign_id"] if explicit_id else [])
+                clash = [k for k in same if prior[k] != getattr(ins, k)]
+                if clash:
+                    d = Decision(WAIT, CONFLICT_INSTRUCTION_ID, "IDEMPOTENCY", self.policy.version, detail={"differs": clash})
+                    return ReserveResult(d, ins.instruction_id, False)
                 ok = prior["status"] in LIVE
                 d = Decision(SEND if ok else WAIT, "ALREADY_RESERVED" if ok else (prior["reason"] or prior["status"]),
                              "IDEMPOTENCY", self.policy.version)

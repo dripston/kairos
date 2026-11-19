@@ -22,7 +22,7 @@ from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StrictBool, S
 from .exceptions import ExceptionEvent
 from .executor import Executor, FakeProvider, Supervisor
 from .gate import Facts, evaluate
-from .ledger import MAX_PAISE, Instruction, Ledger, PaymentError
+from .ledger import CONFLICT_INSTRUCTION_ID, MAX_PAISE, Instruction, Ledger, PaymentError
 from .policy import load_policy
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
@@ -301,8 +301,12 @@ def preview(i: InstructionIn):
 
 @app.post("/decide")
 def decide(i: InstructionIn):
-    """Supervisor: approve-and-reserve. Returns SEND (reserved) / WAIT / CANCEL / HANDOFF with reason."""
-    return _call(supervisor.decide, i.to()).__dict__
+    """Supervisor: approve-and-reserve. Returns SEND (reserved) / WAIT / CANCEL / HANDOFF with reason.
+    409 CONFLICT_INSTRUCTION_ID (reserved=false) when instruction_id is already used for another touch."""
+    out = _call(supervisor.decide, i.to())
+    if out.reason == CONFLICT_INSTRUCTION_ID:
+        raise HTTPException(409, out.__dict__)
+    return out.__dict__
 
 
 @app.post("/dispatch/{instruction_id}")

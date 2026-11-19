@@ -22,12 +22,6 @@ class Finding:
 
 
 _F = [
-    Finding("RT-F07", "Instruction-id replay never compares the payload: a reused id for another borrower or an "
-            "unknown campaign is answered SEND / reserved=true", "MEDIUM", "Rehan (K06)",
-            "ledger.reserve (prior-row short-circuit)",
-            "On a prior row, compare borrower_id, obligation_id, channel, campaign_id and scheduled_at; on mismatch "
-            "return WAIT IDEMPOTENCY_CONFLICT (409 at the API) with reserved=false, and run the campaign "
-            "existence check before the replay short-circuit."),
     Finding("RT-F09", "Free text is persisted unredacted into audit.reason and K03 events/payments",
             "MEDIUM", "Rehan (K06) for audit + record_response; Varun (K03) for reverse_payment",
             "ledger._audit (reason from reversal/pause), ledger.record_response (events.details), "

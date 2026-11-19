@@ -100,3 +100,22 @@ def test_unknown_borrower_is_404_on_every_borrower_scoped_write(client):
     db = api.ledger._conn()
     for table in ("stop_for_day", "tickets", "borrower_state", "touches", "consents", "events", "audit"):
         assert db.execute(f"SELECT COUNT(*) FROM {table} WHERE borrower_id=?", (nb,)).fetchone()[0] == 0, table
+
+
+def test_decide_reused_instruction_id_for_another_borrower_is_409(client):
+    """RT-F07 at the API: 409 with reason CONFLICT_INSTRUCTION_ID and reserved=false."""
+    c, api = client
+    csv_path = os.path.join(tempfile.mkdtemp(), "syn.csv")
+    write_dataset(csv_path, 3, seed=42)
+    api.ledger.import_dataset(csv_path)
+    c.put("/campaigns", json={"id": "C1", "budget_per_case_paise": 5_000, "start_date": str(AS_OF),
+                              "end_date": "2026-08-20"})
+    c.put("/templates", json={"id": "SMS_EN", "channel": "sms", "lang": "en"})
+    c.post("/campaigns/C1/enroll", json={"loan_ids": ["SL100001", "SL100002"]})
+    body = {"borrower_id": "BRW-SL100001", "obligation_id": "SL100001-OD1", "campaign_id": "C1", "channel": "sms",
+            "template_id": "SMS_EN", "at": f"{AS_OF}T10:00:00", "est_cost_paise": 20, "instruction_id": "SHARED-1"}
+    assert c.post("/decide", json=body).json()["reserved"]
+    r = c.post("/decide", json={**body, "borrower_id": "BRW-SL100002", "obligation_id": "SL100002-OD1"})
+    assert r.status_code == 409
+    assert (r.json()["detail"]["reason"], r.json()["detail"]["reserved"]) == ("CONFLICT_INSTRUCTION_ID", False)
+    assert c.post("/decide", json=body).json()["reason"] == "ALREADY_RESERVED"
