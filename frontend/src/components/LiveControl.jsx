@@ -35,7 +35,7 @@ export function LiveDecisions({ className }) {
   const versions = [...new Set(rows.map((r) => r.policy_version))].join(', ')
   return (
     <Card className={className}>
-      <CardHead title="Supervisor decisions · today" sub={`${day} · SEND / WAIT / CANCEL / HANDOFF with the rule that fired · policy ${versions || '—'}`}
+      <CardHead title="Aladdin's decisions · today" sub={`${day} · SEND / WAIT / CANCEL / HANDOFF with the rule that fired · policy ${versions || '—'}`}
         right={<><SourceBadge res={res} /><RefreshButton onClick={res.reload} /></>} />
       <MockNote res={res} />
       <div className="mx-5 mb-3 grid grid-cols-4 overflow-hidden rounded-lg border border-line">

@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
-  Gauge, Megaphone, Database, TrendingUp, Search, FlaskConical, ChevronRight, RotateCcw,
+  Gauge, Megaphone, Database, TrendingUp, Layers, Search, FlaskConical, ChevronRight, RotateCcw,
   CircleCheck, TriangleAlert, Info, CircleX, X, ShieldCheck, Pause, Play, Sun, AudioLines, MessagesSquare, ExternalLink, Route,
 } from 'lucide-react'
 import { useKairos, useDerived, fmtClock } from '../lib/store'
@@ -21,8 +21,9 @@ const NAV = [
     { to: '/voice', label: 'Voice bots', icon: AudioLines },
   ] },
   { group: 'Business', items: [
-    { to: '/campaigns', label: 'Campaign Management', icon: Megaphone },
     { to: '/crm', label: 'Smart CRM', icon: Database },
+    { to: '/cohorts', label: 'Cohorts', icon: Layers },
+    { to: '/campaigns', label: 'Campaign Management', icon: Megaphone },
   ] },
 ]
 

@@ -5,7 +5,7 @@ import {
   Ban, UserPlus, Lock, Star, Wallet, ShieldCheck,
 } from 'lucide-react'
 import { useKairos, decideHero, fmtClock } from '../lib/store'
-import { CHANNELS, CHANNEL_META, HERO_ID, TEMPLATES } from '../lib/mock'
+import { CHANNELS, CHANNEL_META, HERO_ID, RISK_TAGS, TEMPLATES } from '../lib/mock'
 import { EVENT_META, TONE_BG, TONE_TEXT } from '../lib/events'
 import { useApi, useApiStatus } from '../api/hooks'
 import { getBorrower } from '../api/kairos'
@@ -97,23 +97,27 @@ function MockAccount({ res }) {
             <div className="mt-4 space-y-1.5 text-[13px]">
               <Row k="Phone" v={<span className="font-mono">{b.phone}</span>} />
               <Row k="Language" v={b.language} />
-              <Row k="Region" v={b.region} />
+              <Row k="Region" v={`${b.region} · ${b.state}`} />
               <Row k="DPD" v={<Chip tone={b.dpd >= 60 ? 'bad' : b.dpd >= 30 ? 'warn' : 'neutral'}>{b.dpd} DPD · {b.band}</Chip>} />
-              <Row k="Campaign" v={<span className="text-muted">C-01 · Mid-DPD recovery</span>} />
+              <Row k="Risk tag" v={RISK_TAGS[b.riskTag]} />
+              <Row k="Bounce string" v={<span className="font-mono tracking-widest" title="Last 6 months, oldest first: 1 = EMI bounced">{b.bounceString}</span>} />
+              <Row k="NACH · last mode" v={<span className={b.nach === 'Bounced' ? 'text-warn' : ''}>{b.nach} · {b.lastMode}</span>} />
+              <Row k="Cohort" v={<Link to="/cohorts" className="hover:underline">{state.cohorts.find((c) => c.id === b.cohortId)?.name ?? '—'}</Link>} />
+              <Row k="Campaign" v={<span className="text-muted">{state.campaigns.find((c) => c.id === b.campaignId)?.name ?? '—'}</span>} />
             </div>
           </Card>
 
           <Card className="p-5">
-            <div className="mb-3 text-[13.5px] font-semibold">Consent & reach</div>
+            <div className="mb-3 flex items-baseline justify-between"><span className="text-[13.5px] font-semibold">Consent & reach</span><span className="text-[11.5px] text-faint">sent · replied</span></div>
             <div className="space-y-2">
               {CHANNELS.map((ch) => {
                 const ok = b.consent[ch] && !b.flags.stop && !b.flags.dnc
                 return (
                   <div key={ch} className="flex items-center justify-between text-[13px]">
                     <ChannelTag ch={ch} muted={!ok} />
-                    <span className={cx('inline-flex items-center gap-1 text-[12px]', ok ? 'text-ok' : 'text-bad')}>
-                      {ok ? <Check size={12} /> : <X size={12} />}{ok ? b.consentVersion[ch] : b.flags.stop || b.flags.dnc ? 'STOP' : isHero && ch === 'email' ? 'bounced' : 'no consent'}
-                    </span>
+                    {ok
+                      ? <span className="text-[12.5px] tabular"><b>{b.sent?.[ch] ?? 0}</b> sent · <b className={(b.replied?.[ch] ?? 0) ? 'text-ok' : ''}>{b.replied?.[ch] ?? 0}</b> replied</span>
+                      : <span className="inline-flex items-center gap-1 text-[12px] text-bad"><X size={12} />{b.flags.stop || b.flags.dnc ? 'STOP' : isHero && ch === 'email' ? 'bounced' : 'no consent'}</span>}
                   </div>
                 )
               })}
@@ -183,7 +187,7 @@ function MockAccount({ res }) {
               <Card>
                 <div className="flex items-start justify-between gap-6 px-5 py-4">
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2 text-[12px] font-semibold tracking-wide text-muted uppercase"><Gavel size={13} /> Supervisor decision</div>
+                    <div className="flex items-center gap-2 text-[12px] font-semibold tracking-wide text-muted uppercase"><Gavel size={13} /> Aladdin's decision</div>
                     <div className="mt-2 flex items-center gap-3">
                       <span className={cx('text-[26px] font-bold tracking-tight', { SEND: 'text-ok', WAIT: 'text-warn', CANCEL: 'text-bad', HANDOFF: 'text-violet' }[decision.action])}>{decision.action}</span>
                       {decision.channel && <span className="text-[13px] text-muted"><ChannelTag ch={decision.channel} /> · {decision.when} · <span className="font-mono">{decision.template}</span></span>}
@@ -271,7 +275,7 @@ function MockAccount({ res }) {
         {/* RIGHT · actions */}
         <div className="space-y-4">
           <Card className="p-5">
-            <div className="text-[12px] font-semibold tracking-wide text-muted uppercase">Next action</div>
+            <div className="text-[12px] font-semibold tracking-wide text-muted uppercase">Aladdin says</div>
             <div className="mt-2"><StatusChip s={decision.action}>{decision.action}</StatusChip></div>
             <div className="mt-2 text-[13px] text-muted">{decision.reason}</div>
           </Card>
@@ -325,7 +329,9 @@ function AgentCard({ n, icon: I, title, sub, children }) {
   )
 }
 
-function Timeline({ events }) {
+function Timeline({ events: allEvents }) {
+  const [limit, setLimit] = useState(10)
+  const events = allEvents.slice(0, limit)
   if (!events.length) return <Empty>No events yet.</Empty>
   let lastDay = null
   return (
@@ -346,7 +352,7 @@ function Timeline({ events }) {
                   {e.channel && <ChannelTag ch={e.channel} muted />}
                   {e.loan && <Chip>Loan {e.loan}</Chip>}
                   {e.env === 'SIMULATED' && <Chip tone="warn">simulated</Chip>}
-                  <span className="ml-auto font-mono text-[11.5px] text-faint">{fmtClock(e.min)} · {e.actor}</span>
+                  <span className="ml-auto font-mono text-[11.5px] text-faint">{fmtClock(e.min)} · {e.actor === 'supervisor' ? 'Aladdin' : e.actor}</span>
                 </div>
                 <div className="text-[13px] text-muted">{e.detail}</div>
               </div>
@@ -354,6 +360,12 @@ function Timeline({ events }) {
           </div>
         )
       })}
+      {allEvents.length > limit && (
+        <div className="mt-2 flex items-center justify-center gap-2 border-t border-line pt-3 text-[12.5px] text-muted">
+          Showing {limit} of {allEvents.length} · load
+          {[10, 20, 30].map((n) => <button key={n} onClick={() => setLimit(limit + n)} className="rounded-md border border-line px-2 py-0.5 hover:text-fg">+{n}</button>)}
+        </div>
+      )}
     </div>
   )
 }
