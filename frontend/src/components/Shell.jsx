@@ -1,30 +1,33 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   Gauge, Megaphone, Database, TrendingUp, Layers, Search, FlaskConical, ChevronRight, RotateCcw,
-  CircleCheck, TriangleAlert, Info, CircleX, X, ShieldCheck, Pause, Play, Sun, Moon, AudioLines, MessagesSquare, ExternalLink, Route,
+  CircleCheck, TriangleAlert, Info, CircleX, X, Pause, Play, Sun, Moon, AudioLines, MessagesSquare, ExternalLink, Route,
 } from 'lucide-react'
-import { useKairos, useDerived, fmtClock } from '../lib/store'
+import { useKairos, fmtClock } from '../lib/store'
 import { CAMPAIGN_DAYS, CHANNEL_META, HERO_ID } from '../lib/mock'
-import { Button, Chip, Dot, cx, inr, Segmented } from './ui'
+import { Button, Chip, Dot, cx, Segmented } from './ui'
 import { ApiStatusPill } from './live'
 import { toggleTheme, useTheme } from '../lib/theme'
 import { useApi, useApiStatus, useHealthPoll } from '../api/hooks'
-import { CM03_CONSOLE_URL, getCapBreaches, getRoutes } from '../api/kairos'
+import { CM03_CONSOLE_URL, getRoutes } from '../api/kairos'
 import { ROLE_ACTOR, ROLE_LABEL } from '../api/config'
 
+// Run the day → set it up → prove it works. Demo-only pages sit at the bottom.
 const NAV = [
-  { group: 'Overview', items: [
-    { to: '/journey', label: 'Live journey', icon: Route },
+  { group: 'Run', items: [
+    { to: '/control', label: 'Control Room', icon: Gauge },
+    { to: '/crm', label: 'Smart CRM', icon: Database },
+  ] },
+  { group: 'Set up', items: [
+    { to: '/cohorts', label: 'Cohorts', icon: Layers },
+    { to: '/campaigns', label: 'Campaigns', icon: Megaphone },
+  ] },
+  { group: 'Prove', items: [
     { to: '/learning', label: 'Learning & Proof', icon: TrendingUp },
   ] },
-  { group: 'Operations', items: [
-    { to: '/control', label: 'Control Room', icon: Gauge },
+  { group: 'Demo', items: [
+    { to: '/journey', label: 'Live journey', icon: Route },
     { to: '/voice', label: 'Voice bots', icon: AudioLines },
-  ] },
-  { group: 'Business', items: [
-    { to: '/crm', label: 'Smart CRM', icon: Database },
-    { to: '/cohorts', label: 'Cohorts', icon: Layers },
-    { to: '/campaigns', label: 'Campaign Management', icon: Megaphone },
   ] },
 ]
 
@@ -55,8 +58,8 @@ function Sidebar() {
       </div>
       <nav className="flex-1 overflow-y-auto px-3">
         {NAV.map((g) => (
-          <div key={g.group} className="mb-4">
-            <div className="px-2.5 pb-1.5 text-[12.5px] text-muted">{g.group}</div>
+          <div key={g.group} className="mb-6">
+            <div className="px-2.5 pb-2 text-[11px] font-semibold uppercase tracking-wider text-faint">{g.group}</div>
             {g.items.map((it) => (
               <NavLink key={it.to} to={it.to}
                 className={({ isActive }) => cx('mb-0.5 flex items-center gap-3 rounded-lg border px-2.5 py-2 text-[14.5px] transition-colors',
@@ -69,17 +72,13 @@ function Sidebar() {
         ))}
         {cm03 && (
           <div className="mb-4">
-            <div className="px-2.5 pb-1.5 text-[12.5px] text-muted">CM-03</div>
+            <div className="px-2.5 pb-2 text-[11px] font-semibold uppercase tracking-wider text-faint">CM-03</div>
             <a href={CM03_CONSOLE_URL} target="_blank" rel="noreferrer"
               className="mb-0.5 flex items-center gap-3 rounded-lg border border-transparent px-2.5 py-2 text-[14.5px] text-fg/85 hover:bg-raised">
               <MessagesSquare size={16} strokeWidth={1.8} /> WhatsApp console <ExternalLink size={12} className="ml-auto text-faint" />
             </a>
           </div>
         )}
-        <div className="mx-2.5 mt-2 rounded-lg border border-line bg-surface p-3 text-[12px] text-muted">
-          <div className="mb-1 flex items-center gap-1.5 font-semibold text-fg"><ShieldCheck size={13} className="text-ok" /> Hard guardrails</div>
-          Consent, STOP and contact caps can't be overridden by anyone.
-        </div>
       </nav>
       <div className="border-t border-line p-3">
         <div className="mb-2 px-1 text-[11.5px] text-muted">Acting as</div>
@@ -102,31 +101,15 @@ const ENV_TONE = { LIVE_SANDBOX: 'ok', REPLAY: 'info', SIMULATED: 'warn', OFFICI
 
 function StatusBar() {
   const { state, dispatch } = useKairos()
-  const d = useDerived()
-  const status = useApiStatus()
-  const breaches = useApi((o) => getCapBreaches(o), { fallback: () => ({ count: d.capBreaches, rows: [] }), deps: [status.state], poll: 20000 })
-  const nBreach = breaches.data?.count ?? 0
-  const spentPct = d.spend / d.budgetTotal
   return (
-    <div className="sticky top-0 z-30 flex h-12 shrink-0 items-center gap-3 border-b border-line bg-bg/90 px-8 backdrop-blur">
+    <div className="sticky top-0 z-30 flex h-12 shrink-0 items-center gap-3 border-b border-line bg-bg/90 px-10 backdrop-blur">
       <Chip tone={ENV_TONE[state.env]}>{state.env.replace('_', ' ')}</Chip>
       <Dot tone={state.globalPause ? 'bad' : 'ok'} live={!state.globalPause} label={state.globalPause ? 'Outbound paused' : 'Live · updated just now'} />
       <div className="mx-1 h-5 w-px bg-line" />
       <span className="text-[13px] tabular text-muted">Day <span className="font-semibold text-fg">{state.day}</span> / {CAMPAIGN_DAYS} · {fmtClock(state.minute)}</span>
       <Button size="sm" icon={ChevronRight} onClick={() => dispatch({ type: 'NEXT_DAY' })} disabled={state.day >= CAMPAIGN_DAYS}>Next day</Button>
       <div className="flex-1" />
-      <div className="hidden items-center gap-2 lg:flex">
-        <span className="text-[12.5px] text-muted">Spend</span>
-        <div className="h-1.5 w-28 overflow-hidden rounded-full bg-raised"><div className="h-full rounded-full bg-fg" style={{ width: `${spentPct * 100}%` }} /></div>
-        <span className="text-[12.5px] tabular">{inr(d.spend)} <span className="text-muted">/ {inr(d.budgetTotal)}</span></span>
-        <span className="text-[12px] text-muted">+ {inr(d.reserved, 2)} reserved</span>
-      </div>
-      <div className="mx-1 h-5 w-px bg-line" />
       <ApiStatusPill />
-      <span title={breaches.source === 'live' ? 'GET /cap-breaches — independent recount of every live touch (SIMULATED sends)' : 'API offline — mock value (SIMULATED)'}
-        className={cx('inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[12px] font-semibold', nBreach ? 'border-bad/30 bg-bad/10 text-bad' : 'border-ok/25 bg-ok/10 text-ok')}>
-        <ShieldCheck size={12} /> Cap breaches: {nBreach}
-      </span>
       <Button size="sm" variant="ghost" icon={FlaskConical} onClick={() => dispatch({ type: 'TOGGLE_SIM' })}>Simulation <span className="text-faint">⇧S</span></Button>
       <ThemeButton />
     </div>
@@ -246,7 +229,7 @@ export default function Shell() {
       <div className="flex min-w-0 flex-1 flex-col">
         <StatusBar />
         <main className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-[1440px] px-8 py-7">
+          <div className="mx-auto max-w-[1360px] px-10 py-10">
             <Outlet />
           </div>
         </main>

@@ -1,14 +1,14 @@
 import { DEFAULT_CAMPAIGN } from '../api/config'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { ResponsiveContainer, BarChart, Bar as RBar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
+import { ResponsiveContainer, BarChart, Bar as RBar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, AreaChart, Area, LineChart, Line, PieChart, Pie, Cell } from 'recharts'
 import {
   Pause, Play, Square, Download, Check, X, CalendarClock, Hand, Minus, Plus, Snowflake, ShieldCheck,
-  TriangleAlert, Info, CircleX, Search, ChevronRight, Lock, ArrowLeft,
+  Search, ChevronRight, Lock, ArrowLeft,
 } from 'lucide-react'
 import { useKairos, useDerived, fmtClock } from '../lib/store'
-import { CHANNEL_META, COLLECTED, HERO_ID, LEARNING, SERIES, bestByDay } from '../lib/mock'
-import { EVENT_META, AUDIT_TYPES, MODULE, TONE_TEXT } from '../lib/events'
+import { CHANNEL_META, COLLECTED, HERO_ID, LEARNING, SERIES, bestByDay, sumTo } from '../lib/mock'
+import { EVENT_META, AUDIT_TYPES, MODULE } from '../lib/events'
 import {
   Button, Card, CardHead, ChannelIcons, ChannelTag, Chip, Dot, Empty, Input, KpiStrip, PageHeader, ReasonDialog, Segmented, Select,
   StatusChip, Td, Th, Toggle, cx, inr, pct,
@@ -32,8 +32,8 @@ const lakh = (n) => (n >= 1e5 ? `₹${(n / 1e5).toFixed(2)}L` : inr(n))
 export default function ControlRoom() {
   const { state, dispatch } = useKairos()
   const d = useDerived()
-  const [params] = useSearchParams()
-  const [range, setRange] = useState('To date')
+  const [params, setParams] = useSearchParams()
+  const range = 'To date'
   const [dialog, setDialog] = useState(null)
   const ask = (cfg) => setDialog(cfg)
   const { scope } = state
@@ -64,93 +64,100 @@ export default function ControlRoom() {
   const win = (arr) => arr.slice(from, state.day).reduce((a, b) => a + b, 0)
   const collected = win(COLLECTED.adaptive) * share + (state.hero.loans[0].status === 'PAID' && inScope(state.hero) ? state.hero.loans[0].emi : 0)
   const fCollected = win(COLLECTED.fixed) * share
-  const spend = win(SERIES.adaptive.spend) * share
-  const replies = win(SERIES.adaptive.replies) * share
-  const fRpr = win(SERIES.fixed.replies) / win(SERIES.fixed.spend)
-  const payments = Math.round(win(SERIES.adaptive.payments) * share)
   const pendingCount = d.allQueue.filter((q) => ACTIVE.includes(q.status) && inScope(q)).length
+
+  const tab = ['overview', 'activity', 'setup'].includes(params.get('tab')) ? params.get('tab') : 'overview'
+  const setTab = (t) => setParams((p) => { const n = new URLSearchParams(p); if (t === 'overview') n.delete('tab'); else n.set('tab', t); return n }, { replace: true })
+  const pauseAll = () => ask({ title: state.globalPause ? 'Resume all outbound' : 'Pause all outbound', danger: !state.globalPause,
+    effect: state.globalPause ? 'Paused sends return to the queue and are re-checked against every guardrail before they go.' : `Every channel stops sending immediately. ${d.allQueue.filter((q) => ACTIVE.includes(q.status)).length} pending sends will be held — nothing is lost.`,
+    confirm: state.globalPause ? 'Resume' : 'Pause everything', run: (reason) => dispatch({ type: 'GLOBAL_PAUSE', reason }) })
 
   return (
     <>
-      <PageHeader title="Control Room" sub="Live collections, decided by Aladdin — pause, change or override anything, any time."
-        chip={<Chip tone="ok" dot>Monitoring live</Chip>}
-        right={<>
-          <Segmented value={range} onChange={setRange} options={Object.keys(RANGES)} />
-          <Button icon={Download} onClick={() => downloadCsv(`kairos-events-day${state.day}.csv`, [['day', 'time', 'type', 'borrower', 'channel', 'actor', 'detail'], ...state.events.map((e) => [e.day, fmtClock(e.min), e.type, e.borrowerId, e.channel, e.actor, e.detail])])}>Export CSV</Button>
-          <Button variant={state.globalPause ? 'primary' : 'danger'} icon={state.globalPause ? Play : Pause}
-            onClick={() => ask({ title: state.globalPause ? 'Resume all outbound' : 'Pause all outbound', danger: !state.globalPause,
-              effect: state.globalPause ? 'Paused sends return to the queue and are re-checked against every guardrail before they go.' : `Every channel stops sending immediately. ${d.allQueue.filter((q) => ACTIVE.includes(q.status)).length} pending sends will be held — nothing is lost.`,
-              confirm: state.globalPause ? 'Resume' : 'Pause everything', run: (reason) => dispatch({ type: 'GLOBAL_PAUSE', reason }) })}>
+      <PageHeader title="Control Room" sub="Aladdin runs collections on its own and stops to ask you when a person is needed."
+        right={
+          <Button variant={state.globalPause ? 'primary' : 'danger'} icon={state.globalPause ? Play : Pause} onClick={pauseAll}>
             {state.globalPause ? 'Resume all outbound' : 'Pause all outbound'}
-          </Button>
-        </>} />
+          </Button>} />
 
-      {/* scope: cohort or campaign — the only two lenses */}
-      <Card className="mb-5 flex flex-wrap items-center gap-3 px-5 py-3">
-        <span className="text-[13px] text-muted">View by</span>
-        <Segmented value={scope.type} onChange={(v) => dispatch({ type: 'SET_SCOPE', scopeType: v, id: 'ALL' })}
-          options={[{ value: 'cohort', label: 'Cohort' }, { value: 'campaign', label: 'Campaign' }]} />
-        <Select value={scope.id} onChange={(v) => dispatch({ type: 'SET_SCOPE', id: v })} className="w-72"
-          options={scope.type === 'cohort'
-            ? [{ value: 'ALL', label: 'All cohorts' }, ...[...state.cohorts].sort((a, b) => a.priority - b.priority).map((c) => ({ value: c.id, label: c.name }))]
-            : [{ value: 'ALL', label: 'All campaigns' }, ...state.campaigns.filter((c) => c.status !== 'DRAFT').map((c) => ({ value: c.id, label: c.name }))]} />
-        <span className="text-[12.5px] text-muted">{scope.id === 'ALL' ? 'Whole portfolio' : `${pct(share, 0)} of portfolio overdue`} · {range === 'To date' ? `Day 1–${state.day}` : range === 'Today' ? `Day ${state.day}` : `Day ${from + 1}–${state.day}`}</span>
+      <div className="mb-8 flex flex-wrap items-center gap-3">
+        <Segmented value={tab} onChange={setTab} options={[
+          { value: 'overview', label: 'Overview' },
+          { value: 'activity', label: 'Live activity' },
+          { value: 'setup', label: 'Budget & channels' },
+        ]} />
         <div className="flex-1" />
-        <Link to="/cohorts" className="text-[12.5px] text-muted hover:text-fg">Manage cohorts →</Link>
-      </Card>
+        {tab === 'overview' && <>
+          <Segmented size="sm" value={scope.type} onChange={(v) => dispatch({ type: 'SET_SCOPE', scopeType: v, id: 'ALL' })}
+            options={[{ value: 'cohort', label: 'By cohort' }, { value: 'campaign', label: 'By campaign' }]} />
+          <Select value={scope.id} onChange={(v) => dispatch({ type: 'SET_SCOPE', id: v })} className="w-56"
+            options={scope.type === 'cohort'
+              ? [{ value: 'ALL', label: 'All cohorts' }, ...[...state.cohorts].sort((a, b) => a.priority - b.priority).map((c) => ({ value: c.id, label: c.name }))]
+              : [{ value: 'ALL', label: 'All campaigns' }, ...state.campaigns.filter((c) => c.status !== 'DRAFT').map((c) => ({ value: c.id, label: c.name }))]} />
+        </>}
+        {tab === 'activity' && <Button size="sm" icon={Download} onClick={() => downloadCsv(`kairos-events-day${state.day}.csv`, [['day', 'time', 'type', 'borrower', 'channel', 'actor', 'detail'], ...state.events.map((e) => [e.day, fmtClock(e.min), e.type, e.borrowerId, e.channel, e.actor, e.detail])])}>Export CSV</Button>}
+      </div>
 
       {state.globalPause && (
-        <div className="mb-5 flex items-center gap-3 rounded-xl border border-bad/30 bg-bad/10 px-5 py-3 text-[13.5px] text-bad">
-          <Pause size={16} /> <b>All outbound is paused.</b> <span className="text-bad/80">Nothing will be sent on any channel until a person resumes.</span>
+        <div className="mb-8 flex items-center gap-3 rounded-xl border border-bad/30 bg-bad/10 px-5 py-4 text-[14px] text-bad">
+          <Pause size={16} /> <b>All outbound is paused.</b> <span className="text-bad/80">Nothing is sent on any channel until a person resumes.</span>
         </div>
       )}
 
-      <div className="space-y-5">
-        <KpiStrip items={[
-          { label: 'Collected', value: lakh(collected), sub: <span><span className="text-ok">↑ {pct(collected / fCollected - 1, 0)}</span> vs fixed</span>, ring: Math.min(1, collected / (d.overdueStart * share)), ringTone: 'ok' },
-          { label: 'Collection %', value: pct((collected) / (d.overdueStart * share)), sub: `of ${lakh(d.overdueStart * share)} overdue` },
-          { label: 'Avg collected / day', value: lakh(collected / Math.max(1, days)), sub: `${days} day${days > 1 ? 's' : ''}` },
-          { label: 'Verified payments', value: payments, sub: 'D7-settled' },
-          { label: 'Replies per ₹', value: (replies / spend).toFixed(3), sub: `fixed: ${fRpr.toFixed(3)} · spend ${inr(spend)}` },
-          { label: 'Cap breaches', value: '0', valueClass: 'text-ok', sub: 'Accepted violations', ring: 1, ringTone: 'ok' },
-        ]} />
+      {tab === 'overview' && (
+        <div className="space-y-8">
+          <KpiStrip items={[
+            { label: `Collected · ${scopeLabel}`, value: lakh(collected), sub: <span><span className="text-ok">↑ {pct(collected / fCollected - 1, 0)}</span> vs fixed cadence</span> },
+            { label: 'Collection %', value: pct((collected) / (d.overdueStart * share)), sub: `of ${lakh(d.overdueStart * share)} overdue` },
+            { label: 'Avg collected / day', value: lakh(collected / Math.max(1, days)), sub: `Day 1–${state.day}` },
+            { label: 'Replies per ₹ vs fixed', value: `+${Math.round((sumTo(SERIES.adaptive.replies, state.day) / sumTo(SERIES.adaptive.spend, state.day)) / (sumTo(SERIES.fixed.replies, state.day) / sumTo(SERIES.fixed.spend, state.day)) * 100 - 100)}%`, valueClass: 'text-ok', sub: `Day 1–${state.day} so far · replay on unseen seeds +48% to +61%` },
+            { label: 'Cap breaches', value: '0', valueClass: 'text-ok', sub: 'Guardrails held every time', ring: 1, ringTone: 'ok' },
+          ]} />
 
-        <Alerts d={d} />
+          <div className="grid grid-cols-3 gap-6">
+            <CollectionsTrend share={share} scopeLabel={scopeLabel} />
+            <ChannelMix d={d} />
+          </div>
 
-        {/* live from the Kairos API (falls back to labelled mocks when the backend is offline) */}
-        <div className="grid grid-cols-3 gap-5">
-          <LiveDecisions className="col-span-2" />
-          <LiveFeed height={560} />
+          <div className="grid grid-cols-3 gap-6">
+            <RepliesPerRupee />
+            <RegionChart d={d} />
+            <CohortChart d={d} />
+          </div>
+
+          <div className="grid grid-cols-3 items-start gap-6">
+            <NeedsYou className="col-span-2" d={d} ask={ask} />
+            <StepIn ask={ask} pauseAll={pauseAll} />
+          </div>
+
+          <div id="plan" className="scroll-mt-20"><Queue rows={d.allQueue} ask={ask} cohortName={cohortName} campaignName={campaignName} pendingCount={pendingCount} /></div>
+
+          <CohortPerformance d={d} />
         </div>
-        <div className="grid grid-cols-3 gap-5">
-          <ApprovalsQueue className="col-span-2" />
-          <BudgetCaps campId={scope.type === 'campaign' && scope.id !== 'ALL' ? scope.id : DEFAULT_CAMPAIGN} />
-        </div>
-        <div className="grid grid-cols-3 gap-5">
-          <Cm03Console className="col-span-2" />
-          <DemoRecipients />
-        </div>
+      )}
 
-        <div className="grid grid-cols-3 gap-5">
-          <CollectionsTrend share={share} scopeLabel={scopeLabel} />
-          <RegionScorecard d={d} />
+      {tab === 'activity' && (
+        <div className="space-y-8">
+          <div className="grid grid-cols-3 items-start gap-6">
+            <LiveDecisions className="col-span-2" />
+            <LiveFeed height={560} />
+          </div>
+          <ApprovalsQueue />
+          <Cm03Console />
+          <AuditLog />
         </div>
+      )}
 
-        <CohortPerformance d={d} />
-
-        <div className="grid grid-cols-3 items-start gap-5">
-          <div className="col-span-2 space-y-5">
-            <Queue rows={d.allQueue} ask={ask} cohortName={cohortName} campaignName={campaignName} pendingCount={pendingCount} />
+      {tab === 'setup' && (
+        <div className="grid grid-cols-3 items-start gap-6">
+          <div className="col-span-2 space-y-8">
+            <BudgetCaps campId={scope.type === 'campaign' && scope.id !== 'ALL' ? scope.id : DEFAULT_CAMPAIGN} />
             <ChannelStatus d={d} />
-            <InboxCard />
+            <DemoRecipients />
           </div>
           <CampaignControls ask={ask} />
         </div>
-
-        <LearningByCohort ask={ask} />
-
-        <AuditLog />
-      </div>
+      )}
 
       <ReasonDialog open={!!dialog} title={dialog?.title} effect={dialog?.effect} danger={dialog?.danger} confirmLabel={dialog?.confirm}
         onClose={() => setDialog(null)} onConfirm={(reason) => dialog.run(reason)} />
@@ -158,56 +165,234 @@ export default function ControlRoom() {
   )
 }
 
-// ---------------- collections ----------------
-function CollectionsTrend({ share, scopeLabel }) {
-  const { state } = useKairos()
-  const n = Math.min(6, state.day)
-  const data = Array.from({ length: n }, (_, i) => {
-    const day = state.day - n + i + 1
-    return { day: `D${day}`, Kairos: Math.round(COLLECTED.adaptive[day - 1] * share), 'Fixed cadence': Math.round(COLLECTED.fixed[day - 1] * share) }
-  })
+// ---------------- what needs a person right now: one list, each item with its action ----------------
+function NeedsYou({ className, d, ask }) {
+  const { state, dispatch } = useKairos()
+  const navigate = useNavigate()
+  const approvals = d.allQueue.filter((q) => q.status === 'NEEDS_APPROVAL')
+  const items = []
+  if (approvals.length) items.push({ key: 'appr', tone: 'violet', kind: 'Approval', title: `${approvals.length} send${approvals.length > 1 ? 's' : ''} wait for your approval`,
+    text: 'IVR calls, handoffs and high-intensity nudges need a person first. They are checked again at send time.',
+    actions: <>
+      <Button size="sm" icon={Check} onClick={() => ask({ title: `Approve ${approvals.length} sends`, confirm: 'Approve all', effect: 'Approved sends still pass every guardrail again at send time.', run: (reason) => dispatch({ type: 'QUEUE', ids: approvals.map((a) => a.id), action: 'approve', reason }) })}>Approve all</Button>
+      <Button size="sm" variant="ghost" onClick={() => document.getElementById('plan')?.scrollIntoView({ behavior: 'smooth' })}>Review</Button>
+    </> })
+  state.inbox.filter((i) => ['NEEDS_HUMAN', 'APPROVAL', 'CLAIMED'].includes(i.status)).forEach((i) => items.push({
+    key: i.id, tone: i.severity === 'high' ? 'bad' : 'warn', kind: i.kind,
+    title: <><Link to={`/crm/${i.borrowerId}`} className="font-mono hover:underline">{i.borrowerId}</Link> · {i.queue}</>,
+    text: i.summary,
+    actions: <>
+      {i.status === 'APPROVAL' && <><Button size="sm" icon={Check} onClick={() => dispatch({ type: 'INBOX', id: i.id, action: 'approve' })}>Approve</Button><Button size="sm" variant="ghost" icon={X} onClick={() => dispatch({ type: 'INBOX', id: i.id, action: 'resolve' })}>Reject</Button></>}
+      {i.status === 'NEEDS_HUMAN' && <Button size="sm" onClick={() => dispatch({ type: 'INBOX', id: i.id, action: 'claim' })}>Take it</Button>}
+      {i.status === 'CLAIMED' && <Button size="sm" variant="primary" onClick={() => dispatch({ type: 'INBOX', id: i.id, action: 'resolve' })}>Mark resolved</Button>}
+    </> }))
+  Object.entries(state.outage).forEach(([ch, down]) => down && items.push({ key: `out-${ch}`, tone: 'bad', kind: 'Provider', title: `${CHANNEL_META[ch].label} is down`,
+    text: 'Uncertain sends are held and checked with the provider before any retry. Nothing is sent twice.' }))
+  const worst = [...d.byCohort].sort((a, b) => a.pct - b.pct)[0]
+  if (worst) items.push({ key: 'slow', tone: 'warn', kind: 'Collections', title: `${state.cohorts.find((c) => c.id === worst.key)?.name ?? worst.key} is collecting slowest`,
+    text: `${pct(worst.pct)} of its overdue collected so far. Review its plan or attach an IVR campaign.`,
+    actions: <Button size="sm" onClick={() => dispatch({ type: 'SET_SCOPE', scopeType: 'cohort', id: worst.key })}>Focus on it</Button> })
+  if (state.day >= 4) items.push({ key: 'drift', tone: 'info', kind: 'Learning', title: 'WhatsApp replies dropped in C2/C3 and the West',
+    text: 'Aladdin already moved those sends to SMS. No action needed unless you disagree.',
+    actions: <Button size="sm" variant="ghost" onClick={() => navigate('/learning')}>See why</Button> })
+  const toneBar = { bad: 'bg-bad', warn: 'bg-warn', violet: 'bg-violet', info: 'bg-info' }
   return (
-    <Card className="col-span-2">
-      <CardHead title="Collections — last 6 days" sub={`${scopeLabel} · verified ₹ per day, Kairos vs fixed cadence on the same budget and caps`} right={<Chip tone="warn">SIMULATED</Chip>} />
-      <div className="h-[250px] px-3 pb-3">
-        <ResponsiveContainer>
-          <BarChart data={data} margin={{ top: 8, right: 16, bottom: 0, left: 4 }} barGap={4}>
-            <CartesianGrid stroke="var(--color-grid)" vertical={false} />
-            <XAxis dataKey="day" stroke="var(--color-faint)" tickLine={false} axisLine={false} fontSize={12} />
-            <YAxis stroke="var(--color-faint)" tickLine={false} axisLine={false} fontSize={12} tickFormatter={(v) => `₹${Math.round(v / 1000)}k`} />
-            <Tooltip formatter={(v) => inr(v)} contentStyle={{ background: 'var(--color-raised)', border: '1px solid var(--color-line-strong)', borderRadius: 8, fontSize: 12, color: 'var(--color-fg)' }} cursor={{ fill: 'var(--color-hover)' }} />
-            <Legend wrapperStyle={{ fontSize: 12 }} iconType="circle" iconSize={8} />
-            <RBar isAnimationActive={false} dataKey="Kairos" fill="var(--color-ok)" radius={[4, 4, 0, 0]} barSize={22} />
-            <RBar isAnimationActive={false} dataKey="Fixed cadence" fill="var(--color-bar-muted)" radius={[4, 4, 0, 0]} barSize={22} />
-          </BarChart>
-        </ResponsiveContainer>
+    <Card className={className}>
+      <CardHead title={<span className="inline-flex items-center gap-2">Needs you {items.length > 0 && <span className="rounded-full bg-fg px-2 py-0.5 text-[11.5px] font-semibold text-bg">{items.length}</span>}</span>}
+        sub="Aladdin decides routine sends itself. Here it stopped and is waiting for a person." />
+      <div className="px-6 pb-3">
+        {items.length ? items.map((it) => (
+          <div key={it.key} className="flex items-center gap-4 border-t border-line py-4 first:border-t-0">
+            <span className={cx('h-10 w-1 shrink-0 rounded-full', toneBar[it.tone])} />
+            <div className="min-w-0 flex-1">
+              <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-faint">{it.kind}</div>
+              <div className="text-[14px] font-semibold">{it.title}</div>
+              <div className="mt-0.5 text-[13px] text-muted">{it.text}</div>
+            </div>
+            {it.actions && <div className="flex shrink-0 items-center gap-2">{it.actions}</div>}
+          </div>
+        )) : <Empty>Nothing needs you. Aladdin is running inside the guardrails.</Empty>}
       </div>
     </Card>
   )
 }
 
-function RegionScorecard({ d }) {
-  const best = Math.max(...d.byRegion.map((r) => r.pct))
+// ---------------- the four ways a person interrupts Aladdin, from everything to one borrower ----------------
+function StepIn({ ask, pauseAll }) {
+  const { state, dispatch } = useKairos()
+  const [pick, setPick] = useState(state.campaigns.find((c) => c.status === 'RUNNING')?.id ?? state.campaigns[0]?.id)
+  const camp = state.campaigns.find((c) => c.id === pick)
+  const D = (action, reason) => dispatch({ type: 'CAMPAIGN', id: camp.id, action, value: null, reason })
   return (
     <Card>
-      <CardHead title="Collections by region" sub="Whole portfolio · collected vs overdue at allocation" />
-      <div className="space-y-3 px-5 pb-5">
-        {d.byRegion.map((r) => (
-          <div key={r.key}>
-            <div className="mb-1 flex items-baseline justify-between text-[13px]">
-              <span className="font-semibold">{r.key}</span>
-              <span className="tabular"><b>{pct(r.pct)}</b> <span className="text-muted">· {lakh(r.collected)} of {lakh(r.overdue)}</span></span>
-            </div>
-            <div className="h-1.5 overflow-hidden rounded-full bg-raised"><div className={cx('h-full rounded-full', r.pct === best ? 'bg-ok' : r.pct < best * 0.7 ? 'bg-warn' : 'bg-fg/70')} style={{ width: `${(r.pct / best) * 100}%` }} /></div>
-            <div className="mt-0.5 text-[11.5px] text-muted">{r.loans} loans · response {pct(r.responseRate, 0)}</div>
-          </div>
-        ))}
-        {(() => {
-          const worst = [...d.byRegion].sort((a, b) => a.pct - b.pct)[0]
-          return worst && <div className="rounded-lg border border-warn/25 bg-warn/5 px-3 py-2 text-[12px] text-muted"><b className="text-warn">{worst.key}</b> is lagging — Aladdin is shifting it to IVR in the local language.</div>
-        })()}
+      <CardHead title="How you step in" sub="From everything down to one borrower." />
+      <div className="px-6 pb-5">
+        <StepRow n="1" title="Stop everything" text="Every channel stops at once. Pending sends are held, not lost.">
+          <Button size="sm" variant={state.globalPause ? 'primary' : 'danger'} icon={state.globalPause ? Play : Pause} onClick={pauseAll}>{state.globalPause ? 'Resume all' : 'Pause all'}</Button>
+        </StepRow>
+        <StepRow n="2" title="Pause a campaign" text="Its sends are held and its audience kept.">
+          <Select value={pick} onChange={setPick} className="h-8 w-40 text-[12.5px]" options={state.campaigns.filter((c) => c.status !== 'DRAFT').map((c) => ({ value: c.id, label: c.name }))} />
+          {camp?.status === 'RUNNING'
+            ? <Button size="sm" icon={Pause} onClick={() => ask({ title: `Pause "${camp.name}"`, effect: 'Pending sends are held and the audience is kept. Resume at any time.', confirm: 'Pause', run: (r) => D('pause', r) })}>Pause</Button>
+            : <Button size="sm" icon={Play} disabled={!camp || camp.status === 'STOPPED'} onClick={() => D(camp.status === 'SCHEDULED' ? 'start' : 'resume', 'Operator decision')}>{camp?.status === 'SCHEDULED' ? 'Start' : 'Resume'}</Button>}
+        </StepRow>
+        <StepRow n="3" title="Change today's sends" text="Hold, cancel, reschedule or switch channel in today's plan.">
+          <Button size="sm" variant="ghost" icon={ChevronRight} onClick={() => document.getElementById('plan')?.scrollIntoView({ behavior: 'smooth' })}>Today's plan</Button>
+        </StepRow>
+        <StepRow n="4" title="Act on one borrower" text="Pause, hand off or mark do-not-contact on their page.">
+          <Link to={`/crm/${HERO_ID}`} className="text-[12.5px] font-semibold hover:underline">Open a borrower →</Link>
+        </StepRow>
+        <div className="mt-2 flex items-start gap-2 text-[12px] text-muted">
+          <ShieldCheck size={14} className="mt-0.5 shrink-0 text-ok" />
+          Consent, STOP and contact caps can't be overridden by anyone.
+        </div>
       </div>
     </Card>
+  )
+}
+
+function StepRow({ n, title, text, children }) {
+  return (
+    <div className="flex items-start gap-3 border-t border-line py-4 first:border-t-0 first:pt-1">
+      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-raised text-[12px] font-semibold">{n}</span>
+      <div className="min-w-0 flex-1">
+        <div className="text-[14px] font-semibold">{title}</div>
+        <div className="text-[12.5px] text-muted">{text}</div>
+        {children && <div className="mt-2.5 flex flex-wrap items-center gap-2">{children}</div>}
+      </div>
+    </div>
+  )
+}
+
+const TT = { contentStyle: { background: 'var(--color-raised)', border: '1px solid var(--color-line-strong)', borderRadius: 8, fontSize: 12, color: 'var(--color-fg)' }, cursor: { fill: 'var(--color-hover)', stroke: 'var(--color-line-strong)' } }
+const AXIS = { stroke: 'var(--color-faint)', tickLine: false, axisLine: false, fontSize: 12 }
+
+function ChartCard({ title, sub, className, children, h = 240, right }) {
+  return (
+    <Card className={cx('flex flex-col', className)}>
+      <CardHead title={title} sub={sub} right={right ?? <Chip tone="warn">SIMULATED</Chip>} />
+      <div className="px-3 pb-4" style={{ height: h }}>{children}</div>
+    </Card>
+  )
+}
+
+function CollectionsTrend({ share, scopeLabel }) {
+  const { state } = useKairos()
+  let k = 0, f = 0
+  const data = Array.from({ length: state.day }, (_, i) => {
+    k += COLLECTED.adaptive[i] * share
+    f += COLLECTED.fixed[i] * share
+    return { day: `D${i + 1}`, Kairos: Math.round(k), 'Fixed cadence': Math.round(f) }
+  })
+  return (
+    <ChartCard className="col-span-2" h={300} title="Money collected" sub={`${scopeLabel} · cumulative verified ₹, Kairos vs fixed cadence on the same budget and caps`}>
+      <ResponsiveContainer>
+        <AreaChart data={data} margin={{ top: 8, right: 16, bottom: 0, left: 4 }}>
+          <defs>
+            <linearGradient id="gK" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--color-ok)" stopOpacity={0.35} /><stop offset="100%" stopColor="var(--color-ok)" stopOpacity={0} /></linearGradient>
+          </defs>
+          <CartesianGrid stroke="var(--color-grid)" vertical={false} />
+          <XAxis dataKey="day" {...AXIS} />
+          <YAxis {...AXIS} tickFormatter={(v) => (v >= 1e5 ? `₹${(v / 1e5).toFixed(1)}L` : `₹${Math.round(v / 1000)}k`)} width={56} />
+          <Tooltip formatter={(v) => inr(v)} {...TT} />
+          <Legend wrapperStyle={{ fontSize: 12 }} iconType="circle" iconSize={8} />
+          <Area isAnimationActive={false} type="monotone" dataKey="Fixed cadence" stroke="var(--color-faint)" strokeDasharray="5 4" fill="transparent" strokeWidth={2} />
+          <Area isAnimationActive={false} type="monotone" dataKey="Kairos" stroke="var(--color-ok)" fill="url(#gK)" strokeWidth={2.5} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </ChartCard>
+  )
+}
+
+function ChannelMix({ d }) {
+  const counts = {}
+  d.allQueue.filter((q) => ACTIVE.includes(q.status)).forEach((q) => { counts[q.channel] = (counts[q.channel] || 0) + 1 })
+  const data = Object.entries(counts).map(([ch, n]) => ({ ch, name: CHANNEL_META[ch]?.label ?? ch, value: n })).sort((a, b) => b.value - a.value)
+  const total = data.reduce((a, x) => a + x.value, 0)
+  return (
+    <ChartCard h={300} title="Today's sends by channel" sub="Where Aladdin is spending today">
+      <div className="flex h-full flex-col">
+        <div className="relative flex-1">
+          <ResponsiveContainer>
+            <PieChart>
+              <Pie isAnimationActive={false} data={data} dataKey="value" nameKey="name" innerRadius="62%" outerRadius="88%" paddingAngle={2} stroke="none">
+                {data.map((x) => <Cell key={x.ch} fill={CHANNEL_META[x.ch]?.color ?? 'var(--color-faint)'} />)}
+              </Pie>
+              <Tooltip {...TT} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="pointer-events-none absolute inset-0 grid place-items-center text-center"><div><div className="text-[26px] font-semibold tabular">{total}</div><div className="text-[12px] text-muted">sends queued</div></div></div>
+        </div>
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 px-3 pt-2 text-[12px]">
+          {data.map((x) => <span key={x.ch} className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: CHANNEL_META[x.ch]?.color }} />{x.name} <b className="tabular">{x.value}</b></span>)}
+        </div>
+      </div>
+    </ChartCard>
+  )
+}
+
+function RepliesPerRupee() {
+  const { state } = useKairos()
+  const data = Array.from({ length: state.day }, (_, i) => ({
+    day: `D${i + 1}`,
+    Kairos: +(SERIES.adaptive.replies[i] / SERIES.adaptive.spend[i]).toFixed(3),
+    'Fixed cadence': +(SERIES.fixed.replies[i] / SERIES.fixed.spend[i]).toFixed(3),
+  }))
+  return (
+    <ChartCard title="Replies per ₹" sub="Learning pulls ahead as the campaign runs">
+      <ResponsiveContainer>
+        <LineChart data={data} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
+          <CartesianGrid stroke="var(--color-grid)" vertical={false} />
+          <XAxis dataKey="day" {...AXIS} />
+          <YAxis {...AXIS} domain={['dataMin - 0.02', 'dataMax + 0.02']} tickFormatter={(v) => v.toFixed(2)} width={40} />
+          <Tooltip {...TT} />
+          <Line isAnimationActive={false} type="monotone" dataKey="Fixed cadence" stroke="var(--color-faint)" strokeDasharray="5 4" strokeWidth={2} dot={false} />
+          <Line isAnimationActive={false} type="monotone" dataKey="Kairos" stroke="var(--color-info)" strokeWidth={2.5} dot={{ r: 3 }} />
+        </LineChart>
+      </ResponsiveContainer>
+    </ChartCard>
+  )
+}
+
+function RegionChart({ d }) {
+  const data = d.byRegion.map((r) => ({ name: r.key, pct: +(r.pct * 100).toFixed(1) }))
+  const best = Math.max(...data.map((x) => x.pct))
+  return (
+    <ChartCard title="Collection % by region" sub="Collected vs overdue at allocation">
+      <ResponsiveContainer>
+        <BarChart data={data} layout="vertical" margin={{ top: 4, right: 24, bottom: 0, left: 4 }}>
+          <CartesianGrid stroke="var(--color-grid)" horizontal={false} />
+          <XAxis type="number" {...AXIS} unit="%" />
+          <YAxis type="category" dataKey="name" {...AXIS} width={48} />
+          <Tooltip formatter={(v) => `${v}%`} {...TT} />
+          <RBar isAnimationActive={false} dataKey="pct" name="Collected" radius={[0, 4, 4, 0]} barSize={18}>
+            {data.map((x) => <Cell key={x.name} fill={x.pct === best ? 'var(--color-ok)' : x.pct < best * 0.7 ? 'var(--color-warn)' : 'var(--color-info)'} />)}
+          </RBar>
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartCard>
+  )
+}
+
+function CohortChart({ d }) {
+  const { state, dispatch } = useKairos()
+  const data = [...d.byCohort].map((r) => ({ id: r.key, name: r.key, pct: +(r.pct * 100).toFixed(1), full: state.cohorts.find((c) => c.id === r.key)?.name ?? r.key }))
+  const sel = state.scope.type === 'cohort' ? state.scope.id : null
+  return (
+    <ChartCard title="Collection % by cohort" sub="Click a bar to focus the dashboard on it">
+      <ResponsiveContainer>
+        <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+          <CartesianGrid stroke="var(--color-grid)" vertical={false} />
+          <XAxis dataKey="name" {...AXIS} />
+          <YAxis {...AXIS} unit="%" width={40} />
+          <Tooltip formatter={(v) => `${v}%`} labelFormatter={(_, p) => p?.[0]?.payload?.full ?? ''} {...TT} />
+          <RBar isAnimationActive={false} dataKey="pct" name="Collected" radius={[4, 4, 0, 0]} barSize={26} className="cursor-pointer"
+            onClick={(x) => dispatch({ type: 'SET_SCOPE', scopeType: 'cohort', id: x.id })}>
+            {data.map((x) => <Cell key={x.id} fill={sel && sel !== 'ALL' && sel !== x.id ? 'var(--color-bar-muted)' : 'var(--color-violet)'} />)}
+          </RBar>
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartCard>
   )
 }
 
@@ -281,7 +466,7 @@ function Queue({ rows, ask, className, cohortName, campaignName }) {
     const list = Object.values(groups).sort((a, b) => b.active - a.active)
     return (
       <Card className={className}>
-        <CardHead title="Upcoming queue" sub={`By ${scope.type} — open one to see its borrowers. ${list.reduce((a, g) => a + g.active, 0)} sends queued.`} />
+        <CardHead title="Today's plan" sub={`What Aladdin will send, by ${scope.type}. Open one to see each borrower, or hold it all. ${list.reduce((a, g) => a + g.active, 0)} sends queued.`} />
         <table className="w-full">
           <thead><tr><Th>{scope.type === 'cohort' ? 'Cohort' : 'Campaign'}</Th><Th>Queued</Th><Th>Needs approval</Th><Th>Held</Th><Th>Channels</Th><Th>Next send</Th><Th className="text-right">Actions</Th></tr></thead>
           <tbody>
@@ -319,7 +504,7 @@ function Queue({ rows, ask, className, cohortName, campaignName }) {
       <div className="flex items-start justify-between gap-4 px-5 pt-4 pb-3">
         <div>
           {scope.id === 'ALL' && <button onClick={() => setOpen(null)} className="mb-1 inline-flex items-center gap-1 text-[12.5px] text-muted hover:text-fg"><ArrowLeft size={13} /> All {scope.type === 'cohort' ? 'cohorts' : 'campaigns'}</button>}
-          <div className="text-[15px] font-semibold">Upcoming queue · {nameOf(groupId)}</div>
+          <div className="text-[15px] font-semibold">Today's plan · {nameOf(groupId)}</div>
           <div className="text-[13px] text-muted">{inGroup.length} borrowers queued — approve, hold, cancel, reschedule or switch before it goes</div>
         </div>
       </div>
@@ -478,135 +663,6 @@ function ChannelStatus({ d }) {
     </Card>
   )
 }
-
-function InboxCard({ className }) {
-  const { state, dispatch } = useKairos()
-  const [tab, setTab] = useState('NEEDS_HUMAN')
-  const items = state.inbox.filter((i) => i.status === tab)
-  const n = (s) => state.inbox.filter((i) => i.status === s).length
-  const sevTone = { high: 'bad', medium: 'warn', info: 'info' }
-  return (
-    <Card className={className}>
-      <CardHead title="Inbox" sub="Handoffs and approvals — Aladdin routes these, a person decides"
-        right={<Segmented size="sm" value={tab} onChange={setTab} options={[
-          { value: 'NEEDS_HUMAN', label: `Needs a human ${n('NEEDS_HUMAN')}` },
-          { value: 'APPROVAL', label: `Approvals ${n('APPROVAL')}` },
-          { value: 'CLAIMED', label: `Claimed ${n('CLAIMED')}` },
-          { value: 'RESOLVED', label: `Resolved ${n('RESOLVED')}` },
-        ]} />} />
-      <div className="px-5 pb-4">
-        {items.length ? items.map((i) => (
-          <div key={i.id} className="flex items-start gap-4 border-t border-line py-3">
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <Chip tone={sevTone[i.severity]}>{i.kind}</Chip>
-                <Link to={`/crm/${i.borrowerId}`} className="font-mono text-[12.5px] hover:underline">{i.borrowerId}</Link>
-                <ChannelTag ch={i.channel} muted />
-                <span className="text-[12px] text-faint">· {i.queue} · {i.age}</span>
-                {i.assignee && <span className="text-[12px] text-muted">· {i.assignee}</span>}
-              </div>
-              <div className="mt-1 text-[13px] text-muted">{i.summary}</div>
-            </div>
-            <div className="flex shrink-0 gap-1.5">
-              {i.status === 'APPROVAL' && <>
-                <Button size="sm" icon={Check} onClick={() => dispatch({ type: 'INBOX', id: i.id, action: 'approve' })}>Approve</Button>
-                <Button size="sm" variant="danger" icon={X} onClick={() => dispatch({ type: 'INBOX', id: i.id, action: 'resolve' })}>Reject</Button>
-              </>}
-              {i.status === 'NEEDS_HUMAN' && <Button size="sm" onClick={() => dispatch({ type: 'INBOX', id: i.id, action: 'claim' })}>Claim</Button>}
-              {(i.status === 'NEEDS_HUMAN' || i.status === 'CLAIMED') && <Button size="sm" variant="primary" onClick={() => dispatch({ type: 'INBOX', id: i.id, action: 'resolve' })}>Resolve</Button>}
-            </div>
-          </div>
-        )) : <Empty>Nothing waiting.</Empty>}
-      </div>
-    </Card>
-  )
-}
-
-function Alerts({ d }) {
-  const { state } = useKairos()
-  const list = []
-  Object.entries(state.outage).forEach(([ch, down]) => down && list.push({ tone: 'bad', title: `${CHANNEL_META[ch].label} provider down`, text: 'Uncertain sends held for reconciliation — status is checked before any retry.' }))
-  if (state.globalPause) list.push({ tone: 'bad', title: 'All outbound paused', text: 'No channel is sending. Resume from the header.' })
-  const worst = [...d.byCohort].sort((a, b) => a.pct - b.pct)[0]
-  if (worst) list.push({ tone: 'warn', title: `${state.cohorts.find((c) => c.id === worst.key)?.name ?? worst.key} is collecting slowest`, text: `${pct(worst.pct)} collected so far. Review its journey or attach an IVR campaign.` })
-  if (state.day >= 4) list.push({ tone: 'warn', title: 'Reply-rate drift · WhatsApp', text: 'WhatsApp replies fell in C2/C3 and the West. Aladdin moved those sends to SMS.' })
-  if (state.hero.flags.stop) list.push({ tone: 'warn', title: 'Opt-out received', text: `${HERO_ID} sent STOP — suppressed on every channel within one cycle.` })
-  const needs = state.inbox.filter((i) => i.status === 'NEEDS_HUMAN').length
-  if (needs) list.push({ tone: 'warn', title: `${needs} case${needs > 1 ? 's' : ''} need a person`, text: 'Hardship, disputes and waivers are routed, never decided by Kairos.' })
-  const pace = SERIES.adaptive.spend[state.day - 1] / d.budgetDaily
-  list.push({ tone: pace > 1 ? 'bad' : 'ok', title: `Budget pacing · ${pct(pace, 0)} of daily`, text: `Forecast ${inr(SERIES.adaptive.spend[state.day - 1])} of ${inr(d.budgetDaily)} today.` })
-  const icon = { bad: CircleX, warn: TriangleAlert, ok: ShieldCheck, info: Info }
-  return (
-    <Card>
-      <CardHead title="Alerts" sub="Things to act on now" />
-      <div className="grid grid-cols-3 gap-3 px-5 pb-5">
-        {list.map((a, i) => {
-          const I = icon[a.tone]
-          return (
-            <div key={i} className={cx('flex gap-2.5 rounded-lg border p-3', a.tone === 'bad' ? 'border-bad/30 bg-bad/10' : 'border-line bg-raised/40')}>
-              <I size={15} className={cx('mt-0.5 shrink-0', TONE_TEXT[a.tone])} />
-              <div><div className="text-[13px] font-semibold">{a.title}</div><div className="text-[12.5px] text-muted">{a.text}</div></div>
-            </div>
-          )
-        })}
-      </div>
-    </Card>
-  )
-}
-
-// ---------------- learning per cohort, as a timeline ----------------
-function Spark({ est, day }) {
-  const W = 150, H = 36
-  const chans = ['whatsapp', 'sms', 'ivr']
-  const all = chans.flatMap((c) => est[c].slice(0, day).map((v) => v / CHANNEL_META[c].cost))
-  const max = Math.max(...all), min = Math.min(...all)
-  const y = (v) => H - 3 - ((v - min) / (max - min || 1)) * (H - 6)
-  const x = (i) => (day > 1 ? (i / (day - 1)) * (W - 4) + 2 : W / 2)
-  return (
-    <svg width={W} height={H}>
-      {chans.map((c) => (
-        <polyline key={c} fill="none" stroke={CHANNEL_META[c].color} strokeWidth={c === 'ivr' ? 1.2 : 2}
-          points={est[c].slice(0, day).map((v, i) => `${x(i)},${y(v / CHANNEL_META[c].cost)}`).join(' ')} />
-      ))}
-    </svg>
-  )
-}
-
-function LearningByCohort({ ask }) {
-  const { state, dispatch } = useKairos()
-  const d = state.day
-  return (
-    <Card>
-      <CardHead title="What Aladdin learned, by cohort" sub="Replies per ₹ per channel, day by day — and the moment the best channel changed"
-        right={<div className="flex gap-3 text-[11.5px] text-muted">{['whatsapp', 'sms', 'ivr'].map((c) => <span key={c} className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: CHANNEL_META[c].color }} />{CHANNEL_META[c].label}</span>)}</div>} />
-      <table className="w-full">
-        <thead><tr><Th>Cohort</Th><Th>Day 1 → {d}</Th><Th>Best now</Th><Th>What changed</Th><Th className="text-right">Sending</Th></tr></thead>
-        <tbody>
-          {LEARNING.cohort.map((g) => {
-            const { best, switches } = bestByDay(g.est)
-            const seen = switches.filter((s) => s.day <= d)
-            const paused = !!state.segmentsPaused[g.key]
-            return (
-              <tr key={g.key} className={cx(paused && 'opacity-60')}>
-                <Td className="font-semibold whitespace-nowrap">{state.cohorts.find((c) => c.id === g.key)?.name ?? g.label}</Td>
-                <Td><Spark est={g.est} day={d} /></Td>
-                <Td><ChannelTag ch={best[d - 1].c} /><div className="text-[11.5px] tabular text-muted">{best[d - 1].rpr.toFixed(2)} replies/₹</div></Td>
-                <Td className="max-w-[360px] text-[12.5px]">
-                  {seen.length ? seen.map((s) => <div key={s.day}><b>Day {s.day}:</b> {CHANNEL_META[s.from].label} → <b>{CHANNEL_META[s.to].label}</b></div>) : <div className="text-muted">No switch — {CHANNEL_META[best[d - 1].c].label} still best</div>}
-                  <div className="text-muted">{g.why}</div>
-                </Td>
-                <Td className="text-right"><Toggle on={!paused} onChange={() => paused ? dispatch({ type: 'SEGMENT', key: g.key, label: g.label }) : ask({ title: `Pause ${g.label}`, effect: 'Pending sends for this cohort are held. Other cohorts keep running.', confirm: 'Pause cohort', run: () => dispatch({ type: 'SEGMENT', key: g.key, label: g.label }) })} /></Td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    </Card>
-  )
-}
-
-// ---------------- audit log (+ activity feed as a tab) ----------------
-const ACTIVITY_GROUPS = { Sends: ['SENT', 'DELIVERED', 'READ', 'SEND_RESERVED'], Replies: ['REPLIED'], Payments: ['D7_MATCHED', 'D7_PENDING', 'D7_MISMATCH', 'RECEIPT_ISSUED'] }
 
 function AuditLog() {
   const { state } = useKairos()
