@@ -21,7 +21,7 @@ improved · ❌ not built yet. "PR #N" is on github.com/dripston/kairos. All num
 | 12 | 50,000 daily decisions in under 10 minutes | ✅ | About 2.1 min single run (402 decisions/s) |
 | 13 | Deterministic given a seed | ✅ | `--check-determinism`: identical CRM envelope hashes |
 | 14 | Human in the loop | ✅ | Approvals, holds, manual sends, maker-checker, audit (PR #12) |
-| 15 | Voice channel with structured outcomes | ✅ | 6 Sarvam bots (Ritu, Advait), 8 languages, unified dispositions with confidence; Kairos-side thresholds on `k17-k18/voice-engine` (in progress) |
+| 15 | Voice channel with structured outcomes | ✅ | 6 Sarvam bots (Ritu, Advait), 8 languages, unified dispositions with confidence; Kairos-side registry, dispositions and confidence thresholds (PR #15, 1208 tests) |
 
 ## CM-03: inbound WhatsApp servicing agent
 

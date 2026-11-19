@@ -70,7 +70,7 @@ cd ../frontend && npm install && npm run dev
 | #10 `k07-k08/channel-adapters` | Channel adapters + phone-demo mode (runtime allow-list in `~/.kairos`, never committed) | Open |
 | #8 `k22/template-selector` | 83 templates, 14-rule compliance checker | Open |
 | #6 `feat/k05-k14-crm-voice` | `crm/` borrower page, shared ingestion, 5-step replay | Open |
-| `k17-k18/voice-engine` | Bot registry (use case → agent, voice, language), unified dispositions, confidence thresholds, `/webhooks/sarvam/call-end` | In progress |
+| #15 `k17-k18/voice-engine` | Bot registry (use case → agent, voice, language), unified dispositions, confidence thresholds, `/webhooks/sarvam/call-end` (stacked on #11) | Open, 1208 tests |
 | `k09/optimize` | Hold-out-seed tuning of K09 | In progress |
 | PRs #2–#5 | Pre-spine K09/K06 versions | Superseded by #11 |
 
