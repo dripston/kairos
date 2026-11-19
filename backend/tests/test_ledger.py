@@ -442,3 +442,22 @@ def test_ledger_rejects_bad_paise_and_mints_no_budget(ledger):
     assert ledger.touch(r.instruction_id)["reconciled"] == 0
     assert ledger.reconcile(r.instruction_id, 0) is True  # a free send is valid
     assert ledger.campaign_state("C1")["committed_paise"] == 0
+
+
+# ---------- future sync stamps (red-team RT-F05) ----------
+def test_future_sync_stamp_is_stale_and_refused(ledger):
+    later = at(10, day=D + timedelta(days=5))  # Wed, 5 days after the last real sync
+    ledger.mark_spine_synced(datetime(2030, 1, 1))  # stored as-is by the simulation path...
+    r = ledger.reserve(ins(t=later))
+    assert (r.decision.decision, r.decision.reason) == ("WAIT", "DPD_INVALID")  # ...but never counts as fresh
+    assert ledger.audit_log(1)[0]["detail"]["dpd_stamp_after_decision"] is True
+    ledger.mark_spine_synced(later + timedelta(minutes=4))  # within the 5-min skew -> fresh
+    assert ledger.preview(ins(t=later)).decision == "SEND"
+
+    now = later
+    with pytest.raises(ValueError):  # the real-clock path (POST /spine/synced) refuses it outright
+        ledger.mark_spine_synced(now + timedelta(minutes=6), now=now)
+    assert ledger.setting("spine_synced_at") == ledger._iso(later + timedelta(minutes=4))  # previous stamp kept
+    rej = ledger.audit_log(1)[0]
+    assert (rej["type"], rej["reason"]) == ("SPINE_SYNC_REJECTED", "FUTURE_SYNC_STAMP")
+    ledger.mark_spine_synced(now + timedelta(minutes=5), now=now)  # skew boundary is accepted

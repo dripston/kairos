@@ -209,7 +209,8 @@ def spine_import(body: DatasetIn):
 
 @app.post("/spine/synced")
 def spine_synced(at: datetime):
-    ledger.mark_spine_synced(at)
+    """422 (and an audit row) for a stamp later than now + 5 min: it would make stale DPD look fresh (RT-F05)."""
+    _call(ledger.mark_spine_synced, at, policy.now())
     return {"ok": True}
 
 

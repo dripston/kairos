@@ -46,6 +46,8 @@ RANK = {"RESERVED": 0, "DISPATCHING": 1, "UNCERTAIN": 2, "SENT": 3, "DELIVERED":
 # Ceiling for any single money value (budget per case, cost estimate, actual charge): 10^12 paise = Rs.1,000 crore.
 # Far above any real figure, far below SQLite's INTEGER limit (2^63 - 1), so sums never overflow (RT-F01).
 MAX_PAISE = 10 ** 12
+# Clock skew tolerated between the LMS feed and us before a sync stamp counts as "from the future" (RT-F05).
+SYNC_SKEW = timedelta(minutes=5)
 
 
 def check_paise(value, field: str, positive: bool = False) -> int:
@@ -241,21 +243,36 @@ class Ledger:
                       (ob["loan_id"],)).fetchone()
         return (day - date.fromisoformat(r["d"])).days if r["d"] else 0
 
+    def _dpd_stamps(self, ob) -> list[datetime]:
+        return [self._dt(s) for s in (self.setting("spine_synced_at"), ob["dpd_as_of"]) if s]
+
     def _dpd_age_hours(self, ob, at: datetime) -> float:
         """K01 stale rule: how old the LMS data behind this DPD is. Fresh = the spine was synced
-        (mark_spine_synced / start_day) or the loan's own dpd_as_of, whichever is newer."""
-        stamps = [s for s in (self.setting("spine_synced_at"), ob["dpd_as_of"]) if s]
-        if not stamps:
+        (mark_spine_synced / start_day) or the loan's own dpd_as_of, whichever is newer.
+        A stamp later than the decision time (+ SYNC_SKEW) proves nothing about freshness — a skewed
+        feed clock or a bad call wrote it — so it counts as stale (age = inf -> DPD_INVALID HOLD),
+        never as age 0 (RT-F05)."""
+        stamps = self._dpd_stamps(ob)
+        if not stamps or any(s > at + SYNC_SKEW for s in stamps):
             return float("inf")
-        latest = max(self._dt(s) for s in stamps)
-        return max(0.0, (at - latest).total_seconds() / 3600)
+        return max(0.0, (at - max(stamps)).total_seconds() / 3600)
 
     def _loan_cured(self, c, loan_id: str, day: date) -> bool:
         return c.execute("SELECT 1 FROM obligations WHERE loan_id=? AND due_date<=? AND amount_paid_paise<amount_due_paise",
                          (loan_id, day.isoformat())).fetchone() is None
 
-    def mark_spine_synced(self, at: datetime) -> None:
-        """Call after each LMS/payment feed refresh. In simulations, start_day() does it."""
+    def mark_spine_synced(self, at: datetime, now: Optional[datetime] = None) -> None:
+        """Call after each LMS/payment feed refresh. In simulations, start_day() does it.
+        `now` is the real clock of whoever reports the sync (POST /spine/synced passes it): a stamp later
+        than now + SYNC_SKEW is refused (RT-F05) — audited as SPINE_SYNC_REJECTED, ValueError raised, the
+        previous stamp kept. start_day() drives the simulation clock and passes no `now`; whatever is
+        stored, _dpd_age_hours treats a stamp later than the decision time as stale."""
+        if now is not None and self._loc(at) > self._loc(now) + SYNC_SKEW:
+            with self.tx() as c:
+                self._audit(c, "system", "SPINE_SYNC_REJECTED", at=now, reason="FUTURE_SYNC_STAMP",
+                            stamp=self._iso(at), skew_minutes=SYNC_SKEW.total_seconds() / 60)
+            raise ValueError(f"sync stamp {self._iso(at)} is later than now ({self._iso(now)}) "
+                             f"+ {SYNC_SKEW.total_seconds() / 60:.0f} min")
         self.set_setting("spine_synced_at", self._iso(at))
 
     # ---------- settings / setup ----------
@@ -387,6 +404,7 @@ class Ledger:
         consent = c.execute("SELECT consented, opted_out FROM consents WHERE borrower_id=? AND channel=?",
                             (ins.borrower_id, ins.channel)).fetchone()
         dpd = self._loan_dpd(c, ob, day)
+        dpd_age = self._dpd_age_hours(ob, at)
         outstanding = ob["amount_due_paise"] - ob["amount_paid_paise"]
         ex = exclude or ""
         live = ",".join("?" * len(LIVE))
@@ -406,7 +424,7 @@ class Ledger:
             at=at,
             channel=ins.channel,
             dpd=dpd,
-            dpd_age_hours=self._dpd_age_hours(ob, at),
+            dpd_age_hours=dpd_age,
             consent=bool(consent and consent["consented"] and not consent["opted_out"]),
             opted_out=bool(st["stopped"] or (consent and consent["opted_out"])),
             hardship_until=self._dt(st["hardship_until"]),
@@ -430,7 +448,10 @@ class Ledger:
             purpose=ins.purpose,
             verified_overdue=outstanding > 0 and ob["due_date"] < day.isoformat(),
         )
-        return facts, {"budget": budget_detail, "loan_id": ob["loan_id"], "dpd": dpd}
+        extra = {"budget": budget_detail, "loan_id": ob["loan_id"], "dpd": dpd}
+        if dpd_age == float("inf") and self._dpd_stamps(ob):
+            extra["dpd_stamp_after_decision"] = True  # RT-F05: the HOLD comes from a future stamp; audited
+        return facts, extra
 
     def _pre_gate(self, c, ins: Instruction) -> Optional[Decision]:
         """Operational stops outside the policy rulebook: a person paused everything, the campaign

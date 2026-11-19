@@ -36,10 +36,6 @@ _F = [
             "MEDIUM", "Rehan (K06)", "gate._Ctx (today/hhmm from f.at); api.py POST /gate/evaluate",
             "In gate._Ctx use local = policy.local(f.at) for today/hhmm/quiet-day (the Ledger already does this), "
             "so 14:00Z (19:30 IST) is CONTACT_WINDOW, not SEND."),
-    Finding("RT-F05", "A future-dated LMS sync stamp disables the stale-DPD HOLD indefinitely",
-            "HIGH", "Rehan (K06)", "ledger._dpd_age_hours (max(0, ...)); api.py POST /spine/synced",
-            "Reject /spine/synced stamps later than now (+ small skew) with 422, and in _dpd_age_hours treat a "
-            "stamp later than the decision time as invalid (age = inf -> DPD_INVALID HOLD) instead of clamping to 0."),
     Finding("RT-F06", "Bank-reference reuse check is exact-match: ' utr-1' / 'UTR-1<ZWSP>' pass as new references",
             "HIGH", "Varun (K03)", "spine/ledger.apply_payment; payments.reference UNIQUE",
             "Normalise references before the duplicate check and storage (NFKC, strip whitespace and zero-width/"
