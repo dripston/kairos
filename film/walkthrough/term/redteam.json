@@ -1,0 +1,237 @@
+{
+"cmd": "python3 scripts/run_redteam.py",
+"cwd": "kairos/backend",
+"started": "2026-11-20T01:06:08",
+"lines": [
+[
+3.657,
+"Kairos guardrail red-team · run RT-20261119T193604Z-cbdf49 · env SIMULATED · policy 1.1.1 (K13 1.0.0) · seed 20261119"
+],
+[
+3.657,
+""
+],
+[
+3.657,
+"ID          CATEGORY   RESULT  FINDING  TITLE"
+],
+[
+3.657,
+"-----------------------------------------------------------------"
+],
+[
+3.657,
+"RT-API-01   api        PASS             Negative / non-integer / overflowing paise are rejected with 4xx on every money route"
+],
+[
+3.657,
+"RT-API-02   api        PASS             Unknown borrower id -> 4xx on every borrower-scoped route (no 500, no silent write)"
+],
+[
+3.657,
+"RT-API-03   api        PASS             Unknown campaign / loan / EMI / payment / instruction ids -> 4xx, never 500"
+],
+[
+3.657,
+"RT-API-04   api        PASS             Malformed enums, channels, dates and wrong-typed facts -> 4xx, never 500"
+],
+[
+3.657,
+"RT-API-05   api        PASS             POST /spine/import refuses paths outside the data directory and echoes nothing"
+],
+[
+3.657,
+"RT-BUD-01   budget     PASS             Pool exhausted -> WAIT; a send that fits exactly is allowed; never over-committed"
+],
+[
+3.657,
+"RT-BUD-02   budget     PASS             Daily pacing caps today's spend even when the pool still has money"
+],
+[
+3.657,
+"RT-BUD-03   budget     PASS             Actual provider charge is reconciled exactly once (executor + manual retries)"
+],
+[
+3.657,
+"RT-BUD-04   budget     PASS             Collection target reached -> campaign stops new sends"
+],
+[
+3.657,
+"RT-CAP-01   caps       PASS             8 parallel workers race for the last B1 SMS cap slot -> exactly one wins"
+],
+[
+3.657,
+"RT-CAP-02   caps       PASS             Replaying one instruction id (sequential + 10 threads) never reserves or sends twice"
+],
+[
+3.657,
+"RT-CAP-03   caps       PASS             Reused instruction id with a different payload is not answered 'reserved'"
+],
+[
+3.657,
+"RT-CAP-04   caps       PASS             Two campaigns propose the same borrower slot at once -> one touch, one send (E03)"
+],
+[
+3.657,
+"RT-CAP-05   caps       PASS             Official and lender caps tighter than policy win (per-channel, IVR, gap, all-channel, weekly)"
+],
+[
+3.657,
+"RT-CAP-06   caps       PASS             A lender file that tries to LOOSEN caps or the gap is ignored (strictest wins)"
+],
+[
+3.657,
+"RT-CAP-07   caps       PASS             Pre-due all-channel cap: 3 contacts across channels, the 4th waits"
+],
+[
+3.657,
+"RT-CON-01   consent    PASS             STOP on WhatsApp blocks every channel in the same cycle and cancels queued sends (E02)"
+],
+[
+3.657,
+"RT-CON-02   consent    PASS             STOP arriving between reserve and dispatch -> nothing is sent"
+],
+[
+3.657,
+"RT-CON-03   consent    PASS             Opt-in on SMS after STOP does not re-enable any other channel"
+],
+[
+3.657,
+"RT-CON-04   consent    PASS             No consent row / consent=0 for a channel -> WAIT NO_CONSENT"
+],
+[
+3.657,
+"RT-CTL-01   holds      PASS             Outbound kill switch and campaign pause cancel queued work and block new sends"
+],
+[
+3.657,
+"RT-DPD-01   dpd        PASS             Loan with missing DPD (real K03 importer, synthetic CSV) is held, not guessed"
+],
+[
+3.657,
+"RT-DPD-02   dpd        PASS             Stale LMS data (> 24 h, or never synced) holds; exactly 24 h still sends"
+],
+[
+3.657,
+"RT-DPD-03   dpd        PASS             DPD 0 / not-yet-due EMI cannot be sent a collection message; DPD -7 is out of scope"
+],
+[
+3.657,
+"RT-DPD-04   dpd        PASS             A future-dated LMS sync stamp must not make 5-day-old data look fresh"
+],
+[
+3.657,
+"RT-HOLD-01  holds      PASS             Abusive / legal threat / fraud claim -> supervisor hold on every channel until a human clears it"
+],
+[
+3.657,
+"RT-HOLD-02  holds      PASS             PTP, hardship and callback-pending holds block every channel the next day"
+],
+[
+3.657,
+"RT-INJ-01   injection  PASS             Borrower reply text with instructions/SQL/unicode never changes loan, payment or consent state"
+],
+[
+3.657,
+"RT-INJ-02   injection  PASS             Injection in ticket summaries, evidence ids, reasons and actor fields changes nothing protected"
+],
+[
+3.657,
+"RT-INJ-03   injection  PASS             SQL-ish / wildcard identifiers on every mutating route never touch the real borrower or schema"
+],
+[
+3.657,
+"RT-INJ-04   injection  PASS             Unicode look-alike borrower ids (Cyrillic, zero-width, RTL, full-width) never resolve to B1"
+],
+[
+3.657,
+"RT-PAY-01   payment    PASS             Verified payment cancels only that EMI's queued touches; other EMIs/loans stay queued"
+],
+[
+3.657,
+"RT-PAY-02   payment    PASS             Reversal re-opens the EMI exactly once; a repeated reversal changes nothing"
+],
+[
+3.657,
+"RT-PAY-03   payment    PASS             Reused bank reference is rejected; replaying a payment id never double-counts"
+],
+[
+3.657,
+"RT-PAY-04   payment    PASS             Cosmetic variants of a used bank reference (space, case, zero-width, full-width) are rejected"
+],
+[
+3.657,
+"RT-PAY-05   payment    PASS             Over-payment, zero and negative amounts are rejected and change nothing"
+],
+[
+3.657,
+"RT-PII-01   pii        PASS             Borrower message text and identity never reach the audit log on the borrower-event paths"
+],
+[
+3.657,
+"RT-PII-02   pii        PASS             Ticket summary lines and evidence ids never store the borrower's raw name or phone"
+],
+[
+3.657,
+"RT-PII-03   pii        PASS             Free-text reasons (reversal, pause) and stored reply text are redacted at rest"
+],
+[
+3.657,
+"RT-TIME-01  time       PASS             Window edges: 07:59 and 19:00 (end exclusive) wait; 08:00 and 18:59 send"
+],
+[
+3.657,
+"RT-TIME-02  time       PASS             Sunday and a national holiday are quiet days; the next contact day is not"
+],
+[
+3.657,
+"RT-TIME-03  time       PASS             UTC and foreign-offset timestamps are judged in IST (no DST, fixed +05:30)"
+],
+[
+3.657,
+"RT-TIME-04  time       PASS             A touch reserved at 18:00 but dispatched at 19:05 is blocked at send time"
+],
+[
+3.657,
+"RT-TIME-05  time       PASS             Stateless Gate (gate.evaluate and POST /gate/evaluate) judges UTC input in IST"
+],
+[
+3.657,
+"RT-TPL-01   templates  PASS             Unapproved, unknown, empty or missing template id -> WAIT"
+],
+[
+3.657,
+"RT-TPL-02   templates  PASS             Template for the wrong channel or a non-policy language -> WAIT"
+],
+[
+3.657,
+"RT-TPL-03   templates  PASS             Template revoked between reserve and dispatch -> blocked at send time, budget released"
+],
+[
+3.657,
+"RT-UNC-01   uncertain  PASS             Timeout -> UNCERTAIN; re-dispatch and dispatch_due never re-send; resolve asks the provider"
+],
+[
+3.657,
+"RT-UNC-02   uncertain  PASS             Lost send is FAILED only after the provider says NOT_FOUND; unresolved ones keep their cap slot"
+],
+[
+3.657,
+""
+],
+[
+3.657,
+"49 attacks: 49 PASS, 0 FAIL (0 known findings), 0 ERROR, 0 SKIP"
+],
+[
+3.657,
+""
+],
+[
+3.657,
+"report: <path> Support/Claude/scratch-workspaces/0b136ffa-f2e9-4349-97db-c19456a39d80/bc097bab-2a33-41c0-a77c-295e92164045/scratch-2026-11-19-4004e7/kairos-main/backend/reports/redteam_report.json"
+]
+],
+"exit": 0,
+"dur": 3.71
+}

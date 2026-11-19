@@ -1,0 +1,70 @@
+{
+ "out": "audio/product_mix.wav",
+ "duration": 115.0,
+ "lufs": -14,
+ "ceiling": -1.0,
+ "music": {
+  "file": "../music/licensed/corporate_inspirational_atlasaudio.mp3",
+  "segments": [
+   {
+    "src": 0.0,
+    "len": 109.93,
+    "at": 0.0,
+    "fadeIn": 0,
+    "fadeOut": 0.025
+   }
+  ],
+  "gain": 0
+ },
+ "duck": {
+  "db": 18,
+  "attack": 0.12,
+  "release": 0.5,
+  "pre": 0.18
+ },
+ "voLevel": -20,
+ "vo": [
+  {
+   "file": "audio/vo/p01.wav",
+   "at": 0.5
+  },
+  {
+   "file": "audio/vo/p02.wav",
+   "at": 7.4
+  },
+  {
+   "file": "audio/vo/p03.wav",
+   "at": 21.0
+  },
+  {
+   "file": "audio/vo/p04.wav",
+   "at": 28.3
+  },
+  {
+   "file": "audio/vo/p05.wav",
+   "at": 45.2
+  },
+  {
+   "file": "audio/vo/p06.wav",
+   "at": 50.9
+  },
+  {
+   "file": "audio/vo/p07.wav",
+   "at": 59.9
+  },
+  {
+   "file": "audio/vo/p08.wav",
+   "at": 66.8
+  },
+  {
+   "file": "audio/vo/p09.wav",
+   "at": 82.2
+  },
+  {
+   "file": "audio/vo/p10.wav",
+   "at": 89.0
+  }
+ ],
+ "clicks": "mix/product_clicks.json",
+ "clickDb": -30
+}

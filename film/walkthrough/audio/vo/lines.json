@@ -1,0 +1,154 @@
+{
+ "p01": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Every month, lenders send the same reminder, at the same time, to everyone.",
+  "ok": true
+ },
+ "p02": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Kairos looks at every borrower, every day, and decides.",
+  "ok": true
+ },
+ "p03": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Before anything goes out, Aladdin, our safety supervisor, checks it against the lender's rules.",
+  "ok": true
+ },
+ "p04": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "No reply on SMS. So it learns, and tries WhatsApp.",
+  "ok": true
+ },
+ "p05": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Your team stays in charge.",
+  "ok": true
+ },
+ "p06": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "But even they can't break the rules.",
+  "ok": true
+ },
+ "p07": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Kairos answers in seconds. But only once it knows it's really them.",
+  "ok": true
+ },
+ "p08": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "A doctored payment screenshot? It checks with the bank.",
+  "ok": true
+ },
+ "p09": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "And stop means stop. Everywhere.",
+  "ok": true
+ },
+ "p10": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "In our tests, about twice the money back for every rupee. With zero rule breaches.",
+  "ok": true
+ },
+ "t01": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "This is what happens inside Kairos, for one borrower, on one day.",
+  "ok": true
+ },
+ "t02": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Everything starts from one record: loans, payments, replies and consent. Money to the paisa.",
+  "ok": true
+ },
+ "t03": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Each day, a Bayesian learner scores every channel and hour, per segment and per borrower.",
+  "ok": true
+ },
+ "t04": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Models only suggest. Aladdin reserves the budget and limits, then checks every rule again at send time.",
+  "ok": true
+ },
+ "t05": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Messages go out through each channel. Delivery and replies come back as webhooks, and duplicates are ignored.",
+  "ok": true
+ },
+ "t06": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Replies climb a ladder: rules first, then a small model. Thresholds are hand-set, and when it's unsure, it hands off to a person.",
+  "ok": true
+ },
+ "t07": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "People can step in at any moment. Every action still passes Aladdin, and lands in the audit log.",
+  "ok": true
+ },
+ "t08": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Every outcome feeds the learner. Same data in, same decisions out.",
+  "ok": true
+ },
+ "t09": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "We attack it, load it, and test it.",
+  "ok": true
+ }
+}

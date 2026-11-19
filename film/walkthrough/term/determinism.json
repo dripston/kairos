@@ -1,0 +1,249 @@
+{
+"cmd": "python3 scripts/run_k09_replay.py --no-explore --no-context --no-drift --check-determinism",
+"cwd": "kairos/backend",
+"started": "2026-11-20T01:16:46",
+"lines": [
+[
+311.414,
+""
+],
+[
+311.414,
+"SIMULATED (DEV simulator, synthetic dataset and priors, placeholder costs/caps/templates)"
+],
+[
+311.414,
+"Baseline: cn10 = CreditNirvana's own 10-day post-due strategy doc (HDFC project), used as a stand-in until the official fixed-cadence policy file (K02) arrives; k15 = the K15 placeholder schedule"
+],
+[
+311.414,
+"Matched: seed 42, 5,000 borrowers, 14 days from 2026-11-23, budget ₹10,200.00 (matched to cn10 fixed-cadence spend (calibration run ₹10,162.60, unconstrained)), caps K01 v1.1.1 + lender override REPLAY-K15 (1/day, 3 per 7 days) + K15 2-day cross-channel gap (replay pre-filter)"
+],
+[
+311.414,
+"Dataset: K03 synthetic generator, seed 42, 5000 rows, Bounce Date anchored at 2026-11-23"
+],
+[
+311.414,
+"Simulator: DEV simulator (replace with official CM-02 simulator)"
+],
+[
+311.414,
+"K09 options: {'decay': 0.7, 'hier_strength': None, 'affinity_strength': None, 'recency': 'count', 'min_reply_prob': 0.03, 'min_replies_per_inr': 0.0, 'payment_lambda': 0.0, 'value_floor_rel': 0.5, 'stop_penalty': 25.0, 'stop_max': None, 'stop_strength': 1500.0}"
+],
+[
+311.414,
+""
+],
+[
+311.414,
+"                                    cn10         K09       K09 vs cn10"
+],
+[
+311.414,
+"Attempted (unique)                 4,846       4,872             +0.5%"
+],
+[
+311.414,
+"Reached (unique)                   4,842       4,855             +0.3%"
+],
+[
+311.414,
+"Meaningful reply (unique)            693         920            +32.8%"
+],
+[
+311.414,
+"Verified payment (unique)            198         289            +46.0%"
+],
+[
+311.414,
+"Contacts sent                     21,226      26,660            +25.6%"
+],
+[
+311.414,
+"Spend ₹                         9,776.95   10,199.90             +4.3%"
+],
+[
+311.414,
+"Meaningful replies                   760       1,042            +37.1%"
+],
+[
+311.414,
+"Replies per ₹1,000                 77.73      102.16            +31.4%"
+],
+[
+311.414,
+"Verified payments                    198         289            +46.0%"
+],
+[
+311.414,
+"₹ recovered (verified EMIs) 2,658,919.003,762,029.00            +41.5%"
+],
+[
+311.414,
+"₹ recovered per ₹ spent           271.96      368.83            +35.6%"
+],
+[
+311.414,
+"Opt-outs (STOP)                       72         110            +52.8%"
+],
+[
+311.414,
+"K01 cap breaches                       0           0               n/a"
+],
+[
+311.414,
+"K15 safety violations                  0           0               n/a"
+],
+[
+311.414,
+"Decisions / second                 1,176         267            -77.3%"
+],
+[
+311.414,
+""
+],
+[
+311.414,
+"Supervisor decisions cn10  : {'CANCEL': 1825, 'SEND': 21226, 'WAIT': 22414}   top WAIT/CANCEL rules: {'K15_MIN_DAYS_BETWEEN_CONTACTS': 14917, 'CONSENT': 8865, 'PRE_DUE_TOTAL_CAP': 5815, 'QUIET_DAY': 4642, 'BUDGET_AVAILABLE': 2399, 'STOP_OPT_OUT': 1825, 'WEEKLY_CAPS': 693}"
+],
+[
+311.414,
+""
+],
+[
+311.414,
+"Supervisor decisions K09   : {'SEND': 26660, 'WAIT': 11857}   top WAIT/CANCEL rules: {'K15_MIN_DAYS_BETWEEN_CONTACTS': 26261, 'QUIET_DAY': 4737, 'BUDGET_AVAILABLE': 3614, 'WEEKLY_CAPS': 2425, 'LEARNER': 1011, 'DPD_VALID': 70}"
+],
+[
+311.414,
+"CN10 cohorts {'C1': 434, 'C2': 1414, 'C3': 1278, 'C4': 403, 'C5': 1471}  scheduled steps {'ivr': 7846, 'sms': 16843, 'whatsapp': 20776}  NACH notices sent 477  repeat after day 10: True"
+],
+[
+311.414,
+"Note: CN10 IVR is a one-way voice blast in CN's doc; the K15 DEV simulator models 'ivr' as able to produce replies, and this replay follows the simulator, so IVR replies count as meaningful."
+],
+[
+311.414,
+"Outcomes (K09)       : {'executed': 26660, 'reached_touches': 24820, 'replies': 1042, 'no_replies': 25618, 'pending': 0, 'unresolved': 0, 'verified_payments': 289, 'late_replies': 0}"
+],
+[
+311.414,
+""
+],
+[
+311.414,
+"Scores B1 (posterior replies/₹)   before → after"
+],
+[
+311.414,
+"  email     afternoon     0.4 →    0.4  (mean 0.02, n=0, prior)"
+],
+[
+311.414,
+"  email     evening       0.4 →    0.4  (mean 0.02, n=0, prior)"
+],
+[
+311.414,
+"  email     morning       0.4 →    0.4  (mean 0.02, n=0, prior)"
+],
+[
+311.414,
+"  whatsapp  evening       0.6 →  0.189  (mean 0.0756, n=2662, segment)"
+],
+[
+311.414,
+""
+],
+[
+311.414,
+"Scores B2 (posterior replies/₹)   before → after"
+],
+[
+311.414,
+"  email     afternoon     0.4 →    0.4  (mean 0.02, n=0, prior)"
+],
+[
+311.414,
+"  email     evening       0.4 →    0.4  (mean 0.02, n=0, prior)"
+],
+[
+311.414,
+"  email     morning       0.4 →    0.4  (mean 0.02, n=0, prior)"
+],
+[
+311.414,
+"  whatsapp  evening       0.6 →  0.158  (mean 0.0633, n=2093, segment)"
+],
+[
+311.414,
+""
+],
+[
+311.414,
+"In-campaign channel switches (K09 preferred channel by posterior replies/₹, end of day):"
+],
+[
+311.414,
+"  B1 day 6 (2026-11-28): whatsapp afternoon (0.45/₹, p=0.18) → sms evening (0.32/₹, p=0.08)"
+],
+[
+311.414,
+"  B1 day 7 (2026-11-29): sms evening (0.32/₹, p=0.08) → whatsapp evening (0.237/₹, p=0.0948)"
+],
+[
+311.414,
+"  B2 day 6 (2026-11-28): whatsapp afternoon (0.45/₹, p=0.18) → sms evening (0.32/₹, p=0.08)"
+],
+[
+311.414,
+"  B2 day 7 (2026-11-29): sms evening (0.32/₹, p=0.08) → whatsapp evening (0.19/₹, p=0.0759)"
+],
+[
+311.414,
+"  B3 day 6 (2026-11-28): whatsapp afternoon (0.45/₹, p=0.18) → sms evening (0.32/₹, p=0.08)"
+],
+[
+311.414,
+"  B3 day 7 (2026-11-29): sms evening (0.32/₹, p=0.08) → whatsapp evening (0.12/₹, p=0.0481)"
+],
+[
+311.414,
+"  B4 day 6 (2026-11-28): whatsapp afternoon (0.45/₹, p=0.18) → sms evening (0.32/₹, p=0.08)"
+],
+[
+311.414,
+"  B4 day 7 (2026-11-29): sms evening (0.32/₹, p=0.08) → whatsapp evening (0.113/₹, p=0.0453)"
+],
+[
+311.414,
+"Cohort close: 26 arm estimates could carry forward, 49 sparse; PROPOSAL (SIMULATED evidence; needs K01 owner approval and a new policy/model version)"
+],
+[
+311.414,
+"Throughput cn10  : 1176 decisions/s → 50,000 decisions in 0.7 min (limit 10 min)"
+],
+[
+311.414,
+"Throughput K09   : 267 decisions/s → 50,000 decisions in 3.1 min (limit 10 min)"
+],
+[
+637.996,
+""
+],
+[
+637.996,
+"Deterministic replay: IDENTICAL (CRM envelope hash K09 f98579b70254ec83 / f98579b70254ec83)"
+],
+[
+637.998,
+""
+],
+[
+637.998,
+"Report: reports/k09_replay_report.json   ledger DBs: {'cn10': '<tmp>', 'kairos': '<tmp>'}   (638s)"
+]
+],
+"exit": 0,
+"dur": 638.01
+}

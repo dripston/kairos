@@ -1,0 +1,65 @@
+{
+"cmd": "python scripts/calibrate_thresholds.py",
+"cwd": "kairos/backend (research/calibration-ope)",
+"started": "2026-11-20T01:48:01",
+"lines": [
+[
+0.892,
+"Learn-then-Test  alpha=0.05  delta=0.1  (binomial)  seed=7   SIMULATED + hand-written"
+],
+[
+0.892,
+"Data: 1140 calibration / 1140 test  {'handwritten': 240, 'synthetic': 2040}"
+],
+[
+0.892,
+"MODEL_ACCEPT hand-set 0.70  ->  calibrated 0.50   (certified; walk stopped at lambda=0.5 p=0.0)"
+],
+[
+0.892,
+"Held-out test split:"
+],
+[
+0.892,
+"  hand-set 0.70          automation  81.5%   error among auto  1.1% (10/929)   STOP recall 1.0  HARDSHIP recall 1.0"
+],
+[
+0.892,
+"  calibrated 0.50        automation  81.7%   error among auto  1.1% (10/931)   STOP recall 1.0  HARDSHIP recall 1.0"
+],
+[
+0.892,
+" handwritten:"
+],
+[
+0.892,
+"  hand-set               automation  79.2%   error among auto  2.1% (2/95)   STOP recall 1.0  HARDSHIP recall 1.0"
+],
+[
+0.892,
+"  calibrated             automation  80.0%   error among auto  2.1% (2/96)   STOP recall 1.0  HARDSHIP recall 1.0"
+],
+[
+0.892,
+" synthetic:"
+],
+[
+0.892,
+"  hand-set               automation  81.8%   error among auto  1.0% (8/834)   STOP recall 1.0  HARDSHIP recall 1.0"
+],
+[
+0.892,
+"  calibrated             automation  81.9%   error among auto  1.0% (8/835)   STOP recall 1.0  HARDSHIP recall 1.0"
+],
+[
+0.892,
+"Safety (test): 144 STOP/HARDSHIP rows, 137 decided by rules; lowest recall over every threshold 0.99..0.5 and fail-closed: {'STOP': 1.0, 'HARDSHIP': 1.0}; auto-handled as non-safety at any threshold: 0"
+],
+[
+0.892,
+"Wrote <tmp>  (0.78s)"
+]
+],
+"exit": 0,
+"dur": 0.9
+}

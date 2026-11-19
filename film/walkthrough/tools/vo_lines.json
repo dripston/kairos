@@ -1,0 +1,21 @@
+{
+ "p01": "Every month, lenders send the same reminder, at the same time, to everyone.",
+ "p02": "Kairos looks at every borrower, every day, and decides.",
+ "p03": "Before anything goes out, Aladdin, our safety supervisor, checks it against the lender's rules.",
+ "p04": "No reply on SMS. So it learns, and tries WhatsApp.",
+ "p05": "Your team stays in charge.",
+ "p06": "But even they can't break the rules.",
+ "p07": "Kairos answers in seconds. But only once it knows it's really them.",
+ "p08": "A doctored payment screenshot? It checks with the bank.",
+ "p09": "And stop means stop. Everywhere.",
+ "p10": "In our tests, about twice the money back for every rupee. With zero rule breaches.",
+ "t01": "This is what happens inside Kairos, for one borrower, on one day.",
+ "t02": "Everything starts from one record: loans, payments, replies and consent. Money to the paisa.",
+ "t03": "Each day, a Bayesian learner scores every channel and hour, per segment and per borrower.",
+ "t04": "Models only suggest. Aladdin reserves the budget and limits, then checks every rule again at send time.",
+ "t05": "Messages go out through each channel. Delivery and replies come back as webhooks, and duplicates are ignored.",
+ "t06": "Replies climb a ladder: rules first, then a small model. Thresholds are hand-set, and when it's unsure, it hands off to a person.",
+ "t07": "People can step in at any moment. Every action still passes Aladdin, and lands in the audit log.",
+ "t08": "Every outcome feeds the learner. Same data in, same decisions out.",
+ "t09": "We attack it, load it, and test it."
+}

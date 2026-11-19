@@ -1,0 +1,16 @@
+# Regenerable or large: recorder captures, renders, mixes, compiled tools
+captures/
+out/
+music/
+audio/*_mix.wav
+audio/*.m4a
+mix/*_clicks.json
+tools/record
+tools/render
+tools/mix
+tools/finish
+tools/sheet
+tools/thumbs
+tools/qa_frames
+tools/beats
+tools/*.new

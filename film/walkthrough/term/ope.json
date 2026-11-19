@@ -1,0 +1,77 @@
+{
+"cmd": "python scripts/ope_k09.py",
+"cwd": "kairos/backend (research/calibration-ope)",
+"started": "2026-11-20T01:48:21",
+"lines": [
+[
+20.119,
+"OPE for K09   SIMULATED   seed 42, 1,500 borrowers x 10 days, 1000 draws/propensity, epsilon 0.05"
+],
+[
+20.119,
+"Log: 7,209 Thompson decisions, 7,120 contacts, 227 replies; propensity in [0.001418, 0.889795], arm probs sum to 1 (min 1.0); consistency checks 0/0 mismatches"
+],
+[
+20.119,
+""
+],
+[
+20.119,
+"replies per 1,000 decisions              truth                   IPS                 SNIPS                    DR       DM     ESS"
+],
+[
+20.119,
+"Greedy K09 (posterior-mean ranking, a     35.9   42.4 [ 33.9, 50.0]*   43.2 [ 34.5, 50.8]*   45.5 [ 36.9, 53.0]     101.7    2470"
+],
+[
+20.119,
+"CN10 fixed calendar (stand-in cohort,     18.4   18.2 [ 10.3, 28.5]*   19.2 [ 11.0, 30.2]*   23.1 [ 14.8, 33.6]*     45.6     409"
+],
+[
+20.119,
+"Always WhatsApp 17-19 (sanity check)      32.8   42.1 [ 31.7, 54.9]*   43.0 [ 32.5, 56.2]*   45.7 [ 35.1, 58.9]      86.3     938"
+],
+[
+20.119,
+"The Thompson logger itself (weights =     29.3   31.5 [ 27.6, 35.4]*   31.5 [ 27.6, 35.4]*   32.1 [ 28.2, 35.9]*     74.7    7120"
+],
+[
+20.119,
+"  * = ground truth inside the 95% CI.  Truth = simulator expectation for the target's arm in each logged context."
+],
+[
+20.119,
+""
+],
+[
+20.119,
+"replies per Rs 1,000                     truth     SNIPS        DR"
+],
+[
+20.119,
+"Greedy K09 (posterior-mean ranking, a     78.4      94.5      99.6"
+],
+[
+20.119,
+"CN10 fixed calendar (stand-in cohort,     60.9      63.7      76.4"
+],
+[
+20.119,
+"Always WhatsApp 17-19 (sanity check)     110.2     144.6     153.7"
+],
+[
+20.119,
+"The Thompson logger itself (weights =     59.7      64.2      65.5"
+],
+[
+20.119,
+""
+],
+[
+20.119,
+"Wrote <tmp>  (20.06s, of which logging 13.14s)"
+]
+],
+"exit": 0,
+"dur": 20.13
+}

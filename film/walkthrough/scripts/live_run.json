@@ -1,0 +1,114 @@
+{
+"url": "http://127.0.0.1:8773/demo/live",
+"width": 1440,
+"height": 810,
+"scale": 2.5,
+"steps": [
+{
+"key": "p"
+},
+{
+"wait": 800
+},
+{
+"snap": "idle"
+},
+{
+"js": "document.getElementById('seed').value"
+},
+{
+"js": "document.getElementById('startBtn').click()"
+},
+{
+"burst": 72,
+"fps": 4,
+"label": "run"
+},
+{
+"wait": 3000
+},
+{
+"snap": "end_overview",
+"settle": 1500
+},
+{
+"rect": "#kpis",
+"name": "kpis"
+},
+{
+"rect": "#kRec",
+"name": "k_rec"
+},
+{
+"rect": "#kStop",
+"name": "k_stop"
+},
+{
+"rect": "#chartRec",
+"name": "chart"
+},
+{
+"rect": "#needsList",
+"name": "needs"
+},
+{
+"rect": "#feedOv",
+"name": "feed"
+},
+{
+"js": "location.hash='activity'"
+},
+{
+"wait": 1500
+},
+{
+"snap": "end_activity"
+},
+{
+"js": "location.hash='approvals'"
+},
+{
+"wait": 1500
+},
+{
+"snap": "end_approvals"
+},
+{
+"rect": "#apprPending",
+"name": "appr_pending"
+},
+{
+"js": "location.hash='rules'"
+},
+{
+"wait": 1500
+},
+{
+"snap": "end_rules"
+},
+{
+"rect": "#rRows",
+"name": "r_rows"
+},
+{
+"rect": "#rBr",
+"name": "r_breaches"
+},
+{
+"rect": "#rSent",
+"name": "r_sent"
+},
+{
+"js": "location.hash='overview'"
+},
+{
+"wait": 1500
+},
+{
+"snap": "end_overview2"
+},
+{
+"js": "document.getElementById('p-rules').innerText.slice(0,1500)"
+}
+]
+}

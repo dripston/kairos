@@ -1,0 +1,51 @@
+{
+"url": "http://127.0.0.1:8773/demo/live",
+"width": 1440,
+"height": 810,
+"scale": 2.5,
+"steps": [
+{
+"key": "p"
+},
+{
+"wait": 600
+},
+{
+"js": "location.hash='system'"
+},
+{
+"wait": 1200
+},
+{
+"rect": "#flow",
+"name": "sys_flow"
+},
+{
+"rect": "#sysStart",
+"name": "sys_start"
+},
+{
+"snap": "sys_idle"
+},
+{
+"click": "#sysStart",
+"name": "start_trace"
+},
+{
+"burst": 70,
+"fps": 4,
+"label": "trace"
+},
+{
+"snap": "trace_end",
+"settle": 1500
+},
+{
+"rect": "#flow",
+"name": "sys_flow_end"
+},
+{
+"js": "document.getElementById('sysText').innerText"
+}
+]
+}

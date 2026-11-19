@@ -1,0 +1,29 @@
+{
+"cmd": "python3 scripts/bench_ledger.py 50000",
+"cwd": "kairos/backend",
+"started": "2026-11-20T01:21:58",
+"lines": [
+[
+14.544,
+"setup (generate + import 50,000 loans + enroll): 3.4s"
+],
+[
+14.544,
+"50,000 atomic decisions in 11.1s (4,521/s)"
+],
+[
+14.544,
+"decisions: ELIGIBLE 34,308, NO_CONSENT 14,670, STOP_OPT_OUT 995, DPD_INVALID 27"
+],
+[
+15.24,
+"budget: committed 1,798,165 of today's allowance 2,272,727 paise | cap breaches: 0"
+],
+[
+15.24,
+"target: 50,000 in < 600s -> PASS"
+]
+],
+"exit": 0,
+"dur": 15.25
+}
