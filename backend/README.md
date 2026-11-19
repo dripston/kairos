@@ -9,10 +9,10 @@ cd backend
 python -m venv .venv
 .venv/Scripts/activate            # Windows  (macOS/Linux: source .venv/bin/activate)
 pip install -e ".[dev]"
-pytest                            # K01 + K13 cases, K06 ledger/executor/API/SupervisorFSM/HITL, K03 spine + K15 replay, K09, K17/K18 voice, K26 reports, K07/K08 channels + Android SMS gateway, K22 templates + compliance checklist, K20 email, red-team (open findings = strict xfail)
+python -m pytest                  # (pyproject adds -q) K01 + K13 cases, K06 ledger/executor/API/SupervisorFSM/HITL, K03 spine + K15 replay, K09, K17/K18 voice, K26 reports, K07/K08 channels + Android SMS gateway, K22 templates + compliance checklist, K20 email, red-team (open findings = strict xfail)
 python scripts/run_redteam.py     # guardrail red-team: PASS/FAIL per attack -> reports/redteam_report.json (see redteam/README.md)
 uvicorn kairos_backend.api:app --reload    # http://127.0.0.1:8000/docs
-python scripts/bench_ledger.py 50000       # 50k decisions on K03's synthetic dataset
+PYTHONPATH=. python scripts/bench_ledger.py 50000   # 50k decisions on K03's synthetic dataset
 python scripts/report_pack.py              # K26: seeded SIMULATED campaign -> reports/report_pack/*.csv
 ```
 
@@ -969,7 +969,7 @@ KAIROS_CM03_DEMO_INBOX=1 KAIROS_DB=/tmp/cm03-demo.db uvicorn kairos_backend.api:
 #   B-2001: "UTR 612345678902" -> pending; POST /cm03/demo/settle {"reference":"612345678902"} -> receipt
 #   "Edited screenshot" / "Injection" / "OTP scam" buttons -> refusal + FRAUD_SUSPECT + ticket
 python scripts/run_cm03_eval.py                 # full eval (≈ 50 s)
-pytest tests/test_cm03_redteam.py -q            # CM-03 red-team attacks
+python -m pytest tests/test_cm03_redteam.py     # CM-03 red-team attacks
 ```
 
 ### Context for Claude / how to continue

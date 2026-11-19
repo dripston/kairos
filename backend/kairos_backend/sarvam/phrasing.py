@@ -14,6 +14,7 @@ Every candidate goes through validate() before it can be sent. Any failure -> th
     promises (waiver, discount, guarantee, ...) unless the approved line had them
   * same intent: per-key concept markers must survive, upper-case keywords (RESEND, NOC) and the lender
     name must survive, a hardship line gets no collection ask
+  * no unfilled template slot the approved line did not have ("[lender name]", "{lender}", "<name>", "XXXX")
   * right script for the language
 """
 from __future__ import annotations
@@ -104,6 +105,8 @@ def validate(candidate: Optional[str], approved: str, key: str, lang: str, verif
     c, a = _norm(candidate.strip()), _norm(approved)
     if len(c) > MAX_CHARS or len(c) > len(a) * MAX_RATIO + 40 or len(c) < len(a) * MIN_RATIO:
         return "length"
+    if {p.lower() for p in tc.unfilled_placeholders(c)} - {p.lower() for p in tc.unfilled_placeholders(a)}:
+        return "placeholder"       # "[lender name]", "{lender}", "<name>", "XXXX": never sent, approved line instead
     if FORMAT_RX.search(c):
         return "format"
     ca, aa = set(re.findall(r"\d+", c)), set(re.findall(r"\d+", a))

@@ -250,6 +250,40 @@ class Takeover:
         return {"borrower_id": conv.borrower_id, "hold_id": out.get("hold_id"), "until": out.get("until"),
                 "canceled": out.get("canceled", 0), "days": days}
 
+    def close_for_sender(self, sender: str, agent: str, reason: str = "operator closed the chat (new chat)") -> dict:
+        """Explicit operator action (demo console "New chat"): close this number's open conversation(s) so its next
+        message starts a fresh, verify-first chat. Without it a bot hand-off (HANDOFF: every later message gets the
+        holding reply) lasted the 30-minute session. A case already opened for a person stays open; a chat a person
+        owns is refused (hand it back first): a human-owned chat is never closed under the person. Audited
+        (CM03_CONVERSATION_CLOSED)."""
+        from .engine import CLOSED, normalize_sender
+        from .tools import Turn
+        agent = _agent(agent)
+        sender = normalize_sender(sender)
+        closed = []
+        with self.engine._lock_for(sender):
+            rows = self.engine.ledger._conn().execute(
+                "SELECT conversation_id FROM cm03_conversations WHERE sender=? AND state<>?", (sender, CLOSED)).fetchall()
+            convs = [self._load(r["conversation_id"]) for r in rows]
+            for conv in convs:
+                o = owner_of(conv.data)
+                if o:
+                    raise TakeoverError("OWNED_BY_PERSON", f"{o.get('agent')} owns this chat: hand it back to the bot "
+                                                           f"before starting a new one")
+            for conv in convs:
+                before = conv.state
+                conv.state = CLOSED
+                conv.data["closed_by"] = {"agent": agent, "at": self._iso(), "reason": scrub(reason)[:160]}
+                turn = Turn(conv.conversation_id, conv.verified)
+                turn.add("OPERATOR_CLOSED", agent, {"state_before": before, "reason": scrub(reason)[:160]}, self._iso())
+                self._commit(conv, turn)
+                closed.append((conv.conversation_id, before, conv.borrower_id))
+        for cid, before, bid in closed:
+            self._audit("CM03_CONVERSATION_CLOSED", agent, bid, conversation_id=cid, state_before=before,
+                        reason=scrub(reason)[:160])
+        return {"sender": mask_phone(sender), "closed": [c[0] for c in closed],
+                "states_before": [c[1] for c in closed]}
+
     def hand_back(self, conversation_id: str, agent: str, resolution_code: Optional[str] = None,
                   reason: str = "handed back to the bot") -> dict:
         agent = _agent(agent)

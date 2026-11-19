@@ -193,6 +193,22 @@ def placeholders(text: str) -> List[str]:
     return PLACEHOLDER_RE.findall(text or "")
 
 
+# Unfilled slots that must never reach a borrower (E2E QA, 20 Nov 2026: the reply model wrote "A team member at
+# [lender name] has your request" and it was sent). Checked on rendered / rephrased text, never on templates.
+UNFILLED_RE = re.compile(
+    r"\[[^\[\]\n]{1,40}\]"                                  # [lender name], [account]
+    r"|\{\{?\s*[A-Za-z_][\w .-]{0,40}\}?\}"                   # {lender}, {{lender_name}}
+    r"|<\s*[A-Za-z_][\w .-]{0,40}>"                           # <lender>, <name>
+    r"|\bX{4,}\b|_{3,}"                                       # XXXX, ____
+    r"|\b(?:lender|company|bank|borrower|customer|agent)(?:'s)?\s+name\b"
+    r"|\blender\s+ka\s+naam\b|ऋणदाता\s+का\s+नाम", re.I)
+
+
+def unfilled_placeholders(text: str) -> list:
+    """Every unfilled template slot in `text` (rendered or model-rephrased), as found; [] when clean."""
+    return [m.group(0) for m in UNFILLED_RE.finditer(text or "")]
+
+
 def render_max(text: str) -> str:
     """Render placeholders at their maximum length (unknown ones at 20) for length checks."""
     return PLACEHOLDER_RE.sub(lambda m: "x" * PLACEHOLDER_MAX_LEN.get(m.group(1), 20), text or "")

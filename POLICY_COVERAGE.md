@@ -103,7 +103,7 @@ python scripts/policy_coverage.py --k15-evidence ev.json --write-snapshot   # wi
 ```
 
 K15 "report" cases come from full-scale runs:
-- `scripts/bench_ledger.py 50000`: K15-T01;
+- `PYTHONPATH=. python scripts/bench_ledger.py 50000`: K15-T01;
 - `scripts/run_k09_replay.py --check-determinism`: K15-T02, T03 and T12;
 - `scripts/run_cm03_eval.py`: K15-T04 to T06, read from `reports/cm03_eval.json`.
 

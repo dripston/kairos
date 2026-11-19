@@ -319,9 +319,10 @@ class ConversationEngine:
             self._human_owned(conv, turn, text)
             return
         if conv.state == HANDOFF:
-            if k09.is_stop(text):
+            if text and (k09.is_stop(text) or k09.is_stop(N.fix_typos(text))):
+                # STOP is honoured at once on every channel, and the bot hold ends: the chat closes (a case already
+                # opened for a person stays open). It used to stay HANDOFF, so every later message got the hold reply.
                 self._stop(conv, turn)
-                conv.state = HANDOFF
                 return
             self._reply(conv, turn, "HANDOFF_HOLD")
             return

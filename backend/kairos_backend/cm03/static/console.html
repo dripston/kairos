@@ -116,7 +116,20 @@ async function refresh() {
 }
 $("send").onclick = () => { const t = $("text").value.trim(); $("text").value = ""; send(t); };
 $("text").addEventListener("keydown", (e) => { if (e.key === "Enter") $("send").click(); });
-$("newchat").onclick = () => { convId = null; $("chat").innerHTML = ""; $("tl").innerHTML = ""; $("state").innerHTML = ""; bubble("New chat (send STOP/thanks to close a server-side session, or wait 30 min)", "sys"); };
+// New chat = an audited operator action: the server closes this number's open chat (a bot hand-off too), so the
+// next message really starts fresh. A chat a person owns is refused (hand it back first).
+$("newchat").onclick = async () => {
+  let msg;
+  try {
+    const r = await fetch("/cm03/demo/new-chat", {method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({phone: $("phone").value, agent: "console.operator"})});
+    const j = await r.json();
+    if (!r.ok) msg = "Could not start a new chat: " + ((j.detail && (j.detail.message || j.detail)) || ("HTTP " + r.status));
+    else msg = "New chat. " + (j.closed.length ? "Closed the previous chat on the server (" + j.states_before.join(", ") + "), audited." : "No open chat on the server.");
+  } catch (e) { msg = "Could not reach the server: " + e.message; }
+  convId = null; $("chat").innerHTML = ""; $("tl").innerHTML = ""; $("state").innerHTML = "";
+  bubble(msg, "sys");
+};
 document.querySelectorAll("[data-say]").forEach((b) => b.onclick = () => send(b.dataset.say));
 document.querySelectorAll("[data-att]").forEach((b) => b.onclick = () => send("payment screenshot", {type:"image", kind:"payment_screenshot",
   meta:{software:"Adobe Photoshop 25.0", created_at:"2026-11-18T10:00:00", modified_at:"2026-11-19T21:14:00", edited:true},

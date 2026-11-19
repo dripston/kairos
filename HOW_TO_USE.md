@@ -44,6 +44,13 @@ labelled `SIMULATED · offline mock`, and the app still works end to end.
 4. Pick a theme: the sun / moon button at the top right switches light and dark. Light mode reads
    better on most projectors.
 5. Use a browser window at least 1366 px wide.
+6. **Live collections (`/demo/live`)**: on the free plan a run spends about 38 s on "Preparing" before day 1.
+   Open it and press Start a minute before you need it.
+7. **Journey pages**: there is one shared session per journey. Open Journey 1 as
+   `/demo/journey/outbound?presenter=<any-word>` so nobody else can restart it during the talk, and do not
+   share the journey links with the audience while presenting.
+8. **CM-03 console**: after a fraud or security hand-off, press **New chat** before the next demo on that phone;
+   it closes the handed-off chat on the server (audited).
 
 A restart of the backend resets its data to the same seeded demo state, so every run of the demo
 starts from the same place.
