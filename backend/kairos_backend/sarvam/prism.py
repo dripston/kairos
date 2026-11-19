@@ -121,8 +121,13 @@ def disposition_questions() -> Dict[str, Any]:
 # ---------------------------------------------------------------------------------------------
 
 _CONTAINERS = ("answers", "results", "outputs", "output", "data", "response", "result", "questions", "decisions")
-_VALUE_KEYS = ("answer", "value", "label", "choice", "selected", "decision", "result", "output", "prediction",
+_VALUE_KEYS = ("answer", "value", "label", "choice", "noul", "selected", "decision", "result", "output", "prediction",
                "score", "class")
+# Observed live (2026-11-19): choice -> {"choice": <label>, "confidence": p, "probabilities": {...}, "type"};
+# noul -> {"noul": P(yes), "type"}; score -> {"score": expected index, "legend": {"0": ..}, "probabilities",
+# "confidence", "type"}. noul values were bimodal (0.02-0.10 vs 0.86-0.98).
+NOUL_YES_AT = 0.5
+NOUL_NO_BELOW = 0.2
 _NAME_KEYS = ("name", "question", "id", "key", "question_name")
 
 
@@ -173,10 +178,16 @@ def parse_choice(v: Any, labels: Sequence[str]) -> Optional[str]:
 
 
 def parse_noul(v: Any) -> str:
-    """yes / no / unknown. 'likely' counts as yes (fail closed: it only ever adds a human review)."""
+    """yes / no / unknown. A number is P(yes) (the live shape): >= 0.5 yes, <= 0.2 no, between unknown.
+    'likely' counts as yes (fail closed: it only ever adds a human review)."""
     s = _scalar(v)
     if isinstance(s, bool):
         return "yes" if s else "no"
+    if isinstance(s, (int, float)):
+        f = float(s)
+        if f != f or f < 0 or f > 1:
+            return "unknown"
+        return "yes" if f >= NOUL_YES_AT else ("no" if f <= NOUL_NO_BELOW else "unknown")
     t = str(s).strip().lower() if s is not None else ""
     if t in ("yes", "y", "true", "1", "likely", "probably", "haan"):
         return "yes"
@@ -186,6 +197,10 @@ def parse_noul(v: Any) -> str:
 
 
 def parse_score(v: Any, scale: Sequence[str] = CONFIDENCE_SCALE) -> Optional[float]:
+    if isinstance(v, dict) and isinstance(v.get("legend"), dict) and len(v["legend"]) > 1 \
+            and isinstance(v.get("score"), (int, float)) and not isinstance(v.get("score"), bool):
+        f = float(v["score"]) / (len(v["legend"]) - 1)       # live shape: expected index over the legend
+        return f if 0 <= f <= 1 else None
     s = _scalar(v)
     if isinstance(s, bool) or s is None:
         return None
@@ -220,6 +235,7 @@ class PrismAnswer:
     abusive: str = "unknown"
     error: Optional[str] = None
     meta: Dict[str, Any] = field(default_factory=dict)
+    score_question: Optional[float] = None      # the separate "confidence" score question (recorded only)
 
     @property
     def safety_yes(self) -> List[str]:
@@ -227,7 +243,8 @@ class PrismAnswer:
 
     def as_dict(self) -> Dict[str, Any]:
         return {"label": self.label, "confidence": self.confidence, "stop": self.stop, "hardship": self.hardship,
-                "self_harm": self.self_harm, "abusive": self.abusive, "error": self.error}
+                "self_harm": self.self_harm, "abusive": self.abusive, "score_question": self.score_question,
+                "error": self.error}
 
 
 def parse_answers(resp: Any, choice_name: str, labels: Sequence[str]) -> PrismAnswer:
@@ -236,14 +253,18 @@ def parse_answers(resp: Any, choice_name: str, labels: Sequence[str]) -> PrismAn
     if amap is None:
         return PrismAnswer(None, None, error="schema: no answers found")
     label = parse_choice(amap.get(choice_name), labels)
-    conf = parse_score(amap.get("confidence"))
-    if conf is None and isinstance(amap.get(choice_name), dict):   # a per-answer confidence, if given
-        for k in ("confidence", "probability", "score"):
+    conf = None
+    if isinstance(amap.get(choice_name), dict):   # the choice's own probability (live shape) comes first
+        for k in ("confidence", "probability"):
             if k in amap[choice_name]:
                 conf = parse_score(amap[choice_name][k])
                 break
+    score_q = parse_score(amap.get("confidence"))
+    if conf is None:
+        conf = score_q
     a = PrismAnswer(label, conf, parse_noul(amap.get("stop_request")), parse_noul(amap.get("hardship")),
                     parse_noul(amap.get("self_harm")), parse_noul(amap.get("abusive")))
+    a.score_question = score_q
     if label is None:
         a.error = f"schema: {choice_name} not one of the allowed labels"
     elif conf is None:
@@ -288,10 +309,18 @@ class PrismClassifier:
         return self._ask(state, disposition_questions(), "disposition", list(DISPOSITION_CRITERIA))
 
 
+# Decided by the live eval (scripts/eval_models.py, rule fixed before the re-run): the intent tier is on by
+# default only if it raised combined gold + held-out accuracy with no new errors. See backend/README.md.
+# Live re-run 2026-11-19: combined accuracy 92.9% -> 95.8%, 0 new errors, 7 fixed -> ON.
+PRISM_INTENT_DEFAULT = True
+
+
 def shared_prism(env=None) -> Optional[PrismClassifier]:
+    """The intent-stack prism tier: on with a key while PRISM_INTENT_DEFAULT is True (set from the live eval);
+    if it is ever set False, KAIROS_SARVAM_FEATURES listing 'prism' turns it on explicitly."""
     from .client import shared_client
-    from .config import feature_enabled
-    if not feature_enabled("prism", env):
+    from .config import feature_enabled, feature_listed
+    if not feature_enabled("prism", env) or not (PRISM_INTENT_DEFAULT or feature_listed("prism", env)):
         return None
     c = shared_client(env)
     return PrismClassifier(c) if c else None

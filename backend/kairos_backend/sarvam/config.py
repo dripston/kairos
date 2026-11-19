@@ -9,7 +9,8 @@ Key precedence (first non-empty wins):
 
 No key -> every Sarvam model tier is off and Kairos runs exactly as before (fully deterministic).
 KAIROS_SARVAM_MODELS=off turns everything off even with a key (tests set it, see tests/conftest.py).
-KAIROS_SARVAM_FEATURES=prism,voice,phrasing,narrative picks a subset (default: all four).
+KAIROS_SARVAM_FEATURES=prism,voice,phrasing,narrative picks a subset (default: all four; the prism intent
+tier's default is prism.PRISM_INTENT_DEFAULT, set from the live eval).
 """
 from __future__ import annotations
 
@@ -109,6 +110,12 @@ def feature_enabled(name: str, env: Optional[Mapping[str, str]] = None) -> bool:
     if not raw:
         return True
     return name in {f.strip().lower() for f in raw.split(",")}
+
+
+def feature_listed(name: str, env: Optional[Mapping[str, str]] = None) -> bool:
+    """Named explicitly in KAIROS_SARVAM_FEATURES (opt-in for features that are off by default)."""
+    e = os.environ if env is None else env
+    return name in {f.strip().lower() for f in (e.get(FEATURES_ENV) or "").split(",") if f.strip()}
 
 
 def mask_secret(text: object, secrets: Iterable[Optional[str]] = ()) -> str:

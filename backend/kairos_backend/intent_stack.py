@@ -108,7 +108,7 @@ MODEL_MARGIN = 0.25        # ... and its lead over the runner-up
 MODEL_PICK_MIN = 0.20      # when rules gave candidates: the model's pick among them needs this much
 LOCAL_LLM_BELOW = MODEL_ACCEPT  # tier 3 only when tier 2's top probability is below this
 LLM_ACCEPT = 0.70          # local LLM self-reported confidence needed
-PRISM_ACCEPT = 0.70        # prism confidence score needed for its intent to be used
+PRISM_ACCEPT = 0.80        # prism's own probability for its intent label needed for the answer to be used
 PRISM_CONF_CAP = 0.85      # a prism answer never reports more confidence than this
 STACK_VERSION = "intent-stack-1"
 
@@ -967,7 +967,8 @@ class IntentStack:
         masked = None
         if self.prism is not None:
             ev["escalated_to"].append("prism")
-            out = self._prism_tier(text, known, ro, ev, ents, today)
+            top2 = [lab for lab, _ in sorted(probs.items(), key=lambda kv: (-kv[1], LABELS.index(kv[0])))[:2]]
+            out = self._prism_tier(text, known, ro, ev, ents, today, top2)
             if out is not None:
                 return out
 
@@ -1005,8 +1006,11 @@ class IntentStack:
         return self._result(UNKNOWN, round(top_p, 4), "abstain", ev, ents, True, ro.safety_flags, today)
 
     def _prism_tier(self, text: str, known: Sequence[str], ro: _RuleOutcome, ev: Dict[str, Any],
-                    ents: Dict[str, Any], today: date) -> Optional[StackResult]:
-        """Map prism's answers into a StackResult, or None to fall through. Never raises."""
+                    ents: Dict[str, Any], today: date, top2: Sequence[str] = ()) -> Optional[StackResult]:
+        """Map prism's answers into a StackResult, or None to fall through. Never raises. Runs only where
+        rules + small model abstained. Its label is kept only at >= PRISM_ACCEPT and only when it agrees with
+        a rule candidate or the small model's top 2; a safety signal (noul yes, or a confident safety label)
+        always goes to a person."""
         from .sarvam.prism import mask_for_model
         try:
             a = self.prism.classify_intent(mask_for_model(text, known))
@@ -1015,10 +1019,13 @@ class IntentStack:
             return None
         ev["prism"] = {**a.meta, "output": a.as_dict()}
         flags = list(ro.safety_flags)
-        safety = a.safety_yes + (["stop"] if a.label == STOP and "stop" not in a.safety_yes else [])
-        if a.label == HARDSHIP and "hardship" not in safety and "self_harm" not in safety:
+        safety = list(a.safety_yes)
+        sure = a.confidence is not None and a.confidence >= PRISM_ACCEPT
+        if sure and a.label == STOP and "stop" not in safety:
+            safety.append("stop")
+        if sure and a.label == HARDSHIP and "hardship" not in safety and "self_harm" not in safety:
             safety.append("hardship")
-        if a.label == ABUSIVE and "abusive" not in safety:
+        if sure and a.label == ABUSIVE and "abusive" not in safety:
             safety.append("abusive")
         if safety:
             # Review signal only. Precedence stop > self-harm > hardship > abuse, as in the rules.
@@ -1032,8 +1039,9 @@ class IntentStack:
             return self._result(lab, conf, "prism", ev, ents, True, flags, today, model_safety=True)
         if a.error or a.label is None or a.label == UNKNOWN or a.confidence is None or a.confidence < PRISM_ACCEPT:
             return None
-        if ro.candidates and a.label not in ro.candidates:
-            ev["prism"]["rejected"] = "label not among the rule candidates"
+        allowed = set(ro.candidates) | set(top2)
+        if a.label not in allowed:
+            ev["prism"]["rejected"] = "label agrees with neither a rule candidate nor the small model's top 2"
             return None
         return self._result(a.label, round(min(PRISM_CONF_CAP, a.confidence), 4), "prism", ev, ents, False, flags, today)
 
