@@ -299,3 +299,52 @@ def test_sms_provider_priority_android_then_messages_then_mock():
     d = build_providers("phone-demo", env=both, sms_transport=FakeGateway())
     assert isinstance(d["sms"], AndroidSmsGatewayProvider) and d["sms"].dry_run
     assert isinstance(build_providers("mock", env=both)["sms"], MockChannelProvider)   # mock mode stays mock
+
+
+# ---------------------------------------------------------------- CLI (scripts/send_demo_sms.py)
+def _cli():
+    import importlib.util
+    from pathlib import Path
+    path = Path(__file__).resolve().parents[1] / "scripts" / "send_demo_sms.py"
+    spec = importlib.util.spec_from_file_location("send_demo_sms", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+@pytest.fixture
+def cli_env(monkeypatch):
+    for k, v in env().items():
+        monkeypatch.setenv(k, v)
+    monkeypatch.delenv("KAIROS_DEMO_SMS", raising=False)
+    return monkeypatch
+
+
+def test_cli_dry_run_prints_masked_request_and_sends_nothing(cli_env, capsys):
+    rc = _cli().main(["--to", "0001", "--template", "DEMO_SMS_HELLO", "--id", "DEMO-CLI-1"])
+    out = capsys.readouterr().out
+    assert rc == 0 and "DRY RUN" in out and "demo-android-sms (local mode)" in out
+    assert '"url": "http://192.0.2.10:8080/messages"' in out and "+********0001" in out
+    assert "0000000001" not in out and "pw-test-1234567" not in out
+
+
+def test_cli_live_send_and_status(cli_env, capsys):
+    import kairos_backend.channels.android_sms as mod
+    gw = FakeGateway()
+    cli_env.setattr(mod, "_urllib_transport", gw)
+    cli = _cli()
+    assert cli.main(["--to", PHONE, "--template", "DEMO_SMS_HELLO", "--id", "DEMO-CLI-2", "--live"]) == 0
+    assert "result: ACCEPTED provider_ref=DEMO-CLI-2" in capsys.readouterr().out
+    assert gw.calls[0]["json"]["phoneNumbers"] == [PHONE]
+    assert cli.main(["--status", "DEMO-CLI-2"]) == 0 and '"status": "DELIVERED"' in capsys.readouterr().out
+
+
+def test_cli_refusals(cli_env, capsys):
+    cli = _cli()
+    assert cli.main(["--to", "0001", "--template", "NOT_A_TEMPLATE"]) == 1
+    assert "TEMPLATE_NOT_APPROVED" in capsys.readouterr().out
+    with pytest.raises(SystemExit, match="no allow-listed number"):
+        cli.main(["--to", "9999", "--template", "DEMO_SMS_HELLO"])
+    cli_env.setenv("KAIROS_DEMO_ANDROID_SMS", "0")
+    with pytest.raises(SystemExit, match="No SMS demo provider is enabled"):
+        cli.main(["--to", "0001", "--template", "DEMO_SMS_HELLO"])
