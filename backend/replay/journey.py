@@ -244,7 +244,7 @@ class Journey:
         full = {"sms": 1, "whatsapp": 1, "email": 1, "ivr": 1, "voicebot": 1}
         conn = lg._spine()
 
-        def put(r, role, due: date, consents=None, borrower_id=None, phone_ok=True):
+        def put(r, role, due: date, consents=None, borrower_id=None, phone=None):
             r = dict(r)
             r["bounce_date"] = due
             r["file_dpd"] = (D0 - due).days
@@ -252,14 +252,16 @@ class Journey:
             if consents is not None:
                 r["consents"] = dict(consents)
             with conn:
-                insert_parsed_loan(conn, r, D0, borrower_id=borrower_id)
+                insert_parsed_loan(conn, r, D0, borrower_id=borrower_id, phone=phone)
             bid = borrower_id or r["borrower_id"]
             if role:
                 self.cast[role] = bid
             return bid, r["loan_id"], f"{r['loan_id']}-OD1", r["emi_paise"]
 
         # A: two loans. Loan 1 due on D2 (pre-due on D0, bounces), loan 2 due on D9 (stays open).
-        a, a1_loan, a1, a1_emi = put(pool[0], "A", D0 + timedelta(days=2), full)
+        # A's number is a CM-03-style synthetic one (+910…, never a real mobile) so the WhatsApp agent can
+        # recognise the sender; the generator's own numbers start with 0 and are not E.164.
+        a, a1_loan, a1, a1_emi = put(pool[0], "A", D0 + timedelta(days=2), full, phone=f"+910{100000000 + self.seed:09d}")
         _, a2_loan, a2, _ = put(pool[1], None, D0 + timedelta(days=9), full, borrower_id=a)
         # B: pre-due cohort member who will STOP on SMS
         b, b_loan, bo, _ = put(pool[2], "B", D0 + timedelta(days=3), {**full, "voicebot": 0, "ivr": 0})
@@ -399,6 +401,21 @@ class Journey:
                 envelope=env)
         return r
 
+    def classify_text(self, bid: str, channel: str, at: datetime, text: str) -> Any:
+        """Free-text reply -> intent. k09/intent-stack when merged (rules -> small model; LLM tiers only
+        with a key, never in a replay), else the K09 rules classifier."""
+        if module_available("kairos_backend.intent_stack"):
+            from kairos_backend.intent_stack import IntentStack
+            r = IntentStack(local_llm=None, cloud_llm=None).classify(text, today=at.date(), channel=channel)
+            self.ev(4, at, "intent", f"intent stack -> {r.label} ({r.tier_used}, {r.confidence:.2f})"
+                                     + (f", safety {list(r.safety_flags)}" if r.safety_flags else ""),
+                    borrower=bid, rule=r.label, detail={"needs_human": r.needs_human, "tier": r.tier_used})
+            return r
+        it = self.intent.classify(InboundMessage(bid, channel, at, text=text))
+        self.ev(4, at, "intent", f"free text -> {it.intent} ({it.source}, {it.confidence:.2f}): {it.summary}",
+                borrower=bid, rule=it.k13_event, detail={"ambiguous": it.ambiguous})
+        return it
+
     def gate_all_channels(self, step, bid: str, obligation_id: str, at: datetime, label: str) -> dict:
         out = {}
         for ch in CHANNELS:
@@ -513,9 +530,7 @@ class Journey:
             self.ev(4, _at(d1, 9), "pending", "no voice touch for C", borrower=C)
             return
         text = "I lost my job last month and cannot pay right now"
-        it = self.intent.classify(InboundMessage(C, "voicebot", _at(d1, 10, 33), text=text))
-        self.ev(4, _at(d1, 10, 33), "intent", f"free text -> {it.intent} ({it.source}, {it.confidence:.2f}): {it.summary}",
-                borrower=C, rule=it.k13_event, detail={"ambiguous": it.ambiguous})
+        it = self.classify_text(C, "voicebot", _at(d1, 10, 33), text)
         self.webhook(4, "sv-call-C-hardship", "EMI_REMINDER_EARLY", res.instruction_id, "HARDSHIP", 0.55,
                      _at(d1, 10, 34), hardship_type="JOB_LOSS", needs_human=True, language_used="en",
                      call_summary="Borrower reports a job loss and asks for time.")
@@ -525,7 +540,7 @@ class Journey:
                                         f"hardship hold until {st['hardship_until']}", borrower=C,
                 rule="HARDSHIP_HOLD", policy_version=self.policy.version)
         held = self.gate_all_channels(4, C, self.obligations["C"], _at(d1, 15), "while on hardship hold")
-        self.facts["steps"]["4"] = {"intent": it.intent, "hardship_until": st["hardship_until"],
+        self.facts["steps"]["4"] = {"intent": getattr(it, "intent", None) or getattr(it, "label", None), "hardship_until": st["hardship_until"],
                                     "cases": [c["type"] for c in cases], "held_channels": held}
         self.c_cases = cases
 
@@ -686,7 +701,8 @@ class Journey:
         r1, leak1 = turn("Hi, what is my outstanding balance?", 0)
         r2, _ = turn(OTP_CODE, 1)
         r3, leak3 = turn("balance please", 2)
-        r4, _ = turn(f"I already paid yesterday, UTR {FAKE_UTR}", 3)
+        paid_on = D0 - timedelta(days=3)   # a week before today: past T+2, so a real credit would be in D7
+        r4, _ = turn(f"I already paid on {paid_on.day} {paid_on:%B}, UTR {FAKE_UTR}", 3)
         self.facts["steps"]["3"] = {"status": "ok", "disclosed_before_otp": leak1 and not r1.get("verified"),
                                     "verified": bool(r2.get("verified")), "balance_given": leak3,
                                     "fraud_suspect": bool(r4.get("fraud_suspect")), "handoff": r4.get("handoff_reason")}
