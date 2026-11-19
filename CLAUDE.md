@@ -61,17 +61,45 @@ cd ../frontend && npm install && npm run dev
 
 ## Work in flight (check the open PRs before starting)
 
-- K09 learner + outcome finalizer, K06 SupervisorFSM, intent/propensity, K09 replay — first built on
-  the pre-spine ledger (PRs #2–#5); being **ported onto the spine-based ledger** on `k09/on-spine`.
-- K09 borrower-context layer: learned reply multipliers by engagement (new / missed once / missed 2+ /
-  replied) × recency (contacts in last 7 days). This is what moves response-per-rupee: repeat
-  non-responders reply ~2–2.5× less than fresh borrowers on the DEV simulator.
-- `crm/` (PR #6): K05/K14 borrower page + shared event ingestion + Sarvam IVR/voicebot flows;
-  React wiring of the CRM page is in a separate PR.
-- K22 template selector, K20 email channel, K07/K08 channel adapters (mocks + phone-demo adapters):
-  separate branches/PRs.
-- Sarvam voice agents need the `sarvam-voice-agents` MCP authorised; specs are in
-  `crm/kairos/voice/agents/*.json`.
+| PR / branch | What | State |
+|---|---|---|
+| #11 `k09/on-spine` | K09 learner, outcome finalizer, borrower context, K06 SupervisorFSM, intent/propensity, K09 replay vs CN10 on the K03 spine | Open. 4 seeds +19% to +39% replies/₹ (mean +30%), 0 breaches |
+| #12 `k06/hitl-control` | Human in the loop: approvals, holds, manual sends, maker-checker, audit (`reserve_hook` in ledger) | Open, 229 tests |
+| #13 `k26/report-pack` | HDFC report formats + CM-02 daily per-segment report | Open, 203 tests |
+| #14 `redteam/guardrail-suite` | 49 attacks, 10 findings tracked as strict xfails | Open; HIGH fixes on `redteam/fix-high` |
+| #10 `k07-k08/channel-adapters` | Channel adapters + phone-demo mode (runtime allow-list in `~/.kairos`, never committed) | Open |
+| #8 `k22/template-selector` | 83 templates, 14-rule compliance checker | Open |
+| #6 `feat/k05-k14-crm-voice` | `crm/` borrower page, shared ingestion, 5-step replay | Open |
+| `k17-k18/voice-engine` | Bot registry (use case → agent, voice, language), unified dispositions, confidence thresholds, `/webhooks/sarvam/call-end` | In progress |
+| `k09/optimize` | Hold-out-seed tuning of K09 | In progress |
+| PRs #2–#5 | Pre-spine K09/K06 versions | Superseded by #11 |
+
+Merge order that minimises conflicts: #7, #11, #12, #13, #14, #10, #8, #6. #11, #12 and #13 all touch
+`ledger.py`/`api.py` additively; re-run `pytest` after each merge.
+
+### Sarvam voice bots (CreditNirvana workspace; only touch agents named "Kairos - ...")
+
+| Use case | Agent id | Voice |
+|---|---|---|
+| PRE_DUE_REMINDER | `Kairos---Pr-0282af37-ef9d` | Ritu |
+| EMI_REMINDER_EARLY (K17, 1–30 DPD) | `Kairos---EM-15f2766f-4eba` | Ritu |
+| CALLBACK (K18) | `Kairos---Ca-f080ffa8-2d1d` | Advait |
+| MID_BUCKET_RESOLUTION (31–90 DPD) | `Kairos---Mi-edcd3099-61a2` | Advait |
+| PTP_FOLLOW_UP | `Kairos---PT-07a93e21-1a9b` | Ritu |
+| HARDSHIP_TRIAGE (human-approved only) | `Kairos---Ha-1f02cd05-dfa0` | Advait |
+
+All six share one script skeleton (Persona, Environment, Objective, Speaking style, Facts,
+Conversation guidelines, Guardrails; passive voice, no language rules in the prompt) learned from
+CN's production collections bots. Inputs: `user_name, lender_name, emi_due_date, touch_id,
+preferred_language, call_date, max_ptp_date` (+ `overdue_days`, `promise_date`, `callback_reason`
+per use case). Post-call outputs: `disposition` (16-value enum, first-match order, safety first),
+`disposition_confidence` 0–1, `ptp_date`, `ptp_amount_type`, `callback_at`, `hardship_type`,
+`language_used`, `needs_human`, `call_summary`, `rule_path`. Kairos, not the bot, decides what a
+disposition does, using the thresholds in `policy/K17-voice-dispositions/thresholds.json`.
+Never put amounts, loan numbers or phones in call variables. Edit prompts with small
+`prompt_edits`, test with `send_chat` on the draft, then commit a version.
+
+See OPERATING_GUIDE.md (how to run every demo) and PROBLEM_STATEMENT_CHECKLIST.md (what is done).
 
 ## How to continue a PR
 
