@@ -79,7 +79,7 @@ happens next.
 | [`k06.supervisor.dispatch`](#k06supervisordispatch-v1) | 1 | 5 | 6 | this branch | tests/fsm/test_conformance_supervisor.py |
 | [`k09.outcome`](#k09outcome-v1) | 1 | 6 | 30 | this branch | tests/fsm/test_conformance_outcome.py |
 | [`k13.exception`](#k13exception-v100) | 1.0.0 | 18 | 21 | this branch | tests/fsm/test_conformance_k13.py |
-| [`k13.hold.ptp`](#k13holdptp-v1) | 1 | 4 | 19 | this branch | tests/fsm/test_conformance_holds.py |
+| [`k13.hold.ptp`](#k13holdptp-v1) | 1 | 4 | 23 | this branch | tests/fsm/test_conformance_holds.py |
 | [`k13.hold.hardship`](#k13holdhardship-v1) | 1 | 3 | 14 | this branch | tests/fsm/test_conformance_holds.py |
 | [`k13.hold.callback`](#k13holdcallback-v1) | 1 | 2 | 8 | this branch | tests/fsm/test_conformance_holds.py |
 | [`k13.hold.supervisor`](#k13holdsupervisor-v1) | 1 | 2 | 6 | this branch | tests/fsm/test_conformance_holds.py |
@@ -632,38 +632,42 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 ### `k13.hold.ptp` (v1)
 
-**Purpose.** A borrower-wide promise-to-pay hold: no outbound activity on any channel through the PTP date. Kept = the promised EMI is verified paid (D7/LMS); broken = unpaid when the next day starts (BROKEN_PTP counted; at the threshold no new hold is granted). KEPT / BROKEN are the outcome of the last promise; a new promise starts a new hold.
+**Purpose.** A borrower-wide promise-to-pay hold: no outbound activity on any channel through the PTP date. Kept = the promised EMI is verified paid (D7/LMS); broken = unpaid when the next day starts (BROKEN_PTP counted; at the threshold no new hold is granted). KEPT / BROKEN are the outcome of the last promise; a new promise starts a new hold. Every promise names an EMI: the one given, else the borrower's oldest unpaid EMI; with none, capture is refused. Kept also counts any verified payment on the borrower's covered EMIs from capture through the PTP date that adds up to the promised amount.
 
 ```mermaid
 stateDiagram-v2
     [*] --> NO_PTP
     PTP_KEPT : ptp cleared, paid
     PTP_BROKEN : ptp cleared, broken_ptp+1
-    NO_PTP --> PTP_HOLD : PTP_OFFERED [!broken_threshold]
-    PTP_KEPT --> PTP_HOLD : PTP_OFFERED [!broken_threshold]
-    PTP_BROKEN --> PTP_HOLD : PTP_OFFERED [!broken_threshold]
-    PTP_HOLD --> PTP_KEPT : PAYMENT_VERIFIED [clears_promised_emi] / DAY_STARTED [promise_date_passed & promised_emi_paid]
-    PTP_HOLD --> PTP_BROKEN : DAY_STARTED [promise_date_passed & !promised_emi_paid]
+    NO_PTP --> PTP_HOLD : PTP_OFFERED [!broken_threshold & has_emi]
+    PTP_KEPT --> PTP_HOLD : PTP_OFFERED [!broken_threshold & has_emi]
+    PTP_BROKEN --> PTP_HOLD : PTP_OFFERED [!broken_threshold & has_emi]
+    PTP_HOLD --> PTP_KEPT : PAYMENT_VERIFIED [clears_promised_emi] / DAY_STARTED [promise_date_passed & promise_kept]
+    PTP_HOLD --> PTP_BROKEN : DAY_STARTED [promise_date_passed & !promise_kept]
 ```
 
-States: `NO_PTP`, `PTP_HOLD`, `PTP_KEPT`, `PTP_BROKEN`. Initial: `NO_PTP`. Final: none (the lifecycle repeats). Fingerprint `7fdaba524dac`.
+States: `NO_PTP`, `PTP_HOLD`, `PTP_KEPT`, `PTP_BROKEN`. Initial: `NO_PTP`. Final: none (the lifecycle repeats). Fingerprint `d9c15b4de3ea`.
 
 Transitions (self-loops are events that are accepted and change nothing):
 
 | From | Event | Guard | To | Action | Rule / policy |
 |---|---|---|---|---|---|
-| NO_PTP | PTP_OFFERED | !broken_threshold | PTP_HOLD | ptp_date, ptp_obligation; stop-for-day today; cancel queued | K01 holds.PROMISE_TO_PAY (K13 CAPTURE_PTP) |
+| NO_PTP | PTP_OFFERED | !broken_threshold & has_emi | PTP_HOLD | ptp_date, ptp_obligation (given EMI, else oldest unpaid), captured_on, promised amount; stop-for-day today; cancel queued | K01 holds.PROMISE_TO_PAY (K13 CAPTURE_PTP) |
+| NO_PTP | PTP_OFFERED | !broken_threshold & !has_emi | NO_PTP | capture refused (ValueError / 422); nothing written | FSM-F6: a promise must name an EMI it can be kept against (no unpaid EMI -> no hold) |
 | NO_PTP | PTP_OFFERED | broken_threshold | NO_PTP | stop-for-day only | K13 broken_ptp >= threshold: RECORD_PTP_NO_HOLD |
-| PTP_KEPT | PTP_OFFERED | !broken_threshold | PTP_HOLD | ptp_date, ptp_obligation; stop-for-day today; cancel queued | K01 holds.PROMISE_TO_PAY (K13 CAPTURE_PTP) |
+| PTP_KEPT | PTP_OFFERED | !broken_threshold & has_emi | PTP_HOLD | ptp_date, ptp_obligation (given EMI, else oldest unpaid), captured_on, promised amount; stop-for-day today; cancel queued | K01 holds.PROMISE_TO_PAY (K13 CAPTURE_PTP) |
+| PTP_KEPT | PTP_OFFERED | !broken_threshold & !has_emi | PTP_KEPT | capture refused (ValueError / 422); nothing written | FSM-F6: a promise must name an EMI it can be kept against (no unpaid EMI -> no hold) |
 | PTP_KEPT | PTP_OFFERED | broken_threshold | PTP_KEPT | stop-for-day only | K13 broken_ptp >= threshold: RECORD_PTP_NO_HOLD |
-| PTP_BROKEN | PTP_OFFERED | !broken_threshold | PTP_HOLD | ptp_date, ptp_obligation; stop-for-day today; cancel queued | K01 holds.PROMISE_TO_PAY (K13 CAPTURE_PTP) |
+| PTP_BROKEN | PTP_OFFERED | !broken_threshold & has_emi | PTP_HOLD | ptp_date, ptp_obligation (given EMI, else oldest unpaid), captured_on, promised amount; stop-for-day today; cancel queued | K01 holds.PROMISE_TO_PAY (K13 CAPTURE_PTP) |
+| PTP_BROKEN | PTP_OFFERED | !broken_threshold & !has_emi | PTP_BROKEN | capture refused (ValueError / 422); nothing written | FSM-F6: a promise must name an EMI it can be kept against (no unpaid EMI -> no hold) |
 | PTP_BROKEN | PTP_OFFERED | broken_threshold | PTP_BROKEN | stop-for-day only | K13 broken_ptp >= threshold: RECORD_PTP_NO_HOLD |
-| PTP_HOLD | PTP_OFFERED | !broken_threshold | PTP_HOLD | ptp_date, ptp_obligation; stop-for-day today; cancel queued | K01 holds.PROMISE_TO_PAY (K13 CAPTURE_PTP; replaces the open promise) |
+| PTP_HOLD | PTP_OFFERED | !broken_threshold & has_emi | PTP_HOLD | ptp_date, ptp_obligation (given EMI, else oldest unpaid), captured_on, promised amount; stop-for-day today; cancel queued | K01 holds.PROMISE_TO_PAY (K13 CAPTURE_PTP; replaces the open promise) |
+| PTP_HOLD | PTP_OFFERED | !broken_threshold & !has_emi | PTP_HOLD | capture refused (ValueError / 422); nothing written | FSM-F6: a promise must name an EMI it can be kept against (no unpaid EMI -> no hold) |
 | PTP_HOLD | PTP_OFFERED | broken_threshold | PTP_HOLD | stop-for-day only | K13 broken_ptp >= threshold: RECORD_PTP_NO_HOLD |
 | PTP_HOLD | PAYMENT_VERIFIED | clears_promised_emi | PTP_KEPT | cancel that EMI's queued touches | K01 holds.PROMISE_TO_PAY.if_paid |
-| PTP_HOLD | PAYMENT_VERIFIED | !clears_promised_emi | PTP_HOLD | — | another EMI, or partial: hold stays (E14) |
-| PTP_HOLD | DAY_STARTED | promise_date_passed & promised_emi_paid | PTP_KEPT | — | K01 holds.PROMISE_TO_PAY.on_ptp_date |
-| PTP_HOLD | DAY_STARTED | promise_date_passed & !promised_emi_paid | PTP_BROKEN | broken_ptp += 1 | K01 holds.PROMISE_TO_PAY.if_unpaid_by_end_of_ptp_date |
+| PTP_HOLD | PAYMENT_VERIFIED | !clears_promised_emi | PTP_HOLD | — | another EMI, or partial: hold stays (E14); judged on the day after the PTP date |
+| PTP_HOLD | DAY_STARTED | promise_date_passed & promise_kept | PTP_KEPT | audit PTP_KEPT | K01 holds.PROMISE_TO_PAY.on_ptp_date: promised EMI paid, or verified payments on the borrower's covered EMIs since capture >= the promised amount (FSM-F6) |
+| PTP_HOLD | DAY_STARTED | promise_date_passed & !promise_kept | PTP_BROKEN | broken_ptp += 1 | K01 holds.PROMISE_TO_PAY.if_unpaid_by_end_of_ptp_date |
 | PTP_HOLD | DAY_STARTED | !promise_date_passed | PTP_HOLD | — | hold runs through the PTP date (inclusive) |
 | NO_PTP | PAYMENT_VERIFIED | — | NO_PTP | — | no open promise |
 | NO_PTP | DAY_STARTED | — | NO_PTP | — | no open promise |
@@ -678,7 +682,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 ### `k13.hold.hardship` (v1)
 
-**Purpose.** Hardship pauses every channel (Gate WAIT, or HANDOFF when the borrower's date is beyond 4 days).
+**Purpose.** Hardship pauses every channel (Gate WAIT, or HANDOFF when the borrower's date is beyond 4 days). Holds only tighten: while a hold runs, a new report can extend it or add the supervisor flag, never shorten it or drop the flag; only a supervisor release clears the flag.
 
 ```mermaid
 stateDiagram-v2
@@ -686,12 +690,12 @@ stateDiagram-v2
     NONE --> HARDSHIP_HANDOFF : HARDSHIP [date_beyond]
     NONE --> HARDSHIP_HOLD : HARDSHIP [!date_beyond]
     HARDSHIP_HOLD --> HARDSHIP_HANDOFF : HARDSHIP [date_beyond]
-    HARDSHIP_HANDOFF --> HARDSHIP_HOLD : HARDSHIP [!date_beyond] / CLEAR_SUPERVISOR
     HARDSHIP_HOLD --> NONE : CLOCK [until_passed]
     HARDSHIP_HANDOFF --> NONE : CLOCK [until_passed]
+    HARDSHIP_HANDOFF --> HARDSHIP_HOLD : CLEAR_SUPERVISOR
 ```
 
-States: `NONE`, `HARDSHIP_HOLD`, `HARDSHIP_HANDOFF`. Initial: `NONE`. Final: none (the lifecycle repeats). Fingerprint `60a6a4eb54e3`.
+States: `NONE`, `HARDSHIP_HOLD`, `HARDSHIP_HANDOFF`. Initial: `NONE`. Final: none (the lifecycle repeats). Fingerprint `cf7b79a26e47`.
 
 Transitions (self-loops are events that are accepted and change nothing):
 
@@ -699,10 +703,10 @@ Transitions (self-loops are events that are accepted and change nothing):
 |---|---|---|---|---|---|
 | NONE | HARDSHIP | date_beyond | HARDSHIP_HANDOFF | hardship_until=date, supervisor=1, ticket | K01 holds.HARDSHIP.if_borrower_gives_date_beyond_4_days |
 | NONE | HARDSHIP | !date_beyond | HARDSHIP_HOLD | hardship_until=date or +2 days, supervisor=0 | K01 holds.HARDSHIP.if_no_date / within 4 days |
-| HARDSHIP_HOLD | HARDSHIP | date_beyond | HARDSHIP_HANDOFF | hardship_until=date, supervisor=1, ticket | K01 holds.HARDSHIP.if_borrower_gives_date_beyond_4_days |
-| HARDSHIP_HOLD | HARDSHIP | !date_beyond | HARDSHIP_HOLD | hardship_until=date or +2 days, supervisor=0 | K01 holds.HARDSHIP.if_no_date / within 4 days |
-| HARDSHIP_HANDOFF | HARDSHIP | date_beyond | HARDSHIP_HANDOFF | hardship_until=date, supervisor=1, ticket | K01 holds.HARDSHIP.if_borrower_gives_date_beyond_4_days |
-| HARDSHIP_HANDOFF | HARDSHIP | !date_beyond | HARDSHIP_HOLD | hardship_until=date or +2 days, supervisor=0 | K01 holds.HARDSHIP.if_no_date / within 4 days |
+| HARDSHIP_HOLD | HARDSHIP | date_beyond | HARDSHIP_HANDOFF | hardship_until=date, supervisor=1, ticket (holds only tighten: until = max(current, new)) | K01 holds.HARDSHIP.if_borrower_gives_date_beyond_4_days |
+| HARDSHIP_HOLD | HARDSHIP | !date_beyond | HARDSHIP_HOLD | hardship_until=date or +2 days, supervisor=0 (holds only tighten: until = max(current, new)) | K01 holds.HARDSHIP.if_no_date / within 4 days |
+| HARDSHIP_HANDOFF | HARDSHIP | date_beyond | HARDSHIP_HANDOFF | hardship_until=date, supervisor=1, ticket (holds only tighten: until = max(current, new)) | K01 holds.HARDSHIP.if_borrower_gives_date_beyond_4_days |
+| HARDSHIP_HANDOFF | HARDSHIP | !date_beyond | HARDSHIP_HANDOFF | keep the longer date and the supervisor flag; audit HARDSHIP_HOLD_KEPT | FSM-F5: a later, weaker report never clears an earlier flag or shortens the hold; only a supervisor release does (K01 holds.HARDSHIP: keep hold and flag to supervisor) |
 | HARDSHIP_HOLD | CLOCK | until_passed | NONE | — | hold ends at hardship_until (Gate compares at send time) |
 | HARDSHIP_HOLD | CLOCK | !until_passed | HARDSHIP_HOLD | — | still held |
 | HARDSHIP_HANDOFF | CLOCK | until_passed | NONE | — | hold ends at hardship_until |
@@ -723,11 +727,11 @@ Transitions (self-loops are events that are accepted and change nothing):
 ```mermaid
 stateDiagram-v2
     [*] --> NONE
-    NONE --> CALLBACK_PENDING : CALLBACK_REQUEST / CALLBACK_DUE [!answered & retry_left]
+    NONE --> CALLBACK_PENDING : CALLBACK_REQUEST
     CALLBACK_PENDING --> NONE : CALLBACK_DUE [answered] / CALLBACK_DUE [!answered & !retry_left]
 ```
 
-States: `NONE`, `CALLBACK_PENDING`. Initial: `NONE`. Final: none (the lifecycle repeats). Fingerprint `3f48c157b155`.
+States: `NONE`, `CALLBACK_PENDING`. Initial: `NONE`. Final: none (the lifecycle repeats). Fingerprint `de73284d8a1b`.
 
 Transitions (self-loops are events that are accepted and change nothing):
 
@@ -735,12 +739,12 @@ Transitions (self-loops are events that are accepted and change nothing):
 |---|---|---|---|---|---|
 | NONE | CALLBACK_REQUEST | — | CALLBACK_PENDING | ticket (deduped per day), pause all outbound | K13 callback (E08).while_pending |
 | NONE | CALLBACK_DUE | answered | NONE | close task; stop-for-day | K13 callback (E08).if_answered |
-| NONE | CALLBACK_DUE | !answered & retry_left | CALLBACK_PENDING | retry in 2 h | K13 callback (E08).if_unanswered |
 | NONE | CALLBACK_DUE | !answered & !retry_left | NONE | one 'we tried to reach you' message; stop-for-day | K13 callback (E08).if_second_attempt_missed |
 | CALLBACK_PENDING | CALLBACK_REQUEST | — | CALLBACK_PENDING | ticket (deduped per day), pause all outbound | K13 callback (E08).while_pending |
 | CALLBACK_PENDING | CALLBACK_DUE | answered | NONE | close task; stop-for-day | K13 callback (E08).if_answered |
-| CALLBACK_PENDING | CALLBACK_DUE | !answered & retry_left | CALLBACK_PENDING | retry in 2 h | K13 callback (E08).if_unanswered |
 | CALLBACK_PENDING | CALLBACK_DUE | !answered & !retry_left | NONE | one 'we tried to reach you' message; stop-for-day | K13 callback (E08).if_second_attempt_missed |
+| CALLBACK_PENDING | CALLBACK_DUE | !answered & retry_left | CALLBACK_PENDING | retry in 2 h | K13 callback (E08).if_unanswered |
+| NONE | CALLBACK_DUE | !answered & retry_left | NONE | no hold, no ticket: normal retry at band caps | FSM-F7: only a requested callback is retried as a callback (NO_OPEN_CALLBACK_NORMAL_RETRY) |
 
 **Enforced by:** `kairos_backend/ledger.py: apply_exception (CALLBACK_PENDING)`; `kairos_backend/gate.py: CALLBACK_PENDING rule`
 

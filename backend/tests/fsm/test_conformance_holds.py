@@ -100,9 +100,14 @@ class Harness:
                             callback_attempts=self.rng.randrange(3), callback_answered=self.rng.random() < 0.4)
         out = handle(self.lg.policy, ev)
         self.clock()
+        ob = self.rng.choice([f"{B}-A-1", f"{B}-A-1", f"{B}-B-1", None]) if name == "PTP_OFFERED" else f"{B}-A-1"
+        refused = False
         if name == "PTP_OFFERED":
-            self.step("ptp", PTP_HOLD, "PTP_OFFERED", {"broken_threshold": st["broken_ptp"] >= self.thr})
+            has_emi = ob is not None or bool(self.unpaid())
+            t = self.step("ptp", PTP_HOLD, "PTP_OFFERED", {"broken_threshold": st["broken_ptp"] >= self.thr,
+                                                           "has_emi": has_emi})
             assert (out.hold == "PTP_HOLD") == (st["broken_ptp"] < self.thr)
+            refused = t.guard == "!broken_threshold & !has_emi"
         elif name == "HARDSHIP":
             self.step("hardship", HARDSHIP_HOLD, "HARDSHIP", {"date_beyond": off is not None and off > self.within})
         elif name == "CALLBACK_REQUEST":
@@ -112,9 +117,31 @@ class Harness:
                       {"answered": ev.callback_answered, "retry_left": ev.callback_attempts < 2})
         elif name in ROUTED_STOP:
             self.step("supervisor", SUPERVISOR_HOLD, "ROUTED_STOP")
-        ob = self.rng.choice([f"{B}-A-1", f"{B}-A-1", f"{B}-B-1", None]) if name == "PTP_OFFERED" else f"{B}-A-1"
-        self.lg.apply_exception(B, ev, self.now, ob)
-        self.compare(f"K13 {name} off={off} -> {out.action}/{out.hold}")
+        if refused:
+            with pytest.raises(ValueError):
+                self.lg.apply_exception(B, ev, self.now, ob)
+        else:
+            self.lg.apply_exception(B, ev, self.now, ob)
+        self.compare(f"K13 {name} off={off} ob={ob} -> {out.action}/{out.hold}")
+
+    def unpaid(self) -> list:
+        return [r[0] for r in self.lg._conn().execute(
+            "SELECT o.obligation_id FROM obligations o JOIN loans l ON l.loan_id=o.loan_id WHERE l.borrower_id=?"
+            " AND o.amount_paid_paise < o.amount_due_paise", (B,))]
+
+    def promise_kept(self, st) -> bool:
+        """The harness's own reading of K01 holds.PROMISE_TO_PAY + FSM-F6: promised EMI fully paid, or verified
+        payments (not reversed) on any of the borrower's EMIs from capture through the PTP date >= the amount
+        outstanding on the promised EMI at capture."""
+        ob = self.lg._obligation(self.lg._conn(), st["ptp_obligation"]) if st["ptp_obligation"] else None
+        if ob is not None and ob["amount_paid_paise"] >= ob["amount_due_paise"]:
+            return True
+        if not st["ptp_captured_on"] or not st["ptp_amount_paise"]:
+            return False
+        paid = sum(r["amount_paise"] for r in self.lg._conn().execute(
+            "SELECT p.amount_paise, p.paid_on FROM payments p JOIN loans l ON l.loan_id=p.loan_id"
+            " WHERE l.borrower_id=? AND p.reversed_on IS NULL", (B,)) if st["ptp_captured_on"] <= r["paid_on"] <= st["ptp_date"])
+        return paid >= st["ptp_amount_paise"]
 
     def op_payment(self):
         self.tick()
@@ -136,11 +163,10 @@ class Harness:
         self.day += timedelta(days=1)
         self.now = at(9, 0, self.day)
         st = self.db()
-        ob = self.lg._obligation(self.lg._conn(), st["ptp_obligation"]) if st["ptp_obligation"] else None
         self.clock()
         fired = self.step("ptp", PTP_HOLD, "DAY_STARTED", {
             "promise_date_passed": bool(st["ptp_date"]) and st["ptp_date"] < self.day.isoformat(),
-            "promised_emi_paid": ob is not None and ob["amount_paid_paise"] >= ob["amount_due_paise"]})
+            "promise_kept": bool(st["ptp_date"]) and self.promise_kept(st)})
         self.lg.start_day(self.day)
         self.compare(f"start_day {self.day}", st["broken_ptp"], fired)
 
@@ -201,8 +227,122 @@ def test_every_hold_and_consent_transition_is_exercised(policy, tmp_path):
     # broken_ptp only grows on PTP_HOLD -> PTP_BROKEN, so at the threshold the borrower is always in PTP_BROKEN;
     # the other broken_threshold self-loops are what the code does for imported counts, unreachable here.
     unreachable = [(s, "PTP_OFFERED", s, "broken_threshold") for s in ("NO_PTP", "PTP_KEPT", "PTP_HOLD")]
+    # a refused capture right after a broken promise needs both EMIs paid in between: rare in the random
+    # stream, driven directly by test_ptp_capture_without_an_unpaid_emi_is_refused below
+    unreachable.append(("PTP_BROKEN", "PTP_OFFERED", "PTP_BROKEN", "!broken_threshold & !has_emi"))
     assert cov[PTP_HOLD.name].missing(PTP_HOLD, exempt=unreachable) == []
     assert cov[HARDSHIP_HOLD.name].missing(HARDSHIP_HOLD) == []
     assert cov[CALLBACK_HOLD.name].missing(CALLBACK_HOLD) == []
     assert cov[SUPERVISOR_HOLD.name].missing(SUPERVISOR_HOLD, exempt=[("NONE", "HANDOFF"), ("SUPERVISOR_HOLD", "HANDOFF")]) == []
     assert cov[CONSENT.name].missing(CONSENT, exempt=[(s, "VOICE_CONSENT_WITHDRAWN") for s in CONSENT.states]) == []
+
+
+# ---------- focused tests for the fixed findings ----------
+def _one(policy, tmp_path, name="f.db"):
+    lg = new_ledger(policy, tmp_path / name, end_days=30)
+    add_borrower(lg, B, dpd=12, consents={ch: 1 for ch in CHANNELS})
+    return lg
+
+
+def _pay(lg, ob_id, at_, pid, amount=None):
+    ob = lg._obligation(lg._conn(), ob_id)
+    lg.record_payment_verified(ob_id, amount or ob["amount_due_paise"] - ob["amount_paid_paise"], at_, pid, f"R-{pid}")
+
+
+def test_hardship_holds_only_tighten(policy, tmp_path):
+    """FSM-F5: a later 'no date' report keeps the earlier beyond-4-days hold and its supervisor flag."""
+    lg = _one(policy, tmp_path)
+    lg.apply_exception(B, ExceptionEvent("HARDSHIP", "B1", date_offset_days=9), at(9), f"{B}-A-1")
+    first = lg._state(lg._conn(), B)
+    assert first["hardship_supervisor"] == 1
+    r = lg.apply_exception(B, ExceptionEvent("HARDSHIP", "B1"), at(11), f"{B}-A-1")        # no date: +2 days
+    st = lg._state(lg._conn(), B)
+    assert (st["hardship_until"], st["hardship_supervisor"]) == (first["hardship_until"], 1)
+    assert HARDSHIP_HOLD.step("HARDSHIP_HANDOFF", "HARDSHIP", {"date_beyond": False})[0] == "HARDSHIP_HANDOFF"
+    kept = [a for a in lg.audit_log(borrower_id=B) if a["type"] == "HARDSHIP_HOLD_KEPT"]
+    assert kept and kept[0]["detail"]["requested_supervisor"] == 0 and r["hold"] == "HARDSHIP_HOLD"
+    # a shorter dated report does not shorten an existing longer plain hold either
+    lg.clear_supervisor_hold(B)
+    lg.apply_exception(B, ExceptionEvent("HARDSHIP", "B1", date_offset_days=1), at(12), f"{B}-A-1")
+    st = lg._state(lg._conn(), B)
+    assert (st["hardship_until"], st["hardship_supervisor"]) == (first["hardship_until"], 0)
+    # only a supervisor release clears the flag; once the hold has run out a new report starts fresh
+    lg.close()
+
+
+def test_hardship_after_the_hold_ran_out_starts_fresh(policy, tmp_path):
+    lg = _one(policy, tmp_path)
+    lg.apply_exception(B, ExceptionEvent("HARDSHIP", "B1", date_offset_days=5), at(9), f"{B}-A-1")
+    later = at(10, 0, D + timedelta(days=6))
+    lg.apply_exception(B, ExceptionEvent("HARDSHIP", "B1"), later, f"{B}-A-1")
+    st = lg._state(lg._conn(), B)
+    assert st["hardship_supervisor"] == 0
+    assert st["hardship_until"] == lg._iso(later + timedelta(days=2))
+    lg.close()
+
+
+def test_ptp_without_obligation_resolves_the_oldest_unpaid_emi_and_can_be_kept(policy, tmp_path):
+    """FSM-F6: obligation_id=None no longer means 'always broken'."""
+    lg = _one(policy, tmp_path)
+    r = lg.apply_exception(B, ExceptionEvent("PTP_OFFERED", "B1", date_offset_days=1), at(9), None)
+    st = lg._state(lg._conn(), B)
+    assert r["hold"] == "PTP_HOLD" and r["obligation_id"] == st["ptp_obligation"] in (f"{B}-A-1", f"{B}-B-1")
+    assert st["ptp_captured_on"] == D.isoformat() and st["ptp_amount_paise"] > 0
+    _pay(lg, st["ptp_obligation"], at(15, 0, D + timedelta(days=1)), "P1")
+    assert lg.start_day(D + timedelta(days=2)) == []
+    assert lg._state(lg._conn(), B)["broken_ptp"] == 0
+    lg.close()
+
+
+def test_ptp_kept_by_an_equal_payment_on_another_covered_emi(policy, tmp_path):
+    lg = _one(policy, tmp_path)
+    lg.apply_exception(B, ExceptionEvent("PTP_OFFERED", "B1", date_offset_days=1), at(9), f"{B}-A-1")
+    _pay(lg, f"{B}-B-1", at(15), "P2")  # the other loan's EMI (same synthetic amount), on the capture day
+    st = lg._state(lg._conn(), B)
+    a = lg._obligation(lg._conn(), f"{B}-A-1")
+    assert a["amount_paid_paise"] < a["amount_due_paise"]                 # promised EMI itself still unpaid
+    assert lg.start_day(D + timedelta(days=2)) == []
+    assert any(x["type"] == "PTP_KEPT" for x in lg.audit_log(borrower_id=B))
+    assert lg._state(lg._conn(), B)["ptp_date"] is None and st["ptp_amount_paise"] > 0
+    lg.close()
+
+
+def test_ptp_partial_payment_is_still_broken(policy, tmp_path):
+    lg = _one(policy, tmp_path)
+    lg.apply_exception(B, ExceptionEvent("PTP_OFFERED", "B1", date_offset_days=1), at(9), f"{B}-A-1")
+    ob = lg._obligation(lg._conn(), f"{B}-A-1")
+    _pay(lg, f"{B}-A-1", at(15), "P3", amount=(ob["amount_due_paise"] - ob["amount_paid_paise"]) // 2)
+    assert lg.start_day(D + timedelta(days=2)) == [B]
+    assert lg._state(lg._conn(), B)["broken_ptp"] == 1
+    lg.close()
+
+
+def test_ptp_capture_without_an_unpaid_emi_is_refused(policy, tmp_path):
+    lg = _one(policy, tmp_path)
+    lg.apply_exception(B, ExceptionEvent("PTP_OFFERED", "B1", date_offset_days=1), at(9), f"{B}-A-1")
+    assert lg.start_day(D + timedelta(days=2)) == [B]                     # PTP_BROKEN
+    _pay(lg, f"{B}-A-1", at(10, 0, D + timedelta(days=2)), "P4")
+    _pay(lg, f"{B}-B-1", at(10, 5, D + timedelta(days=2)), "P5")
+    with pytest.raises(ValueError):
+        lg.apply_exception(B, ExceptionEvent("PTP_OFFERED", "B1", date_offset_days=1, broken_ptp_count=1),
+                           at(11, 0, D + timedelta(days=2)), None)
+    assert lg._state(lg._conn(), B)["ptp_date"] is None
+    assert PTP_HOLD.step("PTP_BROKEN", "PTP_OFFERED", {"broken_threshold": False, "has_emi": False})[0] == "PTP_BROKEN"
+    with pytest.raises(ValueError):                                       # someone else's EMI
+        lg.apply_exception(B, ExceptionEvent("PTP_OFFERED", "B1", date_offset_days=1), at(12, 0, D + timedelta(days=2)),
+                           "NOPE-A-1")
+    lg.close()
+
+
+def test_callback_due_without_a_requested_callback_is_a_normal_retry(policy, tmp_path):
+    """FSM-F7: unanswered + retry left only keeps a callback open when one was requested."""
+    lg = _one(policy, tmp_path)
+    due = ExceptionEvent("CALLBACK_DUE", "B1", callback_attempts=0, callback_answered=False)
+    r = lg.apply_exception(B, due, at(10), f"{B}-A-1")
+    assert (r["action"], r["hold"], r["ticket_id"]) == ("NO_OPEN_CALLBACK_NORMAL_RETRY", "NONE", None)
+    assert lg._state(lg._conn(), B)["callback_pending"] == 0
+    lg.apply_exception(B, ExceptionEvent("CALLBACK_REQUEST", "B1"), at(11), f"{B}-A-1")
+    r = lg.apply_exception(B, due, at(13), f"{B}-A-1")
+    assert (r["action"], r["hold"]) == ("RETRY_CALLBACK_2H", "CALLBACK_PENDING") and r["ticket_id"]
+    assert lg._state(lg._conn(), B)["callback_pending"] == 1
+    lg.close()

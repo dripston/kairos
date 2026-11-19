@@ -435,8 +435,13 @@ class VoiceIngester:
         lg = self.ledger
         broken = lg._state(lg._conn(), bid)["broken_ptp"]
         offset = v.detail["date_offset_days"]
-        k13 = lg.apply_exception(bid, ExceptionEvent("PTP_OFFERED", band or "UNKNOWN", date_offset_days=offset,
-                                                     broken_ptp_count=broken), at, ob, self._summary(d, v))
+        try:
+            k13 = lg.apply_exception(bid, ExceptionEvent("PTP_OFFERED", band or "UNKNOWN", date_offset_days=offset,
+                                                         broken_ptp_count=broken), at, ob, self._summary(d, v))
+        except ValueError:  # FSM-F6: no unpaid EMI to promise against -> a person reads the call, no hold
+            return {"promise_date": d.ptp_date, "ptp": "NOT_CAPTURED_NO_UNPAID_EMI",
+                    **self._review(bid, ob, at, "PTP_WITHOUT_EMI", self._summary(d, v)[1])}
+        ob = k13.get("obligation_id") or ob
         out = {"k13": k13, "promise_date": d.ptp_date}
         if k13["hold"] == "PTP_HOLD":
             due = date.fromisoformat(d.ptp_date) + timedelta(days=int(self.thresholds["ptp"]["follow_up_due_days_after_promise"]))

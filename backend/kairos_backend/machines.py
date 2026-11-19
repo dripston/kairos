@@ -378,16 +378,22 @@ def ptp_hold_machine() -> Machine:
     R = "K01 holds.PROMISE_TO_PAY"
     tr = []
     for s in ("NO_PTP", "PTP_KEPT", "PTP_BROKEN", "PTP_HOLD"):
-        tr.append(T(s, "PTP_OFFERED", "PTP_HOLD", "!broken_threshold", "ptp_date, ptp_obligation; stop-for-day today; cancel queued",
+        tr.append(T(s, "PTP_OFFERED", "PTP_HOLD", "!broken_threshold & has_emi",
+                    "ptp_date, ptp_obligation (given EMI, else oldest unpaid), captured_on, promised amount; "
+                    "stop-for-day today; cancel queued",
                     R + " (K13 CAPTURE_PTP" + ("; replaces the open promise)" if s == "PTP_HOLD" else ")")))
+        tr.append(T(s, "PTP_OFFERED", s, "!broken_threshold & !has_emi", "capture refused (ValueError / 422); nothing written",
+                    "FSM-F6: a promise must name an EMI it can be kept against (no unpaid EMI -> no hold)"))
         tr.append(T(s, "PTP_OFFERED", s, "broken_threshold", "stop-for-day only",
                     "K13 broken_ptp >= threshold: RECORD_PTP_NO_HOLD"))
     tr += [
         T("PTP_HOLD", "PAYMENT_VERIFIED", "PTP_KEPT", "clears_promised_emi", "cancel that EMI's queued touches", R + ".if_paid"),
         T("PTP_HOLD", "PAYMENT_VERIFIED", "PTP_HOLD", "!clears_promised_emi", None,
-          "another EMI, or partial: hold stays (E14)"),
-        T("PTP_HOLD", "DAY_STARTED", "PTP_KEPT", "promise_date_passed & promised_emi_paid", None, R + ".on_ptp_date"),
-        T("PTP_HOLD", "DAY_STARTED", "PTP_BROKEN", "promise_date_passed & !promised_emi_paid", "broken_ptp += 1",
+          "another EMI, or partial: hold stays (E14); judged on the day after the PTP date"),
+        T("PTP_HOLD", "DAY_STARTED", "PTP_KEPT", "promise_date_passed & promise_kept", "audit PTP_KEPT",
+          R + ".on_ptp_date: promised EMI paid, or verified payments on the borrower's covered EMIs since capture "
+              ">= the promised amount (FSM-F6)"),
+        T("PTP_HOLD", "DAY_STARTED", "PTP_BROKEN", "promise_date_passed & !promise_kept", "broken_ptp += 1",
           R + ".if_unpaid_by_end_of_ptp_date"),
         T("PTP_HOLD", "DAY_STARTED", "PTP_HOLD", "!promise_date_passed", None, "hold runs through the PTP date (inclusive)"),
     ]
@@ -397,7 +403,10 @@ def ptp_hold_machine() -> Machine:
         description=("A borrower-wide promise-to-pay hold: no outbound activity on any channel through the PTP date. "
                      "Kept = the promised EMI is verified paid (D7/LMS); broken = unpaid when the next day starts "
                      "(BROKEN_PTP counted; at the threshold no new hold is granted). KEPT / BROKEN are the outcome of "
-                     "the last promise; a new promise starts a new hold."),
+                     "the last promise; a new promise starts a new hold. Every promise names an EMI: the one given, else "
+                     "the borrower's oldest unpaid EMI; with none, capture is refused. Kept also counts any verified "
+                     "payment on the borrower's covered EMIs from capture through the PTP date that adds up to the "
+                     "promised amount."),
         enforced_by=["kairos_backend/ledger.py: apply_exception (PTP_HOLD), record_payment_verified, start_day",
                      "kairos_backend/gate.py: PTP_HOLD rule"],
         proven_by=["tests/fsm/test_conformance_holds.py", "tests/test_ledger.py"],
@@ -409,10 +418,17 @@ def hardship_hold_machine() -> Machine:
     R = "K01 holds.HARDSHIP"
     tr = []
     for s in ("NONE", "HARDSHIP_HOLD", "HARDSHIP_HANDOFF"):
-        tr.append(T(s, "HARDSHIP", "HARDSHIP_HANDOFF", "date_beyond", "hardship_until=date, supervisor=1, ticket",
+        keep = "" if s == "NONE" else " (holds only tighten: until = max(current, new))"
+        tr.append(T(s, "HARDSHIP", "HARDSHIP_HANDOFF", "date_beyond", "hardship_until=date, supervisor=1, ticket" + keep,
                     R + ".if_borrower_gives_date_beyond_4_days"))
-        tr.append(T(s, "HARDSHIP", "HARDSHIP_HOLD", "!date_beyond", "hardship_until=date or +2 days, supervisor=0",
-                    R + ".if_no_date / within 4 days"))
+        if s == "HARDSHIP_HANDOFF":
+            tr.append(T(s, "HARDSHIP", "HARDSHIP_HANDOFF", "!date_beyond",
+                        "keep the longer date and the supervisor flag; audit HARDSHIP_HOLD_KEPT",
+                        "FSM-F5: a later, weaker report never clears an earlier flag or shortens the hold; "
+                        "only a supervisor release does (" + R + ": keep hold and flag to supervisor)"))
+        else:
+            tr.append(T(s, "HARDSHIP", "HARDSHIP_HOLD", "!date_beyond", "hardship_until=date or +2 days, supervisor=0" + keep,
+                        R + ".if_no_date / within 4 days"))
     tr += [
         T("HARDSHIP_HOLD", "CLOCK", "NONE", "until_passed", None, "hold ends at hardship_until (Gate compares at send time)"),
         T("HARDSHIP_HOLD", "CLOCK", "HARDSHIP_HOLD", "!until_passed", None, "still held"),
@@ -425,7 +441,9 @@ def hardship_hold_machine() -> Machine:
     tr += _loops(["NONE", "HARDSHIP_HOLD"], ["CLEAR_SUPERVISOR"], "no supervisor flag on this hold")
     return Machine(
         "k13.hold.hardship", "1", ["NONE", "HARDSHIP_HOLD", "HARDSHIP_HANDOFF"], "NONE", [], tr,
-        description="Hardship pauses every channel (Gate WAIT, or HANDOFF when the borrower's date is beyond 4 days).",
+        description=("Hardship pauses every channel (Gate WAIT, or HANDOFF when the borrower's date is beyond 4 days). "
+                     "Holds only tighten: while a hold runs, a new report can extend it or add the supervisor flag, "
+                     "never shorten it or drop the flag; only a supervisor release clears the flag."),
         enforced_by=["kairos_backend/ledger.py: apply_exception (HARDSHIP_HOLD), clear_supervisor_hold",
                      "kairos_backend/gate.py: HARDSHIP_HOLD rule"],
         proven_by=["tests/fsm/test_conformance_holds.py"], source="code")
@@ -438,10 +456,14 @@ def callback_hold_machine() -> Machine:
         tr += [
             T(s, "CALLBACK_REQUEST", "CALLBACK_PENDING", None, "ticket (deduped per day), pause all outbound", R + ".while_pending"),
             T(s, "CALLBACK_DUE", "NONE", "answered", "close task; stop-for-day", R + ".if_answered"),
-            T(s, "CALLBACK_DUE", "CALLBACK_PENDING", "!answered & retry_left", "retry in 2 h", R + ".if_unanswered"),
             T(s, "CALLBACK_DUE", "NONE", "!answered & !retry_left", "one 'we tried to reach you' message; stop-for-day",
               R + ".if_second_attempt_missed"),
         ]
+    tr += [
+        T("CALLBACK_PENDING", "CALLBACK_DUE", "CALLBACK_PENDING", "!answered & retry_left", "retry in 2 h", R + ".if_unanswered"),
+        T("NONE", "CALLBACK_DUE", "NONE", "!answered & retry_left", "no hold, no ticket: normal retry at band caps",
+          "FSM-F7: only a requested callback is retried as a callback (NO_OPEN_CALLBACK_NORMAL_RETRY)"),
+    ]
     return Machine(
         "k13.hold.callback", "1", ["NONE", "CALLBACK_PENDING"], "NONE", [], tr,
         description="A borrower asked for a person: all outbound nudges pause until the callback is answered or missed twice.",
