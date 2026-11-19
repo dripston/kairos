@@ -163,7 +163,7 @@ journey step of the day ──► allowed_channels(borrower, day) ──► K09 
 | `journeys.py` | Journeys (CN10 C1–C5 verbatim + behaviour journeys), layer gating, layer rules, `recommend_layer` acceptance, stop rules + `stop_policy` hook |
 | `fsm.py` | Lifecycle `STATES` and `TRANSITIONS` (terminal states exit only on their own trigger) |
 | `engine.py` | `ChurnEngine`: enroll (from K03 spine), process, tick, allowed_channels, recommend_layer, maker-checker overrides, manual schedule, start_campaign, borrower, trace, coverage, analytics (by campaign / cohort / region / layer) |
-| `sarvam_export.py` | DRY RUN: `upload_cohort` + `configure_campaign` bodies with a K01-safe retry plan, CN AICC gate replies, Sarvam webhook → normalized events |
+| `sarvam_export.py` | DRY RUN: `upload_cohort` (only borrowers with a reserved voice touch; `user_identifier` = `touch_id` = the ledger `instruction_id`, others listed as `skipped` with the gate's reason; phone stays a `PHONE_REF:` token, resolved at dial time outside the repo) + `configure_campaign` bodies with a K01-safe retry plan, CN AICC gate replies, Sarvam webhook → normalized events |
 | `api.py` | `/churn/*` routes (mounted in `kairos_backend.api`) |
 
 API: `GET/PUT /churn/cohorts`, `GET /churn/coverage`, `POST /churn/enroll`, `GET /churn/borrowers/{id}`,
@@ -212,7 +212,8 @@ hidden parameters.
   the learned no-response stopping threshold. Do not edit `learner.py` from here.
 - **HITL (`k06/hitl-control`):** pass `ChurnEngine(hitl=HITL(...))` to hand EXHAUSTED borrowers to a person
   (`hitl.act(..., "handoff", ...)`); overrides are already maker-checker.
-- **K17/K18 voice engine:** map Sarvam payloads with `sarvam_export.webhook_to_events`; the fields the voice
+- **K17/K18 voice engine:** the webhook join takes the first of `initial_agent_variables.touch_id`, `user_identifier`, `metadata.touch_id`
+  that is a ledger touch; the export therefore sends the reserved `instruction_id` in both. Map Sarvam payloads with `sarvam_export.webhook_to_events`; the fields the voice
   engine still misses are listed in `sarvam_export.VOICE_ENGINE_DIFFS`.
 - **When `origin/k06/deterministic-states` lands:** declare `churn/fsm.py` there (`STATES`, `TRANSITIONS`).
 - **Adding a cohort / rule:** edit the JSON (fields must be in `FEATURE_CATALOGUE`; validation refuses
