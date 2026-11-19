@@ -625,7 +625,8 @@ class IntentClassifier:
         if self._stack is None:
             from .intent_stack import IntentStack, OllamaClient  # lazy: intent_stack imports this module
             local = OllamaClient() if os.environ.get("KAIROS_LOCAL_LLM_MODEL") else None
-            self._stack = IntentStack(local_llm=local, cloud_llm=self.llm)
+            from .sarvam.prism import shared_prism
+            self._stack = IntentStack(local_llm=local, cloud_llm=self.llm, prism=shared_prism())
         return self._stack
 
     def _from_stack(self, msg: InboundMessage, text: str, today: date, known: Sequence[str]) -> IntentResult:
@@ -637,7 +638,8 @@ class IntentClassifier:
         if intent == PTP and agreed is None:
             intent = NEEDS_TIME
         ambiguous = r.needs_human and r.label != HARDSHIP or r.confidence < 0.7
-        source = {"rules": "rules", "small_model": "model", "local_llm": "llm", "cloud_llm": "llm"}.get(r.tier_used, "fallback")
+        source = {"rules": "rules", "small_model": "model", "prism": "llm", "local_llm": "llm",
+                  "cloud_llm": "llm"}.get(r.tier_used, "fallback")
         cloud = r.evidence.get("cloud_llm") or {}
         usage = cloud.get("usage")
         if source == "fallback":

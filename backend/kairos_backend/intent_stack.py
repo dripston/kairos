@@ -1,4 +1,4 @@
-"""K09 tiered, deterministic intent stack: rules -> small model -> local LLM -> cloud LLM -> abstain.
+"""K09 tiered, deterministic intent stack: rules -> small model -> prism -> local LLM -> cloud LLM -> abstain.
 
     IntentStack.from_env().classify("kal de dunga", today=date(2026, 11, 19)) -> StackResult
 
@@ -15,6 +15,12 @@ free-text voice-call summaries. It only CLASSIFIES; what a label does is decided
                   trained on a seeded synthetic corpus (intent_corpus.py), temperature-calibrated.
                   Weights: kairos_backend/data/intent_nb_v1.json (version + training seed inside).
                   When rules found several candidates, the model only chooses AMONG them.
+  2b. prism       Optional sarvam-prism decision model (kairos_backend/sarvam/prism.py), only with a Sarvam
+                  key. Same masked input. Asked for the intent (choice over these labels) plus yes/no/unknown
+                  on stop / hardship / self-harm / abuse and a confidence score. A prism "yes" on a safety
+                  question is a review signal (needs_human); a prism-only STOP is returned as UNKNOWN +
+                  safety flag "stop_unconfirmed", so nothing can auto-STOP on it. Schema violations, timeouts
+                  and an open circuit breaker fall through to tier 3.
   3. local_llm    Optional Ollama (OLLAMA_HOST, KAIROS_LOCAL_LLM_MODEL). temperature 0, fixed seed,
                   format = strict JSON schema, short timeout, input with digits / names / phones
                   masked. Only when tier 2's top probability is below LOCAL_LLM_BELOW. Auto-detected
@@ -76,7 +82,7 @@ LABELS: Tuple[str, ...] = (PAY_NOW, PTP, NEEDS_TIME, ALREADY_PAID, CALLBACK, HAR
                            LANGUAGE_CHANGE, ABUSIVE, GREETING, UNKNOWN)
 SAFETY_LABELS: Tuple[str, ...] = (STOP, HARDSHIP, ABUSIVE)
 
-TIERS = ("rules", "small_model", "local_llm", "cloud_llm", "abstain")
+TIERS = ("rules", "small_model", "prism", "local_llm", "cloud_llm", "abstain")
 
 # Stack label -> legacy intent.INTENTS (what IntentClassifier / K13 already understand).
 TO_LEGACY: Dict[str, str] = {
@@ -102,6 +108,8 @@ MODEL_MARGIN = 0.25        # ... and its lead over the runner-up
 MODEL_PICK_MIN = 0.20      # when rules gave candidates: the model's pick among them needs this much
 LOCAL_LLM_BELOW = MODEL_ACCEPT  # tier 3 only when tier 2's top probability is below this
 LLM_ACCEPT = 0.70          # local LLM self-reported confidence needed
+PRISM_ACCEPT = 0.80        # prism's own probability for its intent label needed for the answer to be used
+PRISM_CONF_CAP = 0.85      # a prism answer never reports more confidence than this
 STACK_VERSION = "intent-stack-1"
 
 # Ingestion default (outcomes.record_text_reply / classify_reply). Set from scripts/eval_intent.py:
@@ -221,9 +229,11 @@ _r(_SELF_HARM, "selfharm.hing", [
     r"\b(mar|marr) (jaunga|jaungi|jaaunga|jaaungi|jau|jaun|jaana|jana|jaenge|jayenge|jaaenge)\b",
     r"\bjaan de (dunga|dungi|denge|du|doon)\b", r"\b(zeher|zahar|jahar) (kha|pee|pi)\w*\b", r"\b(faansi|fansi|phansi)\b",
     r"\bjeene ka (mann|man) nahi\b", r"\bmarne (ka|ke) (alawa|siva|siwa|siwaay)\b",
+    # added 2026-11-19 (Sarvam-models eval: the held-out set missed this phrasing; safety rules only grow)
+    r"\b(ab )?jeena nahi (chahta|chahti|chahte)\b", r"\bzindagi (khatam|khtm) kar\w*\b",
 ])
 _r(_SELF_HARM, "selfharm.hi", [
-    r"आत्महत्या|खुदकुशी|ख़ुदकुशी|मर जा(ऊं|ऊँ|उं)(गा|गी)|जान दे (दूंगा|दूँगा|दूंगी|दूँगी)|फांसी|फाँसी|(ज़हर|जहर) खा|जीने का मन नहीं",
+    r"आत्महत्या|खुदकुशी|ख़ुदकुशी|मर जा(ऊं|ऊँ|उं)(गा|गी)|जान दे (दूंगा|दूँगा|दूंगी|दूँगी)|फांसी|फाँसी|(ज़हर|जहर) खा|जीने का मन नहीं|जीना नहीं चाहत",
 ])
 _r(HARDSHIP, "hardship.en", [
     r"\baccident\b", r"\bhospital\w*\b", r"\badmit(ted)?\b", r"\bicu\b", r"\bsurgery\b", r"\boperation\b",
@@ -243,6 +253,8 @@ _r(HARDSHIP, "hardship.hing", [
     r"\bsalary (nahi|nhi) (aayi|ayi|mili|aa rahi|aai|milegi)\b", r"\bsalary (ruk|band|stop|cut|kat)\w*\b",
     r"\b(baadh|aag lag)\w*\b", r"\b(business|dhandha|dhanda|dukaan|dukan|company) (band|thapp|thap|doob|dub|chaupat|manda|mandaa|loss)\w*\b",
     r"\bloss ho (gaya|gya)\b", r"\b(paise|paison) ki (tangi|kami|dikkat)\b",
+    r"\b(company|boss|office|malik|seth|kampani) ne (nikaal|nikal|nikala|hata|bahar kar)\w*\b",
+    r"\b(naukri|job|kaam) se (nikaal|nikal|nikala|hata)\w*\b",
 ])
 _r(HARDSHIP, "hardship.hi", [
     r"अस्पताल|हॉस्पिटल|हास्पिटल|बीमार|इलाज|ऑपरेशन|एक्सीडेंट|दुर्घटना|नौकरी (चली|छूट|नहीं रही|गई)|(गुज़र|गुजर) (गए|गई|गया)|देहांत|निधन|मृत्यु|मौत",
@@ -808,8 +820,10 @@ class IntentStack:
     """rules -> small model -> local LLM -> cloud LLM -> abstain. Classification only."""
 
     def __init__(self, model: Optional[NaiveBayesModel] = None, local_llm: Optional[OllamaClient] = None,
-                 cloud_llm: Optional[_legacy.LunaClient] = None, use_model: bool = True, cache_size: int = 20000):
+                 cloud_llm: Optional[_legacy.LunaClient] = None, use_model: bool = True, cache_size: int = 20000,
+                 prism: Any = None):
         self.model = model if model is not None else (default_model() if use_model else None)
+        self.prism = prism               # sarvam.prism.PrismClassifier, or None (no key: tier skipped)
         self.local_llm = local_llm
         self.cloud_llm = cloud_llm
         self.cache_size = cache_size
@@ -818,12 +832,14 @@ class IntentStack:
 
     @classmethod
     def from_env(cls, env: Optional[Dict[str, str]] = None, cloud_llm: Optional[_legacy.LunaClient] = None) -> "IntentStack":
-        """Local LLM when KAIROS_LOCAL_LLM_MODEL is set (and the server answers); cloud LLM when an
-        OPENAI_API_KEY is configured (or a client is passed). Nothing is required."""
+        """prism when a Sarvam key is found (sarvam/config.py) and not switched off; local LLM when
+        KAIROS_LOCAL_LLM_MODEL is set (and the server answers); cloud LLM when an OPENAI_API_KEY is
+        configured (or a client is passed). Nothing is required."""
         e = os.environ if env is None else env
         local = OllamaClient(env=e) if e.get("KAIROS_LOCAL_LLM_MODEL") else None
         cloud = cloud_llm if cloud_llm is not None else (_legacy.LunaClient(env=dict(e)) if e.get("OPENAI_API_KEY") else None)
-        return cls(local_llm=local, cloud_llm=cloud)
+        from .sarvam.prism import shared_prism
+        return cls(local_llm=local, cloud_llm=cloud, prism=shared_prism(e))
 
     # -- public ---------------------------------------------------------------------------------
     def classify(self, text: Optional[str], today: Any = None, channel: str = "whatsapp",
@@ -838,6 +854,8 @@ class IntentStack:
         res = self._classify(text or "", day, channel, known_names)
         if res.label == HARDSHIP:
             res = replace(res, evidence={**res.evidence, "hardship_kind": hardship_kind(text or "") or None})
+        if (res.evidence.get("prism") or {}).get("error"):
+            return res      # a transient model failure is not cached: the next call may get an answer
         with self._lock:
             prev = self._cache.get(key)
             if prev is not None:     # a concurrent caller got there first: keep one answer
@@ -945,11 +963,19 @@ class IntentStack:
         # tier 2's top probability over real labels (a confident "UNKNOWN" is still "unsure")
         top_p = max((p for lab, p in probs.items() if lab != UNKNOWN), default=0.0)
 
-        # tier 3: local LLM, only when tier 2's top probability is below the threshold
+        # tier 2b: sarvam-prism, when a key is configured. Rule safety hits never reach this point.
         masked = None
+        if self.prism is not None:
+            ev["escalated_to"].append("prism")
+            top2 = [lab for lab, _ in sorted(probs.items(), key=lambda kv: (-kv[1], LABELS.index(kv[0])))[:2]]
+            out = self._prism_tier(text, known, ro, ev, ents, today, top2)
+            if out is not None:
+                return out
+
+        # tier 3: local LLM, only when tier 2's top probability is below the threshold
         if self.local_llm is not None and top_p < LOCAL_LLM_BELOW and self.local_llm.available():
             ev["escalated_to"].append("local_llm")
-            masked = redact_for_llm(text, known)
+            masked = masked or redact_for_llm(text, known)
             try:
                 rep = self.local_llm.classify(masked)
             except Exception as e:  # defensive: an adapter bug never reaches the caller
@@ -978,6 +1004,46 @@ class IntentStack:
 
         # tier 5: abstain
         return self._result(UNKNOWN, round(top_p, 4), "abstain", ev, ents, True, ro.safety_flags, today)
+
+    def _prism_tier(self, text: str, known: Sequence[str], ro: _RuleOutcome, ev: Dict[str, Any],
+                    ents: Dict[str, Any], today: date, top2: Sequence[str] = ()) -> Optional[StackResult]:
+        """Map prism's answers into a StackResult, or None to fall through. Never raises. Runs only where
+        rules + small model abstained. Its label is kept only at >= PRISM_ACCEPT and only when it agrees with
+        a rule candidate or the small model's top 2; a safety signal (noul yes, or a confident safety label)
+        always goes to a person."""
+        from .sarvam.prism import mask_for_model
+        try:
+            a = self.prism.classify_intent(mask_for_model(text, known))
+        except Exception as e:  # defensive
+            ev["prism"] = {"model": "sarvam-prism", "error": f"adapter error: {type(e).__name__}"}
+            return None
+        ev["prism"] = {**a.meta, "output": a.as_dict()}
+        flags = list(ro.safety_flags)
+        safety = list(a.safety_yes)
+        sure = a.confidence is not None and a.confidence >= PRISM_ACCEPT
+        if sure and a.label == STOP and "stop" not in safety:
+            safety.append("stop")
+        if sure and a.label == HARDSHIP and "hardship" not in safety and "self_harm" not in safety:
+            safety.append("hardship")
+        if sure and a.label == ABUSIVE and "abusive" not in safety:
+            safety.append("abusive")
+        if safety:
+            # Review signal only. Precedence stop > self-harm > hardship > abuse, as in the rules.
+            for s in safety:
+                flags.append(f"{s}_unconfirmed")
+            conf = round(min(PRISM_CONF_CAP, a.confidence if a.confidence is not None else 0.5), 4)
+            if "stop" in safety:
+                # never returned as STOP: no caller may auto-STOP on a model alone
+                return self._result(UNKNOWN, conf, "prism", ev, ents, True, flags, today, model_safety=True)
+            lab = HARDSHIP if ("self_harm" in safety or "hardship" in safety) else ABUSIVE
+            return self._result(lab, conf, "prism", ev, ents, True, flags, today, model_safety=True)
+        if a.error or a.label is None or a.label == UNKNOWN or a.confidence is None or a.confidence < PRISM_ACCEPT:
+            return None
+        allowed = set(ro.candidates) | set(top2)
+        if a.label not in allowed:
+            ev["prism"]["rejected"] = "label agrees with neither a rule candidate nor the small model's top 2"
+            return None
+        return self._result(a.label, round(min(PRISM_CONF_CAP, a.confidence), 4), "prism", ev, ents, False, flags, today)
 
     @staticmethod
     def _result(label: str, conf: float, tier: str, ev: Dict[str, Any], ents: Dict[str, Any], needs_human: bool,

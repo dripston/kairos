@@ -98,7 +98,7 @@ app = FastAPI(lifespan=lifespan, title="Kairos K06 · Supervisor guardrails + ex
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 # CM-03 inbound WhatsApp servicing agent (SIMULATED, adapter dry-run): /cm03/*
-cm03_engine = ConversationEngine(ledger)
+cm03_engine = ConversationEngine(ledger, phraser="auto")  # phrasing only with a Sarvam key
 app.include_router(cm03_router(cm03_engine))
 
 # K27 auto-churn engine (cohort / risk / journey / layer / lifecycle), additive routes under /churn
@@ -734,6 +734,29 @@ def hitl_audit(borrower_id: Optional[str] = None, actor: Optional[str] = None, t
     return _call(hitl.audit, role, borrower_id, actor, type, instruction_id, since, until, human_only, limit)
 
 
+# ---------- operator narratives (deepseek; AI-generated label; deterministic without a key) ----------
+@app.get("/ai/explain")
+def ai_explain(borrower_id: Optional[str] = None, instruction_id: Optional[str] = None, role: str = Role):
+    """'Explain this decision' from the audit trail (masked for the role). Never decides anything."""
+    if not borrower_id and not instruction_id:
+        raise HTTPException(422, "borrower_id or instruction_id is required")
+    from .sarvam.narrate import shared_narrator
+    rows = _call(hitl.audit, role, borrower_id, None, None, instruction_id, None, None, False, 12)
+    return shared_narrator().explain_decision(rows).as_dict()
+
+
+@app.get("/ai/case-summary/{ticket_id}")
+def ai_case_summary(ticket_id: str, role: str = Role):
+    """Hand-off case summary for the person picking up a case (hardship / dispute / fraud)."""
+    from .sarvam.narrate import shared_narrator
+    _call(hitl._require_view, role)
+    t = ledger._conn().execute("SELECT * FROM tickets WHERE ticket_id=?", (ticket_id,)).fetchone()
+    if t is None:
+        raise HTTPException(404, f"not found: {ticket_id}")
+    rows = _call(hitl.audit, role, t["borrower_id"], None, None, None, None, None, False, 12)
+    return shared_narrator().case_summary(dict(t), rows).as_dict()
+
+
 # ---------- K26 reports (read-only, SIMULATED) ----------
 REPORT_ROUTES = {"aici": "aici", "data-dump": "data_dump", "trails": "trails", "ftd": "ftd", "hourly": "hourly"}
 
@@ -748,12 +771,17 @@ def _report_response(name: str, rows: list, columns: list, fmt: str, meta: dict)
 
 
 @app.get("/reports/daily-segment")
-def report_daily_segment(campaign_id: str, day: date, format: str = "json"):
-    """CM-02: spend, response and learning per DPD band x channel (and risk cohort) for one day."""
+def report_daily_segment(campaign_id: str, day: date, format: str = "json", narrative: bool = False):
+    """CM-02: spend, response and learning per DPD band x channel (and risk cohort) for one day.
+    narrative=true adds `ops_summary`: a deepseek paragraph labelled AI-generated and fact-checked against
+    the report (the deterministic sentence without a Sarvam key)."""
     if format not in ("json", "csv"):
         raise HTTPException(422, "format must be json or csv")
     rep = _call(reports.daily_segment_report, ledger, campaign_id, day)
     if format == "json":
+        if narrative:
+            from .sarvam.narrate import shared_narrator
+            rep = {**rep, "ops_summary": shared_narrator().daily_ops(rep).as_dict()}
         return rep
     rows = reports.daily_segment_sheets(rep)["daily_segment"]
     return _report_response("daily-segment", rows, reports.DAILY_SEGMENT_COLUMNS, "csv", {})
