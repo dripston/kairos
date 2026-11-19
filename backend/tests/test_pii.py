@@ -29,3 +29,12 @@ def test_ticket_fields_are_scrubbed_at_rest(policy, tmp_path):
     assert (t["summary_line_1"], t["summary_line_2"]) == ("B1 disputes the EMI", "Reach on [phone] / [email]")
     assert json.loads(t["evidence_ids"]) == ["chat:[phone]", "msg-42"]
     lg.close()
+
+
+def test_one_scrubber_for_tickets_and_hitl():
+    """K06 HITL and the Ledger share kairos_backend.pii.scrub; both rule sets hold in the merged version."""
+    from kairos_backend import hitl
+    assert hitl.scrub is scrub
+    # HITL's rule: international numbers are masked; the RT-F08 rules keep references and dates.
+    assert scrub("Call +44 20 7946 0958 or +91 98765 43210") == "Call [phone] or [phone]"
+    assert scrub("UTR 412345678901 on 2026-11-20 10:00") == "UTR 412345678901 on 2026-11-20 10:00"

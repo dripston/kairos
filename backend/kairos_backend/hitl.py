@@ -36,6 +36,7 @@ from spine.ledger import record_event
 from .exceptions import ROUTED_STOP
 from .gate import WAIT, Decision, evaluate
 from .ledger import LIVE, QUEUED, Instruction, Ledger
+from .pii import scrub
 from .policy import policy_dir
 
 __all__ = ["HITL", "HitlError", "Forbidden", "Refused", "Conflict", "load_approval_policy", "mask", "scrub"]
@@ -110,17 +111,13 @@ def load_approval_policy(base: Optional[Path] = None) -> dict:
 
 
 # ---------- PII ----------
-_PHONE = re.compile(r"(?<![\w-])\+?\d[\d \-]{7,}\d")
-_EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 _PHONE_KEYS = {"phone", "mobile", "phone_number", "alt_phone"}
 _NAME_KEYS = {"full_name", "borrower_name", "first_name"}
 _EMAIL_KEYS = {"email"}
 _AMOUNT_KEYS = {"amount", "amount_inr", "outstanding"}
 
 
-def scrub(text: Optional[str]) -> str:
-    """Remove phone numbers and emails from free text before it is stored (audit, tickets)."""
-    return _EMAIL.sub("[email]", _PHONE.sub("[phone]", text or ""))
+# scrub() is the shared kairos_backend.pii implementation (one scrubber for tickets, audit and handoffs).
 
 
 def _mask_value(kind: str, mode: str, v):
