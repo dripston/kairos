@@ -60,9 +60,9 @@ order (each one has a green "Merge" button once reviewed). After each merge run 
 | 7 | #8 | Message templates for every channel, compliance-checked |
 | 8 | #6 | CRM borrower page with the 5-step replay, and the voice bot flows |
 | 9 | #16 | Fixes for the 4 serious red-team findings (merge after #14) |
+| 11 | #17 | Learner tuning: +48% to +61% on unseen seeds (merge after #11) |
 | 10 | #15 | Voice engine: picks the bot, voice and language per call; acts on call outcomes using confidence thresholds (merge after #11) |
 
-Later branches (not PRs yet): `k09/optimize` (more learner tuning).
 
 ---
 
@@ -80,11 +80,11 @@ python3 scripts/run_k09_replay.py --borrowers 1500 --days 14 --seed 42 --baselin
 
 Takes 1 to 3 minutes. Read these lines in the output:
 
-- **Replies per ₹1,000**: Fixed (CN's 10-day cadence) vs K09. K09 should be about 20 to 40% higher.
+- **Replies per ₹1,000**: Fixed (CN's 10-day cadence) vs K09. With PR #17, K09 is about 30 to 60% higher.
 - **K01 cap breaches: 0 / 0** and **K15 safety violations: 0 / 0**. This must always be zero.
 - **In-campaign channel switches**: shows the learner changing its mind when WhatsApp gets worse mid-campaign.
 
-Results across 4 seeds: +39%, +27%, +19%, +35% (average +30%), with more verified payments on every seed.
+Results on 3 seeds never used for tuning: +48%, +61%, +56%, with more verified payments than CN on every seed and zero cap breaches. Be ready for one question: opt-outs (STOP replies) are higher than CN's cadence.
 
 ### Demo B: one borrower's whole journey (CRM page)
 

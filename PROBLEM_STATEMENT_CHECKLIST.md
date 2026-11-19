@@ -16,7 +16,7 @@ improved · ❌ not built yet. "PR #N" is on github.com/dripston/kairos. All num
 | 7 | Over-contact lowers future response | ✅ | Recency buckets (contacts in last 7 days) and the K15 2-day gap (PR #11) |
 | 8 | Stay within daily and campaign budget | ✅ | Ledger budget with atomic reserve; red-team BUD attacks pass |
 | 9 | Report spend, response and learning per segment every day | ✅ | K26 daily per-segment report + lender sheets (PR #13) |
-| 10 | **Hidden seed: response per rupee ≥ 20% above fixed cadence** | 🟡 | 4 seeds vs CN's 10-day cadence: +39%, +27%, +19%, +35% (mean +30%). One seed is just under 20%; further tuning with held-out seeds is running on `k09/optimize` |
+| 10 | **Hidden seed: response per rupee ≥ 20% above fixed cadence** | ✅ | Tuned on 4 seeds, chosen on 3 held-out seeds, then run once on 3 unseen seeds: **+48%, +61%, +56%** vs CN's 10-day cadence (PR #17, on top of #11). Re-run independently on seed 31337: +47.9%, deterministic. Caveats: spends 5–10% less than the budget, and STOP opt-outs are higher than CN10 (22 vs 10) |
 | 11 | **Zero cap breaches** | ✅ | 0 K01 breaches and 0 K15 violations on every seed and both arms |
 | 12 | 50,000 daily decisions in under 10 minutes | ✅ | About 2.1 min single run (402 decisions/s) |
 | 13 | Deterministic given a seed | ✅ | `--check-determinism`: identical CRM envelope hashes |
@@ -44,6 +44,6 @@ improved · ❌ not built yet. "PR #N" is on github.com/dripston/kairos. All num
 ## Biggest gaps, in order
 
 1. **CM-03 inbound WhatsApp agent** (rows CM-03 1 to 5).
-2. CM-02 row 10: make the weakest seed clear 20% (in progress, with held-out seeds so it isn't overfitted).
+2. CM-02 opt-outs: K09 triggers more STOP replies than CN10; add an opt-out risk term to the value score.
 3. Merge the open PRs into main and run the full test suite once on the merged code.
 4. Frontend still uses mock data in places; wire the Control Room and CRM to the API.

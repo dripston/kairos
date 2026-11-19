@@ -71,7 +71,7 @@ cd ../frontend && npm install && npm run dev
 | #8 `k22/template-selector` | 83 templates, 14-rule compliance checker | Open |
 | #6 `feat/k05-k14-crm-voice` | `crm/` borrower page, shared ingestion, 5-step replay | Open |
 | #15 `k17-k18/voice-engine` | Bot registry (use case → agent, voice, language), unified dispositions, confidence thresholds, `/webhooks/sarvam/call-end` (stacked on #11) | Open, 1208 tests |
-| `k09/optimize` | Hold-out-seed tuning of K09 | In progress |
+| #17 `k09/optimize` | Evidence decay 0.7 + relative value floor 0.5 (replay default): unseen seeds +48% / +61% / +56% vs CN10; STOP opt-outs higher than CN10 (open follow-up) | Open, stacked on #11 |
 | PRs #2–#5 | Pre-spine K09/K06 versions | Superseded by #11 |
 
 Merge order that minimises conflicts: #7, #11, #12, #13, #14, #10, #8, #6. #11, #12 and #13 all touch
