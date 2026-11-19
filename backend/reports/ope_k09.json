@@ -1,0 +1,289 @@
+{
+  "evidence": "SIMULATED: K15 DEV simulator, synthetic portfolio, SYNTHETIC learner priors",
+  "method": "IPS / SNIPS / DM / DR (Dudik, Langford & Li 2011, arXiv:1103.4601; Li et al. WSDM 2011, arXiv:1003.5956) on a Thompson-sampling log with Monte Carlo propensities; percentile bootstrap CIs; ground truth = same simulator, same seeded draws, target's arm",
+  "params": {
+    "borrowers": 1500,
+    "days": 10,
+    "seed": 42,
+    "draws": 1000,
+    "boot": 500,
+    "epsilon": 0.05
+  },
+  "log": {
+    "decisions": 7209,
+    "contacts": 7120,
+    "replies": 227,
+    "propensity_min": 0.001418,
+    "propensity_max": 0.889795,
+    "arm_prob_sum_min": 1.0,
+    "arm_prob_sum_max": 1.0,
+    "greedy_target_mismatches_vs_learner": 0,
+    "logged_reward_vs_oracle_mismatches": 0,
+    "log_seconds": 13.24
+  },
+  "unit": "meaningful replies per decision (value) and per Rs 1,000 of the target's own expected spend",
+  "targets": {
+    "greedy_k09": {
+      "label": "Greedy K09 (posterior-mean ranking, as PRODUCTION)",
+      "n": 7209,
+      "ess": 2470.4,
+      "target_cost_paise_per_decision": 45.7359,
+      "ips": {
+        "value": 0.04238,
+        "ci": [
+          0.03388,
+          0.04995
+        ],
+        "replies_per_1000_inr": 92.658,
+        "replies_per_1000_inr_ci": [
+          75.088,
+          110.883
+        ],
+        "truth_in_ci": true
+      },
+      "snips": {
+        "value": 0.04322,
+        "ci": [
+          0.0345,
+          0.05078
+        ],
+        "replies_per_1000_inr": 94.499,
+        "replies_per_1000_inr_ci": [
+          76.173,
+          112.141
+        ],
+        "truth_in_ci": true
+      },
+      "dm": {
+        "value": 0.10167,
+        "ci": [
+          0.10024,
+          0.10313
+        ],
+        "replies_per_1000_inr": 222.288,
+        "replies_per_1000_inr_ci": [
+          211.419,
+          233.942
+        ],
+        "truth_in_ci": false
+      },
+      "dr": {
+        "value": 0.04553,
+        "ci": [
+          0.03693,
+          0.05304
+        ],
+        "replies_per_1000_inr": 99.554,
+        "replies_per_1000_inr_ci": [
+          80.753,
+          119.168
+        ],
+        "truth_in_ci": false
+      },
+      "truth": {
+        "expected": 0.03586,
+        "realized_same_draws": 0.03704,
+        "replies_per_1000_inr_expected": 78.4,
+        "replies_per_1000_inr_realized": 80.98
+      }
+    },
+    "cn10_fixed": {
+      "label": "CN10 fixed calendar (stand-in cohort, morning slot)",
+      "n": 7209,
+      "ess": 408.9,
+      "target_cost_paise_per_decision": 30.2088,
+      "ips": {
+        "value": 0.01816,
+        "ci": [
+          0.01032,
+          0.02852
+        ],
+        "replies_per_1000_inr": 60.131,
+        "replies_per_1000_inr_ci": [
+          34.34,
+          94.602
+        ],
+        "truth_in_ci": true
+      },
+      "snips": {
+        "value": 0.01924,
+        "ci": [
+          0.01096,
+          0.03021
+        ],
+        "replies_per_1000_inr": 63.706,
+        "replies_per_1000_inr_ci": [
+          36.856,
+          100.959
+        ],
+        "truth_in_ci": true
+      },
+      "dm": {
+        "value": 0.04561,
+        "ci": [
+          0.04443,
+          0.0467
+        ],
+        "replies_per_1000_inr": 150.997,
+        "replies_per_1000_inr_ci": [
+          146.289,
+          154.952
+        ],
+        "truth_in_ci": false
+      },
+      "dr": {
+        "value": 0.02307,
+        "ci": [
+          0.01478,
+          0.03363
+        ],
+        "replies_per_1000_inr": 76.374,
+        "replies_per_1000_inr_ci": [
+          48.539,
+          110.444
+        ],
+        "truth_in_ci": true
+      },
+      "truth": {
+        "expected": 0.01841,
+        "realized_same_draws": 0.01956,
+        "replies_per_1000_inr_expected": 60.933,
+        "replies_per_1000_inr_realized": 64.746
+      }
+    },
+    "always_whatsapp": {
+      "label": "Always WhatsApp 17-19 (sanity check)",
+      "n": 7209,
+      "ess": 937.8,
+      "target_cost_paise_per_decision": 29.7295,
+      "ips": {
+        "value": 0.04207,
+        "ci": [
+          0.03173,
+          0.05488
+        ],
+        "replies_per_1000_inr": 141.495,
+        "replies_per_1000_inr_ci": [
+          106.664,
+          184.659
+        ],
+        "truth_in_ci": true
+      },
+      "snips": {
+        "value": 0.04298,
+        "ci": [
+          0.03254,
+          0.05625
+        ],
+        "replies_per_1000_inr": 144.579,
+        "replies_per_1000_inr_ci": [
+          109.364,
+          188.926
+        ],
+        "truth_in_ci": true
+      },
+      "dm": {
+        "value": 0.08629,
+        "ci": [
+          0.08463,
+          0.08804
+        ],
+        "replies_per_1000_inr": 290.255,
+        "replies_per_1000_inr_ci": [
+          286.573,
+          294.77
+        ],
+        "truth_in_ci": false
+      },
+      "dr": {
+        "value": 0.0457,
+        "ci": [
+          0.03513,
+          0.05893
+        ],
+        "replies_per_1000_inr": 153.72,
+        "replies_per_1000_inr_ci": [
+          117.702,
+          198.672
+        ],
+        "truth_in_ci": false
+      },
+      "truth": {
+        "expected": 0.03276,
+        "realized_same_draws": 0.0326,
+        "replies_per_1000_inr_expected": 110.205,
+        "replies_per_1000_inr_realized": 109.649
+      }
+    },
+    "logger_on_policy": {
+      "label": "The Thompson logger itself (weights == 1: plumbing check)",
+      "n": 7209,
+      "ess": 7120.0,
+      "target_cost_paise_per_decision": 49.0025,
+      "ips": {
+        "value": 0.03149,
+        "ci": [
+          0.0276,
+          0.03537
+        ],
+        "replies_per_1000_inr": 64.259,
+        "replies_per_1000_inr_ci": [
+          55.787,
+          72.7
+        ],
+        "truth_in_ci": true
+      },
+      "snips": {
+        "value": 0.03148,
+        "ci": [
+          0.02755,
+          0.03538
+        ],
+        "replies_per_1000_inr": 64.238,
+        "replies_per_1000_inr_ci": [
+          55.789,
+          72.636
+        ],
+        "truth_in_ci": true
+      },
+      "dm": {
+        "value": 0.0747,
+        "ci": [
+          0.07388,
+          0.07556
+        ],
+        "replies_per_1000_inr": 152.446,
+        "replies_per_1000_inr_ci": [
+          147.348,
+          158.038
+        ],
+        "truth_in_ci": false
+      },
+      "dr": {
+        "value": 0.03209,
+        "ci": [
+          0.02819,
+          0.03589
+        ],
+        "replies_per_1000_inr": 65.49,
+        "replies_per_1000_inr_ci": [
+          57.152,
+          73.936
+        ],
+        "truth_in_ci": true
+      },
+      "truth": {
+        "expected": 0.02927,
+        "realized_same_draws": 0.02989,
+        "replies_per_1000_inr_expected": 59.738,
+        "replies_per_1000_inr_realized": 60.991
+      }
+    }
+  },
+  "caveats": [
+    "per-decision value on the logged contexts; a target's own downstream contexts are not modelled",
+    "Monte Carlo propensities (smoothed); weights are capped by the smoothing, not clipped",
+    "simulator rewards; the CN10 cohort is a stand-in (borrower % 5)"
+  ],
+  "runtime_seconds": 20.09
+}

@@ -112,6 +112,55 @@ PRISM_ACCEPT = 0.80        # prism's own probability for its intent label needed
 PRISM_CONF_CAP = 0.85      # a prism answer never reports more confidence than this
 STACK_VERSION = "intent-stack-1"
 
+# Optional data-driven threshold (Learn-then-Test, scripts/calibrate_thresholds.py). OFF by default:
+# without KAIROS_INTENT_THRESHOLDS=calibrated every stack uses the hand-set constants above, exactly as
+# before. Only MODEL_ACCEPT (and LOCAL_LLM_BELOW, which follows it) is calibrated; rule thresholds and
+# safety labels (STOP / HARDSHIP / ABUSIVE are rule-final) never depend on it.
+THRESHOLDS_ENV = "KAIROS_INTENT_THRESHOLDS"
+CALIBRATION_PATH = Path(__file__).resolve().parents[1] / "reports" / "threshold_calibration.json"
+MODEL_NEVER_ALONE = 1.01   # fail-closed value: the small model never answers on its own
+
+
+@dataclass(frozen=True)
+class Thresholds:
+    rule_accept: float = RULE_ACCEPT
+    model_accept: float = MODEL_ACCEPT
+    source: str = "hand-set"
+
+    @property
+    def local_llm_below(self) -> float:
+        return self.model_accept
+
+    def model_safety_accept(self, label: str) -> float:
+        """Threshold for the small model's stand-alone answer. A model-detected safety label (always sent
+        to a human) is never held to a stricter bar than the hand-set one, so a calibrated threshold
+        can never lower STOP / HARDSHIP / ABUSIVE detection. Hand-set: MODEL_ACCEPT for every label."""
+        if label in SAFETY_LABELS:
+            return min(self.model_accept, MODEL_ACCEPT)
+        return self.model_accept
+
+
+HAND_SET = Thresholds()
+
+
+def load_thresholds(env: Optional[Dict[str, str]] = None, path: Optional[Path] = None) -> Thresholds:
+    """Hand-set unless KAIROS_INTENT_THRESHOLDS=calibrated. A calibrated run whose file is missing or
+    invalid fails CLOSED (the small model never answers alone), it never silently loosens."""
+    v = ((os.environ if env is None else env).get(THRESHOLDS_ENV) or "").strip().lower()
+    if v in ("", "hand-set", "handset", "default", "0", "off"):
+        return HAND_SET
+    if v != "calibrated":
+        return Thresholds(model_accept=MODEL_NEVER_ALONE, source=f"unknown {THRESHOLDS_ENV}={v!r}: fail-closed")
+    p = Path(path) if path is not None else CALIBRATION_PATH
+    try:
+        raw = p.read_bytes()
+        lam = float(json.loads(raw)["chosen"]["model_accept"])
+        if not (0.0 < lam <= MODEL_NEVER_ALONE):
+            raise ValueError(lam)
+    except Exception:
+        return Thresholds(model_accept=MODEL_NEVER_ALONE, source="calibrated-unavailable: fail-closed")
+    return Thresholds(model_accept=lam, source=f"calibrated:{hashlib.sha1(raw).hexdigest()[:8]}")
+
 # Ingestion default (outcomes.record_text_reply / classify_reply). Set from scripts/eval_intent.py:
 # the stack beat the current rules on the gold set (see reports/intent_eval.json), so it is on unless
 # KAIROS_INTENT_STACK=0. IntentClassifier (CM-03 public API) stays opt-in (use_stack=True).
@@ -821,7 +870,8 @@ class IntentStack:
 
     def __init__(self, model: Optional[NaiveBayesModel] = None, local_llm: Optional[OllamaClient] = None,
                  cloud_llm: Optional[_legacy.LunaClient] = None, use_model: bool = True, cache_size: int = 20000,
-                 prism: Any = None):
+                 prism: Any = None, thresholds: Optional[Thresholds] = None):
+        self.thresholds = thresholds if thresholds is not None else HAND_SET
         self.model = model if model is not None else (default_model() if use_model else None)
         self.prism = prism               # sarvam.prism.PrismClassifier, or None (no key: tier skipped)
         self.local_llm = local_llm
@@ -839,7 +889,7 @@ class IntentStack:
         local = OllamaClient(env=e) if e.get("KAIROS_LOCAL_LLM_MODEL") else None
         cloud = cloud_llm if cloud_llm is not None else (_legacy.LunaClient(env=dict(e)) if e.get("OPENAI_API_KEY") else None)
         from .sarvam.prism import shared_prism
-        return cls(local_llm=local, cloud_llm=cloud, prism=shared_prism(e))
+        return cls(local_llm=local, cloud_llm=cloud, prism=shared_prism(e), thresholds=load_thresholds(e))
 
     # -- public ---------------------------------------------------------------------------------
     def classify(self, text: Optional[str], today: Any = None, channel: str = "whatsapp",
@@ -936,7 +986,10 @@ class IntentStack:
         ro, ents = self.rules(text, today)
         ev: Dict[str, Any] = {"stack_version": STACK_VERSION, "rule_ids": ro.rule_ids, "rule_candidates": ro.candidates,
                               "escalated_to": []}
-        if ro.final or (ro.label is not None and ro.confidence >= RULE_ACCEPT):
+        th = self.thresholds
+        if th is not HAND_SET:
+            ev["thresholds"] = th.source    # default evidence is unchanged
+        if ro.final or (ro.label is not None and ro.confidence >= th.rule_accept):
             needs_human = ro.label in (HARDSHIP, ABUSIVE) or "self_harm" in ro.safety_flags
             return self._result(ro.label, ro.confidence, "rules", ev, ents, needs_human, ro.safety_flags, today)
 
@@ -956,7 +1009,7 @@ class IntentStack:
                     conf = round(min(0.9, max(ro.confidence, probs[pick])), 4)
                     return self._result(pick, conf, "small_model", ev, ents, pick in SAFETY_LABELS, ro.safety_flags, today,
                                         model_safety=pick in SAFETY_LABELS)
-            elif top != UNKNOWN and p1 >= MODEL_ACCEPT and p1 - p2 >= MODEL_MARGIN:
+            elif top != UNKNOWN and p1 >= th.model_safety_accept(top) and p1 - p2 >= MODEL_MARGIN:
                 ev["top_features"] = self.model.top_features(text, top, second)
                 return self._result(top, round(p1, 4), "small_model", ev, ents, top in SAFETY_LABELS, ro.safety_flags, today,
                                     model_safety=top in SAFETY_LABELS)
@@ -973,7 +1026,7 @@ class IntentStack:
                 return out
 
         # tier 3: local LLM, only when tier 2's top probability is below the threshold
-        if self.local_llm is not None and top_p < LOCAL_LLM_BELOW and self.local_llm.available():
+        if self.local_llm is not None and top_p < th.local_llm_below and self.local_llm.available():
             ev["escalated_to"].append("local_llm")
             masked = masked or redact_for_llm(text, known)
             try:

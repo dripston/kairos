@@ -116,6 +116,12 @@ class Ranking:
     mode: Mode
     reason: str
     decision_id: Optional[str] = None   # set when persisted (decision_scores row)
+    # Logged choice probability for off-policy evaluation (scripts/ope_k09.py). Greedy (posterior mean,
+    # PRODUCTION): 1.0, kind "greedy". Thompson with propensity logging on: P(chosen arm) estimated by
+    # seeded Monte Carlo over posterior draws, kind "thompson_mc", arm_probs over every arm + "WAIT".
+    propensity: Optional[float] = None
+    propensity_kind: Optional[str] = None
+    arm_probs: Optional[dict[str, float]] = None
 
     def as_dict(self) -> dict[str, Any]:
         d = asdict(self)

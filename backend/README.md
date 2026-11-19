@@ -264,7 +264,7 @@ Errors: 403 role not permitted / maker-checker, 409 locked by guardrails or wron
 | `SupervisorFSM.plan` | One plan per EMI (spine obligation). `band=None` → live band from the loan's oldest unpaid EMI. Each candidate is checked with `Ledger.preview`; the learner ranks only eligible ones; `Ledger.reserve` is atomic. CRM envelopes carry the real `loan_id` and the `obligation_id`. |
 | `Ledger.preview(ins, exclude=)` | `exclude` names one live touch to leave out of caps / same-channel gap (as `begin_dispatch` does for itself) and returns its reserved paise to the budget when it is the same campaign and day — so re-planning the identical stable-id touch is an idempotent replay, never a self-block. |
 | `SupervisorFSM.dispatch` | `Executor.dispatch` → `begin_dispatch` re-check; a payment (K03 `apply_payment` clears the EMI) or STOP (spine consents opted out) before dispatch → `CANCEL` with the gate rule. |
-| Learner / outcomes | Costs in integer paise (`contracts.SYNTHETIC_COSTS` = `replay.settings.COST_PAISE`, one table); ranking by expected replies per rupee. Posterior mean in PRODUCTION; seeded Thompson only in SANDBOX / SIMULATOR. `decision_scores` with `model_version`. |
+| Learner / outcomes | Bayesian learner: posterior-mean ranking in production, Thompson exploration in simulation. Costs in integer paise (`contracts.SYNTHETIC_COSTS` = `replay.settings.COST_PAISE`, one table); ranking by expected replies per rupee. Posterior mean in PRODUCTION; seeded Thompson only in SANDBOX / SIMULATOR. `decision_scores` with `model_version`. |
 
 ## K09 replay (SIMULATED)
 
@@ -1101,6 +1101,21 @@ probes `GET /api/tags` once; if the server or the model is missing, tier 3 is si
   the report. Keep train seed 1729 / test seed 9001 / calibration seed 2718 distinct.
 * Thresholds (`RULE_ACCEPT`, `MODEL_ACCEPT`, `LOCAL_LLM_BELOW`, ...) are part of the deterministic
   contract: change them only with a new `STACK_VERSION` and a fresh eval.
+* **Hand-off thresholds are hand-set and fail closed** (0.85 rules / 0.70 small model): below them the
+  message goes to the next tier or to a human. They are not "calibrated" by default. Optional:
+  `KAIROS_INTENT_THRESHOLDS=calibrated` makes `IntentStack.from_env()` / `shared_stack()` read the small-model
+  threshold from `reports/threshold_calibration.json`, written by `scripts/calibrate_thresholds.py`
+  (Learn-then-Test, arXiv:2110.01052: fixed-sequence test from 0.99 down to a 0.50 policy floor, exact
+  binomial p-values, α 0.05 / δ 0.1; risk = error rate among messages handled without a human). A missing or
+  invalid file fails closed (the small model never answers alone). Rule thresholds stay hand-set; STOP /
+  HARDSHIP / ABUSIVE are rule-final, and a model-detected safety label is never held to a stricter bar than
+  0.70 and always goes to a human, so the calibrated value cannot lower safety recall (checked over the whole
+  grid). Result on seed 7 (1,140 calibration / 1,140 test messages, hand-written + synthetic): certified
+  **0.50** vs hand-set 0.70; held-out test automation 81.5% → 81.7%, error among auto-handled 1.1% → 1.1%,
+  STOP / HARDSHIP recall 100% at every threshold. On the 240 hand-written messages alone nothing is
+  certified (too few to prove ≤ 5%), so the run fails closed. The guarantee is a *synthetic* one: re-run on
+  real labelled messages before relying on it. Voice dispositions keep their hand-set 0.6 (the bot's own,
+  uncalibrated confidence; no labelled calls to calibrate on yet).
 * LLM rules (CLAUDE.md): classification only, temperature 0 / reasoning none, strict schema, no
   tools, masked input. The cloud tier reuses `LunaClient`; do not add a second cloud path.
 * Open follow-ups: a real LLM-tier eval (needs Ollama or a key; the report counts how many messages
@@ -1335,9 +1350,11 @@ hidden parameters.
 - **When `origin/k06/deterministic-states` lands:** declare `churn/fsm.py` there (`STATES`, `TRANSITIONS`).
 - **Adding a cohort / rule:** edit the JSON (fields must be in `FEATURE_CATALOGUE`; validation refuses
   unknown fields or operators), add a test, bump `policy_version`.
-## K09 RL v2 (cost-optimal collections policy)
+## K09 RL v2 (empirical-Bayes pooling + daily budget pricing + one-step lookahead)
 
-`--policy rl2` (`kairos_backend/rl/`). SIMULATED like everything above: DEV simulator, synthetic dataset,
+`--policy rl2` (`kairos_backend/rl/`). What it is, precisely: empirical-Bayes pooling + daily budget pricing
+(a dual price on money) + a one-step lookahead. It is not a multi-step learned value function, comes with
+no regret or optimality guarantee, and is **not the replay default**. SIMULATED like everything above: DEV simulator, synthetic dataset,
 placeholder costs and caps. The CN10 baseline, budget matching, caps, simulator and Supervisor gate are
 unchanged; the policy only proposes, and the K01 gate re-checks every send.
 
@@ -1602,3 +1619,59 @@ shared machine (load average 10 → 4 during the run):
     end-of-campaign drift.
   * Integrate K27 `allowed_channels` through `RL2Policy(journey=...)`. The hook exists; it is not wired
     to the CLI.
+
+
+## Off-policy evaluation of K09 (SIMULATED)
+
+Production ranks by posterior mean, so its logged choice probabilities are 0 or 1 and no other policy can be
+evaluated from its logs. In explore (Thompson) mode `BetaBernoulliLearner(propensity_draws=N)` now records
+the probability of the arm it chose (`Ranking.propensity`, `arm_probs` over every arm and WAIT, persisted in
+`decision_scores.propensity / propensity_kind / arm_probs_json`), estimated by Monte Carlo over N posterior
+draws on a separate rng seeded from the posterior table (the decision's own draws and every replay hash are
+unchanged). Greedy rankings record `propensity 1.0, propensity_kind "greedy"`. Off by default
+(`propensity_draws=0`), so default runs cost nothing extra.
+
+`scripts/ope_k09.py` logs a Thompson campaign on the K15 DEV simulator (the real learner, a 5% uniform share
+mixed in as Duolingo's holdout so IVR-using schedules have overlap), then estimates from the log alone the
+per-decision reply rate of target policies with IPS, self-normalised IPS, direct method (the learner's
+posterior mean) and doubly robust (`kairos_backend/ope.py`), with bootstrap 95% CIs. Ground truth is the
+same simulator with the same seeded draws for the target's arm in every logged context.
+
+```bash
+python scripts/ope_k09.py --quick   # 600 borrowers x 7 days, ~3 s
+python scripts/ope_k09.py           # 1,500 borrowers x 10 days, ~20 s -> reports/ope_k09.json
+```
+
+Seed 42, 1,500 × 10 (7,217 decisions), replies per 1,000 decisions:
+
+| Target | Truth | IPS [95% CI] | SNIPS [95% CI] | DR [95% CI] | DM (model only) |
+|---|---|---|---|---|---|
+| Greedy K09 (posterior mean, as production) | 35.9 | 42.4 [33.9, 50.0] | 43.2 [34.5, 50.8] | 45.5 [36.9, 53.0] | 101.7 |
+| CN10 fixed calendar (stand-in cohort) | 18.4 | 18.2 [10.3, 28.5] | 19.2 [11.0, 30.2] | 23.1 [14.8, 33.6] | 45.6 |
+| Always WhatsApp 17-19 (sanity) | 32.8 | 42.1 [31.7, 54.9] | 43.0 [32.5, 56.2] | 45.7 [35.1, 58.9] | 86.3 |
+
+IPS and SNIPS cover the truth for every target; DR just misses twice (its model, the synthetic-prior posterior
+mean, is about 3× too optimistic, which the DM column shows). Without the 5% uniform share the CN10 estimate
+collapses (effective sample size 9 of 7,217: the Thompson logger almost never tries IVR). Limits: the value is
+per decision on the logged contexts (a target's own downstream contexts are not modelled), the propensities
+are Monte Carlo estimates, and everything is simulator data. In production this needs a product decision to
+log Thompson or ε-greedy decisions inside the gate-allowed set.
+
+## Research lineage
+
+What Kairos draws on, and how it relates ("same" = same method, "simplified" = reduced or heuristic
+version, "extension" = Kairos adds something). Verified citations only.
+
+| Paper | Kairos part | Relation |
+|---|---|---|
+| Thompson, *Biometrika* 1933, [doi:10.1093/biomet/25.3-4.285](https://doi.org/10.1093/biomet/25.3-4.285) | K09 Beta-Bernoulli learner | **Same** posterior; **simplified** in production (posterior mean, no sampling); Thompson draws in simulation only |
+| Chapelle & Li, NeurIPS 2011, [paper](https://papers.nips.cc/paper/2011/hash/e53a0a2978c28872a4505bdb51db06dc-Abstract.html) | K09 learner, `--explore` | **Same** Beta-Bernoulli Thompson sampling, opt-in in simulation |
+| Li, Chu, Langford & Schapire, WWW 2010, [arXiv:1003.0146](https://arxiv.org/abs/1003.0146) | "Context" = DPD band × channel × slot arms | **Simplified**: context by segmentation, not a linear feature model |
+| Badanidiyuru, Kleinberg & Slivkins, FOCS 2013, [arXiv:1305.2545](https://arxiv.org/abs/1305.2545) | RL v2 daily dual price, WAIT as the null action | **Simplified**: daily clipped multiplicative dual step, no regret guarantee, not the default |
+| Clayton & Kaldor, *Biometrics* 1987, [doi:10.2307/2532003](https://doi.org/10.2307/2532003) | `rl/hier.py`, `stop_risk.py` shrinkage | **Same** estimator family (Poisson-Gamma empirical Bayes); **extension**: several levels chained, refit by backfitting |
+| Abe et al., KDD 2010, [doi:10.1145/1835804.1835817](https://doi.org/10.1145/1835804.1835817) | K09 for collections | **Simplified**: a bandit + one-step lookahead + hard rule gate, not a full constrained MDP |
+| Yancey & Settles, KDD 2020, [doi:10.1145/3394486.3403351](https://doi.org/10.1145/3394486.3403351) | Fatigue, STOP penalty, decay; OPE's 5% uniform share | **Simplified** fatigue (count buckets); the propensity log + holdout follow their §A.4 |
+| Alshiekh et al., AAAI 2018, [arXiv:1708.08611](https://arxiv.org/abs/1708.08611) | K06 gate (learner proposes, gate filters) | **Simplified** pre-emptive shield: hand-written policy rules, not synthesized from a temporal-logic spec |
+| Chow, *IEEE T-IT* 1970, [doi:10.1109/TIT.1970.1054406](https://doi.org/10.1109/TIT.1970.1054406) | Intent stack abstains to a human | **Same** reject-option pattern; **extension**: safety labels are rule-final |
+| Angelopoulos, Bates, Candès, Jordan & Lei, Learn then Test, [arXiv:2110.01052](https://arxiv.org/abs/2110.01052) | `scripts/calibrate_thresholds.py` | **Same** method (fixed-sequence, binomial p-values) for one threshold; opt-in flag |
+| Dudík, Langford & Li, ICML 2011, [arXiv:1103.4601](https://arxiv.org/abs/1103.4601); Li, Chu, Langford & Wang, WSDM 2011, [arXiv:1003.5956](https://arxiv.org/abs/1003.5956) | `scripts/ope_k09.py` | **Same** IPS / SNIPS / DR estimators; simulator-validated, not yet on production logs |
