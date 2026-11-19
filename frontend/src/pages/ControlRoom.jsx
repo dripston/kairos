@@ -664,6 +664,8 @@ function ChannelStatus({ d }) {
   )
 }
 
+const ACTIVITY_GROUPS = { Sends: ['SENT', 'DELIVERED', 'READ', 'SEND_RESERVED'], Replies: ['REPLIED'], Payments: ['D7_MATCHED', 'D7_PENDING', 'D7_MISMATCH', 'RECEIPT_ISSUED'] }
+
 function AuditLog() {
   const { state } = useKairos()
   const nav = useNavigate()
