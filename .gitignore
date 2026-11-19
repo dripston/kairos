@@ -18,3 +18,7 @@ Thumbs.db
 backend/data/
 backend/reports/
 backend/*.csv
+
+# demo recipients entered at runtime — personal phone numbers, never commit
+backend/.demo/
+.env*.local

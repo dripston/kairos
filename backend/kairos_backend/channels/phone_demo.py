@@ -115,6 +115,12 @@ def allowlist_from_env(env: Mapping[str, str]) -> frozenset:
     return frozenset(out)
 
 
+def effective_allowlist(env: Mapping[str, str]) -> frozenset:
+    """Env allow-list plus numbers added at runtime (channels/demo_recipients.py, local file)."""
+    from .demo_recipients import load
+    return allowlist_from_env(env) | load(env)
+
+
 def default_recipient(touch: dict) -> Optional[str]:
     """Without a lookup the touch must name its recipient (`to`/`phone`)."""
     return touch.get("to") or touch.get("phone")
@@ -163,9 +169,9 @@ class _DemoBase:
         """All rails except the template. Returns the allow-listed E.164 recipient."""
         if self.env.get(self.env_flag) != "1":
             raise DemoSafetyError(f"DEMO_DISABLED: set {self.env_flag}=1 to enable the {self.channel} demo adapter")
-        allow = allowlist_from_env(self.env)
+        allow = effective_allowlist(self.env)
         if not allow:
-            raise DemoSafetyError("DEMO_ALLOWLIST_EMPTY: set KAIROS_DEMO_ALLOWLIST")
+            raise DemoSafetyError("DEMO_ALLOWLIST_EMPTY: set KAIROS_DEMO_ALLOWLIST or add a demo recipient")
         raw = self.recipient_lookup(touch)
         if not raw:
             raise DemoSafetyError("NO_RECIPIENT")
