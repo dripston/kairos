@@ -66,9 +66,12 @@ lifecycle = Lifecycle(ledger)  # KAIROS_SHUTDOWN_GRACE_S (default 10) for in-fli
 
 
 def _tick() -> None:
-    """Background clocks: HITL approval expiry + manual-hold release, voice payment-claim pauses."""
+    """Background clocks: HITL approval expiry + manual-hold release, voice payment-claim pauses, K27 churn tick."""
     hitl.tick()
     voice_ingester.resolve_payment_claims(policy.now())
+    churn = globals().get("churn_api")  # mounted below; the loop only starts in the lifespan, after import
+    if churn is not None:
+        churn.engine().tick(policy.now().date())
 
 
 try:
