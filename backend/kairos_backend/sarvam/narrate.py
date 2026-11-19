@@ -31,6 +31,7 @@ DECISION_WORDS = ("recommend", "should", "must ", "advise", "waive", "approve", 
                   "i suggest", "we suggest", "guarantee")
 _NUM = re.compile(r"\d+(?:[.,]\d+)*")
 _EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+_ACCOUNT = re.compile(r"\b[A-Za-z]{2,6}\d{5,}\b")     # loan / account numbers (PL100328) never leave Kairos
 
 SYSTEM_PROMPT = (
     "You write short, plain-English notes for loan-collections operators in India. Use ONLY the facts in the JSON "
@@ -45,9 +46,11 @@ def _nums(s: str) -> set:
 
 
 def scrub_facts(obj: Any) -> Any:
-    """Recursively pii.scrub every string (Indian / international phones, e-mails); keys kept."""
+    """Recursively pii.scrub every string (Indian / international phones, e-mails) and mask loan / account
+    numbers; keys kept. Facts are ids, dates, counts and rule names from the audit trail, never free text
+    with names (borrowers appear by id)."""
     if isinstance(obj, str):
-        return pii.scrub(obj)
+        return _ACCOUNT.sub("[account]", pii.scrub(obj))
     if isinstance(obj, dict):
         return {k: scrub_facts(v) for k, v in obj.items()}
     if isinstance(obj, (list, tuple)):
