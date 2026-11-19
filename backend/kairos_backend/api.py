@@ -846,6 +846,67 @@ def demo_journey_run(body: JourneyIn):
         return run_player(body.seed)
 
 
+# ---------- live collections view (/demo/live): replay/live.py, SIMULATED ----------
+from fastapi.responses import HTMLResponse  # noqa: E402
+from replay import live as _live  # noqa: E402
+
+LIVE_PAGE = Path(__file__).with_name("static") / "live.html"
+live_runs = _live.LiveManager()
+lifecycle.add_loop(_live.LiveLoop(live_runs))  # SIGTERM/SIGINT stops a running campaign like the tick loops
+
+
+class LiveStartIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    seed: int = Field(42, ge=0, le=2**31 - 1)
+    borrowers: int = Field(300, ge=10, le=2000)
+    days: int = Field(14, ge=1, le=30)
+    speed: float = Field(1.0, ge=0.25, le=64)
+
+
+class LiveControlIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    speed: Optional[float] = Field(None, ge=0.25, le=64)
+    paused: Optional[bool] = None
+
+
+@app.get("/demo/live", response_class=HTMLResponse)
+def demo_live_page():
+    """The live collections view: plain HTML/CSS/JS, no build step, no external assets."""
+    return LIVE_PAGE.read_text(encoding="utf-8")
+
+
+@app.post("/demo/live/start")
+def demo_live_start(body: LiveStartIn):
+    """Start a SIMULATED campaign (K09 vs CN10 on the replay stack, fresh temp DB) in a background thread.
+    One run at a time (409 while one is running). Deterministic given the seed."""
+    if not lifecycle.accepting:
+        raise HTTPException(503, "shutting down")
+    try:
+        run = live_runs.start(seed=body.seed, borrowers=body.borrowers, days=body.days, speed=body.speed)
+    except _live.Busy as e:
+        raise HTTPException(409, str(e))
+    return {"started": True, "seed": run.seed, "borrowers": run.n, "days": run.days, "speed": run.speed,
+            "provenance": _live.PROVENANCE}
+
+
+@app.get("/demo/live/state")
+def demo_live_state(cursor: int = Query(0, ge=0), limit: int = Query(3000, ge=1, le=10000)):
+    """Events after `cursor` (pass back the returned cursor) plus live counters for both arms."""
+    return live_runs.state(cursor, limit)
+
+
+@app.post("/demo/live/control")
+def demo_live_control(body: LiveControlIn):
+    """Change speed or pause/resume the running campaign (display pacing only; results do not change)."""
+    return live_runs.control(speed=body.speed, paused=body.paused)
+
+
+@app.post("/demo/live/stop")
+def demo_live_stop():
+    """Stop the running campaign: the worker stops between steps, closes its SQLite files, removes its temp dir."""
+    return live_runs.stop()
+
+
 # ---------- live event feed (for the demo UI's streaming panel) ----------
 EVENT_KIND = {"DECISION": "supervisor.decision", "SEND_TIME_CHECK": "gate.send_time", "PROVIDER_STATUS": "touch.status",
               "RESPONSE": "borrower.reply", "CALL_RESULT": "call.result", "VOICE_DISPOSITION": "voice.call_disposition"}
