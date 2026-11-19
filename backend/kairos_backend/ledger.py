@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import operator
 import sqlite3
 import threading
 import uuid
@@ -34,9 +35,10 @@ from spine.ledger import PaymentError, apply_payment, record_event, reverse_paym
 
 from .exceptions import ExceptionEvent, handle
 from .gate import SEND, WAIT, Decision, Facts, evaluate
+from .pii import scrub
 from .policy import Policy
 
-__all__ = ["Ledger", "Instruction", "ReserveResult", "PaymentError", "stable_instruction_id"]
+__all__ = ["Ledger", "Instruction", "ReserveResult", "PaymentError", "stable_instruction_id", "MAX_PAISE", "check_paise"]
 
 # statuses that may reach (or already reached) the borrower -> count toward caps and budget.
 # PENDING_APPROVAL (K06 HITL, hitl.py): reserved but held until a person approves it. It holds its
@@ -46,6 +48,27 @@ LIVE = ("RESERVED", "PENDING_APPROVAL", "DISPATCHING", "UNCERTAIN", "SENT", "DEL
 QUEUED = ("RESERVED", "PENDING_APPROVAL")
 # provider status ranks: an older/lower status never overwrites a newer one (E04)
 RANK = {"RESERVED": 0, "DISPATCHING": 1, "UNCERTAIN": 2, "SENT": 3, "DELIVERED": 4}
+# Ceiling for any single money value (budget per case, cost estimate, actual charge): 10^12 paise = Rs.1,000 crore.
+# Far above any real figure, far below SQLite's INTEGER limit (2^63 - 1), so sums never overflow (RT-F01).
+MAX_PAISE = 10 ** 12
+# Clock skew tolerated between the LMS feed and us before a sync stamp counts as "from the future" (RT-F05).
+SYNC_SKEW = timedelta(minutes=5)
+
+
+def check_paise(value, field: str, positive: bool = False) -> int:
+    """Money guard (RT-F01): a whole number of paise in [0, MAX_PAISE] ([1, MAX_PAISE] when positive).
+    Anything else (negative, fractional, bool, text, overflowing) raises ValueError -> 422 at the API,
+    so a bad charge can never mint budget or reach SQLite as an overflow."""
+    if isinstance(value, bool):
+        raise ValueError(f"{field} must be a whole number of paise, got bool")
+    try:
+        v = operator.index(value)
+    except TypeError:
+        raise ValueError(f"{field} must be a whole number of paise, got {type(value).__name__}") from None
+    lo = 1 if positive else 0
+    if not lo <= v <= MAX_PAISE:
+        raise ValueError(f"{field} must be between {lo} and {MAX_PAISE} paise, got {v}")
+    return v
 
 K06_SCHEMA = """
 CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);
@@ -230,21 +253,36 @@ class Ledger:
                       (ob["loan_id"],)).fetchone()
         return (day - date.fromisoformat(r["d"])).days if r["d"] else 0
 
+    def _dpd_stamps(self, ob) -> list[datetime]:
+        return [self._dt(s) for s in (self.setting("spine_synced_at"), ob["dpd_as_of"]) if s]
+
     def _dpd_age_hours(self, ob, at: datetime) -> float:
         """K01 stale rule: how old the LMS data behind this DPD is. Fresh = the spine was synced
-        (mark_spine_synced / start_day) or the loan's own dpd_as_of, whichever is newer."""
-        stamps = [s for s in (self.setting("spine_synced_at"), ob["dpd_as_of"]) if s]
-        if not stamps:
+        (mark_spine_synced / start_day) or the loan's own dpd_as_of, whichever is newer.
+        A stamp later than the decision time (+ SYNC_SKEW) proves nothing about freshness — a skewed
+        feed clock or a bad call wrote it — so it counts as stale (age = inf -> DPD_INVALID HOLD),
+        never as age 0 (RT-F05)."""
+        stamps = self._dpd_stamps(ob)
+        if not stamps or any(s > at + SYNC_SKEW for s in stamps):
             return float("inf")
-        latest = max(self._dt(s) for s in stamps)
-        return max(0.0, (at - latest).total_seconds() / 3600)
+        return max(0.0, (at - max(stamps)).total_seconds() / 3600)
 
     def _loan_cured(self, c, loan_id: str, day: date) -> bool:
         return c.execute("SELECT 1 FROM obligations WHERE loan_id=? AND due_date<=? AND amount_paid_paise<amount_due_paise",
                          (loan_id, day.isoformat())).fetchone() is None
 
-    def mark_spine_synced(self, at: datetime) -> None:
-        """Call after each LMS/payment feed refresh. In simulations, start_day() does it."""
+    def mark_spine_synced(self, at: datetime, now: Optional[datetime] = None) -> None:
+        """Call after each LMS/payment feed refresh. In simulations, start_day() does it.
+        `now` is the real clock of whoever reports the sync (POST /spine/synced passes it): a stamp later
+        than now + SYNC_SKEW is refused (RT-F05) — audited as SPINE_SYNC_REJECTED, ValueError raised, the
+        previous stamp kept. start_day() drives the simulation clock and passes no `now`; whatever is
+        stored, _dpd_age_hours treats a stamp later than the decision time as stale."""
+        if now is not None and self._loc(at) > self._loc(now) + SYNC_SKEW:
+            with self.tx() as c:
+                self._audit(c, "system", "SPINE_SYNC_REJECTED", at=now, reason="FUTURE_SYNC_STAMP",
+                            stamp=self._iso(at), skew_minutes=SYNC_SKEW.total_seconds() / 60)
+            raise ValueError(f"sync stamp {self._iso(at)} is later than now ({self._iso(now)}) "
+                             f"+ {SYNC_SKEW.total_seconds() / 60:.0f} min")
         self.set_setting("spine_synced_at", self._iso(at))
 
     # ---------- settings / setup ----------
@@ -262,6 +300,7 @@ class Ledger:
                         name: str = "", status: str = "RUNNING") -> None:
         """budget_per_case and the collection targets are K01 REQUIRED_INPUTs — the caller supplies them.
         The pool is budget_per_case x enrolled cases (see enroll())."""
+        budget_per_case_paise = check_paise(budget_per_case_paise, "budget_per_case_paise", positive=True)
         with self.tx() as c:
             c.execute(
                 "INSERT INTO campaigns (id, name, status, budget_per_case_paise, start_date, end_date,"
@@ -270,7 +309,7 @@ class Ledger:
                 " budget_per_case_paise=excluded.budget_per_case_paise, start_date=excluded.start_date,"
                 " end_date=excluded.end_date, target_amount_pct=excluded.target_amount_pct,"
                 " target_count_pct=excluded.target_count_pct",
-                (id, name, status, int(budget_per_case_paise), start_date.isoformat(), end_date.isoformat(),
+                (id, name, status, budget_per_case_paise, start_date.isoformat(), end_date.isoformat(),
                  target_amount_pct, target_count_pct),
             )
 
@@ -375,6 +414,7 @@ class Ledger:
         consent = c.execute("SELECT consented, opted_out FROM consents WHERE borrower_id=? AND channel=?",
                             (ins.borrower_id, ins.channel)).fetchone()
         dpd = self._loan_dpd(c, ob, day)
+        dpd_age = self._dpd_age_hours(ob, at)
         outstanding = ob["amount_due_paise"] - ob["amount_paid_paise"]
         ex = exclude or ""
         live = ",".join("?" * len(LIVE))
@@ -394,7 +434,7 @@ class Ledger:
             at=at,
             channel=ins.channel,
             dpd=dpd,
-            dpd_age_hours=self._dpd_age_hours(ob, at),
+            dpd_age_hours=dpd_age,
             consent=bool(consent and consent["consented"] and not consent["opted_out"]),
             opted_out=bool(st["stopped"] or (consent and consent["opted_out"])),
             hardship_until=self._dt(st["hardship_until"]),
@@ -418,7 +458,10 @@ class Ledger:
             purpose=ins.purpose,
             verified_overdue=outstanding > 0 and ob["due_date"] < day.isoformat(),
         )
-        return facts, {"budget": budget_detail, "loan_id": ob["loan_id"], "dpd": dpd}
+        extra = {"budget": budget_detail, "loan_id": ob["loan_id"], "dpd": dpd}
+        if dpd_age == float("inf") and self._dpd_stamps(ob):
+            extra["dpd_stamp_after_decision"] = True  # RT-F05: the HOLD comes from a future stamp; audited
+        return facts, extra
 
     def _pre_gate(self, c, ins: Instruction) -> Optional[Decision]:
         """Operational stops outside the policy rulebook: a person paused everything, the campaign
@@ -449,6 +492,7 @@ class Ledger:
         budget it was committed against (same campaign and day). Re-planning the identical
         stable-id touch then sees the world the first plan saw, and reserve() turns it into an
         idempotent replay instead of a second reservation."""
+        check_paise(ins.est_cost_paise, "est_cost_paise")
         with self.tx() as c:  # write tx because pacing rows may be initialised
             pre = self._pre_gate(c, ins)
             if pre:
@@ -469,6 +513,7 @@ class Ledger:
     def reserve(self, ins: Instruction, actor: str = "supervisor") -> ReserveResult:
         """Check every rule and, if allowed, reserve the touch and its cost — atomically.
         Re-submitting the same instruction_id never creates a second reservation."""
+        ins.est_cost_paise = check_paise(ins.est_cost_paise, "est_cost_paise")
         if ins.instruction_id is None:
             ins.instruction_id = stable_instruction_id(ins.borrower_id, ins.obligation_id, ins.channel,
                                                        self._loc(ins.at), ins.version)
@@ -502,9 +547,9 @@ class Ledger:
                 " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (ins.instruction_id, ins.borrower_id, loan_id, ins.obligation_id, ins.campaign_id, ins.channel,
                  ins.template_id, self._iso(at), at.date().isoformat(), status,
-                 "ELIGIBLE" if status == "RESERVED" else "APPROVAL_REQUIRED", int(ins.est_cost_paise), now, now),
+                 "ELIGIBLE" if status == "RESERVED" else "APPROVAL_REQUIRED", ins.est_cost_paise, now, now),
             )
-            self._commit_cost(c, ins.campaign_id, at.date().isoformat(), int(ins.est_cost_paise))
+            self._commit_cost(c, ins.campaign_id, at.date().isoformat(), ins.est_cost_paise)
             return ReserveResult(d, ins.instruction_id, True)
 
     def _commit_cost(self, c, campaign_id: str, day: str, delta: int) -> None:
@@ -589,16 +634,19 @@ class Ledger:
             return new
 
     def reconcile(self, instruction_id: str, actual_cost_paise: int) -> bool:
-        """Replace the estimate with the actual charge — exactly once. Returns False on a repeat."""
+        """Replace the estimate with the actual charge — exactly once. Returns False on a repeat.
+        The charge must be a whole, non-negative number of paise (<= MAX_PAISE): a negative 'charge'
+        would hand budget back to the campaign (RT-F01)."""
+        actual_cost_paise = check_paise(actual_cost_paise, "actual_cost_paise")
         with self.tx() as c:
             t = c.execute("SELECT * FROM touches WHERE instruction_id=?", (instruction_id,)).fetchone()
             if t is None:
                 raise KeyError(instruction_id)
             if t["reconciled"] or t["status"] not in LIVE:
                 return False
-            self._commit_cost(c, t["campaign_id"], t["day"], int(actual_cost_paise) - t["est_cost_paise"])
+            self._commit_cost(c, t["campaign_id"], t["day"], actual_cost_paise - t["est_cost_paise"])
             c.execute("UPDATE touches SET actual_cost_paise=?, reconciled=1, updated_at=? WHERE instruction_id=?",
-                      (int(actual_cost_paise), self._iso(self.policy.now()), instruction_id))
+                      (actual_cost_paise, self._iso(self.policy.now()), instruction_id))
             self._audit(c, "executor", "RECONCILED", t["borrower_id"], instruction_id,
                         estimate_paise=t["est_cost_paise"], actual_paise=actual_cost_paise)
             return True
@@ -759,9 +807,18 @@ class Ledger:
             return existing["ticket_id"]  # repeat requests attach to the same open task
         tid = "TKT-" + uuid.uuid4().hex[:10]
         sla = self._iso(self._loc(at) + timedelta(hours=sla_hours)) if sla_hours else None
+        # Tickets are read by human queues: never store the borrower's name, number or an e-mail (RT-F08).
+        # The name becomes the borrower id; phones and e-mails are masked (kairos_backend.pii.scrub).
+        b = c.execute("SELECT full_name, phone FROM borrowers WHERE borrower_id=?", (borrower_id,)).fetchone()
+
+        def red(text) -> str:
+            return scrub(None if text is None else str(text), name=b["full_name"] if b else None,
+                         phone=b["phone"] if b else None, name_as=borrower_id)
+
         c.execute("INSERT INTO tickets (ticket_id, idempotency_key, queue, borrower_id, obligation_id, type, summary_line_1,"
                   " summary_line_2, evidence_ids, created_at, sla_due_at, policy_version) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                  (tid, key, queue, borrower_id, obligation_id, type_, summary[0], summary[1], json.dumps(list(evidence_ids)),
+                  (tid, key, queue, borrower_id, obligation_id, type_, red(summary[0]), red(summary[1]),
+                   json.dumps([red(e) for e in evidence_ids]),
                    self._iso(at), sla, self.policy.exceptions_version or self.policy.version))
         return tid
 

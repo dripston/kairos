@@ -4,7 +4,8 @@ Environment:
   KAIROS_POLICY_DIR  policy folder (default: <repo>/policy)
   KAIROS_DB          SQLite file shared by the K03 spine and K06 (default: backend/kairos.db)
 
-Money is integer paise (100 paise = ₹1), as in the K03 spine.
+Money is integer paise (100 paise = ₹1), as in the K03 spine. Every *_paise input is a whole number in
+[0, MAX_PAISE] (10^12); anything else is a 422 (RT-F01). The Ledger enforces the same bound.
 
 Human-in-the-loop routes live under /hitl (see kairos_backend/hitl.py). The caller's role comes from the
 X-Kairos-Role header (viewer | operator | supervisor | policy_owner; default viewer). THAT IS NOT
@@ -27,7 +28,7 @@ from .gate import Facts, evaluate
 from .contracts import RecordingSink
 from .hitl import HITL, HitlError
 from .learner import BetaBernoulliLearner
-from .ledger import Instruction, Ledger, PaymentError
+from .ledger import MAX_PAISE, Instruction, Ledger, PaymentError
 from .outcomes import OutcomeFinalizer
 from .policy import load_policy
 from . import reports
@@ -70,7 +71,7 @@ def _call(fn, *a, **k):
 class CampaignIn(BaseModel):
     id: str
     name: str = ""
-    budget_per_case_paise: int = Field(gt=0)
+    budget_per_case_paise: int = Field(gt=0, le=MAX_PAISE)
     start_date: date
     end_date: date
     target_amount_pct: Optional[float] = None
@@ -101,7 +102,7 @@ class InstructionIn(BaseModel):
     channel: str
     template_id: Optional[str]
     at: datetime
-    est_cost_paise: int = Field(ge=0)
+    est_cost_paise: int = Field(ge=0, le=MAX_PAISE)
     purpose: Optional[str] = None
     instruction_id: Optional[str] = None
     version: int = 1
@@ -132,7 +133,7 @@ class CallIn(BaseModel):
 
 class PaymentIn(BaseModel):
     obligation_id: str
-    amount_paise: int = Field(gt=0)
+    amount_paise: int = Field(gt=0, le=MAX_PAISE)
     at: datetime
     payment_id: str
     reference: str
@@ -238,13 +239,14 @@ def spine_import(body: DatasetIn):
 
 @app.post("/spine/synced")
 def spine_synced(at: datetime):
-    ledger.mark_spine_synced(at)
+    """422 (and an audit row) for a stamp later than now + 5 min: it would make stale DPD look fresh (RT-F05)."""
+    _call(ledger.mark_spine_synced, at, policy.now())
     return {"ok": True}
 
 
 @app.put("/campaigns")
 def put_campaign(c: CampaignIn):
-    ledger.upsert_campaign(**c.model_dump())
+    _call(ledger.upsert_campaign, **c.model_dump())
     return ledger.campaign_state(c.id)
 
 
@@ -315,7 +317,7 @@ def provider_status(instruction_id: str, body: ProviderStatusIn):
 
 
 @app.post("/reconcile/{instruction_id}")
-def reconcile(instruction_id: str, actual_cost_paise: int):
+def reconcile(instruction_id: str, actual_cost_paise: int = Query(ge=0, le=MAX_PAISE)):
     return {"reconciled": _call(ledger.reconcile, instruction_id, actual_cost_paise)}
 
 

@@ -60,14 +60,14 @@ def test_every_requested_category_is_covered():
 
 def test_report_has_run_metadata(rt_policy):
     started = utcnow()
-    outs = [execute(a, rt_policy, SEED) for a in load_attacks().select(ids=["RT-TIME-01", "RT-DPD-04"])]
+    outs = [execute(a, rt_policy, SEED) for a in load_attacks().select(ids=["RT-TIME-01", "RT-CAP-03"])]
     rep = build_report(outs, rt_policy, SEED, started, utcnow())
     assert rep["environment"] == ENVIRONMENT == "SIMULATED" and rep["synthetic_data_only"] is True
     assert rep["seed"] == SEED and rep["policy_version"] == rt_policy.version
     assert rep["run_id"].startswith("RT-") and rep["started_at"] <= rep["finished_at"]
-    assert {r["id"]: r["status"] for r in rep["results"]} == {"RT-TIME-01": PASS, "RT-DPD-04": FAIL}
+    assert {r["id"]: r["status"] for r in rep["results"]} == {"RT-TIME-01": PASS, "RT-CAP-03": FAIL}
     assert rep["totals"]["known_findings"] == 1 and rep["unexpected_failures"] == []
-    assert rep["findings"][0]["id"] == "RT-F05" and rep["findings"][0]["still_failing"] is True
+    assert rep["findings"][0]["id"] == "RT-F07" and rep["findings"][0]["still_failing"] is True
 
 
 def test_runs_are_deterministic(rt_policy):

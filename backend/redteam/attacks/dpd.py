@@ -79,7 +79,7 @@ def not_verified_overdue(ctx):
     return chk.result()
 
 
-@attack("RT-DPD-04", category="dpd", component="k06.ledger", finding="RT-F05",
+@attack("RT-DPD-04", category="dpd", component="k06.ledger",
         title="A future-dated LMS sync stamp must not make 5-day-old data look fresh",
         covers=("E01", "K01-T09"))
 def future_sync_stamp(ctx):
