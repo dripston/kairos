@@ -9,7 +9,8 @@ cd backend
 python -m venv .venv
 .venv/Scripts/activate            # Windows  (macOS/Linux: source .venv/bin/activate)
 pip install -e ".[dev]"
-pytest                            # K01 + K13 cases, K06 ledger/executor/API/SupervisorFSM/HITL, K03 spine + K15 replay, K09, K17/K18 voice, K26 reports
+pytest                            # K01 + K13 cases, K06 ledger/executor/API/SupervisorFSM/HITL, K03 spine + K15 replay, K09, K17/K18 voice, K26 reports, red-team (open findings = strict xfail)
+python scripts/run_redteam.py     # guardrail red-team: PASS/FAIL per attack -> reports/redteam_report.json (see redteam/README.md)
 uvicorn kairos_backend.api:app --reload    # http://127.0.0.1:8000/docs
 python scripts/bench_ledger.py 50000       # 50k decisions on K03's synthetic dataset
 python scripts/report_pack.py              # K26: seeded SIMULATED campaign -> reports/report_pack/*.csv
@@ -30,6 +31,7 @@ Environment: `KAIROS_POLICY_DIR` (default `../policy`), `KAIROS_DB` (default `ba
 | `kairos_backend/` | K06 | Rehan | Gate, ledger, supervisor (`executor.Supervisor` + `supervisor.SupervisorFSM`), executor, API — reads the spine, never copies it. |
 | `kairos_backend/` | K09 | Rehan / Varun | `contracts` (shared types), `learner` (Beta–Bernoulli band × channel × slot), `outcomes` (24 h reply window → one outcome per touch), `borrower_context` (engagement × recency multipliers), `intent` (rules + gpt-6-luna), `propensity` (demo). |
 | `replay/k09.py`, `replay/cn10.py` | K09 | Rehan | K09 replay on the full stack; CN10 cohort-cadence baseline. |
+| `redteam/` | — | — | Guardrail red-team suite: 49 adversarial attacks on K01/K13/K06/K03 guardrails, PASS/FAIL report, open findings. [`redteam/README.md`](redteam/README.md) |
 
 ## How K06 uses the spine
 
