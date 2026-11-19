@@ -285,9 +285,9 @@ class Journey:
         return r
 
     def select_bot(self, step, bid: str, obligation_id: str, at: datetime, touch_id: str = "",
-                   human_approved: bool = False) -> dict:
+                   human_approved: bool = False, **ctx_extra) -> dict:
         borrower, obligation, ctx = voice_registry.inputs_from_ledger(self.ledger, bid, at, obligation_id)
-        ctx.update(touch_id=touch_id, human_approved=human_approved)
+        ctx.update(touch_id=touch_id, human_approved=human_approved, **ctx_extra)
         sel = voice_registry.select_bot(borrower, obligation, ctx, self.voice.registry, self.voice.thresholds)
         shown = {k: ("<first name, masked>" if k == "user_name" and v else v) for k, v in sel["variables"].items()}
         self.ev(step, at, "voice", f"select_bot -> {sel['use_case']} ({sel['voice']}, {sel['language']})",
@@ -347,7 +347,9 @@ class Journey:
         self.step2_stop(B)
         self.step4_hardship(C)
         self.step5_low_conf_stop(D)
+        self.step4_handoff_case(C)
         self.step2_bounce(A)
+        self.step4_triage(C)
         self.step3_cm03(A)
         self.step6_payment(A)
         self.step7_duplicates_and_learning()
@@ -426,8 +428,7 @@ class Journey:
 
     def step4_hardship(self, C):
         d1, d2 = D0 + timedelta(days=1), D0 + timedelta(days=2)
-        self.say("\n4 · Hardship: C reports a job loss on a call (HARDSHIP @ 0.55) -> hold + HITL handoff; "
-                 "a supervisor approves a Hardship Triage call")
+        self.say("\n4 · Hardship: C reports a job loss on a call (HARDSHIP @ 0.55) -> hold + HITL handoff")
         res, _ = self._voice_call(4, "C", d1, 10, "EMI_REMINDER_EARLY", "VB_REMIND_EN_SOFT_01", _at(d1, 9))
         if res is None:
             self.ev(4, _at(d1, 9), "pending", "no voice touch for C", borrower=C)
@@ -445,34 +446,58 @@ class Journey:
                                         f"hardship hold until {st['hardship_until']}", borrower=C,
                 rule="HARDSHIP_HOLD", policy_version=self.policy.version)
         held = self.gate_all_channels(4, C, self.obligations["C"], _at(d1, 15), "while on hardship hold")
-        # D2: the supervisor confirms hardship, lifts the hold, the operator schedules a triage call,
-        # the supervisor approves it (maker-checker) and the Gate runs again at approval
-        self.ledger.start_day(d2)
-        hard = next((c for c in cases if c["type"] == "HARDSHIP"), cases[0] if cases else None)
-        lifted = None
-        if hard:
-            lifted = self.hitl.resolve_case(hard["ticket_id"], SUPERVISOR, "supervisor", "hardship confirmed on call-back",
-                                            "HARDSHIP_CONFIRMED", lift_hold=True, now=_at(d2, 9, 30))
-            self.ev(4, _at(d2, 9, 30), "hitl", f"supervisor resolved {hard['type']} case, hold lifted: {lifted['hold_lifted']}",
-                    borrower=C, rule="HARDSHIP_CONFIRMED")
-        sched = self.hitl.schedule_manual(C, "voicebot", VOICE_TEMPLATES["HARDSHIP_TRIAGE"], _at(d2, 11, 30), OPERATOR,
+        self.facts["steps"]["4"] = {"intent": it.intent, "hardship_until": st["hardship_until"],
+                                    "cases": [c["type"] for c in cases], "held_channels": held}
+        self.c_cases = cases
+
+    def _schedule_triage(self, C, at: datetime, send_at: datetime) -> dict:
+        sched = self.hitl.schedule_manual(C, "voicebot", VOICE_TEMPLATES["HARDSHIP_TRIAGE"], send_at, OPERATOR,
                                           "operator", "hardship triage call (no collection ask)",
                                           SYNTHETIC_COSTS["voicebot"], campaign_id=CAMPAIGN,
-                                          obligation_id=self.obligations["C"], now=_at(d2, 9, 40))
-        one = sched["results"][0] if "results" in sched else sched
-        iid = one.get("instruction_id")
-        self.ev(4, _at(d2, 9, 40), "hitl", f"operator scheduled Hardship Triage call -> {one.get('status')} "
-                                           f"rules {one.get('approval_rules') or one.get('rules')}", borrower=C,
-                rule=(one.get("decision") or {}).get("rule") if isinstance(one.get("decision"), dict) else None,
-                detail={k: v for k, v in one.items() if k in ("status", "outcome", "approval_rules", "reason")})
-        sel = self.select_bot(4, C, self.obligations["C"], _at(d2, 9, 45), touch_id=iid or "", human_approved=True)
-        ap = self.approve(4, iid, _at(d2, 10), "triage only: listen, offer options, no amounts") if iid else {}
-        self.facts["steps"]["4"] = {"intent": it.intent, "hardship_hold": bool(st["hardship_until"]),
-                                    "cases": [c["type"] for c in cases], "held_channels": held,
-                                    "hold_lifted": (lifted or {}).get("hold_lifted"), "triage_bot": sel["use_case"],
-                                    "approval": ap.get("outcome"), "gate_at_approval": ap.get("gate", {}).get("reason")}
-        if iid and ap.get("outcome") == "APPROVED":
-            self.dispatch(4, iid, _at(d2, 11, 30))
+                                          obligation_id=self.obligations["C"], now=at)
+        one = sched["results"][0]
+        gate = one.get("gate") or {}
+        self.ev(4, at, "hitl", f"operator schedules a Hardship Triage call for {send_at:%H:%M} -> {one['outcome']}"
+                               + (f" by {gate.get('rule')}" if one["outcome"] == "REFUSED" else
+                                  f", approval rules {one.get('approval_rules')}"),
+                borrower=C, rule=one.get("reason") or "PENDING_APPROVAL", policy_version=gate.get("policy_version"),
+                detail={k: one.get(k) for k in ("outcome", "reason", "approval_rules", "locked_by_guardrails")})
+        return one
+
+    def step4_handoff_case(self, C):
+        """D2: a human reads the handoff. Scheduling the triage call now is refused by the Gate: the K13
+        hardship hold still runs, and a person cannot override a guardrail."""
+        d2 = D0 + timedelta(days=2)
+        self.say("\n4b · D2: the supervisor works the handoff; a triage call during the hold is refused")
+        self.ledger.start_day(d2)
+        cases = getattr(self, "c_cases", [])
+        hand = next((c for c in cases if c["type"] in ("HARDSHIP", "HUMAN_HANDOFF")), None)
+        if hand:
+            r = self.hitl.resolve_case(hand["ticket_id"], SUPERVISOR, "supervisor", "hardship confirmed with the borrower",
+                                       "HARDSHIP_CONFIRMED", lift_hold=True, now=_at(d2, 9, 30))
+            self.ev(4, _at(d2, 9, 30), "hitl", f"supervisor resolved the {hand['type']} case (HARDSHIP_CONFIRMED); "
+                                               f"lifted: {r['hold_lifted']}", borrower=C, rule="HARDSHIP_CONFIRMED")
+            self.facts["steps"]["4"]["case_lifted"] = r["hold_lifted"]
+        one = self._schedule_triage(C, _at(d2, 9, 40), _at(d2, 11, 30))
+        self.facts["steps"]["4"]["triage_during_hold"] = one["outcome"]
+        self.facts["steps"]["4"]["triage_during_hold_rule"] = (one.get("gate") or {}).get("rule")
+
+    def step4_triage(self, C):
+        """D4: the K13 hold has ended. The first send after a hardship hold, a voice call and a manual send all
+        need a person: PENDING_APPROVAL, then the supervisor approves and the Gate runs again."""
+        d4 = D0 + timedelta(days=4)
+        self.say("\n4c · D4: hold over; the Hardship Triage call goes through the approval queue")
+        # the K13 hold has expired, but the supervisor confirmed hardship on the case: that is the signal
+        sel = self.select_bot(4, C, self.obligations["C"], _at(d4, 9, 35), human_approved=True, hardship=True)
+        one = self._schedule_triage(C, _at(d4, 9, 40), _at(d4, 11, 30))
+        ap = {}
+        if one["outcome"] == "PENDING_APPROVAL":
+            ap = self.approve(4, one["instruction_id"], _at(d4, 10), "triage only: listen, offer options, no amounts")
+        self.facts["steps"]["4"].update(triage_bot=sel["use_case"], triage_scheduled=one["outcome"],
+                                        approval_rules=one.get("approval_rules"), approval=ap.get("outcome"),
+                                        gate_at_approval=(ap.get("gate") or {}).get("reason"))
+        if ap.get("outcome") == "APPROVED":
+            self.dispatch(4, one["instruction_id"], _at(d4, 11, 30))
 
     def step5_low_conf_stop(self, D):
         d1 = D0 + timedelta(days=1)
@@ -715,15 +740,40 @@ class Journey:
                  f" · {PROVENANCE}")
         return self.facts
 
+    def interrupted(self) -> dict:
+        """Ctrl-C: print what happened so far, close the DB cleanly, leave earlier report files untouched."""
+        steps = sorted(self.facts.get("steps", {}))
+        self.say(f"\ninterrupted: {len(self.events)} events so far, steps done {steps or 'none'}; "
+                 f"no report written (previous files, if any, are unchanged) · {PROVENANCE}")
+        try:
+            self.ledger.close()
+        except Exception:
+            pass
+        return {"interrupted": True, "events": len(self.events), "steps_done": steps}
+
     def write(self, out: Path) -> None:
         out.mkdir(parents=True, exist_ok=True)
         timeline = {"provenance": PROVENANCE, "seed": self.seed, "policy_version": self.policy.version,
                     "journey_hash": self.facts["journey_hash"], "cast": self.cast,
                     "events": self.events, "crm_envelopes": self.sink.envelopes + self.voice_sink.envelopes}
-        (out / "timeline.json").write_text(json.dumps(timeline, indent=1, default=str), encoding="utf-8")
-        (out / "summary.json").write_text(json.dumps(self.facts, indent=1, default=str), encoding="utf-8")
-        (out / "journey.html").write_text(render_html(self.events, self.facts), encoding="utf-8")
+        atomic_write(out / "timeline.json", json.dumps(timeline, indent=1, default=str))
+        atomic_write(out / "summary.json", json.dumps(self.facts, indent=1, default=str))
+        atomic_write(out / "journey.html", render_html(self.events, self.facts))
         self.say(f"wrote {out / 'timeline.json'}, {out / 'summary.json'}, {out / 'journey.html'}")
+
+
+def atomic_write(path: Path, text: str) -> None:
+    """Write to a temp file in the same folder, then rename: a reader (or a Ctrl-C) never sees half a file."""
+    tmp = path.with_name(f".{path.name}.tmp-{os.getpid()}")
+    try:
+        with open(tmp, "w", encoding="utf-8") as f:
+            f.write(text)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, path)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
 
 
 COLOURS = {"plan": "#2f6fdf", "dispatch": "#5b6b7f", "voice": "#8a4fd6", "channel": "#14899a", "hitl": "#c26a00",
@@ -734,7 +784,7 @@ COLOURS = {"plan": "#2f6fdf", "dispatch": "#5b6b7f", "voice": "#8a4fd6", "channe
 def render_html(events: list, facts: dict) -> str:
     esc = html.escape
     rows = []
-    for e in events:
+    for e in sorted(events, key=lambda e: (e["at"], e["seq"])):   # one row per event, in time order
         c = COLOURS.get(e["kind"], "#444")
         badges = [f'<span class="b prov">{esc(e["provenance"] or "")}</span>']
         if e["policy_version"]:
