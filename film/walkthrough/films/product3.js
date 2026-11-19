@@ -174,7 +174,7 @@ window.FILM = {
    "size": 150,
    "words": [
     {
-     "t": 15.0,
+     "t": 14.7,
      "html": "1,262 messages."
     },
     {
@@ -200,7 +200,7 @@ window.FILM = {
     "dur": 0.0
    },
    "bgCream": true,
-   "opa0": 0.5
+   "opa0": 1.0
   },
   {
    "kind": "headline",
@@ -210,6 +210,8 @@ window.FILM = {
    "y": 540,
    "text": "Collections that decide who, when and how.",
    "size": 72,
+   "opa0": 0.5,
+   "enterDur": 0.3,
    "exit": {
     "dur": 0.0
    }

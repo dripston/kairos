@@ -103,11 +103,11 @@ for i, (kind, dur, p) in enumerate(seq):
         layers.append(C)
     elif kind == "hook":
         layers.append({"kind": "dots", "t0": t0, "t1": t1, "n": 1262, "hi": 23, "tHi": t0 + 1.6, "cols": 61, "gap": 30, "fill": 0.8, "enter": {"dur": 0.0}, "exit": {"dur": 0.0}, "bgCream": True})
-        layers.append({"kind": "words", "t0": t0, "t1": t1, "y": 380, "size": 150, "words": [{"t": t0, "html": "1,262 messages."}, {"t": t0 + 1.6, "html": "<em>23</em> replies."}]})
+        layers.append({"kind": "words", "t0": t0, "t1": t1, "y": 380, "size": 150, "words": [{"t": t0 - 0.3, "html": "1,262 messages."}, {"t": t0 + 1.6, "html": "<em>23</em> replies."}]})
         layers.append({"kind": "tag", "t0": t0 + 0.2, "t1": t1, "pos": "t", "text": "Fixed schedule · SIMULATED run, seed 42"})
     elif kind == "logo":
-        layers.append({"kind": "logo", "t0": t0, "t1": t1, "y": 360, "stagger": 0.07, "exit": {"dur": 0.0}, "bgCream": True, "opa0": 0.5})
-        layers.append({"kind": "headline", "t0": t0, "t1": t1, "pos": "c", "y": 540, "text": "Collections that decide who, when and how.", "size": 72, "exit": {"dur": 0.0}})
+        layers.append({"kind": "logo", "t0": t0, "t1": t1, "y": 360, "stagger": 0.07, "exit": {"dur": 0.0}, "bgCream": True, "opa0": 1.0})
+        layers.append({"kind": "headline", "t0": t0, "t1": t1, "pos": "c", "y": 540, "text": "Collections that decide who, when and how.", "size": 72, "opa0": 0.5, "enterDur": 0.3, "exit": {"dur": 0.0}})
     elif kind == "proof":
         layers.append({"kind": "stats", "t0": t0, "t1": t1, "y": 250, "stagger": 0.12, "exit": {"dur": 0.0}, "bgCream": True, "items": [
             {"pre": "≈", "post": "×", "from": 0, "to": 2, "count": 1.0, "label": "money back per ₹ spent", "fine": "vs a fixed-schedule stand-in"},
