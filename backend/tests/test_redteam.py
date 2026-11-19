@@ -11,8 +11,9 @@ from pathlib import Path
 
 import pytest
 
-from redteam import (ENVIRONMENT, FAIL, FINDINGS, PASS, SKIP, build_report, execute, load_attacks,
+from redteam import (ENVIRONMENT, FAIL, FINDINGS, PASS, SKIP, Finding, build_report, execute, load_attacks,
                      redteam_policy)
+from redteam.core import REGISTRY, Attack, Checks
 from redteam.runner import utcnow
 
 SEED = int(os.environ.get("KAIROS_REDTEAM_SEED", "20261119"))
@@ -58,16 +59,33 @@ def test_every_requested_category_is_covered():
             "pii", "api"} <= cats
 
 
-def test_report_has_run_metadata(rt_policy):
+@pytest.fixture
+def known_finding(monkeypatch):
+    """A stand-in attack that always fails, registered with a stand-in finding: the report / exit-code
+    plumbing for known findings is tested even when every real finding is fixed."""
+    def run(ctx):
+        chk = Checks()
+        chk.expect("stand-in guardrail holds", False)
+        return chk.result()
+
+    f = Finding("RT-FTEST", "stand-in finding", "LOW", "nobody", "tests/test_redteam.py", "none")
+    a = Attack("RT-ZZTEST-01", "api", "k06.test", "Stand-in known finding", ("test",), run, finding=f.id)
+    load_attacks()
+    monkeypatch.setitem(FINDINGS, f.id, f)
+    monkeypatch.setitem(REGISTRY._attacks, a.id, a)
+    return a
+
+
+def test_report_has_run_metadata(rt_policy, known_finding):
     started = utcnow()
-    outs = [execute(a, rt_policy, SEED) for a in load_attacks().select(ids=["RT-TIME-01", "RT-CAP-03"])]
+    outs = [execute(a, rt_policy, SEED) for a in load_attacks().select(ids=["RT-TIME-01", known_finding.id])]
     rep = build_report(outs, rt_policy, SEED, started, utcnow())
     assert rep["environment"] == ENVIRONMENT == "SIMULATED" and rep["synthetic_data_only"] is True
     assert rep["seed"] == SEED and rep["policy_version"] == rt_policy.version
     assert rep["run_id"].startswith("RT-") and rep["started_at"] <= rep["finished_at"]
-    assert {r["id"]: r["status"] for r in rep["results"]} == {"RT-TIME-01": PASS, "RT-CAP-03": FAIL}
+    assert {r["id"]: r["status"] for r in rep["results"]} == {"RT-TIME-01": PASS, known_finding.id: FAIL}
     assert rep["totals"]["known_findings"] == 1 and rep["unexpected_failures"] == []
-    assert rep["findings"][0]["id"] == "RT-F07" and rep["findings"][0]["still_failing"] is True
+    assert rep["findings"][0]["id"] == "RT-FTEST" and rep["findings"][0]["still_failing"] is True
 
 
 def test_runs_are_deterministic(rt_policy):
@@ -81,14 +99,15 @@ def test_runs_are_deterministic(rt_policy):
     assert verdicts() == verdicts()
 
 
-def test_script_writes_report(tmp_path):
+def test_script_writes_report(tmp_path, known_finding):
     spec = importlib.util.spec_from_file_location("run_redteam", Path(__file__).resolve().parents[1] / "scripts" / "run_redteam.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     main = mod.main
 
     path = tmp_path / "rt.json"
-    assert main(["--id", "RT-CON-01", "--id", "RT-CAP-03", "--report", str(path)]) == 0  # CAP-03 is a known finding
+    k = known_finding.id
+    assert main(["--id", "RT-CON-01", "--id", k, "--report", str(path)]) == 0  # a known finding is not a failure
     rep = json.loads(path.read_text(encoding="utf-8"))
     assert rep["environment"] == "SIMULATED" and rep["totals"]["attacks"] == 2
-    assert main(["--id", "RT-CAP-03", "--strict", "--report", str(path)]) == 1
+    assert main(["--id", k, "--strict", "--report", str(path)]) == 1

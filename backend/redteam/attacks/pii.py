@@ -76,7 +76,7 @@ def tickets_have_no_identity(ctx):
     return chk.result()
 
 
-@attack("RT-PII-03", category="pii", component="k06.ledger", finding="RT-F09", requires=("fastapi",),
+@attack("RT-PII-03", category="pii", component="k06.ledger", requires=("fastapi",),
         title="Free-text reasons (reversal, pause) and stored reply text are redacted at rest",
         covers=("K06:audit", "E15"))
 def free_text_redacted(ctx):

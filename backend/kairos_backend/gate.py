@@ -25,7 +25,10 @@ EXTRA_RULES_AFTER = {"HARDSHIP_HOLD": ["CALLBACK_PENDING", "SUPERVISOR_HOLD"]}
 
 @dataclass
 class Facts:
-    """Everything the Gate needs about one candidate touch, at one moment (local time)."""
+    """Everything the Gate needs about one candidate touch, at one moment.
+
+    `at` may carry any UTC offset: the Gate judges day, contact window and quiet days in the policy
+    timezone (IST). A naive `at` is taken to be IST already, as everywhere in the Ledger (RT-F04)."""
     at: datetime
     channel: str
     dpd: Optional[int]
@@ -77,8 +80,9 @@ Hit = Optional[tuple[str, str, dict]]  # (decision, reason, detail) or None to p
 class _Ctx:
     def __init__(self, policy: Policy, f: Facts):
         self.p, self.f = policy, f
-        self.today = f.at.date()
-        self.hhmm = f.at.strftime("%H:%M")
+        self.at = policy.local(f.at)  # IST, whatever clock the caller used (RT-F04)
+        self.today = self.at.date()
+        self.hhmm = self.at.strftime("%H:%M")
         self.band: Optional[str] = policy.band_for(f.dpd) if f.dpd is not None else None
 
 
@@ -114,7 +118,7 @@ def _in_scope(c: _Ctx) -> Hit:
 
 
 def _hardship(c: _Ctx) -> Hit:
-    if c.f.hardship_until and c.f.hardship_until > c.f.at:
+    if c.f.hardship_until and c.p.local(c.f.hardship_until) > c.at:
         return (HANDOFF if c.f.hardship_supervisor else WAIT), "HARDSHIP_HOLD", {"until": c.f.hardship_until.isoformat()}
     return None
 
