@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kairos Explainer Film</title>
+<script>
+/* =====================================================================
+   CONFIG: every number and name in the film lives here. Edit, save, reload.
+   All results are SIMULATED (synthetic borrowers, DEV simulator).
+   ===================================================================== */
+const CONFIG = {
+  product: "Kairos",
+  team: "The A Team",
+  event: "CreditNirvana Agentathon 2026",
+  borrower: "Ravi",                       // synthetic borrower, invented name
+  dataLabel: "SIMULATED data",
+  numbers: {
+    liftPct: 50,                          // headline: "around X% more replies per rupee"
+    liftSeeds: "+48% / +61% / +56%",      // K09 vs CN10 on 3 unseen seeds (PR #17)
+    baselineDays: 10,                     // lender's own fixed schedule (CN10)
+    testBorrowers: "1,500",
+    testDays: 14,
+    unseenSeeds: 3,
+    ruleBreaches: 0,
+    decisions: 50000,
+    decisionsTime: "about 2 minutes",
+    attacksPassed: 49,
+    attacksTotal: 49,
+    voiceBots: 6,
+    languages: 8,
+    waResolvedPct: 73,                    // CM-03: WhatsApp chats resolved without a human
+    fakesCaught: 127,
+    fakesTotal: 127,
+    concurrentChats: 500,
+    understandingPct: 95                  // Hinglish / Hindi / English message understanding
+  },
+  // What the narrator says for the numbers (keep in step with `numbers`).
+  spoken: {
+    lift: "around fifty percent more replies per rupee, and zero rule breaches.",
+    decisions: "Fifty thousand decisions, in about two minutes."
+  }
+};
+</script>
+<style>
+:root{
+  --bg:#06101d; --bg2:#0a1a2e; --surface:#0e2034; --raised:#132a43; --line:#1e3a57; --line2:#2a4b6e;
+  --fg:#eef5fc; --muted:#93a9c2; --faint:#5d7591;
+  --teal:#2dd4bf; --teal2:#14b8a6; --mint:#99f6e4; --wa:#4ade80; --sms:#60a5fa; --violet:#a78bfa;
+  --amber:#fbbf24; --red:#f87171; --ok:#34d399;
+  --sans: "Inter", -apple-system, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial,
+          "Noto Sans Devanagari", "Kohinoor Devanagari", sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#000;color:var(--fg);font-family:var(--sans);overflow:hidden;
+  -webkit-font-smoothing:antialiased}
+#viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;
+  background:radial-gradient(1200px 700px at 78% 18%, rgba(45,212,191,.10), transparent 60%),
+             radial-gradient(900px 600px at 10% 90%, rgba(96,165,250,.08), transparent 60%),
+             linear-gradient(160deg,var(--bg2),var(--bg) 60%)}
+#stage::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:64px 64px;mask-image:radial-gradient(ellipse at center,#000 30%,transparent 80%)}
+.abs{position:absolute}
+.scene{position:absolute;inset:0;visibility:hidden;transform-origin:50% 45%}
+#brand{position:absolute;left:80px;top:48px;font-weight:800;letter-spacing:.34em;font-size:22px;color:var(--fg);z-index:5}
+#brand i{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--teal);margin-right:14px;
+  box-shadow:0 0 18px var(--teal);vertical-align:2px}
+#chapter{position:absolute;right:80px;top:50px;font-size:20px;color:var(--muted);letter-spacing:.08em;z-index:5}
+#chapter b{color:var(--teal);font-weight:600;margin-right:10px}
+.kicker{font-size:24px;letter-spacing:.22em;text-transform:uppercase;color:var(--teal);font-weight:700}
+.title{font-size:80px;font-weight:750;letter-spacing:-.02em;line-height:1.02}
+.sub{font-size:36px;color:var(--muted);line-height:1.25}
+.chip{display:inline-flex;align-items:center;gap:10px;padding:8px 18px;border-radius:999px;font-size:22px;
+  border:1px solid var(--line2);background:rgba(19,42,67,.7);color:var(--muted);white-space:nowrap}
+.chip.teal{border-color:rgba(45,212,191,.5);color:var(--mint);background:rgba(20,184,166,.12)}
+.chip.amber{border-color:rgba(251,191,36,.5);color:#fde68a;background:rgba(251,191,36,.10)}
+.chip.red{border-color:rgba(248,113,113,.5);color:#fecaca;background:rgba(248,113,113,.10)}
+.chip.violet{border-color:rgba(167,139,250,.55);color:#ddd6fe;background:rgba(167,139,250,.12)}
+.card{position:absolute;background:linear-gradient(180deg,rgba(19,42,67,.92),rgba(14,32,52,.92));border:1px solid var(--line);
+  border-radius:28px;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.glow{position:absolute;width:700px;height:700px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(45,212,191,.16),transparent 65%)}
+
+/* phone */
+.phone{position:relative;width:380px;height:760px;border-radius:58px;background:#02070e;border:10px solid #1c2f47;
+  box-shadow:0 40px 100px rgba(0,0,0,.55),inset 0 0 0 2px #0b1726}
+.phone .notch{position:absolute;left:50%;top:14px;width:120px;height:30px;border-radius:20px;background:#000;transform:translateX(-50%);z-index:4}
+.screen{position:absolute;inset:0;border-radius:48px;overflow:hidden;background:linear-gradient(170deg,#132a45,#07111f 70%)}
+.statusbar{position:absolute;left:34px;right:30px;top:18px;font-size:17px;font-weight:600;color:#dbe7f5;display:flex;justify-content:space-between;z-index:3}
+
+/* captions */
+#cap{position:absolute;left:0;right:0;bottom:46px;display:flex;justify-content:center;z-index:8;pointer-events:none}
+#capText{max-width:1560px;text-align:center;font-size:40px;line-height:1.3;font-weight:520;color:#fff;
+  background:rgba(3,9,18,.66);padding:14px 30px;border-radius:18px;backdrop-filter:blur(6px);
+  transition:opacity .25s;opacity:0}
+#capText.show{opacity:1}
+body.nocap #cap{display:none}
+
+/* ---------- Scene 1 ---------- */
+.notif{position:absolute;left:14px;right:14px;height:84px;border-radius:22px;background:rgba(235,242,250,.14);
+  backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);display:flex;gap:14px;align-items:center;padding:0 16px}
+.notif .ni{flex:none;width:44px;height:44px;border-radius:12px;background:#3b82f6;display:grid;place-items:center;font-size:22px;font-weight:800;color:#fff}
+.notif .nt{font-size:15px;color:#c8d6e6;font-weight:700;letter-spacing:.04em;display:flex;justify-content:space-between}
+.notif .nt span{font-weight:500;color:#9fb3c9}
+.notif .nb{font-size:17px;color:#fff;margin-top:3px;line-height:1.25}
+.track{position:absolute;height:30px;border-radius:15px;background:#0b1a2c;border:1px solid var(--line2);overflow:hidden}
+.fill{position:absolute;left:0;top:0;bottom:0;border-radius:15px;background:linear-gradient(90deg,var(--teal2),var(--teal))}
+.coin{position:absolute;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fde68a,#f59e0b 70%);
+  color:#7c4a03;font-weight:900;font-size:24px;display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+
+/* ---------- Scene 2 ---------- */
+.rowlab{position:absolute;font-size:28px;color:var(--fg);font-weight:600;display:flex;align-items:center;gap:14px}
+.rowlab i{width:14px;height:14px;border-radius:50%;display:inline-block}
+.dayh{position:absolute;font-size:20px;color:var(--faint);text-align:center;width:120px;letter-spacing:.06em}
+.cell{position:absolute;width:120px;height:70px;border-radius:16px;border:1px dashed rgba(147,169,194,.15)}
+.cell.sch{border:1px solid var(--line2);background:rgba(19,42,67,.6)}
+.cell .flash{position:absolute;inset:-1px;border-radius:16px;background:var(--teal);opacity:0}
+.cell .mark{position:absolute;inset:0;display:grid;place-items:center;font-size:30px;font-weight:800;opacity:0}
+.cell.sch .env{position:absolute;inset:0;display:grid;place-items:center;font-size:15px;color:var(--muted);letter-spacing:.04em}
+.cell.fired .env{opacity:0}
+.cell.fired.no{background:rgba(30,45,64,.55);border-color:#26384d}
+.cell.fired.no .mark{color:#4b6280;opacity:1}
+.cell.fired.yes{background:rgba(52,211,153,.18);border-color:rgba(52,211,153,.6)}
+.cell.fired.yes .mark{color:var(--ok);opacity:1}
+#s2play{position:absolute;width:3px;border-radius:2px;background:var(--amber);box-shadow:0 0 18px var(--amber)}
+
+/* ---------- Scene 3 ---------- */
+.dot{position:absolute;width:14px;height:14px;border-radius:50%;background:#2a3d55;transition:background .25s}
+.dot.on{background:var(--teal);box-shadow:0 0 10px rgba(45,212,191,.6)}
+.bcard{padding:34px 38px}
+.avatar{width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,#1e40af,#0d9488);display:grid;place-items:center;
+  font-size:40px;font-weight:800;color:#fff}
+.facts{margin-top:26px;display:grid;gap:16px}
+.fact{display:flex;gap:16px;align-items:center;font-size:27px;color:#d8e4f1}
+.fact b{width:12px;height:12px;border-radius:50%;flex:none}
+.pill{position:absolute;width:260px;height:88px;border-radius:44px;border:2px solid var(--line2);background:var(--surface);
+  display:grid;place-items:center;font-size:36px;font-weight:700;color:var(--muted);transition:all .2s}
+.pill.sel{border-color:var(--teal);color:#04201c;background:var(--teal);box-shadow:0 0 40px rgba(45,212,191,.45)}
+.pill.dim{opacity:.35}
+.optcol{position:absolute;width:250px}
+.optcol h4{margin:0 0 16px;font-size:22px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);font-weight:700}
+.opt{height:62px;border-radius:16px;border:1px solid var(--line);background:rgba(14,32,52,.8);margin-bottom:12px;padding:0 18px;
+  display:flex;align-items:center;font-size:24px;color:var(--muted);transition:all .18s}
+.opt.hl{border-color:var(--line2);background:var(--raised);color:var(--fg)}
+.opt.sel{border-color:var(--teal);background:rgba(20,184,166,.18);color:var(--fg);box-shadow:0 0 24px rgba(45,212,191,.25)}
+.opt.dim{opacity:.35}
+.decision{display:flex;align-items:center;gap:26px;padding:0 34px}
+.decision .big{font-size:34px;font-weight:700}
+.decision .checks{font-size:22px;color:var(--mint)}
+
+/* ---------- Scene 4 ---------- */
+.step{position:absolute;left:0;width:1040px;height:84px;display:flex;align-items:center;gap:26px;transition:opacity .3s}
+.step .n{flex:none;width:52px;height:52px;border-radius:50%;border:2px solid var(--line2);display:grid;place-items:center;
+  font-size:22px;font-weight:700;color:var(--muted);background:var(--bg);transition:all .25s}
+.step .tx{font-size:32px;font-weight:600;color:var(--muted);transition:color .25s}
+.step .tx small{display:block;font-size:21px;font-weight:500;color:var(--faint);margin-top:2px}
+.step.pend{opacity:.35}
+.step.act .n{border-color:var(--teal);background:var(--teal);color:#04201c;box-shadow:0 0 30px rgba(45,212,191,.5)}
+.step.act .tx{color:var(--fg)}
+.step.done .n{border-color:var(--teal2);color:var(--teal)}
+.step.done .tx{color:#c3d3e4}
+#s4rail{position:absolute;left:25px;width:2px;background:var(--line2)}
+.app{position:absolute;inset:0;padding:64px 20px 20px}
+.apphead{display:flex;align-items:center;gap:12px;padding:12px 8px 16px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:18px}
+.apphead .av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#fff;font-size:18px}
+.apphead .nm{font-size:19px;font-weight:700}
+.apphead .st{font-size:14px;color:var(--muted)}
+.bub{max-width:280px;padding:12px 16px;border-radius:20px;font-size:18px;line-height:1.32;margin-bottom:12px}
+.bub.in{background:#1f3550;border-bottom-left-radius:6px}
+.bub.out{background:#0f766e;margin-left:auto;border-bottom-right-radius:6px}
+.bub.wa-in{background:#1d2c22}
+.bub.wa-out{background:#14532d;margin-left:auto;border-bottom-right-radius:6px}
+.bub .tr{display:block;font-size:14px;color:#a7bfd6;margin-top:4px}
+.meta{font-size:14px;color:var(--muted);margin:-4px 0 14px}
+.tag{display:inline-block;font-size:14px;font-weight:700;letter-spacing:.06em;padding:5px 10px;border-radius:8px}
+.wave{display:flex;gap:6px;align-items:center;justify-content:center;height:70px;margin:8px 0 18px}
+.wave i{width:8px;border-radius:4px;background:var(--teal);display:block}
+.rem{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-radius:16px;background:#12263d;margin-bottom:12px;font-size:18px;position:relative}
+.rem .strike{position:absolute;left:12px;top:50%;height:3px;background:var(--red);width:0}
+
+/* ---------- Scene 5 ---------- */
+.scard{width:530px;height:500px;padding:34px}
+.scard h3{margin:0;font-size:34px;line-height:1.15;font-weight:750}
+.scard .k{font-size:18px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);font-weight:700;margin-bottom:12px}
+.chan{display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 20px;border-radius:14px;background:#12263d;margin-top:12px;
+  font-size:23px;transition:all .35s;border:1px solid transparent}
+.chan .s{font-size:16px;font-weight:800;letter-spacing:.08em;color:var(--ok)}
+.chan.off{background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.35);color:#9aa9ba}
+.chan.off .s{color:var(--red)}
+.receipt{position:relative;margin-top:22px;border-radius:18px;background:#f4f7fb;color:#0b1a2c;padding:20px 24px 92px;overflow:hidden;transition:box-shadow .3s}
+.receipt.bad{box-shadow:0 0 0 4px var(--red)}
+.receipt .ok{font-weight:800;color:#15803d;font-size:20px}
+.receipt .amt{font-size:40px;font-weight:800;margin:6px 0}
+.receipt .ln{font-size:17px;color:#475569}
+.scan{position:absolute;left:0;right:0;height:4px;background:var(--teal);box-shadow:0 0 18px var(--teal)}
+.stamp{position:absolute;right:18px;bottom:18px;width:300px;padding:10px;text-align:center;border:4px solid var(--red);color:var(--red);
+  border-radius:12px;font-weight:900;font-size:20px;letter-spacing:.04em;background:rgba(255,255,255,.94);rotate:-5deg}
+.human{display:flex;align-items:center;gap:16px;margin-top:20px;padding:16px;border-radius:18px;background:rgba(251,191,36,.10);border:1px solid rgba(251,191,36,.45)}
+.human .av{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#b45309);display:grid;place-items:center;font-size:28px}
+
+/* ---------- Scene 6 ---------- */
+.btn{display:inline-grid;place-items:center;height:72px;padding:0 40px;border-radius:18px;font-size:28px;font-weight:700;border:2px solid var(--line2);color:var(--fg);
+  background:var(--raised);transition:all .2s}
+.btn.pri{background:var(--teal);border-color:var(--teal);color:#04201c}
+.btn.pri.pressed{background:var(--ok);border-color:var(--ok);transform:scale(.96)}
+.logrow{display:flex;gap:26px;align-items:center;font-size:24px;padding:16px 26px;border-radius:16px;background:rgba(14,32,52,.85);border:1px solid var(--line);margin-bottom:12px}
+.logrow .tm{font-family:ui-monospace,Menlo,monospace;color:var(--faint);font-size:21px}
+#s6cursor{position:absolute;width:40px;height:40px;z-index:6}
+#s6ripple{position:absolute;width:30px;height:30px;border-radius:50%;border:3px solid var(--mint);margin:-15px 0 0 -15px;opacity:0}
+
+/* ---------- Scene 7 ---------- */
+.lane{position:absolute;left:0;width:760px;height:74px;border-radius:18px;background:rgba(14,32,52,.75);border:1px solid var(--line)}
+.lane .lb{position:absolute;left:20px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;width:190px}
+.lane .lb b{font-size:22px}
+.lane .lb span{font-size:15px;color:var(--faint)}
+.fdot{position:absolute;width:20px;height:20px;border-radius:50%;margin:-10px 0 0 -10px}
+.seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;color:#04121f;overflow:hidden;white-space:nowrap}
+
+/* ---------- Scene 8 ---------- */
+.num{font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:-.03em}
+.tile{width:405px;height:150px;padding:22px 26px}
+.tile .num{font-size:52px;color:var(--fg)}
+.tile p{margin:6px 0 0;font-size:21px;color:var(--muted);line-height:1.3}
+.bar{position:absolute;height:54px;border-radius:12px;display:flex;align-items:center;padding-left:18px;font-size:21px;font-weight:700;white-space:nowrap}
+#simlabel{font-size:20px;letter-spacing:.14em;font-weight:800;color:#ddd6fe;border:2px solid rgba(167,139,250,.7);background:rgba(167,139,250,.14);
+  padding:8px 18px;border-radius:10px;text-transform:uppercase}
+
+/* ---------- Scene 9 ---------- */
+.center{position:absolute;left:0;right:0;text-align:center}
+
+/* ---------- controls ---------- */
+#ui{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);width:min(1200px,calc(100vw - 32px));z-index:20;
+  background:rgba(6,14,26,.88);border:1px solid #23405f;border-radius:18px;padding:12px 16px 10px;font-size:14px;color:#cfe0f1;
+  backdrop-filter:blur(8px);transition:opacity .35s;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+#ui.idle{opacity:0;pointer-events:none}
+#chapters{display:flex;gap:3px;margin-bottom:10px;position:relative}
+#chapters button{position:relative;height:30px;border:0;border-radius:6px;background:#132a43;color:#93a9c2;font:inherit;font-size:12px;cursor:pointer;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0 6px}
+#chapters button .pf{position:absolute;left:0;top:0;bottom:0;background:rgba(45,212,191,.28);pointer-events:none}
+#chapters button span{position:relative}
+#chapters button.cur{color:#fff;outline:1px solid var(--teal)}
+.ctr{display:flex;align-items:center;gap:10px}
+.ctr button{font:inherit;color:#e6f0fa;background:#173451;border:1px solid #2a4b6e;border-radius:10px;height:34px;padding:0 14px;cursor:pointer}
+.ctr button.on{background:#0f5f58;border-color:var(--teal)}
+#bPlay{width:90px;background:var(--teal);color:#04201c;border-color:var(--teal);font-weight:700}
+#scrub{flex:1;accent-color:var(--teal)}
+#time{font-variant-numeric:tabular-nums;min-width:96px;text-align:center}
+#hint{margin-top:6px;font-size:12px;color:#6f86a1;text-align:center}
+body.record #ui{display:none}
+body.record{cursor:none}
+body.record #hold{display:none}
+@media (max-width:760px){ #hint{display:none} .ctr{flex-wrap:wrap} }
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+
+  <div id="brand"><i></i><span data-k="product" data-upper="1">KAIROS</span></div>
+  <div id="chapter"><b id="chapNum">01</b><span id="chapName">The problem</span></div>
+
+  <!-- ============ 1. THE PROBLEM ============ -->
+  <section class="scene" id="s1">
+    <div class="glow" style="left:150px;top:150px"></div>
+    <div class="abs" data-in="0" data-fx="rise" style="left:330px;top:150px">
+      <div class="phone" id="s1phone"><div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>10:02</span><span>●●● 5G</span></div>
+          <div class="abs" style="left:0;right:0;top:78px;text-align:center;font-size:84px;font-weight:300;color:#e8f0f9">10:02</div>
+          <div class="abs" style="left:0;right:0;top:182px;text-align:center;font-size:20px;color:#b9c9da">Thursday</div>
+          <div class="abs" id="s1stack" style="left:0;right:0;top:222px;height:480px"></div>
+          <div class="abs" data-in="7.0" data-fx="fade" style="left:0;right:0;bottom:22px;text-align:center">
+            <span class="tag" style="background:rgba(248,113,113,.18);color:#fecaca">SEEN · NO REPLY</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="abs" style="left:860px;top:210px;width:980px">
+      <div class="title" data-in="0.3" style="font-size:118px">Meet <span data-k="borrower">Ravi</span>.</div>
+      <div data-in="1.1" style="margin-top:22px;display:flex;gap:18px;align-items:center">
+        <span class="sub" style="font-size:40px">His EMI is a few days late.</span><span class="chip violet">synthetic borrower</span></div>
+    </div>
+    <div class="abs" data-in="3.0" style="left:860px;top:470px;display:flex;align-items:baseline;gap:26px">
+      <span class="num" id="s1count" style="font-size:150px;color:var(--amber)">1</span>
+      <span style="font-size:42px;font-weight:650">identical reminders today<br><span style="color:var(--muted);font-weight:500;font-size:34px">Replies: <b style="color:var(--red)">0</b></span></span>
+    </div>
+    <div class="abs" data-in="0.9" style="left:860px;top:720px;width:900px;height:140px">
+      <div style="font-size:26px;color:var(--muted);margin-bottom:16px">Lender's budget, spent on every one</div>
+      <div class="track" style="left:0;top:52px;width:900px"><div class="fill" id="s1fill" style="width:100%"></div></div>
+      <div id="s1coins"></div>
+    </div>
+  </section>
+
+  <!-- ============ 2. WHY IT HAPPENS ============ -->
+  <section class="scene" id="s2">
+    <div class="abs" style="left:120px;top:136px">
+      <div class="kicker" data-in="0.1">The usual way</div>
+      <div class="title" data-in="0.3" style="margin-top:14px">A fixed calendar.</div>
+      <div class="sub" data-in="2.9" style="margin-top:16px">Same message. Everyone. Every channel.</div>
+    </div>
+    <div class="abs" id="s2grid" data-in="0.8" data-fx="fade" style="left:120px;top:380px;width:1680px;height:400px"></div>
+    <div class="abs" style="left:120px;top:812px;display:flex;gap:18px">
+      <span class="chip red" data-in="6.6" data-fx="pop" style="font-size:28px;padding:10px 24px">Costly</span>
+      <span class="chip red" data-in="7.2" data-fx="pop" style="font-size:28px;padding:10px 24px">Annoying</span>
+      <span class="chip red" data-in="7.8" data-fx="pop" style="font-size:28px;padding:10px 24px">Mostly ignored</span>
+    </div>
+  </section>
+
+  <!-- ============ 3. KAIROS DECIDES ============ -->
+  <section class="scene" id="s3">
+    <div class="abs" style="left:120px;top:116px">
+      <div class="kicker" data-in="0.1"><span data-k="product">Kairos</span> decides</div>
+      <div class="title" data-in="0.3" style="margin-top:14px">Every borrower. Every day.</div>
+      <div class="sub" data-in="1.8" style="margin-top:14px;color:var(--mint)">First question: contact, or wait?</div>
+    </div>
+    <div class="abs" data-in="1.2" data-fx="fade" style="left:1240px;top:118px;width:580px;height:200px">
+      <div id="s3dots" class="abs" style="left:0;top:0;width:580px;height:156px"></div>
+      <div class="abs" style="left:0;top:166px;font-size:18px;color:var(--faint)">each dot is a borrower · <span style="color:var(--teal)">teal: contact today</span> · grey: wait</div>
+    </div>
+
+    <div class="card bcard" data-in="0.9" data-fx="left" style="left:120px;top:370px;width:540px;height:420px">
+      <div style="display:flex;gap:22px;align-items:center">
+        <div class="avatar">R</div>
+        <div><div style="font-size:40px;font-weight:750" data-k="borrower">Ravi</div><span class="chip violet" style="font-size:18px;padding:4px 12px">synthetic</span></div>
+      </div>
+      <div class="facts">
+        <div class="fact"><b style="background:var(--amber)"></b>EMI 6 days late</div>
+        <div class="fact"><b style="background:var(--sms)"></b>Read the SMS, no reply</div>
+        <div class="fact"><b style="background:var(--wa)"></b>Usually free in the evening</div>
+        <div class="fact"><b style="background:var(--violet)"></b>Prefers Hindi</div>
+      </div>
+    </div>
+    <svg class="abs" data-in="2.6" data-fx="fade" style="left:660px;top:370px" width="100" height="420">
+      <path d="M0 210 C 50 210, 40 112, 96 112" stroke="#2a4b6e" stroke-width="3" fill="none"/>
+      <path d="M0 210 C 50 210, 40 272, 96 272" stroke="#2a4b6e" stroke-width="3" fill="none"/>
+    </svg>
+    <div class="pill" id="s3contact" data-in="2.7" data-fx="pop" style="left:752px;top:438px">Contact</div>
+    <div class="pill" id="s3wait" data-in="2.9" data-fx="pop" style="left:752px;top:598px">Wait</div>
+
+    <div class="optcol" data-in="6.4" style="left:1080px;top:376px"><h4>Channel</h4>
+      <div class="opt">SMS</div><div class="opt">WhatsApp</div><div class="opt">Email</div><div class="opt">Voice call</div></div>
+    <div class="optcol" data-in="7.6" style="left:1350px;top:376px"><h4>Time</h4>
+      <div class="opt">Morning</div><div class="opt">Afternoon</div><div class="opt">Evening, 7:30 pm</div><div class="opt">Not today</div></div>
+    <div class="optcol" data-in="8.8" style="left:1620px;top:376px;width:230px"><h4>Message</h4>
+      <div class="opt">Due reminder</div><div class="opt">Gentle check-in</div><div class="opt">Pay-link</div><div class="opt">Firm notice</div></div>
+
+    <div class="card decision" data-in="11.4" style="left:1040px;top:752px;width:800px;height:108px;border-color:rgba(45,212,191,.55)">
+      <div><div class="big">WhatsApp · 7:30 pm · check-in, Hindi</div>
+      <div class="checks">✓ consent ✓ quiet hours ✓ daily cap ✓ budget · checked twice</div></div>
+    </div>
+  </section>
+
+  <!-- ============ 4. RAVI'S JOURNEY ============ -->
+  <section class="scene" id="s4">
+    <div class="glow" style="left:60px;top:200px"></div>
+    <div class="abs" data-in="0" data-fx="left" style="left:220px;top:150px">
+      <div class="phone"><div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span id="s4clock">10:02</span><span>●●● 5G</span></div>
+          <!-- A: SMS -->
+          <div class="app" data-in="0.2" data-out="3.4" data-fx="fade">
+            <div class="apphead"><div class="av" style="background:#3b82f6">L</div><div><div class="nm">Lender</div><div class="st">SMS · registered sender</div></div></div>
+            <div class="bub in">Hi Ravi, your EMI for Loan A is due. You can pay securely with the link in the lender's app.</div>
+            <div class="meta">Read 10:02</div>
+            <span class="tag" data-in="1.4" data-fx="pop" style="background:rgba(147,169,194,.15);color:#cbd5e1">NO REPLY</span>
+          </div>
+          <!-- B: WhatsApp -->
+          <div class="app" data-in="3.5" data-out="8.4" data-fx="fade" style="background:linear-gradient(180deg,#0c1a13,#07111f)">
+            <div class="apphead"><div class="av" style="background:#16a34a">L</div><div><div class="nm">Lender ✓</div><div class="st">WhatsApp · 7:32 pm</div></div></div>
+            <div class="bub wa-in" data-in="3.9" data-fx="rise">Namaste Ravi ji. Just checking in about your EMI. Can we help?</div>
+            <div class="bub wa-out" data-in="6.0" data-fx="rise">need time, salary late hai</div>
+            <div class="bub wa-in" data-in="7.1" data-fx="rise">No problem. We'll call you to fix a date that works.</div>
+          </div>
+          <!-- C: Voice -->
+          <div class="app" data-in="8.5" data-out="13.4" data-fx="fade" style="background:linear-gradient(180deg,#10223a,#07111f)">
+            <div style="text-align:center;margin-top:6px"><div class="avatar" style="margin:0 auto;width:74px;height:74px;font-size:30px;background:linear-gradient(135deg,#0d9488,#6d28d9)">◉</div>
+              <div style="font-size:20px;font-weight:700;margin-top:10px">Voice bot · Ritu</div><div style="font-size:15px;color:var(--muted)">Sarvam · Hindi · on call</div></div>
+            <div class="wave" id="s4wave"></div>
+            <div class="bub in" data-in="9.2" data-fx="rise" style="font-size:17px">रवि जी, क्या आप 27 तारीख तक भुगतान कर पाएँगे?<span class="tr">Can you pay by the 27th?</span></div>
+            <div class="bub out" data-in="10.4" data-fx="rise" style="font-size:17px">हाँ, 27 को कर दूँगा।<span class="tr" style="color:#c7f3ec">Yes, on the 27th.</span></div>
+            <div class="bub in" data-in="11.5" data-fx="rise" style="font-size:17px">ठीक है, 27 तारीख। धन्यवाद!<span class="tr">Okay, the 27th. Thank you!</span></div>
+          </div>
+          <!-- D: Paused -->
+          <div class="app" data-in="13.5" data-out="16.4" data-fx="fade">
+            <div class="apphead" style="border:0"><div><div class="nm" style="font-size:22px">Kairos · Ravi's queue</div><div class="st">Promise: pay by the 27th</div></div></div>
+            <div class="rem"><span>SMS · tomorrow</span><span class="tag" style="background:rgba(251,191,36,.15);color:#fde68a">❚❚ PAUSED</span></div>
+            <div class="rem"><span>WhatsApp · Saturday</span><span class="tag" style="background:rgba(251,191,36,.15);color:#fde68a">❚❚ PAUSED</span></div>
+            <div class="rem"><span>Voice · Monday</span><span class="tag" style="background:rgba(251,191,36,.15);color:#fde68a">❚❚ PAUSED</span></div>
+            <div style="font-size:17px;color:var(--muted);margin-top:14px;text-align:center">No nudges until the 27th</div>
+          </div>
+          <!-- E: Verified -->
+          <div class="app" data-in="16.5" data-fx="fade">
+            <div style="text-align:center;margin:6px 0 18px"><div style="width:84px;height:84px;margin:0 auto;border-radius:50%;background:var(--ok);display:grid;place-items:center;font-size:48px;color:#04201c;font-weight:900">✓</div>
+              <div style="font-size:23px;font-weight:750;margin-top:12px">Payment verified</div><div style="font-size:16px;color:var(--muted)">Loan A · confirmed by the bank</div></div>
+            <div style="font-size:14px;letter-spacing:.12em;color:var(--faint);margin:0 4px 8px">LOAN A REMINDERS</div>
+            <div class="rem"><span>WhatsApp · Saturday</span><span class="tag" style="background:rgba(248,113,113,.15);color:#fecaca">CANCELLED</span><i class="strike"></i></div>
+            <div class="rem"><span>Voice · Monday</span><span class="tag" style="background:rgba(248,113,113,.15);color:#fecaca">CANCELLED</span><i class="strike"></i></div>
+            <div style="font-size:14px;letter-spacing:.12em;color:var(--faint);margin:16px 4px 8px">LOAN B</div>
+            <div class="rem" style="border:1px solid rgba(45,212,191,.4)"><span>WhatsApp · next week</span><span class="tag" style="background:rgba(45,212,191,.15);color:var(--mint)">STILL SCHEDULED</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="abs" style="left:760px;top:120px">
+      <div class="kicker" data-in="0.1">How it works</div>
+      <div class="title" data-in="0.3" style="margin-top:14px;font-size:72px">One borrower's journey.</div>
+    </div>
+    <div class="abs" id="s4steps" style="left:760px;top:300px;width:1060px;height:560px">
+      <div id="s4rail" style="top:26px;height:470px"></div>
+      <div class="step" style="top:0"><div class="n">1</div><div class="tx">SMS read, no reply<small>Delivered and read is not a reply</small></div></div>
+      <div class="step" style="top:94px"><div class="n">2</div><div class="tx">WhatsApp, in the evening<small>When Ravi is usually free</small></div></div>
+      <div class="step" style="top:188px"><div class="n">3</div><div class="tx">Ravi: “need time”<small>Understood, even in Hinglish</small></div></div>
+      <div class="step" style="top:282px"><div class="n">4</div><div class="tx">Voice bot agrees a date and reads it back<small>In Hindi, with the Ritu voice</small></div></div>
+      <div class="step" style="top:376px"><div class="n">5</div><div class="tx">Reminders pause<small>No pressure while he has a plan</small></div></div>
+      <div class="step" style="top:470px"><div class="n">6</div><div class="tx">Payment verified: only that loan's reminders cancel<small>Loan B keeps its own schedule</small></div></div>
+    </div>
+  </section>
+
+  <!-- ============ 5. SAFETY ============ -->
+  <section class="scene" id="s5">
+    <div class="abs" style="left:120px;top:116px">
+      <div class="kicker" data-in="0.1">Safety first</div>
+      <div class="title" data-in="0.3" style="margin-top:14px">Safe by design.</div>
+    </div>
+    <div class="card scard" data-in="1.3" style="left:120px;top:300px">
+      <div class="k">Opt-out</div><h3>STOP means stop.<br>Everywhere.</h3>
+      <div style="display:flex;justify-content:flex-end;margin:16px 0 4px"><div class="bub out" style="margin:0;font-weight:800;letter-spacing:.06em">STOP</div></div>
+      <div class="chan" id="c1">SMS <span class="s">ON</span></div>
+      <div class="chan" id="c2">WhatsApp <span class="s">ON</span></div>
+      <div class="chan" id="c3">Email <span class="s">ON</span></div>
+      <div class="chan" id="c4">Voice call <span class="s">ON</span></div>
+    </div>
+    <div class="card scard" data-in="4.3" style="left:695px;top:300px">
+      <div class="k">Fraud check</div><h3>Fake payment proof?<br>Caught.</h3>
+      <div class="receipt" id="s5receipt">
+        <div class="ok">✓ Payment successful</div>
+        <div class="amt">₹4,200</div>
+        <div class="ln">Ref no. ••••8901</div><div class="ln">To: Lender collections</div><div class="ln">Screenshot sent on WhatsApp</div>
+        <div class="scan" id="s5scan"></div>
+        <div class="stamp" data-in="7.0" data-fx="pop">NO MATCHING BANK RECORD<br><span style="font-size:16px">FLAGGED FOR REVIEW</span></div>
+      </div>
+    </div>
+    <div class="card scard" data-in="7.9" style="left:1270px;top:300px">
+      <div class="k">Hardship</div><h3>Hardship goes<br>to a person.</h3>
+      <div class="bub wa-out" data-in="8.6" data-fx="rise" style="margin:20px 0 0 auto;max-width:340px">Meri naukri chali gayi<span class="tr" style="color:#bbf7d0">I lost my job</span></div>
+      <div class="human" data-in="9.6" data-fx="rise"><div class="av">👤</div>
+        <div><div style="font-size:24px;font-weight:700">Handed to a human officer</div><div style="font-size:18px;color:#fde68a">Bots stop · reminders paused</div></div></div>
+    </div>
+    <div class="abs" data-in="10.6" style="left:0;right:0;top:834px;text-align:center">
+      <span class="chip teal" style="font-size:24px">🔒 Nothing is shared until identity is confirmed with a one-time code</span></div>
+  </section>
+
+  <!-- ============ 6. PEOPLE IN CHARGE ============ -->
+  <section class="scene" id="s6">
+    <div class="abs" style="left:120px;top:116px">
+      <div class="kicker" data-in="0.1">Human in the loop</div>
+      <div class="title" data-in="0.3" style="margin-top:14px">People stay in charge.</div>
+    </div>
+    <div class="card" data-in="0.7" style="left:360px;top:320px;width:1200px;height:300px;padding:38px 44px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:22px;letter-spacing:.16em;color:var(--faint);font-weight:700">APPROVAL NEEDED</div>
+        <span class="chip amber" id="s6status">Waiting for a supervisor</span></div>
+      <div style="font-size:40px;font-weight:700;margin-top:18px">Voice calls for 1,240 borrowers, 31 to 60 days late</div>
+      <div style="font-size:24px;color:var(--muted);margin-top:8px">Within budget · quiet hours respected · consent checked</div>
+      <div style="display:flex;gap:18px;margin-top:30px">
+        <span class="btn pri" id="s6approve">Approve</span><span class="btn">Hold</span><span class="btn">Override</span></div>
+    </div>
+    <svg id="s6cursor" viewBox="0 0 24 24"><path d="M3 2l7 19 2.6-7.4L20 11z" fill="#fff" stroke="#0b1a2c" stroke-width="1.4"/></svg>
+    <div id="s6ripple"></div>
+    <div class="abs" style="left:360px;top:660px;width:1200px">
+      <div class="logrow" data-in="3.6"><span class="tm">17:42</span><span>Supervisor approved the voice calls</span><span class="chip teal" style="margin-left:auto;font-size:18px">audited</span></div>
+      <div class="logrow" data-in="4.4"><span class="tm">17:43</span><span>Operator put 3 accounts on hold</span><span class="chip teal" style="margin-left:auto;font-size:18px">audited</span></div>
+    </div>
+  </section>
+
+  <!-- ============ 7. IT LEARNS ============ -->
+  <section class="scene" id="s7">
+    <div class="abs" style="left:120px;top:116px">
+      <div class="kicker" data-in="0.1">Learning</div>
+      <div class="title" data-in="0.3" style="margin-top:14px">It learns from every reply.</div>
+    </div>
+    <div class="card" data-in="0.5" style="left:120px;top:290px;width:880px;height:580px;padding:28px 30px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:24px;font-weight:700">Replies per message, by channel</div>
+        <div style="display:flex;gap:16px;font-size:18px;color:var(--muted)">
+          <span><i style="display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--wa)"></i> WhatsApp</span>
+          <span><i style="display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--sms)"></i> SMS</span>
+          <span><i style="display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--violet)"></i> Voice</span></div>
+      </div>
+      <svg class="abs" id="s7chart" style="left:30px;top:80px" width="820" height="290" viewBox="0 0 820 290"></svg>
+      <div class="abs" id="s7call" data-in="5.6" data-fx="pop" style="left:300px;top:92px">
+        <span class="chip teal" style="font-size:21px">WhatsApp got worse → <span data-k="product">Kairos</span> switched by itself</span></div>
+      <div class="abs" style="left:30px;top:410px;width:820px">
+        <div style="font-size:20px;color:var(--muted);margin-bottom:10px">Where <span data-k="product">Kairos</span> sends messages</div>
+        <div class="abs" id="s7bar" style="left:0;top:38px;width:820px;height:56px;border-radius:14px;overflow:hidden;background:#0b1a2c">
+          <div class="seg" id="sgW" style="background:var(--wa)"></div><div class="seg" id="sgS" style="background:var(--sms)"></div><div class="seg" id="sgV" style="background:var(--violet)"></div></div>
+        <div class="abs" style="left:0;top:104px;font-size:16px;color:var(--faint)">Illustrative · from a SIMULATED campaign</div>
+      </div>
+    </div>
+    <div class="abs" data-in="7.9" style="left:1040px;top:290px;width:760px;height:580px">
+      <div style="font-size:24px;font-weight:700;margin-bottom:6px">Borrowers move between layers</div>
+      <div style="font-size:18px;color:var(--muted)">No reply: step up · Replied or paid: step back down</div>
+      <div id="s7lanes" class="abs" style="left:0;top:86px;width:760px;height:340px"></div>
+      <div class="abs" style="left:0;top:446px;width:760px;display:flex;flex-wrap:wrap;gap:12px">
+        <span class="chip" data-in="12.8" data-fx="pop" style="font-size:20px"><b style="color:var(--fg)">Region A</b> evenings work best</span>
+        <span class="chip" data-in="13.4" data-fx="pop" style="font-size:20px"><b style="color:var(--fg)">Region B</b> voice calls in Tamil</span>
+        <span class="chip teal" data-in="14.0" data-fx="pop" style="font-size:20px"><b data-k="borrower">Ravi</b> WhatsApp after 7 pm</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 8. PROOF ============ -->
+  <section class="scene" id="s8">
+    <div class="abs" style="left:120px;top:116px">
+      <div class="kicker" data-in="0.1">Proof</div>
+      <div class="title" data-in="0.3" style="margin-top:14px">Does it work?</div>
+    </div>
+    <div class="abs" data-in="0.4" data-fx="fade" style="right:120px;top:196px"><span id="simlabel" data-k="dataLabel">SIMULATED data</span></div>
+    <div class="card" data-in="0.6" style="left:120px;top:296px;width:1080px;height:296px;padding:30px 36px">
+      <div class="num" style="font-size:132px;color:var(--teal);line-height:1">~+<span data-count="liftPct" data-at="4.9" data-cdur="1.8">0</span>%</div>
+      <div style="font-size:27px;font-weight:650;margin-top:10px;width:420px;line-height:1.25">more replies per rupee than the lender's own <span data-k="numbers.baselineDays">10</span>-day schedule</div>
+      <div class="bar" id="s8b1" style="left:500px;top:66px;background:#2a3d55;color:#cbd5e1">Lender's schedule</div>
+      <div class="bar" id="s8b2" style="left:500px;top:140px;background:linear-gradient(90deg,var(--teal2),var(--teal));color:#04201c"><span data-k="product">Kairos</span></div>
+      <div class="abs" style="left:500px;top:212px;font-size:18px;color:var(--faint)">replies per rupee · same budget · same caps · data it never saw</div>
+    </div>
+    <div class="card" data-in="5.6" style="left:1240px;top:296px;width:560px;height:296px;padding:30px 36px">
+      <div class="num" style="font-size:132px;color:var(--ok);line-height:1"><span data-count="ruleBreaches" data-at="5.6" data-cdur=".1">0</span></div>
+      <div style="font-size:34px;font-weight:700;margin-top:12px">rule breaches</div>
+      <div style="font-size:21px;color:var(--muted);margin-top:6px">consent · quiet hours · caps · budget</div>
+    </div>
+    <div class="abs" style="left:120px;top:620px;display:flex;gap:20px">
+      <div class="card tile" data-in="9.4" style="position:relative"><div class="num"><span data-count="decisions" data-at="9.4" data-cdur="1.6">0</span></div><p>decisions in <span data-k="numbers.decisionsTime">about 2 minutes</span>; same input, same result</p></div>
+      <div class="card tile" data-in="9.8" style="position:relative"><div class="num"><span data-count="attacksPassed" data-at="9.8" data-cdur="1.2">0</span>/<span data-k="numbers.attacksTotal">49</span></div><p>attack tests on the guardrails passed</p></div>
+      <div class="card tile" data-in="10.2" style="position:relative"><div class="num"><span data-count="waResolvedPct" data-at="10.2" data-cdur="1.2">0</span>%</div><p>of WhatsApp chats resolved without a human</p></div>
+      <div class="card tile" data-in="10.6" style="position:relative"><div class="num"><span data-count="fakesCaught" data-at="10.6" data-cdur="1.2">0</span>/<span data-k="numbers.fakesTotal">127</span></div><p>fake payment proofs caught</p></div>
+    </div>
+    <div class="abs" style="left:120px;top:796px;display:flex;gap:14px">
+      <span class="chip" data-in="11.4" data-fx="pop"><b style="color:var(--fg)"><span data-k="numbers.understandingPct">95</span>%</b> message understanding · Hinglish, Hindi, English</span>
+      <span class="chip" data-in="11.8" data-fx="pop"><b style="color:var(--fg)"><span data-k="numbers.voiceBots">6</span> voice bots</b> · <span data-k="numbers.languages">8</span> Indian languages</span>
+      <span class="chip" data-in="12.2" data-fx="pop"><b style="color:var(--fg)"><span data-k="numbers.concurrentChats">500</span></b> WhatsApp chats at once</span>
+    </div>
+    <div class="abs" data-in="12.4" data-fx="fade" style="left:120px;top:860px;font-size:19px;color:var(--faint)">
+      <span data-k="numbers.testBorrowers">1,500</span> synthetic borrowers × <span data-k="numbers.testDays">14</span> days · <span data-k="numbers.unseenSeeds">3</span> unseen test runs (<span data-k="numbers.liftSeeds">+48% / +61% / +56%</span>) · same budget and caps · all figures SIMULATED</div>
+  </section>
+
+  <!-- ============ 9. CLOSE ============ -->
+  <section class="scene" id="s9">
+    <div class="glow" style="left:610px;top:90px;width:700px;height:700px;background:radial-gradient(circle,rgba(45,212,191,.22),transparent 65%)"></div>
+    <div class="center" data-in="0.3" data-fx="pop" style="top:250px;font-size:190px;font-weight:800;letter-spacing:-.03em"><span data-k="product">Kairos</span>.</div>
+    <div class="center" style="top:500px;font-size:62px;font-weight:650">
+      <span data-in="1.3" style="display:inline-block">Right message.</span>&nbsp;<span data-in="2.2" style="display:inline-block">Right time.</span></div>
+    <div class="center" data-in="3.2" style="top:590px;font-size:62px;font-weight:650;color:var(--teal)">Or none at all.</div>
+    <div class="center" data-in="4.4" data-fx="fade" style="top:760px;font-size:30px;color:var(--muted)">
+      <span data-k="team">The A Team</span> · <span data-k="event">CreditNirvana Agentathon 2026</span></div>
+    <div class="center" data-in="4.9" data-fx="fade" style="top:812px;font-size:20px;color:var(--faint)">Synthetic borrowers · SIMULATED results</div>
+  </section>
+
+  <div id="cap"><div id="capText"></div></div>
+</div></div>
+
+<div id="ui">
+  <div id="chapters"></div>
+  <div class="ctr">
+    <button id="bPlay">▶ Play</button>
+    <span id="time">0:00 / 2:00</span>
+    <input type="range" id="scrub" min="0" max="120" step="0.01" value="0" aria-label="Scrub">
+    <button id="bCC" class="on" title="C">Captions</button>
+    <button id="bVoice" title="N">Narration: off</button>
+    <button id="bRec" title="R">Record mode</button>
+  </div>
+  <div id="hint">Space play/pause · ← → previous/next scene · C captions · N narration · R record mode (Esc exits; restarts at 0:00 after 1.5 s)</div>
+</div>
+
+<script>
+/* ---------------- scenes and voice-over (cue times are seconds from scene start) ---------------- */
+const B = CONFIG.borrower, P = CONFIG.product;
+const SCENES = [
+  {id:"s1", name:"The problem", dur:13, cues:[
+    [0.3, `Meet ${B}. His EMI is a few days late.`],
+    [3.2, `This morning he got the same reminder for the fifth time.`],
+    [7.0, `He stopped reading after the second.`],
+    [9.6, `And the lender paid for all five.`]]},
+  {id:"s2", name:"Why it happens", dur:11, cues:[
+    [0.3, `Most collections still run on a fixed calendar:`],
+    [3.0, `the same message, to everyone, on every channel.`],
+    [6.4, `It costs a lot, annoys people, and mostly goes unanswered.`]]},
+  {id:"s3", name:`${P} decides`, dur:14, cues:[
+    [0.3, `${P} changes that.`],
+    [1.8, `Every day, for every borrower, it first asks: contact, or wait?`],
+    [6.4, `And if it's contact, it picks the channel, the time and the message`],
+    [10.6, `most likely to get a reply.`]]},
+  {id:"s4", name:`${B}'s journey`, dur:22, cues:[
+    [0.3, `${B} read an SMS but didn't reply.`],
+    [3.5, `So ${P} tried WhatsApp in the evening, when he's usually free.`],
+    [6.0, `He wrote back: “need time”.`],
+    [8.5, `Our voice bot called him in Hindi, agreed a date, and read it back.`],
+    [13.5, `Reminders paused.`],
+    [16.5, `When his payment was verified, only that loan's reminders stopped.`]]},
+  {id:"s5", name:"Safety", dur:13, cues:[
+    [0.3, `Safety comes first.`],
+    [1.6, `Reply STOP on one channel, and every channel stops.`],
+    [4.6, `A fake payment screenshot is caught.`],
+    [8.2, `Lost your job? A person takes over, not a bot.`]]},
+  {id:"s6", name:"People in charge", dur:7, cues:[
+    [0.3, `And the lender's team can approve, hold or override anything.`],
+    [4.0, `Every step is on record.`]]},
+  {id:"s7", name:"It learns", dur:18, cues:[
+    [0.3, `${P} learns from every reply.`],
+    [2.6, `Midway through a campaign, WhatsApp starts working less well.`],
+    [5.8, `${P} notices, and switches on its own.`],
+    [8.4, `Borrowers move from cheap messages, to WhatsApp, to a call, to a person,`],
+    [13.2, `and it learns what works in each region, for each borrower.`]]},
+  {id:"s8", name:"Proof", dur:15, cues:[
+    [0.3, `Against the lender's own schedule, on data it had never seen, with the same budget:`],
+    [5.0, CONFIG.spoken.lift],
+    [9.6, CONFIG.spoken.decisions]]},
+  {id:"s9", name:"Close", dur:7, noCaption:true, cues:[
+    [0.4, `${P}. Right message. Right time. Or none at all.`]]}
+];
+let acc = 0;
+SCENES.forEach((s,i)=>{ s.start=acc; s.end=acc+s.dur; acc=s.end; s.idx=i; });
+const TOTAL = acc;
+
+/* ---------------- helpers ---------------- */
+const $ = (q,r=document)=>r.querySelector(q), $$=(q,r=document)=>[...r.querySelectorAll(q)];
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const easeOut=x=>1-Math.pow(1-x,3);
+const easeIO=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const backOut=x=>{const c1=1.5,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2);};
+const prog=(lt,a,d)=>clamp((lt-a)/d);
+const lerp=(a,b,p)=>a+(b-a)*p;
+const hash=(a,b)=>{let h=Math.sin(a*127.1+b*311.7)*43758.5453;return h-Math.floor(h);};
+const mq=matchMedia('(prefers-reduced-motion: reduce)');
+let RM=mq.matches; mq.addEventListener&&mq.addEventListener('change',e=>RM=e.matches);
+const M=()=>RM?0:1;
+const get=(path)=>path.split('.').reduce((o,k)=>o==null?o:o[k],CONFIG);
+const fmt=n=>Math.round(n).toLocaleString('en-IN');
+const mmss=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
+
+/* fill CONFIG text */
+$$('[data-k]').forEach(el=>{const v=get(el.dataset.k); if(v!=null) el.textContent = el.dataset.upper?String(v).toUpperCase():v;});
+$$('[data-count]').forEach(el=>{el._target=+CONFIG.numbers[el.dataset.count]||0;});
+document.title = `${P} Explainer Film`;
+
+/* ---------------- build dynamic parts ---------------- */
+// S1 notifications + coins
+const S1T=[1.0,2.6,4.2,5.8,7.4];
+const s1stack=$('#s1stack');
+const s1cards=S1T.map(()=>{const d=document.createElement('div');d.className='notif';
+  d.innerHTML='<div class="ni">✉</div><div style="flex:1"><div class="nt">LENDER · SMS <span>now</span></div><div class="nb">Your EMI is overdue. Please pay now.</div></div>';
+  s1stack.appendChild(d);return d;});
+const s1coins=S1T.map(()=>{const c=document.createElement('div');c.className='coin';c.textContent='₹';$('#s1coins').appendChild(c);return c;});
+
+// S2 grid
+const S2rows=[["SMS","var(--sms)",[0,2,4,6,8]],["WhatsApp","var(--wa)",[1,3,5,7,9]],["Email","#94a3b8",[0,3,6,9]],["Voice call","var(--violet)",[4,9]]];
+const S2yes={"0-2":1,"1-7":1};
+const grid=$('#s2grid'); const s2cells=[]; const GX=230, CW=140, RH=86, GY=48;
+for(let c=0;c<10;c++){const h=document.createElement('div');h.className='dayh';h.style.left=(GX+c*CW)+'px';h.style.top='0px';h.textContent='DAY '+(c+1);grid.appendChild(h);}
+S2rows.forEach(([name,col,days],r)=>{
+  const l=document.createElement('div');l.className='rowlab';l.style.left='0px';l.style.top=(GY+r*RH)+'px';l.style.height='70px';
+  l.innerHTML=`<i style="background:${col}"></i>${name}`;grid.appendChild(l);
+  for(let c=0;c<10;c++){const d=document.createElement('div');const sch=days.includes(c);d.className='cell'+(sch?' sch':'');
+    d.style.left=(GX+c*CW)+'px';d.style.top=(GY+r*RH)+'px';
+    if(sch){const yes=S2yes[r+'-'+c];d.innerHTML='<div class="flash"></div><div class="env">SAME MSG</div><div class="mark">'+(yes?'✓':'✕')+'</div>';
+      s2cells.push({el:d,c,yes,fl:d.firstChild});}
+    grid.appendChild(d);}
+});
+const play2=document.createElement('div');play2.id='s2play';play2.style.top='36px';play2.style.height=(4*RH+8)+'px';grid.appendChild(play2);
+
+// S3 dot field
+const dots=[];const df=$('#s3dots');
+for(let r=0;r<6;r++)for(let c=0;c<22;c++){const d=document.createElement('div');d.className='dot';d.style.left=(c*26)+'px';d.style.top=(r*26)+'px';df.appendChild(d);dots.push(d);}
+const s3cols=$$('#s3 .optcol').map(c=>$$('.opt',c));
+const S3SEL=[1,2,1], S3AT=[6.6,7.8,9.0];
+
+// S4 waveform
+const wave=$('#s4wave');const bars=[];for(let i=0;i<22;i++){const b=document.createElement('i');wave.appendChild(b);bars.push(b);}
+const S4T=[0.3,3.5,6.0,8.5,13.5,16.5]; const s4steps=$$('#s4 .step');
+const strikes=$$('#s4 .strike');
+
+// S7 chart
+const chart=$('#s7chart'); const CH={w:820,h:290,x0:40,y0:20,y1:250};
+const days=14; const X=d=>CH.x0+(d/(days-1))*(CH.w-CH.x0-20); const Y=v=>CH.y1-(v/0.30)*(CH.y1-CH.y0);
+const series={wa:[.20,.22,.23,.24,.23,.24,.22,.12,.09,.08,.08,.07,.08,.07], sms:[.10,.11,.10,.11,.12,.11,.12,.13,.14,.14,.15,.15,.15,.16], vo:[.14,.15,.15,.14,.16,.15,.16,.18,.19,.20,.20,.21,.21,.22]};
+let svg=`<g stroke="#1e3a57" stroke-width="1">`;
+[0,.1,.2,.3].forEach(v=>svg+=`<line x1="${CH.x0}" x2="${CH.w-20}" y1="${Y(v)}" y2="${Y(v)}"/>`);
+svg+=`</g><g fill="#5d7591" font-size="15">`;
+[0,.1,.2,.3].forEach(v=>svg+=`<text x="0" y="${Y(v)+5}">${Math.round(v*100)}%</text>`);
+[0,6,13].forEach(d=>svg+=`<text x="${X(d)}" text-anchor="${d===13?'end':d===0?'start':'middle'}" y="${CH.h-8}">Day ${d+1}</text>`);
+svg+=`</g>`;
+const col={wa:'#4ade80',sms:'#60a5fa',vo:'#a78bfa'};
+for(const k in series){const pts=series[k].map((v,i)=>`${i?'L':'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(' ');
+  svg+=`<path id="ln_${k}" d="${pts}" fill="none" stroke="${col[k]}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>`;}
+svg+=`<g id="s7drop" opacity="0"><line x1="${X(7)}" x2="${X(7)}" y1="${CH.y0}" y2="${CH.y1}" stroke="#f87171" stroke-width="2" stroke-dasharray="6 6"/>
+  <circle cx="${X(7)}" cy="${Y(.12)}" r="10" fill="#f87171"/><circle cx="${X(7)}" cy="${Y(.12)}" r="20" fill="none" stroke="#f87171" stroke-width="2"/></g>`;
+chart.innerHTML=svg;
+const lns=['wa','sms','vo'].map(k=>$('#ln_'+k));
+
+// S7 lanes + dots
+const LANES=[["SMS & email","cheapest","var(--teal)"],["WhatsApp","chat","var(--wa)"],["Voice bot","Ritu / Advait","var(--violet)"],["Person","human officer","var(--amber)"]];
+const lanesEl=$('#s7lanes'); const LH=74, LG=14;
+LANES.forEach(([a,b],i)=>{const l=document.createElement('div');l.className='lane';l.style.top=(i*(LH+LG))+'px';
+  l.innerHTML=`<div class="lb"><b>${a}</b><span>${b}</span></div>`;lanesEl.appendChild(l);});
+const ND=16, NSTEP=6; const fdots=[], seqs=[];
+for(let j=0;j<ND;j++){const d=document.createElement('div');d.className='fdot';d.style.left=(250+j*31)+'px';lanesEl.appendChild(d);fdots.push(d);
+  const s=[0];for(let k=1;k<=NSTEP;k++){const cur=s[k-1],r=hash(j+1,k+3);let nx=cur;
+    if(cur===3) nx = r<.55?3:0; else if(r<.42) nx=cur+1; else if(r<.68) nx=Math.max(0,cur-1);
+    s.push(nx);} seqs.push(s);}
+const laneColor=["#2dd4bf","#4ade80","#a78bfa","#fbbf24"];
+
+/* ---------------- generic animators ---------------- */
+SCENES.forEach(s=>{s.el=$('#'+s.id); s.reveals=$$('[data-in]',s.el); s.counts=$$('[data-count]',s.el);});
+function reveal(el,lt){
+  const a=+el.dataset.in, d=+(el.dataset.dur||0.7), fx=el.dataset.fx||'rise';
+  const raw=prog(lt,a,d), p=fx==='pop'?backOut(raw):easeOut(raw);
+  let o=easeOut(raw);
+  if(el.dataset.out){o*=1-prog(lt,+el.dataset.out,0.4);}
+  el.style.opacity=o;
+  const k=(1-p)*M();
+  el.style.translate = fx==='rise'?`0 ${36*k}px`: fx==='down'?`0 ${-36*k}px`: fx==='left'?`${-70*k}px 0`: fx==='right'?`${70*k}px 0`:'0 0';
+  el.style.scale = fx==='pop'? String(RM?1:Math.max(0.01,0.8+0.2*p)) : '1';
+  el.style.visibility = o<=0.001?'hidden':'visible';
+}
+function count(el,lt){const a=+el.dataset.at, d=+(el.dataset.cdur||1.6); el.textContent=fmt(el._target*easeOut(prog(lt,a,d)));}
+
+/* ---------------- per-scene effects ---------------- */
+const FX={
+  s1(lt){
+    s1cards.forEach((c,i)=>{const p=easeOut(prog(lt,S1T[i],.4));let y=0,depth=0;
+      for(let j=i+1;j<S1T.length;j++){const q=easeOut(prog(lt,S1T[j],.45));y+=q*92;depth+=q;}
+      c.style.opacity=p*(1-.12*depth); c.style.transform=`translateY(${y-28*(1-p)*M()}px) scale(${1-.05*(1-p)})`;});
+    let ang=0;S1T.forEach(tt=>{const d=lt-tt;if(d>0&&d<.6)ang+=Math.sin(d*55)*3*(1-d/.6);});
+    $('#s1phone').style.transform=`rotate(${ang*M()}deg)`;
+    $('#s1count').textContent=Math.max(1,S1T.filter(x=>lt>=x).length);
+    let spent=0;S1T.forEach(tt=>spent+=easeOut(prog(lt,tt+.1,.5)));
+    $('#s1fill').style.width=(100-spent*11)+'%';
+    s1coins.forEach((c,i)=>{const d=lt-(S1T[i]+.15);if(d<0){c.style.opacity=0;return;}
+      const x0=900*(1-(i+1)*.11)-22; const y=RM?0:.5*1500*d*d; c.style.left=(x0+(RM?0:50*d))+'px';c.style.top=(46+y)+'px';
+      c.style.transform=`rotate(${RM?0:260*d}deg)`;c.style.opacity=(RM?1-prog(d,.3,.6):1-prog(d,.45,.4));});
+  },
+  s2(lt){
+    const p=prog(lt,1.0,7.0); play2.style.left=(GX-6+p*10*CW)+'px'; play2.style.opacity=(lt>0.9&&p<1)?1:0;
+    s2cells.forEach(o=>{const tf=1.0+7.0*(o.c+.5)/10;const on=lt>=tf;
+      o.el.classList.toggle('fired',on);o.el.classList.toggle('no',on&&!o.yes);o.el.classList.toggle('yes',on&&!!o.yes);
+      o.fl.style.opacity=on?Math.exp(-(lt-tf)*4)*.9:0;});
+  },
+  s3(lt){
+    const tick=Math.floor(lt*1.6);
+    dots.forEach((d,i)=>d.classList.toggle('on',hash(i,tick)<.36));
+    const c=$('#s3contact'),w=$('#s3wait');
+    let sel=-1; if(lt>=3.0&&lt<5.2) sel=Math.floor((lt-3)/.36)%2; else if(lt>=5.2) sel=0;
+    c.classList.toggle('sel',sel===0); w.classList.toggle('sel',sel===1);
+    w.classList.toggle('dim',lt>=5.2); c.classList.remove('dim');
+    s3cols.forEach((opts,ci)=>{const a=S3AT[ci];opts.forEach((o,oi)=>{
+      const scanning=lt>=a&&lt<a+1.2, done=lt>=a+1.2;
+      o.classList.toggle('hl',scanning&&Math.floor((lt-a)/.24)%4===oi);
+      o.classList.toggle('sel',done&&oi===S3SEL[ci]); o.classList.toggle('dim',done&&oi!==S3SEL[ci]);});});
+  },
+  s4(lt){
+    s4steps.forEach((s,i)=>{const on=lt>=S4T[i], next=i<5?lt>=S4T[i+1]:false;
+      s.classList.toggle('act',on&&!next); s.classList.toggle('done',next); s.classList.toggle('pend',!on);});
+    const inCall=lt>=8.5&&lt<13.5;
+    bars.forEach((b,i)=>{const h=inCall&&!RM?10+50*Math.abs(Math.sin(lt*6+i*.7)*Math.sin(lt*2.3+i*.31)):10;b.style.height=h+'px';});
+    $('#s4clock').textContent= lt<3.5?'10:02': lt<8.5?'7:32': lt<16.5?'7:41':'9:15';
+    strikes.forEach((s,i)=>s.style.width=(easeOut(prog(lt,18.0+i*.35,.6))*(100-8))+'%');
+  },
+  s5(lt){
+    [2.4,2.75,3.1,3.45].forEach((t,i)=>{const el=$('#c'+(i+1));const off=lt>=t;el.classList.toggle('off',off);el.lastElementChild.textContent=off?'OFF':'ON';});
+    const sc=$('#s5scan'); const scanning=lt>=5.0&&lt<7.0; sc.style.opacity=scanning?1:0;
+    sc.style.top=(((lt-5.0)%1.0)/1.0*100)+'%';
+    $('#s5receipt').classList.toggle('bad',lt>=7.0);
+  },
+  s6(lt){
+    const cur=$('#s6cursor'), rip=$('#s6ripple'), ap=$('#s6approve');
+    const bx=360+1+ap.offsetLeft+ap.offsetWidth/2, by=320+1+ap.offsetTop+ap.offsetHeight/2; // card origin + offset inside card
+    const p=easeIO(prog(lt,1.4,1.3)); const x=lerp(1560,bx,p), y=lerp(900,by,p);
+    cur.style.left=x+'px'; cur.style.top=y+'px'; cur.style.opacity=lt>1.2&&lt<5.6?1:0;
+    const cp=prog(lt,2.8,.6); rip.style.left=bx+'px'; rip.style.top=by+'px';
+    rip.style.opacity=lt>=2.8?(1-cp):0; rip.style.transform=`scale(${1+cp*4})`;
+    const done=lt>=2.9; ap.classList.toggle('pressed',done); ap.textContent=done?'Approved ✓':'Approve';
+    const st=$('#s6status'); st.textContent=done?'Approved by supervisor':'Waiting for a supervisor'; st.className='chip '+(done?'teal':'amber');
+  },
+  s7(lt){
+    const dp=prog(lt,0.6,5.0); lns.forEach(l=>l.style.strokeDashoffset=1-dp);
+    $('#s7drop').setAttribute('opacity',easeOut(prog(lt,0.6+5.0*7.2/13,.4)));
+    const q=easeIO(prog(lt,5.8,1.6));
+    const W=lerp(55,18,q), S=lerp(30,44,q), V=100-W-S;
+    const sw=[['sgW',W,'WhatsApp'],['sgS',S,'SMS'],['sgV',V,'Voice']]; let x=0;
+    sw.forEach(([id,v,n])=>{const e=$('#'+id);e.style.left=x+'%';e.style.width=v+'%';e.textContent=`${n} ${Math.round(v)}%`;x+=v;});
+    const T0=9.0, SL=1.5; const raw=(lt-T0)/SL; const k=clamp(Math.floor(raw)+1,0,NSTEP); const tp=RM?1:easeIO(clamp((raw-Math.floor(raw))/.55));
+    fdots.forEach((d,j)=>{const s=seqs[j]; const cur=s[k], prev=s[Math.max(0,k-1)]; const ff= lt<T0?0:(k>=NSTEP&&raw>NSTEP?1:tp);
+      const lane=lt<T0?0:lerp(prev,cur,ff); d.style.top=(lane*(LH+LG)+LH/2)+'px';
+      const li=Math.round(lane); d.style.background=laneColor[li]; d.style.boxShadow=`0 0 12px ${laneColor[li]}`;});
+  },
+  s8(lt){
+    const base=380;
+    $('#s8b1').style.width=(base*easeOut(prog(lt,1.4,1.0)))+'px';
+    $('#s8b1').style.opacity=prog(lt,1.4,.2);
+    $('#s8b2').style.width=(base*(1+CONFIG.numbers.liftPct/100)*easeOut(prog(lt,4.9,1.8)))+'px';
+    $('#s8b2').style.opacity=prog(lt,4.9,.2);
+  },
+  s9(){}
+};
+
+/* ---------------- render ---------------- */
+const capEl=$('#capText'); let lastCue=null;
+const chapBtns=[];
+function sceneAt(t){for(const s of SCENES) if(t<s.end) return s; return SCENES[SCENES.length-1];}
+function render(t){
+  const sc=sceneAt(t);
+  SCENES.forEach(s=>{
+    if(s!==sc){s.el.style.display='none';return;}
+    const lt=t-s.start;
+    let o=s.idx===0?easeOut(prog(lt,0,.8)):easeOut(prog(lt,0,.45));
+    if(s.idx<SCENES.length-1) o*=1-prog(lt,s.dur-.4,.4);
+    s.el.style.display='block'; s.el.style.visibility='visible'; s.el.style.opacity=o;
+    s.el.style.scale=String(RM?1:1.02-.02*easeOut(prog(lt,0,3)));
+    s.reveals.forEach(r=>reveal(r,lt)); s.counts.forEach(c=>count(c,lt)); FX[s.id](lt);
+  });
+  // captions
+  const lt=t-sc.start; let cue=null, ci=-1;
+  sc.cues.forEach((c,i)=>{if(lt>=c[0]){cue=c;ci=i;}});
+  const key=cue?sc.id+':'+ci:null;
+  if(key!==lastCue){
+    if(cue&&!sc.noCaption){capEl.textContent=cue[1];capEl.classList.add('show');} else capEl.classList.remove('show');
+    if(cue&&playing&&!seeking) speak(cue[1]);
+    lastCue=key;
+  }
+  // chrome
+  $('#chapNum').textContent=String(sc.idx+1).padStart(2,'0'); $('#chapName').textContent=sc.name;
+  $('#time').textContent=`${mmss(t)} / ${mmss(TOTAL)}`;
+  if(!dragging) $('#scrub').value=t;
+  chapBtns.forEach((b,i)=>{const s=SCENES[i];b.classList.toggle('cur',s===sc);b.firstChild.style.width=(clamp((t-s.start)/s.dur)*100)+'%';});
+}
+
+/* ---------------- playback ---------------- */
+let t=0, playing=false, last=null, seeking=false, dragging=false;
+function frame(now){
+  if(playing){ if(last!=null) t+=Math.min(0.25,(now-last)/1000); last=now; /* cap jumps after a hidden tab */ if(t>=TOTAL){t=TOTAL;pause();} } else last=null;
+  render(t); seeking=false; requestAnimationFrame(frame);
+}
+function play(){ if(t>=TOTAL) seek(0); playing=true; last=null; $('#bPlay').textContent='❚❚ Pause'; poke(); }
+function pause(){ playing=false; $('#bPlay').textContent='▶ Play'; stopSpeech(); showUI(); }
+function seek(x){ t=clamp(x,0,TOTAL); seeking=true; lastCue=null; stopSpeech(); }
+function sceneJump(d){ const sc=sceneAt(t); const i=clamp(sc.idx+d,0,SCENES.length-1); seek(SCENES[i].start+0.001); }
+
+/* ---------------- narration (browser speechSynthesis, off by default) ---------------- */
+let voiceOn=false, voice=null;
+function pickVoice(){ if(!('speechSynthesis' in window)) return;
+  const vs=speechSynthesis.getVoices();
+  voice=vs.find(v=>v.lang==='en-IN')||vs.find(v=>/en[-_]IN/i.test(v.lang))||vs.find(v=>/India/i.test(v.name))||vs.find(v=>v.lang==='en-GB')||vs.find(v=>/^en/i.test(v.lang))||null;
+  $('#bVoice').title = voice?`Voice: ${voice.name} (${voice.lang})`:'No voice available';
+}
+if('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }
+function speak(text){ if(!voiceOn||!('speechSynthesis' in window)) return; speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text.replace(/[“”]/g,'')); if(voice){u.voice=voice;u.lang=voice.lang;} else u.lang='en-IN'; u.rate=1.02; speechSynthesis.speak(u); }
+function stopSpeech(){ if('speechSynthesis' in window) speechSynthesis.cancel(); }
+
+/* ---------------- UI ---------------- */
+SCENES.forEach(s=>{const b=document.createElement('button');b.style.flex=s.dur;b.innerHTML='<i class="pf"></i><span>'+(s.idx+1)+' · '+s.name+'</span>';
+  b.title=`${mmss(s.start)} ${s.name}`; b.onclick=()=>{seek(s.start+0.001);}; $('#chapters').appendChild(b); chapBtns.push(b);});
+$('#bPlay').onclick=()=>playing?pause():play();
+const scrub=$('#scrub'); scrub.max=TOTAL;
+scrub.addEventListener('input',()=>{dragging=true;seek(+scrub.value);});
+scrub.addEventListener('change',()=>{dragging=false;});
+function setCC(on){document.body.classList.toggle('nocap',!on);$('#bCC').classList.toggle('on',on);}
+$('#bCC').onclick=()=>setCC(document.body.classList.contains('nocap'));
+function setVoice(on){voiceOn=on;$('#bVoice').classList.toggle('on',on);$('#bVoice').textContent='Narration: '+(on?'on':'off');if(!on)stopSpeech();else lastCue=null;}
+$('#bVoice').onclick=()=>setVoice(!voiceOn);
+let recTimer=null;
+function enterRecord(){document.body.classList.add('record');pause();seek(0);clearTimeout(recTimer);recTimer=setTimeout(play,1500);}
+function exitRecord(){document.body.classList.remove('record');clearTimeout(recTimer);showUI();}
+$('#bRec').onclick=enterRecord;
+addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'&&e.key!==' ') return;
+  const k=e.key.toLowerCase();
+  if(e.key===' '){e.preventDefault();playing?pause():play();}
+  else if(e.key==='ArrowRight'){sceneJump(1);} else if(e.key==='ArrowLeft'){sceneJump(-1);}
+  else if(k==='c'){setCC(document.body.classList.contains('nocap'));}
+  else if(k==='n'){setVoice(!voiceOn);}
+  else if(k==='r'){document.body.classList.contains('record')?exitRecord():enterRecord();}
+  else if(e.key==='Escape'){exitRecord();}
+  poke();
+});
+let idleTimer=null; const ui=$('#ui');
+function showUI(){ui.classList.remove('idle');}
+function poke(){showUI();clearTimeout(idleTimer);idleTimer=setTimeout(()=>{if(playing)ui.classList.add('idle');},2500);}
+addEventListener('mousemove',poke);
+
+/* fit 1920x1080 stage into the window */
+function fit(){const s=Math.min(innerWidth/1920,innerHeight/1080);const st=$('#stage');
+  st.style.transform=`translate(${(innerWidth-1920*s)/2}px,${(innerHeight-1080*s)/2}px) scale(${s})`;}
+addEventListener('resize',fit); fit();
+
+/* URL options: ?t=38  ?scene=4  ?autoplay=1  ?record=1  ?cc=0 */
+const qs=new URLSearchParams(location.search);
+if(qs.has('t')) seek(+qs.get('t'));
+if(qs.has('scene')) seek(SCENES[clamp(+qs.get('scene')-1,0,SCENES.length-1)].start+0.001);
+if(qs.get('cc')==='0') setCC(false);
+if(qs.get('record')==='1') enterRecord(); else if(qs.get('autoplay')==='1') play();
+window.KAIROS_FILM={seek:x=>{seek(x);render(t);},play,pause,get t(){return t;},TOTAL,SCENES}; // for testing
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
