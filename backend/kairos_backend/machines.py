@@ -25,6 +25,7 @@ Machines (name -> builder):
     k06.hitl.approval       a held send's approval: PENDING -> APPROVED / BLOCKED_AT_RECHECK / ...
     k17.voice.disposition   disposition x confidence -> action (thresholds.json)
     k17.voice.call          one call-end webhook: PROCESSING -> DONE / UNMATCHED / DUPLICATE
+    cm03.conversation       CM-03 inbound WhatsApp servicing: identify -> OTP -> serve / hand off / close
 """
 from __future__ import annotations
 
@@ -702,6 +703,72 @@ def voice_call_machine() -> Machine:
         source="branch:k17-k18/voice-engine")
 
 
+CM03_ACTIVE = ("NEW", "AWAIT_LOAN_ID", "AWAIT_OTP", "VERIFIED", "AWAIT_PTP_DATE", "AWAIT_UTR")
+CM03_VERIFIED = ("VERIFIED", "AWAIT_PTP_DATE", "AWAIT_UTR")
+
+
+def cm03_conversation_machine() -> Machine:
+    """CM-03 WhatsApp servicing conversation (origin/cm03/whatsapp-servicing, cm03/engine.py). One inbound
+    message is one event; NLU (rules, then the k09 classifier) only *names* the event."""
+    E = "cm03/engine.py ConversationEngine"
+    tr: List[Transition] = []
+    for s in CM03_ACTIVE:
+        tr += [T(s, "FRAUD_SIGNAL", "HANDOFF", None, "refuse; FRAUD_SUSPECT ticket; nothing disclosed",
+                 f"{E}._step: fraud detectors run before anything else (injection, phishing, spoofing, OTP scam)"),
+               T(s, "STOP", "CLOSED", None, "Ledger.record_stop (all channels) when it is the registered number",
+                 "K01 holds.STOP_OPT_OUT: no OTP needed to opt out"),
+               T(s, "WRONG_PERSON", "CLOSED", None, "WRONG_NUMBER_CLOSED; contact-data review", f"{E}: no disclosure"),
+               T(s, "ENGINE_ERROR", "HANDOFF", None, "holding reply; a human picks it up", f"{E}.handle")]
+    tr += [
+        T("NEW", "FIRST_MESSAGE", "AWAIT_OTP", "registered & !otp_blocked", "send OTP; park the request",
+          "CM-03: zero disclosure before verification (OTP)"),
+        T("NEW", "FIRST_MESSAGE", "HANDOFF", "registered & otp_blocked", "OTP_LOCKED / OTP_SEND_LIMIT", "otp.py lockout / send limit"),
+        T("NEW", "FIRST_MESSAGE", "AWAIT_LOAN_ID", "!registered & !has_loan_id", "ask for the loan id", "unregistered sender"),
+        T("NEW", "FIRST_MESSAGE", "HANDOFF", "!registered & has_loan_id", "UNREGISTERED_NUMBER (same answer either way)",
+          "no account enumeration before verification"),
+        T("AWAIT_LOAN_ID", "LOAN_ID_REPLY", "HANDOFF", "has_loan_id", "UNREGISTERED_NUMBER, or fraud on impersonation",
+          "no account enumeration before verification"),
+        T("AWAIT_LOAN_ID", "LOAN_ID_REPLY", "AWAIT_LOAN_ID", "!has_loan_id & !asked_twice", "ask again", f"{E}._pre_verify"),
+        T("AWAIT_LOAN_ID", "LOAN_ID_REPLY", "HANDOFF", "!has_loan_id & asked_twice", "UNIDENTIFIED", f"{E}._pre_verify"),
+        T("AWAIT_OTP", "OTP_CODE", "VERIFIED", "otp_ok", "bind sender + conversation + account; serve the parked request",
+          "OTP verified (the parked request is then served as a VERIFIED event in the same message)"),
+        T("AWAIT_OTP", "OTP_CODE", "AWAIT_OTP", "otp_wrong", "attempts left", "otp.py"),
+        T("AWAIT_OTP", "OTP_CODE", "AWAIT_OTP", "otp_expired", "ask to resend", "otp.py"),
+        T("AWAIT_OTP", "OTP_CODE", "HANDOFF", "otp_locked", "OTP_LOCKED", "3 wrong codes"),
+        T("AWAIT_OTP", "RESEND_OTP", "AWAIT_OTP", "otp_sent", None, "otp.py send limit"),
+        T("AWAIT_OTP", "RESEND_OTP", "HANDOFF", "!otp_sent", "OTP_LOCKED / OTP_SEND_LIMIT", "otp.py send limit"),
+        T("AWAIT_OTP", "OTHER_BEFORE_OTP", "AWAIT_OTP", None, "park it; PRE_VERIFY_SAFE copy only",
+          f"{E}._reply disclosure guard"),
+    ]
+    for s in CM03_VERIFIED:
+        tr += [
+            T(s, "SERVED", "VERIFIED", None, "balance / pay link / statement / NOC / loan details / claim / PTP recorded",
+              "audited tool calls; collection intents through K13 (exceptions.handle)"),
+            T(s, "ASK_PTP_DATE", "AWAIT_PTP_DATE", None, "needs time, or a date outside the window",
+              "K13 needs_time / promise_to_pay.auto_accept_max_days"),
+            T(s, "ASK_UTR", "AWAIT_UTR", None, "claim without a bank reference", "a claim is never a payment"),
+            T(s, "ROUTE_TO_HUMAN", "HANDOFF", None, "ticket: callback / hardship / dispute / waiver / complaint / "
+              "PTP beyond window / payment reversed / unknown twice", "K13 routed_exceptions, callback, hardship"),
+            T(s, "CROSS_ACCOUNT", "HANDOFF", None, "FRAUD_SUSPECT", "verified borrower asked about another borrower's loan"),
+            T(s, "GOODBYE", "CLOSED", None, None, "thanks"),
+            T(s, "CLARIFY", "VERIFIED", None, "clarify / menu / language", f"{E}._serve"),
+        ]
+    tr += [T("HANDOFF", "ANY_MESSAGE", "HANDOFF", None, "holding reply", "a human owns the conversation"),
+           T("HANDOFF", "STOP", "HANDOFF", None, "Ledger.record_stop; stays with the human", f"{E}._step")]
+    return Machine(
+        "cm03.conversation", "1", list(CM03_ACTIVE) + ["HANDOFF", "CLOSED"], "NEW", ["HANDOFF", "CLOSED"], tr,
+        exclusive=[{"otp_ok", "otp_wrong", "otp_expired", "otp_locked"}],
+        description=("One inbound WhatsApp servicing conversation. Nothing about the account is looked up for a reply "
+                     "before OTP verification; a request made before it is parked and served right after. Rules (and "
+                     "the k09 classifier, LLM only for ambiguous free text) name the event; the engine's code picks the "
+                     "transition and the tool calls. Idle for 30 minutes, or CLOSED, means the next message opens a new "
+                     "conversation."),
+        enforced_by=["kairos_backend/cm03/engine.py (cm03/whatsapp-servicing): ConversationEngine._step / _pre_verify / _serve / _reply"],
+        proven_by=["tests/fsm/test_conformance_cm03.py (runs when kairos_backend.cm03 is present: the seeded CM-03 eval, "
+                   "every message's state change must be declared)"],
+        llm="classify", source="branch:cm03/whatsapp-servicing")
+
+
 # =============================================================================================
 # catalog
 # =============================================================================================
@@ -719,7 +786,7 @@ def catalog(policy=None, voice_thresholds: Optional[dict] = None) -> "OrderedDic
           intent_machine(), payment_claim_machine(), hitl_approval_machine()]
     if voice_thresholds is not None:
         ms.append(voice_disposition_machine(voice_thresholds))
-    ms += [voice_call_machine(), learner_arm_machine()]
+    ms += [voice_call_machine(), cm03_conversation_machine(), learner_arm_machine()]
     return OrderedDict((m.name, m) for m in ms)
 
 
@@ -739,7 +806,8 @@ PAYMENT_CLAIM = payment_claim_machine()
 HITL_APPROVAL = hitl_approval_machine()
 VOICE_CALL = voice_call_machine()
 INTENT = intent_machine()
+CM03 = cm03_conversation_machine()
 
 STATIC: Dict[str, Machine] = {m.name: m for m in (TOUCH, TOUCH_HITL, SUPERVISOR_PLAN, SUPERVISOR_DISPATCH, OUTCOME,
                                                    PTP_HOLD, HARDSHIP_HOLD, CALLBACK_HOLD, SUPERVISOR_HOLD, CONSENT,
-                                                   LEARNER_ARM, PAYMENT_CLAIM, HITL_APPROVAL, VOICE_CALL, INTENT)}
+                                                   LEARNER_ARM, PAYMENT_CLAIM, HITL_APPROVAL, VOICE_CALL, INTENT, CM03)}

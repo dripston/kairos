@@ -27,13 +27,15 @@ happens next.
 | Where | What the LLM does | What it cannot do |
 |---|---|---|
 | Ambiguous free-text replies (`k09.intent`, `kairos_backend/intent.py`) | Picks one value from a closed list of intents (`NEEDS_TIME`, `PTP`, `CLAIMS_PAID`, `CALLBACK`, `HARDSHIP`, `STOP`, `DISPUTE`, `WRONG_PERSON`, `OTHER`), with a summary of 160 characters or less. The model is `gpt-6-luna` with reasoning effort `none`, no tools and a strict JSON schema. Its input is redacted and cut to 500 characters, and it is called at most once per message. | It cannot run on DTMF digits, WhatsApp buttons or STOP keywords; those are always handled by rules. It cannot override a rules decision. Any error, refusal or bad output becomes `OTHER` with a review flag. Its answer is only an *event*: the K13 table, the Gate and the ledger decide what that event does. |
-| Voice calls (Sarvam bots, K17/K18) | Speaks the script inside one call state, then classifies the call into one of 16 dispositions with a confidence score (`k17.voice.disposition`). | It cannot decide what a disposition does. Kairos applies `policy/K17-voice-dispositions/thresholds.json`. A low-confidence STOP, hardship or abuse disposition still goes to a person. A low-confidence promise-to-pay, "already paid" or callback request never creates a hold or a payment. A call never marks an EMI paid. |
-| CM-03 WhatsApp agent | Phrases replies inside a conversation state (see the CM-03 section). | It cannot disclose anything before OTP verification and cannot move the conversation to another state. |
+| Voice call outcome (Sarvam post-call variables, K17/K18) | Classifies the finished call into one of 16 dispositions with a confidence score (`k17.voice.disposition`). | It cannot decide what a disposition does. Kairos applies `policy/K17-voice-dispositions/thresholds.json`. A low-confidence STOP, hardship or abuse disposition still goes to a person. A low-confidence promise-to-pay, "already paid" or callback request never creates a hold or a payment. A call never marks an EMI paid. |
+| CM-03 WhatsApp agent (`cm03.conversation`) | Classifies ambiguous free text through the same `k09.intent` classifier, and only when an API key is set. Every reply comes from fixed English and Hindi templates (`cm03/copy.py`). | It cannot move the conversation to another state; the engine's code does that. It cannot cause any disclosure before OTP: `_reply` only allows `PRE_VERIFY_SAFE` templates while the conversation is unverified. |
+| Sarvam voice bots, inside a call (see [Voice bots](#voice-bots-sarvam)) | The bot moves between script states with a `transition_to_next_state` tool call. The platform limits each state's `next_states`, but the LLM's reading of the caller picks which allowed state comes next. | This is phrasing scope only. Nothing the bot does inside a call changes Kairos state. Kairos acts only on the post-call disposition, through `k17.voice.disposition` and the thresholds. |
 
 ### Where an LLM is never used
 
-- **Every transition** in every machine below. Each one is chosen by `Machine.step` or by the code the
-  conformance tests hold to it.
+- **Every transition** in every Kairos machine below. Each one is chosen by `Machine.step` or by the code
+  the conformance tests hold to it. The Sarvam in-call script states are outside Kairos and change no Kairos
+  state.
 - **Every guardrail.** This covers the K01 Gate in `evaluation_order`, caps across campaigns, consent,
   STOP, quiet days and the contact window, stop-for-day, holds, budget and the campaign stop condition.
   The Gate runs at approval and again at send time.
@@ -50,14 +52,15 @@ happens next.
 1. **Declarations are validated when they are built.** A machine that is ambiguous, has an unreachable
    state or has a dead end fails at import time (`tests/fsm/test_fsm_toolkit.py`).
 2. **Conformance tests.** Seeded random event sequences drive the real ledger, executor, supervisor,
-   gate, K13 table, outcome finalizer, learner and intent classifier. HITL and voice are included when
-   those branches are merged. Before each call, the test predicts every state change from the declared
+   gate, K13 table, outcome finalizer, learner and intent classifier. HITL, voice and CM-03 are included
+   when those branches are merged. Before each call, the test predicts every state change from the declared
    machine using facts it reads itself. After the call, the database must match the prediction exactly.
    A second test requires every reachable declared transition to have been taken.
 3. **Strict mode** (`KAIROS_FSM_STRICT=1`). SQLite triggers on `touches` refuse any status change that is
    not a declared `k06.touch` transition, whichever module tries to write it. The full backend suite on
-   this branch passes in strict mode. On local merges with k06/hitl-control and k17-k18/voice-engine,
-   exactly one existing test fails in each, and each failure is a finding (FSM-F2 and FSM-F1).
+   this branch passes in strict mode, and so does the merge with cm03/whatsapp-servicing. On local merges
+   with k06/hitl-control and k17-k18/voice-engine, exactly one existing test fails in each, and each
+   failure is a finding (FSM-F2 and FSM-F1).
 4. **Audit.** `Machine.record()` turns each fired transition into a CRM-envelope-style record with the
    machine, version, from, event, guard, to and rule. The supervisor already emits `supervisor.decision`
    and `touch.dispatched` envelopes for its own transitions.
@@ -67,26 +70,27 @@ happens next.
 
 ## Machines
 
-| # | Machine | Version | States | Transitions | Declared from | Conformance |
-|---|---|---|---|---|---|---|
-| 1 | [`k06.touch`](#1-k06touch-v1) | 1 | 9 | 48 | this branch | tests/fsm/test_conformance_touch.py |
-| 2 | [`k06.touch+hitl`](#2-k06touchhitl-v1) | 1 | 10 | 59 | this branch | tests/fsm/test_conformance_touch.py |
-| 3 | [`k01.gate`](#3-k01gate-v110) | 1.1.0 | 24 | 41 | this branch | tests/fsm/test_conformance_gate.py |
-| 4 | [`k06.supervisor.plan`](#4-k06supervisorplan-v1) | 1 | 7 | 15 | this branch | tests/fsm/test_conformance_supervisor.py |
-| 5 | [`k06.supervisor.dispatch`](#5-k06supervisordispatch-v1) | 1 | 5 | 6 | this branch | tests/fsm/test_conformance_supervisor.py |
-| 6 | [`k09.outcome`](#6-k09outcome-v1) | 1 | 6 | 30 | this branch | tests/fsm/test_conformance_outcome.py |
-| 7 | [`k13.exception`](#7-k13exception-v100) | 1.0.0 | 18 | 21 | this branch | tests/fsm/test_conformance_k13.py |
-| 8 | [`k13.hold.ptp`](#8-k13holdptp-v1) | 1 | 4 | 19 | this branch | tests/fsm/test_conformance_holds.py |
-| 9 | [`k13.hold.hardship`](#9-k13holdhardship-v1) | 1 | 3 | 14 | this branch | tests/fsm/test_conformance_holds.py |
-| 10 | [`k13.hold.callback`](#10-k13holdcallback-v1) | 1 | 2 | 8 | this branch | tests/fsm/test_conformance_holds.py |
-| 11 | [`k13.hold.supervisor`](#11-k13holdsupervisor-v1) | 1 | 2 | 6 | this branch | tests/fsm/test_conformance_holds.py |
-| 12 | [`k01.consent`](#12-k01consent-v1) | 1 | 3 | 13 | this branch | tests/fsm/test_conformance_holds.py |
-| 13 | [`k09.intent`](#13-k09intent-v1) | 1 | 8 | 12 | this branch | tests/fsm/test_conformance_intent.py |
-| 14 | [`k17.payment_claim`](#14-k17payment_claim-v010-draft) | 0.1.0-draft | 4 | 6 | origin/k17-k18/voice-engine | tests/fsm/test_conformance_voice.py |
-| 15 | [`k06.hitl.approval`](#15-k06hitlapproval-v010) | 0.1.0 | 9 | 23 | origin/k06/hitl-control | tests/fsm/test_conformance_hitl.py |
-| 16 | [`k17.voice.disposition`](#16-k17voicedisposition-v010-draft) | 0.1.0-draft | 15 | 46 | origin/k17-k18/voice-engine | tests/fsm/test_conformance_voice.py |
-| 17 | [`k17.voice.call`](#17-k17voicecall-v1) | 1 | 4 | 7 | origin/k17-k18/voice-engine | tests/fsm/test_conformance_voice.py |
-| 18 | [`k09.learner.arm`](#18-k09learnerarm-v1) | 1 | 3 | 14 | this branch | tests/fsm/test_conformance_learner.py |
+| Machine | Version | States | Transitions | Declared from | Conformance |
+|---|---|---|---|---|---|
+| [`k06.touch`](#k06touch-v1) | 1 | 9 | 48 | this branch | tests/fsm/test_conformance_touch.py |
+| [`k06.touch+hitl`](#k06touchhitl-v1) | 1 | 10 | 59 | this branch | tests/fsm/test_conformance_touch.py |
+| [`k01.gate`](#k01gate-v110) | 1.1.0 | 24 | 41 | this branch | tests/fsm/test_conformance_gate.py |
+| [`k06.supervisor.plan`](#k06supervisorplan-v1) | 1 | 7 | 15 | this branch | tests/fsm/test_conformance_supervisor.py |
+| [`k06.supervisor.dispatch`](#k06supervisordispatch-v1) | 1 | 5 | 6 | this branch | tests/fsm/test_conformance_supervisor.py |
+| [`k09.outcome`](#k09outcome-v1) | 1 | 6 | 30 | this branch | tests/fsm/test_conformance_outcome.py |
+| [`k13.exception`](#k13exception-v100) | 1.0.0 | 18 | 21 | this branch | tests/fsm/test_conformance_k13.py |
+| [`k13.hold.ptp`](#k13holdptp-v1) | 1 | 4 | 19 | this branch | tests/fsm/test_conformance_holds.py |
+| [`k13.hold.hardship`](#k13holdhardship-v1) | 1 | 3 | 14 | this branch | tests/fsm/test_conformance_holds.py |
+| [`k13.hold.callback`](#k13holdcallback-v1) | 1 | 2 | 8 | this branch | tests/fsm/test_conformance_holds.py |
+| [`k13.hold.supervisor`](#k13holdsupervisor-v1) | 1 | 2 | 6 | this branch | tests/fsm/test_conformance_holds.py |
+| [`k01.consent`](#k01consent-v1) | 1 | 3 | 13 | this branch | tests/fsm/test_conformance_holds.py |
+| [`k09.intent`](#k09intent-v1) | 1 | 8 | 12 | this branch | tests/fsm/test_conformance_intent.py |
+| [`k17.payment_claim`](#k17payment_claim-v010-draft) | 0.1.0-draft | 4 | 6 | origin/k17-k18/voice-engine | tests/fsm/test_conformance_voice.py |
+| [`k06.hitl.approval`](#k06hitlapproval-v010) | 0.1.0 | 9 | 23 | origin/k06/hitl-control | tests/fsm/test_conformance_hitl.py |
+| [`k17.voice.disposition`](#k17voicedisposition-v010-draft) | 0.1.0-draft | 15 | 46 | origin/k17-k18/voice-engine | tests/fsm/test_conformance_voice.py |
+| [`k17.voice.call`](#k17voicecall-v1) | 1 | 4 | 7 | origin/k17-k18/voice-engine | tests/fsm/test_conformance_voice.py |
+| [`cm03.conversation`](#cm03conversation-v1) | 1 | 8 | 61 | origin/cm03/whatsapp-servicing | tests/fsm/test_conformance_cm03.py |
+| [`k09.learner.arm`](#k09learnerarm-v1) | 1 | 3 | 14 | this branch | tests/fsm/test_conformance_learner.py |
 
 ## Findings
 
@@ -109,7 +113,7 @@ Other notes:
 - The K13 holds CALLBACK_PENDING and SUPERVISOR_HOLD are still placed in the Gate order by
   `gate.EXTRA_RULES_AFTER`, pending Product.
 
-### 1. `k06.touch` (v1)
+### `k06.touch` (v1)
 
 **Purpose.** One touch = one reserved instruction for one EMI. Reserved touches count toward caps and budget immediately; the Gate runs at approval (reserve) and again at send time; a touch is dispatched at most once; an uncertain send is resolved by asking the provider, never resent.
 
@@ -195,7 +199,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_touch.py (seeded random event sequences); tests/test_ledger.py (dispatch once, uncertain, STOP / payment scope)
 
-### 2. `k06.touch+hitl` (v1)
+### `k06.touch+hitl` (v1)
 
 **Purpose.** One touch = one reserved instruction for one EMI. Reserved touches count toward caps and budget immediately; the Gate runs at approval (reserve) and again at send time; a touch is dispatched at most once; an uncertain send is resolved by asking the provider, never resent. With HITL, a send matching an approval rule waits in PENDING_APPROVAL (holding its cap slot and budget) until a person approves (Gate re-run), rejects, or it expires.
 
@@ -295,7 +299,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_touch.py (seeded random event sequences); tests/test_ledger.py (dispatch once, uncertain, STOP / payment scope); tests/fsm/test_conformance_hitl.py (runs when kairos_backend.hitl is present)
 
-### 3. `k01.gate` (v1.1.0)
+### `k01.gate` (v1.1.0)
 
 **Purpose.** May this touch be sent at this moment? The rules run in policy.json evaluation_order and the first hit wins; every decision carries the rule and policy_version. The Gate is pure: all state arrives as Facts computed atomically by the ledger.
 
@@ -401,7 +405,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_gate.py (seeded random Facts); tests/test_gate_k01.py (Ojas's K01 cases)
 
-### 4. `k06.supervisor.plan` (v1)
+### `k06.supervisor.plan` (v1)
 
 **Purpose.** Plan one touch for one EMI. Borrower-level holds first (policy order), then the full Gate per candidate, then the learner ranks only what is eligible, then an atomic reserve. The LLM is not in this path; the learner is a deterministic Beta-Bernoulli posterior mean in PRODUCTION.
 
@@ -446,7 +450,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_supervisor.py (seeded random borrowers / candidates); tests/test_supervisor_fsm.py
 
-### 5. `k06.supervisor.dispatch` (v1)
+### `k06.supervisor.dispatch` (v1)
 
 **Purpose.** Dispatch one reserved touch through the Executor; the Gate runs again at send time.
 
@@ -479,7 +483,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_supervisor.py; tests/test_supervisor_fsm.py
 
-### 6. `k09.outcome` (v1)
+### `k09.outcome` (v1)
 
 **Purpose.** One FINAL learning outcome per executed touch, decided when its 24 h reply window closes. Delivery / read / click are reach, never a reply; a verified payment is tracked separately and never a reward; duplicates and late replies never change the reward; UNRESOLVED never reaches the learner.
 
@@ -539,7 +543,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_outcome.py (seeded random replies / clocks); tests/test_outcomes.py
 
-### 7. `k13.exception` (v1.0.0)
+### `k13.exception` (v1.0.0)
 
 **Purpose.** One borrower event (classified upstream — by rules, DTMF, a voice disposition, or the LLM for ambiguous free text) -> one (action, hold, queue) from exceptions.json. The table is pure; the ledger applies the hold. Note: the *_SUPERVISOR states are the same K13 action (CAPTURE_PTP / HOLD_UNTIL_DATE) with a supervisor ticket.
 
@@ -614,7 +618,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_k13.py (every event x seeded random facts); tests/test_exceptions_k13.py
 
-### 8. `k13.hold.ptp` (v1)
+### `k13.hold.ptp` (v1)
 
 **Purpose.** A borrower-wide promise-to-pay hold: no outbound activity on any channel through the PTP date. Kept = the promised EMI is verified paid (D7/LMS); broken = unpaid when the next day starts (BROKEN_PTP counted; at the threshold no new hold is granted). KEPT / BROKEN are the outcome of the last promise; a new promise starts a new hold.
 
@@ -660,7 +664,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_holds.py; tests/test_ledger.py
 
-### 9. `k13.hold.hardship` (v1)
+### `k13.hold.hardship` (v1)
 
 **Purpose.** Hardship pauses every channel (Gate WAIT, or HANDOFF when the borrower's date is beyond 4 days).
 
@@ -700,7 +704,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_holds.py
 
-### 10. `k13.hold.callback` (v1)
+### `k13.hold.callback` (v1)
 
 **Purpose.** A borrower asked for a person: all outbound nudges pause until the callback is answered or missed twice.
 
@@ -730,7 +734,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_holds.py
 
-### 11. `k13.hold.supervisor` (v1)
+### `k13.hold.supervisor` (v1)
 
 **Purpose.** Paused on every channel until a person clears it. Kairos never lifts it on its own.
 
@@ -758,7 +762,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_holds.py
 
-### 12. `k01.consent` (v1)
+### `k01.consent` (v1)
 
 **Purpose.** Contactability of one borrower on one channel, as the Gate sees it (STOP_OPT_OUT -> CANCEL, CONSENT -> WAIT). The initial state is whatever the K03 consents table says; CONTACTABLE is drawn as the start.
 
@@ -797,7 +801,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_holds.py
 
-### 13. `k09.intent` (v1)
+### `k09.intent` (v1)
 
 **Purpose.** Classify one inbound borrower message into a closed intent enum. Deterministic rules first; at most ONE LLM call, only for free text the rules cannot decide. The LLM's answer is a *value* (an event for k13.exception / STOP / payment verification), never a transition: what the intent does is decided by the K13 table, the Gate and the ledger.
 
@@ -844,9 +848,9 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_intent.py (seeded random messages, spy LLM); tests/test_intent.py
 
-### 14. `k17.payment_claim` (v0.1.0-draft)
+### `k17.payment_claim` (v0.1.0-draft)
 
-> Declared from `origin/k17-k18/voice-engine`, which is not merged here. Its conformance test runs once that branch is merged.
+> Declared from `origin/k17-k18/voice-engine`. Its conformance test runs when that branch's code is present and is skipped otherwise.
 
 **Purpose.** A borrower says they already paid. A claim is never a payment: reminders pause for 48 h while the ledger waits for D7/LMS; only Ledger.record_payment_verified clears an EMI. There is no REJECTED state in the code: a fake claim simply EXPIRES (see findings).
 
@@ -877,9 +881,9 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_voice.py (runs when kairos_backend.voice is present)
 
-### 15. `k06.hitl.approval` (v0.1.0)
+### `k06.hitl.approval` (v0.1.0)
 
-> Declared from `origin/k06/hitl-control`, which is not merged here. Its conformance test runs once that branch is merged.
+> Declared from `origin/k06/hitl-control`. Its conformance test runs when that branch's code is present and is skipped otherwise.
 
 **Purpose.** A send that passed every guardrail but matches an approval rule waits for a person. Approval can only make outreach stricter: the Gate runs again at approval and at send time. RESCHEDULED is final here; the code can restore it when the new slot is refused (see findings).
 
@@ -938,9 +942,9 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_hitl.py (runs when kairos_backend.hitl is present)
 
-### 16. `k17.voice.disposition` (v0.1.0-draft)
+### `k17.voice.disposition` (v0.1.0-draft)
 
-> Declared from `origin/k17-k18/voice-engine`, which is not merged here. Its conformance test runs once that branch is merged.
+> Declared from `origin/k17-k18/voice-engine`. Its conformance test runs when that branch's code is present and is skipped otherwise.
 
 **Purpose.** The Sarvam bot (an LLM) only *classifies* the call into one of 16 dispositions with a confidence; Kairos — not the bot — decides what it does. Safety first: a low-confidence STOP / hardship / abuse still goes to a person; a low-confidence PTP / paid / callback never creates a hold or a payment.
 
@@ -1034,9 +1038,9 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_voice.py (runs when kairos_backend.voice is present)
 
-### 17. `k17.voice.call` (v1)
+### `k17.voice.call` (v1)
 
-> Declared from `origin/k17-k18/voice-engine`, which is not merged here. Its conformance test runs once that branch is merged.
+> Declared from `origin/k17-k18/voice-engine`. Its conformance test runs when that branch's code is present and is skipped otherwise.
 
 **Purpose.** One Sarvam call-end webhook, processed exactly once.
 
@@ -1069,7 +1073,115 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_voice.py (runs when kairos_backend.voice is present)
 
-### 18. `k09.learner.arm` (v1)
+### `cm03.conversation` (v1)
+
+> Declared from `origin/cm03/whatsapp-servicing`. Its conformance test runs when that branch's code is present and is skipped otherwise.
+
+**Purpose.** One inbound WhatsApp servicing conversation. Nothing about the account is looked up for a reply before OTP verification; a request made before it is parked and served right after. Rules (and the k09 classifier, LLM only for ambiguous free text) name the event; the engine's code picks the transition and the tool calls. Idle for 30 minutes, or CLOSED, means the next message opens a new conversation.
+
+**LLM role:** classify only (an event value, never a transition).
+
+```mermaid
+stateDiagram-v2
+    [*] --> NEW
+    NEW --> HANDOFF : FRAUD_SIGNAL / ENGINE_ERROR / FIRST_MESSAGE [registered & otp_blocked] / FIRST_MESSAGE [!registered & has_loan_id]
+    NEW --> CLOSED : STOP / WRONG_PERSON
+    AWAIT_LOAN_ID --> HANDOFF : FRAUD_SIGNAL / ENGINE_ERROR / LOAN_ID_REPLY [has_loan_id] / LOAN_ID_REPLY [!has_loan_id & asked_twice]
+    AWAIT_LOAN_ID --> CLOSED : STOP / WRONG_PERSON
+    AWAIT_OTP --> HANDOFF : FRAUD_SIGNAL / ENGINE_ERROR / OTP_CODE [otp_locked] / RESEND_OTP [!otp_sent]
+    AWAIT_OTP --> CLOSED : STOP / WRONG_PERSON
+    VERIFIED --> HANDOFF : FRAUD_SIGNAL / ENGINE_ERROR / ROUTE_TO_HUMAN / CROSS_ACCOUNT
+    VERIFIED --> CLOSED : STOP / WRONG_PERSON / GOODBYE
+    AWAIT_PTP_DATE --> HANDOFF : FRAUD_SIGNAL / ENGINE_ERROR / ROUTE_TO_HUMAN / CROSS_ACCOUNT
+    AWAIT_PTP_DATE --> CLOSED : STOP / WRONG_PERSON / GOODBYE
+    AWAIT_UTR --> HANDOFF : FRAUD_SIGNAL / ENGINE_ERROR / ROUTE_TO_HUMAN / CROSS_ACCOUNT
+    AWAIT_UTR --> CLOSED : STOP / WRONG_PERSON / GOODBYE
+    NEW --> AWAIT_OTP : FIRST_MESSAGE [registered & !otp_blocked]
+    NEW --> AWAIT_LOAN_ID : FIRST_MESSAGE [!registered & !has_loan_id]
+    AWAIT_OTP --> VERIFIED : OTP_CODE [otp_ok]
+    VERIFIED --> AWAIT_PTP_DATE : ASK_PTP_DATE
+    VERIFIED --> AWAIT_UTR : ASK_UTR
+    AWAIT_PTP_DATE --> VERIFIED : SERVED / CLARIFY
+    AWAIT_PTP_DATE --> AWAIT_UTR : ASK_UTR
+    AWAIT_UTR --> VERIFIED : SERVED / CLARIFY
+    AWAIT_UTR --> AWAIT_PTP_DATE : ASK_PTP_DATE
+    HANDOFF --> [*]
+    CLOSED --> [*]
+```
+
+States: `NEW`, `AWAIT_LOAN_ID`, `AWAIT_OTP`, `VERIFIED`, `AWAIT_PTP_DATE`, `AWAIT_UTR`, `HANDOFF`, `CLOSED`. Initial: `NEW`. Final: `CLOSED`, `HANDOFF`. Fingerprint `adc6011b10d5`.
+
+Transitions (self-loops are events that are accepted and change nothing):
+
+| From | Event | Guard | To | Action | Rule / policy |
+|---|---|---|---|---|---|
+| NEW | FRAUD_SIGNAL | — | HANDOFF | refuse; FRAUD_SUSPECT ticket; nothing disclosed | cm03/engine.py ConversationEngine._step: fraud detectors run before anything else (injection, phishing, spoofing, OTP scam) |
+| NEW | STOP | — | CLOSED | Ledger.record_stop (all channels) when it is the registered number | K01 holds.STOP_OPT_OUT: no OTP needed to opt out |
+| NEW | WRONG_PERSON | — | CLOSED | WRONG_NUMBER_CLOSED; contact-data review | cm03/engine.py ConversationEngine: no disclosure |
+| NEW | ENGINE_ERROR | — | HANDOFF | holding reply; a human picks it up | cm03/engine.py ConversationEngine.handle |
+| AWAIT_LOAN_ID | FRAUD_SIGNAL | — | HANDOFF | refuse; FRAUD_SUSPECT ticket; nothing disclosed | cm03/engine.py ConversationEngine._step: fraud detectors run before anything else (injection, phishing, spoofing, OTP scam) |
+| AWAIT_LOAN_ID | STOP | — | CLOSED | Ledger.record_stop (all channels) when it is the registered number | K01 holds.STOP_OPT_OUT: no OTP needed to opt out |
+| AWAIT_LOAN_ID | WRONG_PERSON | — | CLOSED | WRONG_NUMBER_CLOSED; contact-data review | cm03/engine.py ConversationEngine: no disclosure |
+| AWAIT_LOAN_ID | ENGINE_ERROR | — | HANDOFF | holding reply; a human picks it up | cm03/engine.py ConversationEngine.handle |
+| AWAIT_OTP | FRAUD_SIGNAL | — | HANDOFF | refuse; FRAUD_SUSPECT ticket; nothing disclosed | cm03/engine.py ConversationEngine._step: fraud detectors run before anything else (injection, phishing, spoofing, OTP scam) |
+| AWAIT_OTP | STOP | — | CLOSED | Ledger.record_stop (all channels) when it is the registered number | K01 holds.STOP_OPT_OUT: no OTP needed to opt out |
+| AWAIT_OTP | WRONG_PERSON | — | CLOSED | WRONG_NUMBER_CLOSED; contact-data review | cm03/engine.py ConversationEngine: no disclosure |
+| AWAIT_OTP | ENGINE_ERROR | — | HANDOFF | holding reply; a human picks it up | cm03/engine.py ConversationEngine.handle |
+| VERIFIED | FRAUD_SIGNAL | — | HANDOFF | refuse; FRAUD_SUSPECT ticket; nothing disclosed | cm03/engine.py ConversationEngine._step: fraud detectors run before anything else (injection, phishing, spoofing, OTP scam) |
+| VERIFIED | STOP | — | CLOSED | Ledger.record_stop (all channels) when it is the registered number | K01 holds.STOP_OPT_OUT: no OTP needed to opt out |
+| VERIFIED | WRONG_PERSON | — | CLOSED | WRONG_NUMBER_CLOSED; contact-data review | cm03/engine.py ConversationEngine: no disclosure |
+| VERIFIED | ENGINE_ERROR | — | HANDOFF | holding reply; a human picks it up | cm03/engine.py ConversationEngine.handle |
+| AWAIT_PTP_DATE | FRAUD_SIGNAL | — | HANDOFF | refuse; FRAUD_SUSPECT ticket; nothing disclosed | cm03/engine.py ConversationEngine._step: fraud detectors run before anything else (injection, phishing, spoofing, OTP scam) |
+| AWAIT_PTP_DATE | STOP | — | CLOSED | Ledger.record_stop (all channels) when it is the registered number | K01 holds.STOP_OPT_OUT: no OTP needed to opt out |
+| AWAIT_PTP_DATE | WRONG_PERSON | — | CLOSED | WRONG_NUMBER_CLOSED; contact-data review | cm03/engine.py ConversationEngine: no disclosure |
+| AWAIT_PTP_DATE | ENGINE_ERROR | — | HANDOFF | holding reply; a human picks it up | cm03/engine.py ConversationEngine.handle |
+| AWAIT_UTR | FRAUD_SIGNAL | — | HANDOFF | refuse; FRAUD_SUSPECT ticket; nothing disclosed | cm03/engine.py ConversationEngine._step: fraud detectors run before anything else (injection, phishing, spoofing, OTP scam) |
+| AWAIT_UTR | STOP | — | CLOSED | Ledger.record_stop (all channels) when it is the registered number | K01 holds.STOP_OPT_OUT: no OTP needed to opt out |
+| AWAIT_UTR | WRONG_PERSON | — | CLOSED | WRONG_NUMBER_CLOSED; contact-data review | cm03/engine.py ConversationEngine: no disclosure |
+| AWAIT_UTR | ENGINE_ERROR | — | HANDOFF | holding reply; a human picks it up | cm03/engine.py ConversationEngine.handle |
+| NEW | FIRST_MESSAGE | registered & !otp_blocked | AWAIT_OTP | send OTP; park the request | CM-03: zero disclosure before verification (OTP) |
+| NEW | FIRST_MESSAGE | registered & otp_blocked | HANDOFF | OTP_LOCKED / OTP_SEND_LIMIT | otp.py lockout / send limit |
+| NEW | FIRST_MESSAGE | !registered & !has_loan_id | AWAIT_LOAN_ID | ask for the loan id | unregistered sender |
+| NEW | FIRST_MESSAGE | !registered & has_loan_id | HANDOFF | UNREGISTERED_NUMBER (same answer either way) | no account enumeration before verification |
+| AWAIT_LOAN_ID | LOAN_ID_REPLY | has_loan_id | HANDOFF | UNREGISTERED_NUMBER, or fraud on impersonation | no account enumeration before verification |
+| AWAIT_LOAN_ID | LOAN_ID_REPLY | !has_loan_id & !asked_twice | AWAIT_LOAN_ID | ask again | cm03/engine.py ConversationEngine._pre_verify |
+| AWAIT_LOAN_ID | LOAN_ID_REPLY | !has_loan_id & asked_twice | HANDOFF | UNIDENTIFIED | cm03/engine.py ConversationEngine._pre_verify |
+| AWAIT_OTP | OTP_CODE | otp_ok | VERIFIED | bind sender + conversation + account; serve the parked request | OTP verified (the parked request is then served as a VERIFIED event in the same message) |
+| AWAIT_OTP | OTP_CODE | otp_wrong | AWAIT_OTP | attempts left | otp.py |
+| AWAIT_OTP | OTP_CODE | otp_expired | AWAIT_OTP | ask to resend | otp.py |
+| AWAIT_OTP | OTP_CODE | otp_locked | HANDOFF | OTP_LOCKED | 3 wrong codes |
+| AWAIT_OTP | RESEND_OTP | otp_sent | AWAIT_OTP | — | otp.py send limit |
+| AWAIT_OTP | RESEND_OTP | !otp_sent | HANDOFF | OTP_LOCKED / OTP_SEND_LIMIT | otp.py send limit |
+| AWAIT_OTP | OTHER_BEFORE_OTP | — | AWAIT_OTP | park it; PRE_VERIFY_SAFE copy only | cm03/engine.py ConversationEngine._reply disclosure guard |
+| VERIFIED | SERVED | — | VERIFIED | balance / pay link / statement / NOC / loan details / claim / PTP recorded | audited tool calls; collection intents through K13 (exceptions.handle) |
+| VERIFIED | ASK_PTP_DATE | — | AWAIT_PTP_DATE | needs time, or a date outside the window | K13 needs_time / promise_to_pay.auto_accept_max_days |
+| VERIFIED | ASK_UTR | — | AWAIT_UTR | claim without a bank reference | a claim is never a payment |
+| VERIFIED | ROUTE_TO_HUMAN | — | HANDOFF | ticket: callback / hardship / dispute / waiver / complaint / PTP beyond window / payment reversed / unknown twice | K13 routed_exceptions, callback, hardship |
+| VERIFIED | CROSS_ACCOUNT | — | HANDOFF | FRAUD_SUSPECT | verified borrower asked about another borrower's loan |
+| VERIFIED | GOODBYE | — | CLOSED | — | thanks |
+| VERIFIED | CLARIFY | — | VERIFIED | clarify / menu / language | cm03/engine.py ConversationEngine._serve |
+| AWAIT_PTP_DATE | SERVED | — | VERIFIED | balance / pay link / statement / NOC / loan details / claim / PTP recorded | audited tool calls; collection intents through K13 (exceptions.handle) |
+| AWAIT_PTP_DATE | ASK_PTP_DATE | — | AWAIT_PTP_DATE | needs time, or a date outside the window | K13 needs_time / promise_to_pay.auto_accept_max_days |
+| AWAIT_PTP_DATE | ASK_UTR | — | AWAIT_UTR | claim without a bank reference | a claim is never a payment |
+| AWAIT_PTP_DATE | ROUTE_TO_HUMAN | — | HANDOFF | ticket: callback / hardship / dispute / waiver / complaint / PTP beyond window / payment reversed / unknown twice | K13 routed_exceptions, callback, hardship |
+| AWAIT_PTP_DATE | CROSS_ACCOUNT | — | HANDOFF | FRAUD_SUSPECT | verified borrower asked about another borrower's loan |
+| AWAIT_PTP_DATE | GOODBYE | — | CLOSED | — | thanks |
+| AWAIT_PTP_DATE | CLARIFY | — | VERIFIED | clarify / menu / language | cm03/engine.py ConversationEngine._serve |
+| AWAIT_UTR | SERVED | — | VERIFIED | balance / pay link / statement / NOC / loan details / claim / PTP recorded | audited tool calls; collection intents through K13 (exceptions.handle) |
+| AWAIT_UTR | ASK_PTP_DATE | — | AWAIT_PTP_DATE | needs time, or a date outside the window | K13 needs_time / promise_to_pay.auto_accept_max_days |
+| AWAIT_UTR | ASK_UTR | — | AWAIT_UTR | claim without a bank reference | a claim is never a payment |
+| AWAIT_UTR | ROUTE_TO_HUMAN | — | HANDOFF | ticket: callback / hardship / dispute / waiver / complaint / PTP beyond window / payment reversed / unknown twice | K13 routed_exceptions, callback, hardship |
+| AWAIT_UTR | CROSS_ACCOUNT | — | HANDOFF | FRAUD_SUSPECT | verified borrower asked about another borrower's loan |
+| AWAIT_UTR | GOODBYE | — | CLOSED | — | thanks |
+| AWAIT_UTR | CLARIFY | — | VERIFIED | clarify / menu / language | cm03/engine.py ConversationEngine._serve |
+| HANDOFF | ANY_MESSAGE | — | HANDOFF | holding reply | a human owns the conversation |
+| HANDOFF | STOP | — | HANDOFF | Ledger.record_stop; stays with the human | cm03/engine.py ConversationEngine._step |
+
+**Enforced by:** `kairos_backend/cm03/engine.py (cm03/whatsapp-servicing): ConversationEngine._step / _pre_verify / _serve / _reply`
+
+**Proven by:** tests/fsm/test_conformance_cm03.py (runs when kairos_backend.cm03 is present: the seeded CM-03 eval, every message's state change must be declared)
+
+### `k09.learner.arm` (v1)
 
 **Purpose.** Where one arm's (band x channel x slot) estimate comes from. Only FINAL REPLY / NO_REPLY outcomes move it, once per instruction_id. PRODUCTION ranks by the posterior mean (no randomness); seeded Thompson draws only in SANDBOX / SIMULATOR. On k09/optimize (not merged here) evidence decays with age, so a SEGMENT arm can fall back to POOLED when its weighted count drops below min_segment_obs: that DECAY transition is not declared until that branch lands.
 
@@ -1109,19 +1221,348 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 ## Voice bots (Sarvam)
 
-_Placeholder._ The voice-bot conversation states (the per-call script states of the six "Kairos - ..."
-Sarvam agents) are being written by another agent and were not available when this file was generated.
-Regenerate with `python scripts/render_states.py --voice-states <path>` to include them.
+> These are the bots' *in-call script states*, configured on the Sarvam platform. The LLM moves between
+> them with a tool call, limited to each state's `next_states`. That is phrasing scope: nothing here
+> changes Kairos state. Kairos acts only on the post-call disposition (`k17.voice.disposition`,
+> `k17.voice.call` above), and Kairos, not the bot, decides what the disposition does.
 
-What already holds today: the bot only phrases the conversation inside a call and classifies the outcome.
-What Kairos does with that classification is `k17.voice.disposition` and `k17.voice.call` below.
 
-## CM-03 WhatsApp servicing agent
+All six Kairos voice agents in the CreditNirvana Sarvam workspace run as multi-state agents. Each conversation phase is a named state with explicit transitions, following the pattern of the CreditNirvana production collections bots (CS Post-Due, TrueHome, AU, UGRO).
 
-_Placeholder._ The CM-03 inbound WhatsApp agent is being built on `cm03/whatsapp-servicing`, which had
-not been pushed when this file was generated. Its conversation machine (verification gate → OTP →
-servicing intents → handoff) will be declared in `machines.py` and rendered here once the branch lands.
-Regenerate with `python scripts/render_states.py --cm03 <path>`.
+| Agent | Sarvam id | Voice | Committed version |
+|---|---|---|---|
+| Pre-Due Reminder | `Kairos---Pr-0282af37-ef9d` | Ritu | v3 |
+| EMI Reminder 1-30 DPD | `Kairos---EM-15f2766f-4eba` | Ritu | v3 |
+| Callback | `Kairos---Ca-f080ffa8-2d1d` | Advait | v2 |
+| Mid-Bucket 31-90 DPD | `Kairos---Mi-edcd3099-61a2` | Advait | v2 |
+| PTP Follow-up | `Kairos---PT-07a93e21-1a9b` | Ritu | v2 |
+| Hardship Triage | `Kairos---Ha-1f02cd05-dfa0` | Advait | v2 |
 
-Rules it must keep, which are already enforced elsewhere: no disclosure before OTP verification, STOP
-on WhatsApp suppresses all channels (`k01.consent`), and "already paid" is a claim, never a payment.
+### How it works
+
+- **Global prompt** (`prompt_scope='global'`): Persona, Speaking style, Facts, State flow, Side routes, Guardrails (priority order, payment route, consequences, persuasion budget, self-harm, deceased borrower, abuse, confidentiality, closing rule).
+- **State prompts** (`prompt_scope='state:<name>'`): each has Purpose, Steps, Rules (where needed) and Transitions. A transition is written `transition to state:<name>` followed by a space or a line break. The platform parser treats trailing punctuation as part of the state name. Each state's `next_states` lists exactly the states it may move to.
+- **Runtime behaviour:** a transition is a `transition_to_next_state` tool call. The same turn continues in the new state, and only the new state's reply reaches the caller. Any acknowledgement meant for that turn therefore belongs in the new state's prompt.
+- **Call end:** every terminal path ends with `call end_interaction`. Its `end_message` is the only text spoken in that final turn, so the closing line carries the acknowledgement, the next step and the goodbye together.
+- **Single-prompt mode:** EMI Reminder and Callback were in single-prompt mode (`is_single_prompt_mode: true`), and the other four were not. While it is on, `prompt_scope='global'` writes land in the initial state. It was turned off on both agents as part of the conversion.
+- **Unchanged:** input and post-call variables, `evaluation_config` call goal, voicemail detection and message, silence nudges, voice, languages and intro. Kairos code keeps its variable names.
+
+#### Side routes (collections bots)
+
+These routes are reachable from every main-flow state. Each side state ends the call itself.
+
+| Trigger | Target |
+|---|---|
+| Not the borrower, wrong number, relative answering | `wrong_person` |
+| Busy, driving, call later | `busy_callback` |
+| Illness, hospitalisation, job or business loss, death in family, disaster | `hardship` |
+| Dispute or fraud claim, wants person, branch or senior, settlement, waiver or foreclosure | `dispute_or_human` |
+| Stop calling | `stop_request` |
+| Says already paid | `already_paid` |
+
+Inside the side states:
+
+- `busy_callback`, `dispute_or_human` and `already_paid` can still move to `stop_request`.
+- Mid-Bucket's `already_paid` can also return to `negotiation` after a contradiction check.
+- Self-harm, deceased borrower, abuse and prompt-extraction attempts are handled by global guardrails in any state. Each ends with `end_interaction`.
+
+#### Shared side-state behaviour
+
+| State | Behaviour |
+|---|---|
+| `wrong_person` | **Wrong number or stranger:** one apology and end. **Relative:** says the call is from the lender for the borrower, asks for a better time between 9 AM and 7 PM, re-asks once if details are requested, then thanks and ends. Never discloses the loan, dues or dates. Never asks the person's relationship. |
+| `busy_callback` | Asks for a time between 9 AM and 7 PM, proposes the nearest in-window time once, then confirms in the closing line and ends. |
+| `hardship` | One turn: an empathetic clause, the senior team member who will reach out, and a goodbye, all in the end message. No payment, date or consequence. |
+| `dispute_or_human` | **Dispute:** acknowledge, no waiver, the team will contact the user, end. **Person, branch or senior:** ask for a time between 9 AM and 7 PM, confirm, end. **Settlement, waiver or foreclosure:** an authorised team member will call back, end. |
+| `stop_request` | One turn: the closing line says the stop request is noted, with no persuasion and no promise that calls stop. |
+| `already_paid` | Asks once for whichever of date and mode is missing. Neither confirms nor denies. It will be checked, then end. |
+
+#### Shared `commitment_readback`
+
+1. **Exact date.** Relative words are resolved against `call_date`: kal is the next day, parso the day after, a weekday name the next such day.
+2. **Limit check against `max_ptp_date`.** The limit is never spoken or hinted at, and no earlier date is suggested. When the date is beyond the limit, one consequence line and one ask for an earlier date follow. This ask happens at most once per call. If the user keeps the late date, it is accepted, a team member may follow up, and it is read back as a confirmed date.
+3. **Read back** the date as day and month, then wait for confirmation. Confirmed goes to `closing`. A changed date re-runs steps 2 and 3. A withdrawn commitment goes to `closing`.
+
+Earlier states never question a late date. Every exact date goes straight to `commitment_readback`.
+
+---
+
+### 1. Pre-Due Reminder (Ritu)
+
+```mermaid
+stateDiagram-v2
+    [*] --> identification
+    identification --> main_message: identity confirmed
+    identification --> wrong_person: not borrower / 2nd unclear
+    main_message --> closing: agrees to keep balance / pay now link
+    main_message --> commitment_readback: gives exact date
+    main_message --> reason: unsure / cannot / vague
+    reason --> commitment_readback: exact date
+    reason --> closing: agrees / refusal / 2nd vague
+    commitment_readback --> closing: confirmed / withdrawn
+    closing --> [*]
+
+    state "Side routes (from identification, main_message, reason, commitment_readback)" as side {
+        wrong_person
+        busy_callback
+        hardship
+        dispute_or_human
+        stop_request
+        already_paid
+    }
+    busy_callback --> stop_request
+    dispute_or_human --> stop_request
+    already_paid --> stop_request
+    wrong_person --> [*]
+    busy_callback --> [*]
+    hardship --> [*]
+    dispute_or_human --> [*]
+    stop_request --> [*]
+    already_paid --> [*]
+```
+
+| State | Does | Transitions |
+|---|---|---|
+| `identification` | Confirms identity (haan, boliye, bolo, yes, tell me, speaking). Discloses nothing. Re-asks once. | **Confirmed:** `main_message`. **Not borrower or 2nd unclear:** `wrong_person`. **Busy:** `busy_callback`. **Stop:** `stop_request`. **Other side routes:** as listed above. |
+| `main_message` | Quick reminder that the E M I is due on `emi_due_date`. Asks whether the amount can be kept a day before. | **Yes:** `closing`. **Pay now or link:** `closing`. **Any exact date:** `commitment_readback`. **Unsure, cannot or vague:** `reason`. **Side routes.** |
+| `reason` | Asks once what makes it difficult. Gives one bounce-charge and credit-score line. Asks for a date. | **Exact date:** `commitment_readback`. **2nd vague, refusal or agrees:** `closing`. **Side routes.** |
+| `commitment_readback` | Shared readback (above). | **Confirmed or withdrawn:** `closing`. **Side routes.** |
+| `closing` | One line matched to the outcome, then `end_interaction`. | None |
+
+### 2. EMI Reminder 1-30 DPD (Ritu)
+
+```mermaid
+stateDiagram-v2
+    [*] --> identification
+    identification --> permission: identity confirmed
+    identification --> wrong_person: not borrower / 2nd unclear
+    permission --> main_message: ok to talk / asks what it is about
+    permission --> busy_callback: not now
+    main_message --> closing: will pay today
+    main_message --> commitment_readback: exact date
+    main_message --> negotiation: needs time / auto-debit bounced / refuses / vague
+    negotiation --> commitment_readback: exact date
+    negotiation --> closing: pays today / 2nd refusal / budget used
+    commitment_readback --> closing: confirmed / withdrawn
+    closing --> [*]
+
+    state "Side routes (from every main-flow state)" as side {
+        wrong_person
+        busy_callback
+        hardship
+        dispute_or_human
+        stop_request
+        already_paid
+    }
+    busy_callback --> stop_request
+    dispute_or_human --> stop_request
+    already_paid --> stop_request
+```
+
+| State | Does | Transitions |
+|---|---|---|
+| `identification` | As in Pre-Due. | **Confirmed:** `permission`. **Side routes.** |
+| `permission` | Asks whether this is a good time for two minutes. | **Yes or asks what it is about:** `main_message`. **No or busy:** `busy_callback`. **Side routes.** |
+| `main_message` | Says the E M I due on `emi_due_date` has not been received and that this sometimes happens by oversight. Asks to pay today by link. Acts at once on a date or reason given with the permission answer. | **Today:** `closing`. **Any exact date:** `commitment_readback`. **Needs time, auto-debit or technical, refuses or vague:** `negotiation`. **Side routes.** |
+| `negotiation` | **Needs time:** reason, then exact date. **Auto-debit:** link clears this E M I and auto-debit continues, then when? **Refuses:** one consequence line and one ask. **Vague:** one exact-date ask. | **Exact date:** `commitment_readback`. **Today:** `closing`. **2nd refusal, 2nd vague or budget used:** `closing`. **Side routes.** |
+| `commitment_readback` | Shared readback. | **Confirmed or withdrawn:** `closing`. |
+| `closing` | **Today:** link after the call. **Date:** reminders for this E M I pause until then. **No date:** the team follows up. Then `end_interaction`. | None |
+
+### 3. Callback (Advait)
+
+```mermaid
+stateDiagram-v2
+    [*] --> identification
+    identification --> permission: identity confirmed
+    identification --> wrong_person: not borrower / 2nd unclear
+    permission --> main_message: ok to talk
+    permission --> busy_callback: not now
+    main_message --> closing: will pay today
+    main_message --> commitment_readback: exact date (near or far)
+    main_message --> negotiation: reason / needs time / refuses / vague
+    negotiation --> commitment_readback: exact date
+    negotiation --> closing: pays today / no date after one ask / 2nd refusal
+    commitment_readback --> closing: confirmed / withdrawn
+    closing --> [*]
+
+    state "Side routes (from every main-flow state)" as side {
+        wrong_person
+        busy_callback
+        hardship
+        dispute_or_human
+        stop_request
+        already_paid
+    }
+    busy_callback --> stop_request
+    dispute_or_human --> stop_request
+    already_paid --> stop_request
+```
+
+| State | Does | Transitions |
+|---|---|---|
+| `identification` | As in Pre-Due. | **Confirmed:** `permission`. **Side routes.** |
+| `permission` | Says this is the call back the user asked for (`callback_reason` is in context). Asks whether now is good for two minutes. | **Yes:** `main_message`. **No:** `busy_callback`. **Side routes.** |
+| `main_message` | Asks one open question about how the user wants to handle the E M I due on `emi_due_date`. Skips the question when a date, reason or refusal was already given. | **Today:** `closing`. **Any exact date:** `commitment_readback`. **Reason, needs time, refuses or vague:** `negotiation`. **Side routes.** |
+| `negotiation` | Acknowledges in one clause and asks once for an exact date. **Refusal:** one consequence line and one ask. | **Exact date:** `commitment_readback`. **Today:** `closing`. **Still no date:** `closing`, with the team following up to agree a date. **Side routes.** |
+| `commitment_readback` | Shared readback. | **Confirmed or withdrawn:** `closing`. |
+| `closing` | **Date:** reminders pause and the payment is checked on that day. **No date:** the team follows up. Then `end_interaction`. | None |
+
+Callback's `dispute_or_human` also covers a request for a team member after the automated-assistant disclosure.
+
+### 4. Mid-Bucket 31-90 DPD (Advait)
+
+This agent keeps partial-payment and contradiction handling.
+
+```mermaid
+stateDiagram-v2
+    [*] --> identification
+    identification --> permission: identity confirmed
+    identification --> wrong_person: not borrower / 2nd unclear
+    permission --> main_message: ok / asks what it is about
+    permission --> busy_callback: not now
+    main_message --> reason: gives a reason
+    main_message --> commitment_readback: exact date
+    main_message --> negotiation: part payment / refuses / vague
+    main_message --> closing: pays today
+    reason --> closing: pays today
+    reason --> commitment_readback: exact date
+    reason --> negotiation: no date / part payment / refusal / contradiction
+    negotiation --> commitment_readback: full date, or part amount+date and rest date
+    negotiation --> closing: pays today / 2nd refusal / budget used
+    negotiation --> already_paid: contradiction resolved as paid
+    commitment_readback --> negotiation: switches to part payment
+    commitment_readback --> closing: confirmed / withdrawn
+    already_paid --> negotiation: contradiction resolved as not paid
+    closing --> [*]
+
+    state "Side routes (from every main-flow state)" as side {
+        wrong_person
+        busy_callback
+        hardship
+        dispute_or_human
+        stop_request
+        already_paid
+    }
+    busy_callback --> stop_request
+    dispute_or_human --> stop_request
+    already_paid --> stop_request
+```
+
+| State | Does | Transitions |
+|---|---|---|
+| `identification` | As in Pre-Due. | **Confirmed:** `permission`. **Side routes.** |
+| `permission` | Asks for one minute to discuss the E M I. | **Yes or asks:** `main_message`. **No:** `busy_callback`. **Side routes.** |
+| `main_message` | Says the E M I due on `emi_due_date` is `overdue_days` days overdue. Asks what is holding the payment back. Firm tone: no apology, no extra thanks. | **Reason:** `reason`. **Today:** `closing`. **Any exact date:** `commitment_readback`. **Part, refuses or vague:** `negotiation`. **Side routes.** |
+| `reason` | Acknowledges in one clause, with no sympathy for routine reasons. **No funds:** skips the today question and asks for an exact date. Otherwise asks about today. | **Today:** `closing`. **Exact date:** `commitment_readback`. **No date, part, refusal or contradiction:** `negotiation`. **Side routes.** |
+| `negotiation` | **Part payment:** amount and date, then the date for the rest. **No date:** one ask, then a consequence line and a final shorter ask. **Refusal:** consequence line and one ask. **Contradiction:** points out the difference once and asks which is correct. | **Exact date or part plan:** `commitment_readback`. **Today:** `closing`. **2nd refusal or budget used (3 asks):** `closing`. **Paid after all:** `already_paid`. **Side routes.** |
+| `commitment_readback` | Shared readback. The consequence line comes before the earlier-date ask. **Part payment:** reads back the part amount and date plus the date for the rest in one sentence. | **Confirmed or withdrawn:** `closing`. **Switch to part payment:** `negotiation`. |
+| `already_paid` | Step 0 is a contradiction check when the user earlier said no funds or gave a date. | **Not paid:** `negotiation`. **Paid:** date and mode, then end. **Stop:** `stop_request`. |
+| `closing` | **Today:** link. **Date or part plan:** thanks and link. **No date:** the team follows up. Then `end_interaction`. | None |
+
+### 5. PTP Follow-up (Ritu)
+
+This agent keeps the second-date framing.
+
+```mermaid
+stateDiagram-v2
+    [*] --> identification
+    identification --> main_message: identity confirmed
+    identification --> wrong_person: not borrower / 2nd unclear
+    main_message --> already_paid: says paid
+    main_message --> reason: not yet
+    main_message --> commitment_readback: gives new exact date
+    main_message --> negotiation: refuses / vague
+    main_message --> closing: pays today
+    reason --> closing: pays today
+    reason --> commitment_readback: new exact date
+    reason --> negotiation: not today, no date / refusal / vague
+    negotiation --> commitment_readback: new exact date
+    negotiation --> closing: pays today / no date after final ask / refusal
+    commitment_readback --> closing: confirmed / withdrawn
+    closing --> [*]
+
+    state "Side routes (from every main-flow state)" as side {
+        wrong_person
+        busy_callback
+        hardship
+        dispute_or_human
+        stop_request
+        already_paid
+    }
+    busy_callback --> stop_request
+    dispute_or_human --> stop_request
+    already_paid --> stop_request
+```
+
+| State | Does | Transitions |
+|---|---|---|
+| `identification` | As in Pre-Due. The earlier promise is never disclosed before identity is confirmed. | **Confirmed:** `main_message`. **Side routes.** |
+| `main_message` | Mentions the plan to pay by `promise_date` and asks whether the payment was made. Asks, never accuses. | **Paid:** `already_paid`. **Not yet:** `reason`. **Today:** `closing`. **New date:** `commitment_readback`. **Refuses or vague:** `negotiation`. **Side routes.** |
+| `reason` | Asks once what got in the way, acknowledges, asks about paying today by link. | **Today:** `closing`. **Date:** `commitment_readback`. **Not today:** `negotiation`. **Side routes.** |
+| `negotiation` | Asks for a new exact date, noting gently that this is the second date so it should be one the user is sure of. **No date:** one consequence line and one final ask. | **Date:** `commitment_readback`. **Today:** `closing`. **None:** `closing`. **Side routes.** |
+| `commitment_readback` | Shared readback against the shorter post-miss `max_ptp_date`. The earlier-date ask mentions that this is already the second date. | **Confirmed or withdrawn:** `closing`. |
+| `closing` | **Today:** link. **New date:** thanks and link. **None:** the team follows up. Then `end_interaction`. | None |
+
+### 6. Hardship Triage (Advait)
+
+This agent has its own flow and never asks for payment, a commitment date, or mentions consequences.
+
+```mermaid
+stateDiagram-v2
+    [*] --> identification
+    identification --> purpose_permission: identity confirmed
+    identification --> wrong_person: not borrower / 2nd unclear
+    purpose_permission --> how_things_are: ok to talk / already describing
+    purpose_permission --> busy_callback: not now / too upset
+    how_things_are --> senior_callback: describes situation
+    how_things_are --> closing: too upset to continue
+    senior_callback --> looking_ahead: time agreed or declined, user calm
+    senior_callback --> closing: time agreed or declined, user upset or short
+    looking_ahead --> closing: any answer
+    closing --> [*]
+
+    state "Side routes (from every main-flow state)" as side {
+        wrong_person
+        busy_callback
+        dispute_or_human
+        stop_request
+        already_paid
+        volunteered_payment
+    }
+    busy_callback --> stop_request
+    dispute_or_human --> stop_request
+    already_paid --> stop_request
+    volunteered_payment --> stop_request
+```
+
+| State | Does | Transitions |
+|---|---|---|
+| `identification` | As in the other agents. Nothing about the situation is said before confirmation. | **Confirmed:** `purpose_permission`. **Side routes.** |
+| `purpose_permission` | Says the call follows up on what was shared earlier and that no payment is asked today. Asks whether it is an okay time. | **Yes or already describing:** `how_things_are`. **No or too upset:** `busy_callback`. **Side routes.** |
+| `how_things_are` | Asks gently how things are. No probing for details. Transitions silently, because the empathy is spoken in the next state. | **Any description:** `senior_callback`. **Too upset:** `closing`. **Side routes.** |
+| `senior_callback` | Opens with one empathetic clause. Asks whether a senior team member call would help. **Yes:** asks for a day and time between 9 AM and 7 PM. **No:** the call can be asked for anytime. | **Calm user:** `looking_ahead`. **Upset or short:** `closing`. **Side routes.** |
+| `looking_ahead` | Confirms the agreed time. Asks softly, with no commitment, whether there is a rough sense of when E M I payments may resume, framed as prep for the senior team member. | **Any answer:** `closing`. |
+| `closing` | Thanks the user for sharing and says the team will be in touch at the agreed time, then `end_interaction`. | None |
+| `volunteered_payment` | Situation has passed and the user wants to pay. Says that is good to hear and the link comes by SMS after the call. **Volunteered date:** read back once. No date is ever asked for. | **End:** `end_interaction`. **Stop:** `stop_request`. |
+
+Hardship side routes cover `wrong_person`, `busy_callback` (also used when the user is too upset), `dispute_or_human`, `stop_request`, `already_paid` and `volunteered_payment`. There is no `hardship` side state because the whole call is a hardship call.
+
+---
+
+### Test matrix (draft before commit, `send_chat` text runs)
+
+| Agent | Happy + read-back | Wrong person | STOP | Hardship | Already paid | Far date | Extra |
+|---|---|---|---|---|---|---|---|
+| Pre-Due | Pass | Pass | Pass | Pass after fix | Pass | Pass | Agree-to-keep-balance path: pass. v3 re-test: wrong number and far date, pass. |
+| EMI | Pass | Pass after fix | Pass | Pass | Pass | Pass | v3 re-test: date given with the permission answer, pass. |
+| Callback | Pass | Pass | Pass | Pass | Pass | Pass after fix | |
+| Mid-Bucket | Pass (part payment) | Pass | Pass | Pass | Pass | Pass | Contradiction path: pass. |
+| PTP Follow-up | Pass (second-date framing) | Pass | Pass | Pass | Pass after fix | Pass | |
+| Hardship Triage | Pass (no payment asked) | Pass | Pass | n/a (whole call) | Pass | Pass: volunteered late date, no pushback | |
+
+What each fix changed:
+
+- **Pre-Due hardship:** the end message dropped the empathy and handover. The fix puts everything for the final turn into the `end_interaction` message.
+- **EMI wrong person:** a clear wrong number was asked for a callback time. It now gets an apology and the call ends.
+- **Callback far date:** main_message sent the date to negotiation, which pushed twice and never read it back. Every exact date now goes to readback, and the push happens once.
+- **PTP already paid:** the agent re-asked for the date the user had just given. It now asks only for missing details.

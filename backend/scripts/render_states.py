@@ -4,11 +4,12 @@
     python scripts/render_states.py                              # writes ../STATES.md
     python scripts/render_states.py --voice-thresholds PATH      # include k17.voice.disposition from a file
     python scripts/render_states.py --voice-states PATH          # include the Sarvam voice-bot states section
-    python scripts/render_states.py --cm03 PATH                  # include the CM-03 WhatsApp machine section
+    python scripts/render_states.py --cm03 PATH                  # append extra CM-03 notes (the machine itself is declared)
     python scripts/render_states.py --check                      # exit 1 if STATES.md is stale
 
 Every table and diagram is generated from the declarations; tests/fsm/test_states_md.py fails when they
-drift. Prose lives here, next to the generator.
+drift. Prose lives here, next to the generator. A section whose inputs are missing on this checkout (the
+voice-bot states, or k17.voice.disposition before thresholds.json is merged) is kept from the current file.
 """
 from __future__ import annotations
 
@@ -16,6 +17,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Optional
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
@@ -55,13 +57,15 @@ happens next.
 | Where | What the LLM does | What it cannot do |
 |---|---|---|
 | Ambiguous free-text replies (`k09.intent`, `kairos_backend/intent.py`) | Picks one value from a closed list of intents (`NEEDS_TIME`, `PTP`, `CLAIMS_PAID`, `CALLBACK`, `HARDSHIP`, `STOP`, `DISPUTE`, `WRONG_PERSON`, `OTHER`), with a summary of 160 characters or less. The model is `gpt-6-luna` with reasoning effort `none`, no tools and a strict JSON schema. Its input is redacted and cut to 500 characters, and it is called at most once per message. | It cannot run on DTMF digits, WhatsApp buttons or STOP keywords; those are always handled by rules. It cannot override a rules decision. Any error, refusal or bad output becomes `OTHER` with a review flag. Its answer is only an *event*: the K13 table, the Gate and the ledger decide what that event does. |
-| Voice calls (Sarvam bots, K17/K18) | Speaks the script inside one call state, then classifies the call into one of 16 dispositions with a confidence score (`k17.voice.disposition`). | It cannot decide what a disposition does. Kairos applies `policy/K17-voice-dispositions/thresholds.json`. A low-confidence STOP, hardship or abuse disposition still goes to a person. A low-confidence promise-to-pay, "already paid" or callback request never creates a hold or a payment. A call never marks an EMI paid. |
-| CM-03 WhatsApp agent | Phrases replies inside a conversation state (see the CM-03 section). | It cannot disclose anything before OTP verification and cannot move the conversation to another state. |
+| Voice call outcome (Sarvam post-call variables, K17/K18) | Classifies the finished call into one of 16 dispositions with a confidence score (`k17.voice.disposition`). | It cannot decide what a disposition does. Kairos applies `policy/K17-voice-dispositions/thresholds.json`. A low-confidence STOP, hardship or abuse disposition still goes to a person. A low-confidence promise-to-pay, "already paid" or callback request never creates a hold or a payment. A call never marks an EMI paid. |
+| CM-03 WhatsApp agent (`cm03.conversation`) | Classifies ambiguous free text through the same `k09.intent` classifier, and only when an API key is set. Every reply comes from fixed English and Hindi templates (`cm03/copy.py`). | It cannot move the conversation to another state; the engine's code does that. It cannot cause any disclosure before OTP: `_reply` only allows `PRE_VERIFY_SAFE` templates while the conversation is unverified. |
+| Sarvam voice bots, inside a call (see [Voice bots](#voice-bots-sarvam)) | The bot moves between script states with a `transition_to_next_state` tool call. The platform limits each state's `next_states`, but the LLM's reading of the caller picks which allowed state comes next. | This is phrasing scope only. Nothing the bot does inside a call changes Kairos state. Kairos acts only on the post-call disposition, through `k17.voice.disposition` and the thresholds. |
 
 ### Where an LLM is never used
 
-- **Every transition** in every machine below. Each one is chosen by `Machine.step` or by the code the
-  conformance tests hold to it.
+- **Every transition** in every Kairos machine below. Each one is chosen by `Machine.step` or by the code
+  the conformance tests hold to it. The Sarvam in-call script states are outside Kairos and change no Kairos
+  state.
 - **Every guardrail.** This covers the K01 Gate in `evaluation_order`, caps across campaigns, consent,
   STOP, quiet days and the contact window, stop-for-day, holds, budget and the campaign stop condition.
   The Gate runs at approval and again at send time.
@@ -78,14 +82,15 @@ happens next.
 1. **Declarations are validated when they are built.** A machine that is ambiguous, has an unreachable
    state or has a dead end fails at import time (`tests/fsm/test_fsm_toolkit.py`).
 2. **Conformance tests.** Seeded random event sequences drive the real ledger, executor, supervisor,
-   gate, K13 table, outcome finalizer, learner and intent classifier. HITL and voice are included when
-   those branches are merged. Before each call, the test predicts every state change from the declared
+   gate, K13 table, outcome finalizer, learner and intent classifier. HITL, voice and CM-03 are included
+   when those branches are merged. Before each call, the test predicts every state change from the declared
    machine using facts it reads itself. After the call, the database must match the prediction exactly.
    A second test requires every reachable declared transition to have been taken.
 3. **Strict mode** (`KAIROS_FSM_STRICT=1`). SQLite triggers on `touches` refuse any status change that is
    not a declared `k06.touch` transition, whichever module tries to write it. The full backend suite on
-   this branch passes in strict mode. On local merges with k06/hitl-control and k17-k18/voice-engine,
-   exactly one existing test fails in each, and each failure is a finding (FSM-F2 and FSM-F1).
+   this branch passes in strict mode, and so does the merge with cm03/whatsapp-servicing. On local merges
+   with k06/hitl-control and k17-k18/voice-engine, exactly one existing test fails in each, and each
+   failure is a finding (FSM-F2 and FSM-F1).
 4. **Audit.** `Machine.record()` turns each fired transition into a CRM-envelope-style record with the
    machine, version, from, event, guard, to and rule. The supervisor already emits `supervisor.decision`
    and `touch.dispatched` envelopes for its own transitions.
@@ -126,24 +131,38 @@ What already holds today: the bot only phrases the conversation inside a call an
 What Kairos does with that classification is `k17.voice.disposition` and `k17.voice.call` below.
 """
 
-CM03_PLACEHOLDER = """## CM-03 WhatsApp servicing agent
+def voice_section(path: Path) -> str:
+    """The Sarvam voice-bot state design (written separately), demoted under one H2."""
+    out = ["## Voice bots (Sarvam)", "",
+           "> These are the bots' *in-call script states*, configured on the Sarvam platform. The LLM moves between",
+           "> them with a tool call, limited to each state's `next_states`. That is phrasing scope: nothing here",
+           "> changes Kairos state. Kairos acts only on the post-call disposition (`k17.voice.disposition`,",
+           "> `k17.voice.call` above), and Kairos, not the bot, decides what the disposition does.", ""]
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.startswith("# "):
+            continue  # replaced by the H2 above
+        if line.startswith("#") and not line.startswith("#!"):
+            line = "#" + line
+        out.append(line)
+    return "\n".join(out).strip() + "\n"
 
-_Placeholder._ The CM-03 inbound WhatsApp agent is being built on `cm03/whatsapp-servicing`, which had
-not been pushed when this file was generated. Its conversation machine (verification gate → OTP →
-servicing intents → handoff) will be declared in `machines.py` and rendered here once the branch lands.
-Regenerate with `python scripts/render_states.py --cm03 <path>`.
 
-Rules it must keep, which are already enforced elsewhere: no disclosure before OTP verification, STOP
-on WhatsApp suppresses all channels (`k01.consent`), and "already paid" is a claim, never a payment.
-"""
+ORDER = ("k06.touch", "k06.touch+hitl", "k01.gate", "k06.supervisor.plan", "k06.supervisor.dispatch", "k09.outcome",
+         "k13.exception", "k13.hold.ptp", "k13.hold.hardship", "k13.hold.callback", "k13.hold.supervisor",
+         "k01.consent", "k09.intent", "k17.payment_claim", "k06.hitl.approval", "k17.voice.disposition",
+         "k17.voice.call", "cm03.conversation", "k09.learner.arm")
 
 
-def machine_section(m, n: int) -> str:
+def anchor(name: str, version: str) -> str:
+    return f"{name.replace('.', '').replace('+', '')}-v{version.replace('.', '')}"
+
+
+def machine_section(m) -> str:
     branch = m.source.split(":", 1)[1] if m.source.startswith("branch:") else None
-    lines = [f"### {n}. `{m.name}` (v{m.version})", ""]
+    lines = [f"### `{m.name}` (v{m.version})", ""]
     if branch:
-        lines += [f"> Declared from `origin/{branch}`, which is not merged here. Its conformance test runs once that "
-                  f"branch is merged.", ""]
+        lines += [f"> Declared from `origin/{branch}`. Its conformance test runs when that branch's code is present "
+                  f"and is skipped otherwise.", ""]
     lines += [f"**Purpose.** {m.description}", ""]
     if m.llm != "none":
         lines += [f"**LLM role:** {m.llm} only (an event value, never a transition).", ""]
@@ -157,19 +176,59 @@ def machine_section(m, n: int) -> str:
     return "\n".join(lines)
 
 
-def render(voice_thresholds=None, voice_states=None, cm03=None) -> str:
+def old_sections(path: Path) -> dict:
+    """Sections of the current STATES.md by heading, so a machine (or the voice section) whose inputs are
+    not available on this checkout (e.g. thresholds.json before k17-k18 merges) is kept, not dropped."""
+    if not path.exists():
+        return {}
+    out, key, buf = {}, None, []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.startswith("## ") or line.startswith("### `"):
+            if key:
+                out[key] = "\n".join(buf).rstrip() + "\n"
+            key, buf = line, [line]
+        elif key:
+            buf.append(line)
+    if key:
+        out[key] = "\n".join(buf).rstrip() + "\n"
+    return out
+
+
+def render(voice_thresholds=None, voice_states=None, cm03=None, previous: Optional[Path] = None) -> str:
     ms = catalog(voice_thresholds=voice_thresholds)
-    idx = ["## Machines", "", "| # | Machine | Version | States | Transitions | Declared from | Conformance |",
-           "|---|---|---|---|---|---|---|"]
-    for i, m in enumerate(ms.values(), 1):
-        src = m.source.replace("branch:", "origin/") if m.source.startswith("branch:") else "this branch"
-        idx.append(f"| {i} | [`{m.name}`](#{i}-{m.name.replace('.', '').replace('+', '')}-v{m.version.replace('.', '')}) | "
-                   f"{m.version} | {len(m.states)} | {len(m.transitions)} | {src} | {m.proven_by[0].split(' ')[0]} |")
-    parts = [INTRO, DETERMINISTIC_AI, "\n".join(idx) + "\n", FINDINGS]
-    for i, m in enumerate(ms.values(), 1):
-        parts.append(machine_section(m, i))
-    parts.append(Path(voice_states).read_text(encoding="utf-8").strip() + "\n" if voice_states else VOICE_PLACEHOLDER)
-    parts.append(Path(cm03).read_text(encoding="utf-8").strip() + "\n" if cm03 else CM03_PLACEHOLDER)
+    old = old_sections(previous) if previous else {}
+    kept = {}
+    for name in ORDER:
+        if name not in ms:
+            hit = next((k for k in old if k.startswith(f"### `{name}` (v")), None)
+            if hit:
+                kept[name] = (hit, old[hit])
+    idx = ["## Machines", "", "| Machine | Version | States | Transitions | Declared from | Conformance |",
+           "|---|---|---|---|---|---|"]
+    body = []
+    for name in ORDER:
+        if name in ms:
+            m = ms[name]
+            src = m.source.replace("branch:", "origin/") if m.source.startswith("branch:") else "this branch"
+            idx.append(f"| [`{m.name}`](#{anchor(m.name, m.version)}) | {m.version} | {len(m.states)} | "
+                       f"{len(m.transitions)} | {src} | {m.proven_by[0].split(' ')[0]} |")
+            body.append(machine_section(m))
+        elif name in kept:
+            head, text = kept[name]
+            ver = head.split("(v", 1)[1].rstrip(")")
+            row = next((ln for ln in old.get("## Machines", "").splitlines() if ln.startswith(f"| [`{name}`]")), None)
+            idx.append(row or f"| [`{name}`](#{anchor(name, ver)}) | {ver} | — | — | kept from the last render | — |")
+            body.append(text)
+    extra = [n for n in ms if n not in ORDER]
+    if extra:
+        raise SystemExit(f"add {extra} to ORDER in render_states.py")
+    parts = [INTRO, DETERMINISTIC_AI, "\n".join(idx) + "\n", FINDINGS] + body
+    if voice_states:
+        parts.append(voice_section(Path(voice_states)))
+    else:
+        parts.append(old.get("## Voice bots (Sarvam)", VOICE_PLACEHOLDER))
+    if cm03:
+        parts.append(Path(cm03).read_text(encoding="utf-8").strip() + "\n")
     return "\n".join(p.rstrip() + "\n" for p in parts)
 
 
@@ -182,7 +241,7 @@ def main() -> int:
     ap.add_argument("--check", action="store_true")
     a = ap.parse_args()
     th = json.loads(a.voice_thresholds.read_text(encoding="utf-8")) if a.voice_thresholds else None
-    text = render(th, a.voice_states, a.cm03)
+    text = render(th, a.voice_states, a.cm03, previous=a.out)
     if a.check:
         ok = a.out.exists() and a.out.read_text(encoding="utf-8") == text
         print("STATES.md is up to date" if ok else "STATES.md is stale: run scripts/render_states.py")
