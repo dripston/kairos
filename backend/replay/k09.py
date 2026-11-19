@@ -19,7 +19,8 @@ Arms differ only in the ranker:
     cn10    CreditNirvana's 10-day cohort cadence (replay/cn10.py) — CN's own strategy doc, stand-in
             until the official fixed-cadence file (K02)
     k15     the K15 placeholder schedule (WhatsApp every 5 days, SMS every 3, morning)
-    kairos  K09 Beta-Bernoulli (+ borrower context), seeded Thompson sampling in SIMULATOR mode
+    kairos  K09 Beta-Bernoulli (+ borrower context; KairosOptions: decayed evidence and a relative
+            value floor by default), posterior mean unless explore=True (seeded Thompson, SIMULATOR)
 
 Every number is SIMULATED: DEV simulator, synthetic dataset and priors, placeholder costs/caps.
 Money is integer paise; INR fields in the report are display conversions.
@@ -35,17 +36,19 @@ import random
 import tempfile
 import time
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, fields
 from datetime import date, datetime, time as dtime, timedelta
 from typing import Optional
 
 from kairos_backend.borrower_context import BorrowerContextModel, ContextualLearner
-from kairos_backend.contracts import ArmScore, Candidate, Mode, Ranking, RecordingSink, replies_per_rupee
+from kairos_backend.contracts import (DEFAULT_MIN_REPLY_PROB, ArmScore, Candidate, Mode, Ranking, RecordingSink,
+                                     replies_per_rupee)
 from kairos_backend.executor import Executor, FakeProvider
 from kairos_backend.learner import BetaBernoulliLearner
 from kairos_backend.ledger import Ledger
 from kairos_backend.outcomes import OutcomeFinalizer
 from kairos_backend.policy import load_policy
+from kairos_backend.propensity import rule_propensity
 from kairos_backend.supervisor import SupervisorFSM
 from replay import cn10
 from replay import settings as S
@@ -120,6 +123,40 @@ def load_loans(csv_path: str) -> list[LoanInfo]:
     return out
 
 
+@dataclass(frozen=True)
+class KairosOptions:
+    """Kairos-side decision options for the replay's K09 arm. Everything here uses only what a
+    deployment has: ledger history, finalized outcomes, spine fields and costs. See
+    BetaBernoulliLearner / BorrowerContextModel / ContextualLearner.
+
+    Replay default (k09/optimize, chosen on tune seeds, validated on held-out seeds; README "Multi-seed
+    result"): decay=0.7 and value_floor_rel=0.5. The previous default is LEGACY_KAIROS_OPTIONS."""
+    decay: Optional[float] = 0.7               # per-day discount of arm evidence (drift)
+    hier_strength: Optional[float] = None      # band x channel x slot shrunk to pooled channel x slot
+    affinity_strength: Optional[float] = None  # per-borrower x channel factor (hierarchical)
+    recency: str = "count"                     # context recency feature: "count" (7-day) or "gap"
+    min_reply_prob: float = DEFAULT_MIN_REPLY_PROB
+    min_replies_per_inr: float = 0.0           # value floor on borrower-adjusted replies per rupee
+    payment_lambda: float = 0.0                # fund order by (p_reply + λ·p_pay) per rupee (demo rule)
+    value_floor_rel: Optional[float] = 0.5     # WAIT below φ × campaign-to-date realized replies per rupee
+
+    @classmethod
+    def from_dict(cls, d: Optional[dict]) -> "KairosOptions":
+        d = dict(d or {})
+        unknown = set(d) - {f.name for f in fields(cls)}
+        if unknown:
+            raise ValueError(f"unknown Kairos options {sorted(unknown)}")
+        return cls(**d)
+
+    def changed(self) -> dict:
+        default = KairosOptions()
+        return {k: v for k, v in asdict(self).items() if getattr(default, k) != v}
+
+
+# The K09 replay default before k09/optimize (posterior mean + context layer, nothing else).
+LEGACY_KAIROS_OPTIONS = {"decay": None, "value_floor_rel": None}
+
+
 class DriftSimulator(DevSimulator):
     """E17 drift scenario: from `drift_day`, one channel's response drops by `factor`.
     Every arm sees the same drift (same seed, same day)."""
@@ -183,12 +220,13 @@ class StackRun:
 
     def __init__(self, arm: str, csv_path: str, seed: int, days: int, db_path: str, budget_per_case_paise: int,
                  drift_day: Optional[int] = None, context: bool = True, explore: bool = True,
-                 start: date = START, portfolio=None, loans=None):
+                 start: date = START, portfolio=None, loans=None, kairos_opts: Optional[dict] = None):
         if arm not in ARMS:
             raise ValueError(f"unknown arm {arm}")
         self.arm, self.seed, self.days, self.start = arm, seed, days, start
         self.explore = explore   # seeded Thompson sampling on arm choice (SIMULATOR); False = posterior mean
         self.context = context
+        self.opts = KairosOptions.from_dict(kairos_opts)
         self.portfolio = copy.deepcopy(portfolio if portfolio is not None else portfolio_from_csv(csv_path))
         self.loans = loans if loans is not None else load_loans(csv_path)
         self.policy = load_policy(lender_files=[LENDER_FILE])
@@ -197,8 +235,12 @@ class StackRun:
         self.providers = {ch: FakeProvider(ch, cost_paise=COST_PAISE[ch]) for ch in S.CHANNELS}
         self.executor = Executor(self.ledger, self.providers)
         if arm == "kairos":
-            base = BetaBernoulliLearner(self.ledger)
-            self.ranker = ContextualLearner(base, BorrowerContextModel(self.ledger)) if context else base
+            o = self.opts
+            base = BetaBernoulliLearner(self.ledger, min_reply_prob=o.min_reply_prob, decay=o.decay,
+                                        hier_strength=o.hier_strength, min_replies_per_inr=o.min_replies_per_inr)
+            self.ranker = (ContextualLearner(base, BorrowerContextModel(self.ledger, recency=o.recency),
+                                             affinity_strength=o.affinity_strength,
+                                             value_floor_rel=o.value_floor_rel) if context else base)
         else:
             self.ranker = CadenceRanker("cn10/creditnirvana-10day" if arm == "cn10" else "fixed-cadence/k15-placeholder")
         self.fsm = SupervisorFSM(self.ledger, self.executor, self.ranker, self.sink, mode=Mode.SIMULATOR)
@@ -280,7 +322,13 @@ class StackRun:
                     # allocate the budget by expected value (posterior mean, borrower-adjusted), not by
                     # the Thompson draw: exploration picks the arm, it shouldn't randomise who is funded
                     c = r.chosen
-                    order.append((-replies_per_rupee(c.posterior_mean, c.est_cost_paise),
+                    value = c.posterior_mean
+                    if self.opts.payment_lambda:
+                        dpd = self._dpd(b.index, day) or 0
+                        pb = dpd_band(dpd)
+                        if pb in ("PRE_DUE", *BANDS):
+                            value += self.opts.payment_lambda * rule_propensity(dpd, pb)["p"]
+                    order.append((-replies_per_rupee(value, c.est_cost_paise),
                                   -(self._dpd(b.index, day) or 0), b.index))
             order.sort()
             return [(self.portfolio[i], self.candidates(self.portfolio[i], d), None) for _, _, i in order]
@@ -509,7 +557,8 @@ def cohort_close(learner, min_obs: int = 30) -> dict:
 def run_comparison(n_borrowers: int, days: int, seed: int, drift_day: Optional[int] = 6,
                    budget_per_case_paise: Optional[int] = None, workdir: Optional[str] = None,
                    baselines: tuple = ("cn10",), context: bool = True, explore: bool = True,
-                   dataset: Optional[str] = None, start: Optional[date] = None) -> dict:
+                   dataset: Optional[str] = None, start: Optional[date] = None,
+                   kairos_opts: Optional[dict] = None) -> dict:
     """budget_per_case_paise=None → MATCHED SPEND: the shared pool is set to what the FIRST baseline
     spends when unconstrained (a calibration run), so every arm runs on the same money and K09 has
     to allocate it better. Pass a number to fix the pool instead.
@@ -536,7 +585,8 @@ def run_comparison(n_borrowers: int, days: int, seed: int, drift_day: Optional[i
 
     def stack(arm, name, per_case):
         return StackRun(arm, csv_path, seed, days, os.path.join(workdir, f"{name}.db"), per_case, drift_day,
-                        context=context, explore=explore, start=start, portfolio=portfolio, loans=loans)
+                        context=context, explore=explore, start=start, portfolio=portfolio, loans=loans,
+                        kairos_opts=kairos_opts if arm == "kairos" else None)
 
     budget_basis = "fixed"
     calibration = None
@@ -569,7 +619,8 @@ def run_comparison(n_borrowers: int, days: int, seed: int, drift_day: Optional[i
                     "caps": f"K01 v{k.policy.version} + lender override {LENDER_ID} (1/day, 3 per 7 days)"
                             f" + K15 {S.MIN_DAYS_BETWEEN_CONTACTS}-day cross-channel gap (replay pre-filter)",
                     "costs_paise": COST_PAISE, "drift_day": None if drift_day is None else drift_day + 1,
-                    "kairos_context": context, "kairos_explore": explore},
+                    "kairos_context": context, "kairos_explore": explore,
+                    "kairos_options": asdict(KairosOptions.from_dict(kairos_opts))},
         "import": k.import_report,
         "baseline": runs[baselines[0]].report(),
         "baselines": {b: runs[b].report() for b in baselines},

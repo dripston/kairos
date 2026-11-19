@@ -198,3 +198,30 @@ class CN10Cadence(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class KairosOptionsReplay(unittest.TestCase):
+    OPTS = {"decay": 0.7, "payment_lambda": 0.1, "value_floor_rel": 0.5, "recency": "gap", "affinity_strength": 10}
+
+    def test_options_are_deterministic_safe_and_recorded(self):
+        kw = dict(drift_day=1, budget_per_case_paise=None, kairos_opts=self.OPTS)
+        a = run_comparison(120, 5, 11, workdir=tempfile.mkdtemp(), **kw)
+        b = run_comparison(120, 5, 11, workdir=tempfile.mkdtemp(), **kw)
+        for key in ("envelope_hash", "meaningful_replies", "spend_paise", "verified_payments", "daily", "decisions"):
+            self.assertEqual(a["kairos"][key], b["kairos"][key], key)
+        self.assertEqual({k: a["matched"]["kairos_options"][k] for k in self.OPTS}, self.OPTS)
+        self.assertEqual(a["kairos"]["cap_breaches_k01"], 0)
+        self.assertEqual(a["kairos"]["k15_safety_violations"], {})
+        self.assertLessEqual(a["kairos"]["spend_paise"], a["matched"]["budget_pool_paise"])
+        # the baseline arm never sees Kairos options
+        plain = run_comparison(120, 5, 11, workdir=tempfile.mkdtemp(), drift_day=1)
+        self.assertEqual(plain["baseline"]["envelope_hash"], a["baseline"]["envelope_hash"])
+        self.assertEqual(plain["matched"]["budget_pool_paise"], a["matched"]["budget_pool_paise"])
+
+    def test_replay_default_and_legacy_options(self):
+        from replay.k09 import LEGACY_KAIROS_OPTIONS, KairosOptions
+        self.assertEqual((KairosOptions().decay, KairosOptions().value_floor_rel), (0.7, 0.5))
+        legacy = KairosOptions.from_dict(LEGACY_KAIROS_OPTIONS)
+        self.assertIsNone(legacy.decay)
+        self.assertIsNone(legacy.value_floor_rel)
+        self.assertEqual(legacy.changed(), {"decay": None, "value_floor_rel": None})
