@@ -183,7 +183,19 @@ Example event (`POST /churn/events`):
 
 Replay (SIMULATED): `python3 scripts/run_k09_replay.py --borrowers 1500 --days 14 --seed 42 --journeys both`
 runs CN10 (unchanged), K09 alone and K09 + K27 on the same seed, borrowers, budget and caps, using only
-ledger-visible outcomes (delivery, reply, STOP, claim, verified payment). Results: see the K27 PR / report.
+ledger-visible outcomes (delivery, reply, STOP, claim, verified payment).
+
+| Seed (1,500 × 14 days, matched budget/caps) | CN10 replies/₹1k | K09 | K09 + K27 | STOP opt-outs CN10 / K09 / K09+K27 | Verified payments | Cap breaches |
+|---|---|---|---|---|---|---|
+| 42 | 58.79 | 74.54 (+26.8%) | 67.00 (+14.0%) | 15 / 17 / 17 | 53 / 62 / 51 | 0 / 0 / 0 |
+| 7 | 56.18 | 78.30 (+39.4%) | 63.69 (+13.4%) | 11 / 24 / 12 | 35 / 60 / 47 | 0 / 0 / 0 |
+
+Reading (SIMULATED): K27's default journeys keep CN10's contact calendar (a day with no step = no contact,
+~4,000 waits) and gate voice by layer, so K09 has fewer days to spend on: replies/₹ stays above CN10 but
+below K09 alone. On seed 7 it halves K09's STOP opt-outs back to CN10's level. The DEV simulator produces no
+PTP / hardship / dispute outcomes, so those cohorts are exercised by tests, not by this replay. Tuning the
+journeys (e.g. more step days for WhatsApp-responsive borrowers) is open; never tune against the simulator's
+hidden parameters.
 
 ### Context for Claude / how to continue
 
