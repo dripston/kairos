@@ -1,0 +1,133 @@
+{
+  "task": "K15",
+  "name": "Safety, load and story replay",
+  "seed": 42,
+  "portfolio_size": 50000,
+  "campaign_days": 7,
+  "elapsed_seconds": 1.96,
+  "decisions_per_second": 357742,
+  "fixed_cadence": {
+    "attempts": 301592,
+    "delivered": 289455,
+    "replies": 25775,
+    "unique_reached": 46530,
+    "spend_inr": 131640.5,
+    "replies_per_1000_inr": 195.8,
+    "verified_recovery_inr": 104676746.0,
+    "cap_breaches": 0,
+    "daily_funnel": [
+      {
+        "day": 1,
+        "attempts": 46530,
+        "replies": 2507,
+        "spend_inr": 10104.55
+      },
+      {
+        "day": 2,
+        "attempts": 45774,
+        "replies": 6418,
+        "spend_inr": 21298.45
+      },
+      {
+        "day": 3,
+        "attempts": 43892,
+        "replies": 3404,
+        "spend_inr": 26665.4
+      },
+      {
+        "day": 4,
+        "attempts": 42866,
+        "replies": 2309,
+        "spend_inr": 9271.0
+      },
+      {
+        "day": 5,
+        "attempts": 42142,
+        "replies": 5890,
+        "spend_inr": 19556.1
+      },
+      {
+        "day": 6,
+        "attempts": 40388,
+        "replies": 1234,
+        "spend_inr": 4376.85
+      },
+      {
+        "day": 7,
+        "attempts": 40000,
+        "replies": 4013,
+        "spend_inr": 40368.15
+      }
+    ]
+  },
+  "kairos_adaptive": {
+    "attempts": 285260,
+    "delivered": 273771,
+    "replies": 43087,
+    "unique_reached": 46530,
+    "spend_inr": 116553.15,
+    "replies_per_1000_inr": 369.68,
+    "verified_recovery_inr": 174800984.0,
+    "cap_breaches": 0,
+    "daily_funnel": [
+      {
+        "day": 1,
+        "attempts": 46530,
+        "replies": 6802,
+        "spend_inr": 19552.9
+      },
+      {
+        "day": 2,
+        "attempts": 44456,
+        "replies": 6661,
+        "spend_inr": 18734.8
+      },
+      {
+        "day": 3,
+        "attempts": 42515,
+        "replies": 6397,
+        "spend_inr": 17520.3
+      },
+      {
+        "day": 4,
+        "attempts": 40588,
+        "replies": 5822,
+        "spend_inr": 15303.3
+      },
+      {
+        "day": 5,
+        "attempts": 38837,
+        "replies": 5931,
+        "spend_inr": 15409.25
+      },
+      {
+        "day": 6,
+        "attempts": 37042,
+        "replies": 5718,
+        "spend_inr": 15113.8
+      },
+      {
+        "day": 7,
+        "attempts": 35292,
+        "replies": 5756,
+        "spend_inr": 14918.8
+      }
+    ]
+  },
+  "lift_pct": 88.8,
+  "cm03_servicing": {
+    "conversations": 500,
+    "resolved_without_human_pct": 78.6,
+    "unverified_disclosures": 0,
+    "fake_screenshots_tested": 52,
+    "fake_screenshots_caught": 52,
+    "fake_screenshots_caught_pct": 100.0
+  },
+  "acceptance_criteria_passed": {
+    "throughput_under_10_min": true,
+    "lift_ge_20pct": true,
+    "zero_cap_breaches": true,
+    "cm03_zero_unverified_disclosures": true,
+    "cm03_fake_screenshots_100pct_caught": true
+  }
+}

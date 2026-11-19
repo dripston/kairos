@@ -1,0 +1,34 @@
+case_id,edge_case,description,sender_registered,name_on_record,name_typed,name_attempts_before,verified,intent,recon_status,broken_ptp_count,ptp_offset_days,expected_response,expected_account_data_shared
+K10-T01,,New inbound message gets instant safe ACK,Y,Rajesh Kumar,,0,N,NEW_MESSAGE,,0,,ACK,N
+K10-T02,E11,Registered sender asks dues before verification,Y,Rajesh Kumar,,0,N,DUES_QUERY,,0,,ASK_NAME,N
+K10-T03,E11,Exact full name verifies,Y,Rajesh Kumar,Rajesh Kumar,0,N,NAME_REPLY,,0,,VERIFIED,N
+K10-T04,E11,First name only verifies,Y,Rajesh Kumar,rajesh,0,N,NAME_REPLY,,0,,VERIFIED,N
+K10-T05,E11,Small typo tolerated (1 edit),Y,Rajesh Kumar,Rajesh Kumarr,0,N,NAME_REPLY,,0,,VERIFIED,N
+K10-T06,E11,Honorifics ignored,Y,Rajesh Kumar,Shri Rajesh Kumar ji,0,N,NAME_REPLY,,0,,VERIFIED,N
+K10-T07,E11,Wrong name first attempt - retry,Y,Rajesh Kumar,Suresh Patel,0,N,NAME_REPLY,,0,,NAME_RETRY,N
+K10-T08,E11,Wrong name second attempt - fail and callback,Y,Rajesh Kumar,Suresh Patel,1,N,NAME_REPLY,,0,,NAME_FAILED,N
+K10-T09,E11,Unregistered sender asks dues,N,Rajesh Kumar,,0,N,DUES_QUERY,,0,,UNREGISTERED,N
+K10-T10,E02,STOP honoured before verification,Y,Rajesh Kumar,,0,N,STOP,,0,,STOP_CONFIRMED,N
+K10-T11,E02,STOP honoured from unregistered number too,N,Rajesh Kumar,,0,N,STOP,,0,,STOP_CONFIRMED,N
+K10-T12,E09,Hardship acknowledged before verification,Y,Rajesh Kumar,,0,N,HARDSHIP,,0,,HARDSHIP_ACK,N
+K10-T13,,Verified dues query,Y,Rajesh Kumar,,0,Y,DUES_QUERY,,0,,DUES,Y
+K10-T14,,Verified payment link,Y,Rajesh Kumar,,0,Y,PAYMENT_LINK_REQUEST,,0,,PAYMENT_LINK,Y
+K10-T15,,Verified statement,Y,Rajesh Kumar,,0,Y,STATEMENT_REQUEST,,0,,STATEMENT,Y
+K10-T16,,Unverified receipt request asks name first,Y,Rajesh Kumar,,0,N,RECEIPT_REQUEST,,0,,ASK_NAME,N
+K10-T17,,Foreclosure quote is routed not served,Y,Rajesh Kumar,,0,Y,FORECLOSURE_REQUEST,,0,,ROUTED,N
+K10-T18,,Dispute routed,Y,Rajesh Kumar,,0,Y,DISPUTE,,0,,ROUTED,N
+K10-T19,E14,Payment claim - no proof yet,Y,Rajesh Kumar,,0,Y,PAYMENT_CLAIM,NO_PROOF,0,,PAY_ASK_PROOF,N
+K10-T20,E14,Payment claim - feed pending,Y,Rajesh Kumar,,0,Y,PAYMENT_CLAIM,PENDING,0,,PAY_PENDING,N
+K10-T21,E14,Payment settled and allocated - receipt,Y,Rajesh Kumar,,0,Y,PAYMENT_CLAIM,SETTLED,0,,PAY_CONFIRMED,Y
+K10-T22,E13,Edited screenshot - no receipt routed,Y,Rajesh Kumar,,0,Y,PAYMENT_CLAIM,EDITED,0,,PAY_NOT_MATCHED,N
+K10-T23,E13,Reference mismatch - no receipt routed,Y,Rajesh Kumar,,0,Y,PAYMENT_CLAIM,MISMATCH,0,,PAY_NOT_MATCHED,N
+K10-T24,E07,Needs time - ask for a date within 2 days,Y,Rajesh Kumar,,0,Y,NEEDS_TIME,,0,,NT_ASK_DATE,N
+K10-T25,E07,Needs time with 2 broken PTPs - push payment,Y,Rajesh Kumar,,0,Y,NEEDS_TIME,,2,,BROKEN_PTP_PUSH,Y
+K10-T26,E07,PTP in 3 days captured,Y,Rajesh Kumar,,0,Y,PTP_OFFERED,,0,3,PTP_CAPTURED,N
+K10-T27,E07,PTP in 15 days captured for review,Y,Rajesh Kumar,,0,Y,PTP_OFFERED,,0,15,PTP_CAPTURED_REVIEW,N
+K10-T28,E08,Callback request,Y,Rajesh Kumar,,0,N,CALLBACK_REQUEST,,0,,CALLBACK_CREATED,N
+K10-T29,,Abusive message ends conversation,Y,Rajesh Kumar,,0,Y,ABUSIVE,,0,,END_CONVERSATION,N
+K10-T30,E13,Injection attempt before verification - safe reply nothing shared,Y,Rajesh Kumar,,0,N,INJECTION,,0,,INJECTION_SAFE,N
+K10-T31,,Wrong person on the number,Y,Rajesh Kumar,,0,N,WRONG_PERSON,,0,,WRONG_PERSON,N
+K10-T32,E11,Similar different name rejected (Ramesh vs Rajesh),Y,Rajesh Kumar,Ramesh,0,N,NAME_REPLY,,0,,NAME_RETRY,N
+K10-T33,E11,Long surname tolerates 2 typos,Y,Rajesh Chandrasekhar,Rajesh Chandrasekar,0,N,NAME_REPLY,,0,,VERIFIED,N

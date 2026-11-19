@@ -1,0 +1,159 @@
+{
+  "policy_id": "kairos-propensity-intensity",
+  "policy_version": "1.1.0",
+  "model_version": "scorecard-heuristic-1.0 (synthetic weights; re-fit on official D1/D2 when available)",
+  "status": "draft-for-signoff",
+  "owner": "Ojas (Product)",
+  "approved_on": null,
+  "depends_on": {
+    "kairos-outreach-policy": "1.1.0",
+    "kairos-exceptions-policy": "1.0.0"
+  },
+  "output": "likelihood (0-100) of a VERIFIED payment within horizon_days, plus intensity and top reasons",
+  "horizon_days": 7,
+  "base_score": 50,
+  "clamp": [
+    0,
+    100
+  ],
+  "points": {
+    "dpd_band": {
+      "PRE_DUE": 15,
+      "B1": 5,
+      "B2": -5,
+      "B3": -12,
+      "B4": -20
+    },
+    "ontime_emis_last_6m": {
+      "rule": "(count - 3) * 4",
+      "range": [
+        -12,
+        12
+      ]
+    },
+    "broken_ptp_in_period": {
+      "per_item": -12,
+      "max_total": -24
+    },
+    "paid_in_last_30_days": 8,
+    "partial_payment_this_cycle": 6,
+    "borrower_responded_last_7d": 15,
+    "responded_on_2plus_channels": 5,
+    "whatsapp_read_last_7d": 4,
+    "link_clicked_last_7d": 6,
+    "call_answered_over_10s_last_7d": 6,
+    "sms_delivered_last_7d": 0,
+    "unreachable_all_channels_14d": -10,
+    "intent": {
+      "WILLING": 15,
+      "SILENT": 0,
+      "NEEDS_TIME": -5,
+      "DISPUTE": -10,
+      "REFUSED": -15,
+      "HARDSHIP": -15
+    },
+    "nach_bounce_reason": {
+      "TECHNICAL": 12,
+      "INSUFFICIENT_FUNDS": -8
+    },
+    "aa_net_cash_flow_last_month": {
+      "POSITIVE": 8,
+      "NEGATIVE": -8
+    },
+    "aa_dti": {
+      "above_0_65": -8,
+      "below_0_40": 4
+    },
+    "aa_risk_flags_3plus": -6,
+    "missing_signal": 0
+  },
+  "signal_notes": {
+    "sms_delivered": "Worth 0 by decision: SMS delivery says nothing about whether the borrower engaged.",
+    "responses": "Any borrower response on any channel (reply, PTP, answered call with captured response) carries the most weight.",
+    "aa": "AA/Data Spine signals only where consent exists; absence is neutral (0), never a penalty.",
+    "technical_bounce": "Balance was sufficient but NACH bounced (mandate/technical issue) - strong signal the borrower will pay."
+  },
+  "evidence_strength": "share of the 4 signal groups (payment history, engagement, intent, bounce/AA) with at least one non-missing input; reported separately from the score",
+  "intensity_by_score": [
+    {
+      "min": 70,
+      "max": 100,
+      "intensity": "LOW",
+      "why": "likely self-cure"
+    },
+    {
+      "min": 60,
+      "max": 69,
+      "intensity": "STANDARD",
+      "why": "leaning to pay"
+    },
+    {
+      "min": 40,
+      "max": 59,
+      "intensity": "HIGH",
+      "why": "most persuadable"
+    },
+    {
+      "min": 25,
+      "max": 39,
+      "intensity": "STANDARD",
+      "why": "leaning not to pay"
+    },
+    {
+      "min": 0,
+      "max": 24,
+      "intensity": "LOW",
+      "why": "unlikely to pay regardless"
+    }
+  ],
+  "intensity_levels": {
+    "WAIT": {
+      "touches_per_day": 0,
+      "channels": "none"
+    },
+    "LOW": {
+      "touches_per_day_total": 1,
+      "channels": "cheapest consented channel with evidence of reach (read, click, answer, reply); else cheapest consented; no voice"
+    },
+    "STANDARD": {
+      "per_channel_per_day": "ceil(K01 band cap / 2)",
+      "channels": "all consented; IVR allowed; voicebot not"
+    },
+    "HIGH": {
+      "per_channel_per_day": "K01 band cap",
+      "channels": "all consented including IVR and voicebot"
+    },
+    "ceiling_rule": "final allowance = min(intensity allowance, K01 policy cap, lender cap, official cap); K09 learning still picks channel, time and whether a touch is worth its cost"
+  },
+  "overrides_to_wait": [
+    "STOP_OPT_OUT",
+    "HARDSHIP_HOLD",
+    "PTP_HOLD",
+    "CALLBACK_PENDING",
+    "SUPERVISOR_HOLD",
+    "OBLIGATION_CLEARED",
+    "CAMPAIGN_STOP"
+  ],
+  "override_note": "Overrides force WAIT; the score is still computed and logged for analytics.",
+  "output_contract": {
+    "fields": [
+      "borrower_id",
+      "obligation_id",
+      "score",
+      "horizon_days",
+      "intensity",
+      "override",
+      "top_reasons (3 largest signed contributions)",
+      "evidence_strength",
+      "model_version",
+      "policy_version",
+      "computed_at"
+    ]
+  },
+  "calibration_plan": "When D1/D2 arrive: fit logistic regression on the same features to 'verified payment within 7 days', convert coefficients back to points, keep the same cut-offs unless the persuadable band holds less than 30% of accounts.",
+  "low_evidence_cap": {
+    "rule": "if evidence_strength <= 0.5 and intensity is HIGH, use STANDARD",
+    "reason": "base score 50 sits in the persuadable band, so borrowers with little data would otherwise get maximum effort",
+    "decided": "Ojas, 19 Nov"
+  }
+}
