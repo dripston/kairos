@@ -1,5 +1,6 @@
 """Smoke test of the HTTP layer on the K03 spine: load data, enroll, decide, dispatch, pay, STOP."""
 import importlib
+import json
 import os
 import tempfile
 
@@ -54,6 +55,11 @@ def test_end_to_end(client):
     assert c.get("/cap-breaches").json()["count"] == 0
     b = c.get("/borrowers/BRW-SL100001").json()
     assert {e["event_type"] for e in b["events"]} >= {"touch_sent", "payment_received", "consent_changed"}
+    # PII: the phone is masked and the e-mail left out unless policy_owner asks
+    raw = api.ledger._conn().execute("SELECT phone FROM borrowers WHERE borrower_id='BRW-SL100001'").fetchone()[0]
+    assert "email" not in b and b["phone"] != raw and b["phone"].endswith(raw[-4:]) and raw not in json.dumps(b)
+    full = c.get("/borrowers/BRW-SL100001", headers={"X-Kairos-Role": "policy_owner"}).json()
+    assert full["phone"] == raw and "email" in full
 
 
 def test_unknown_borrower_is_404(client):

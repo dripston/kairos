@@ -78,8 +78,9 @@ export const getVoiceCall = (callId, o) => request(`/voice/calls/${enc(callId)}`
 /** @returns {Promise<import('./types').DemoRecipients>} */
 export const getDemoRecipients = (o) => request('/demo/recipients', o)
 export const addDemoRecipient = (number) => request('/demo/recipients', { method: 'POST', body: { number } })
-// The backend removes by the full number (the list is masked, so the operator re-types it).
-export const removeDemoRecipient = (number) => request(`/demo/recipients/${enc(number)}`, { method: 'DELETE' })
+// Removes by the masked form shown in the list, the last 4 digits, or a re-typed full number. It goes
+// in the JSON body, so a phone number never lands in a URL or an access log.
+export const removeDemoRecipient = (hint) => request('/demo/recipients', { method: 'DELETE', body: { hint } })
 
 // ---------- discovery ----------
 /** Paths the running backend serves (from FastAPI's OpenAPI document). */

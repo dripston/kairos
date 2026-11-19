@@ -71,6 +71,37 @@ def remove(number: str, env: Optional[Mapping[str, str]] = None) -> bool:
     return True
 
 
+def resolve(hint: str, env: Optional[Mapping[str, str]] = None) -> Optional[str]:
+    """Find one listed number from a hint that is safe to put in a URL or a log line: the masked form
+    ('+********3210'), the last 4+ digits ('3210'), or (legacy) the full number. A hint that matches more
+    than one listed number is refused (DemoSafetyError); no match returns None."""
+    from .phone_demo import DemoSafetyError
+    hint = (hint or "").strip()
+    digits = re.sub(r"\D", "", hint)
+    if "*" not in hint and "•" not in hint and len(digits) >= 8:
+        e164 = to_e164(hint)
+        return e164 if e164 in load(env) else None
+    if len(digits) < 4:
+        raise DemoSafetyError("give the masked number or at least its last 4 digits")
+    hits = [n for n in load(env) if re.sub(r"\D", "", n).endswith(digits[-4:])
+            and (not hint.startswith("+") or n.startswith("+"))]
+    if "*" in hint or "•" in hint:  # a masked form also fixes the length
+        hits = [n for n in hits if len(re.sub(r"\D", "", n)) == len(re.sub(r"[^\d*•]", "", hint))]
+    if len(hits) > 1:
+        raise DemoSafetyError("more than one demo recipient matches; give more digits")
+    return hits[0] if hits else None
+
+
+def remove_matching(hint: str, env: Optional[Mapping[str, str]] = None) -> bool:
+    """remove() by a masked / last-4 hint (see resolve)."""
+    with _LOCK:
+        n = resolve(hint, env)
+        if n is None:
+            return False
+        _save(load(env) - {n}, env)
+    return True
+
+
 def masked(env: Optional[Mapping[str, str]] = None) -> list:
     from .phone_demo import mask_number
     return [mask_number(n) for n in sorted(load(env))]

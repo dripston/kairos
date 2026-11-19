@@ -19,11 +19,14 @@ import json
 import os
 import re
 import sqlite3
+import threading
 from datetime import date, datetime
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated, Optional
 
 from fastapi import FastAPI, Header, HTTPException, Query, Response
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StrictBool, StrictFloat, StrictInt
 
@@ -33,6 +36,7 @@ from .gate import Facts, evaluate
 from .contracts import RecordingSink
 from .hitl import HITL, HitlError
 from .learner import BetaBernoulliLearner
+from .lifecycle import Lifecycle, ShuttingDown, TickLoop
 from .ledger import CONFLICT_INSTRUCTION_ID, MAX_PAISE, Instruction, Ledger, PaymentError
 from .outcomes import OutcomeFinalizer
 from .policy import load_policy
@@ -55,7 +59,37 @@ voice_ingester = VoiceIngester(ledger, finalizer=OutcomeFinalizer(ledger, BetaBe
                                sink=voice_sink, supervisor=supervisor, hitl=globals().get("hitl"),
                                provenance=os.environ.get("KAIROS_VOICE_PROVENANCE", "SIMULATED"))
 
-app = FastAPI(title="Kairos K06 · Supervisor guardrails + executor", version="0.2.0")
+# ---------- lifecycle: graceful shutdown (kairos_backend/lifecycle.py) ----------
+lifecycle = Lifecycle(ledger)  # KAIROS_SHUTDOWN_GRACE_S (default 10) for in-flight dispatches
+
+
+def _tick() -> None:
+    """Background clocks: HITL approval expiry + manual-hold release, voice payment-claim pauses."""
+    hitl.tick()
+    voice_ingester.resolve_payment_claims(policy.now())
+
+
+try:
+    _tick_s = float(os.environ.get("KAIROS_TICK_INTERVAL_S", "0") or 0)
+except ValueError:
+    _tick_s = 0.0
+if _tick_s > 0:  # off by default: demos drive the clock through POST /hitl/tick
+    lifecycle.add_loop(TickLoop("hitl+voice", _tick, _tick_s))
+
+
+@asynccontextmanager
+async def lifespan(_app):
+    """uvicorn turns SIGTERM / SIGINT into this shutdown: it stops taking connections, lets running
+    requests end, then we refuse new dispatch work, wait for in-flight dispatches (grace), mark leftovers
+    UNCERTAIN, write the SHUTDOWN audit row and close SQLite."""
+    lifecycle.start()
+    try:
+        yield
+    finally:
+        await run_in_threadpool(lifecycle.shutdown, "LIFESPAN_SHUTDOWN")
+
+
+app = FastAPI(lifespan=lifespan, title="Kairos K06 · Supervisor guardrails + executor", version="0.2.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 
@@ -254,8 +288,16 @@ def get_policy():
 
 
 @app.get("/borrowers/{borrower_id}")
-def get_borrower(borrower_id: str, as_of: Optional[date] = None):
-    return _call(ledger.borrower_state, borrower_id, as_of)
+def get_borrower(borrower_id: str, as_of: Optional[date] = None,
+                 role: str = Header("viewer", alias="X-Kairos-Role")):
+    """Borrower page data. The phone is masked and the e-mail left out unless the caller's role is
+    policy_owner (X-Kairos-Role: a demo switch, not authentication)."""
+    from .channels.phone_demo import mask_number
+    out = _call(ledger.borrower_state, borrower_id, as_of)
+    if role != "policy_owner":
+        out["phone"] = mask_number(out.get("phone"))
+        out.pop("email", None)
+    return out
 
 
 @app.get("/campaigns/{campaign_id}")
@@ -384,12 +426,20 @@ def decide(i: InstructionIn):
 
 @app.post("/dispatch/{instruction_id}")
 def dispatch(instruction_id: str, at: Optional[datetime] = None):
-    return _call(executor.dispatch, instruction_id, at).__dict__
+    try:
+        with lifecycle.dispatch_slot():
+            return _call(executor.dispatch, instruction_id, at).__dict__
+    except ShuttingDown as e:
+        raise HTTPException(503, str(e))
 
 
 @app.post("/dispatch-due")
 def dispatch_due(now: datetime):
-    return [r.__dict__ for r in executor.dispatch_due(now)]
+    try:
+        with lifecycle.dispatch_slot():
+            return [r.__dict__ for r in executor.dispatch_due(now)]
+    except ShuttingDown as e:
+        raise HTTPException(503, str(e))
 
 
 @app.post("/resolve-uncertain/{instruction_id}")
@@ -727,14 +777,53 @@ def demo_recipient_add(body: DemoRecipientIn):
         raise HTTPException(422, str(e))
 
 
-@app.delete("/demo/recipients/{number}")
-def demo_recipient_remove(number: str):
+class DemoRecipientRemoveIn(BaseModel):
+    number: Optional[str] = None   # full number in a JSON body: never in the URL / access log
+    hint: Optional[str] = None     # masked form ('+********3210') or last 4 digits
+
+
+def _remove_recipient(hint: str) -> dict:
     from .channels import demo_recipients as dr
     from .channels.phone_demo import DemoSafetyError
     try:
-        return {"removed": dr.remove(number), "recipients": dr.masked()}
+        return {"removed": dr.remove_matching(hint), "recipients": dr.masked()}
     except DemoSafetyError as e:
         raise HTTPException(422, str(e))
+
+
+@app.delete("/demo/recipients")
+def demo_recipient_remove_body(body: DemoRecipientRemoveIn):
+    """Preferred: the number (or a masked / last-4 hint) in the JSON body, so it never lands in a URL."""
+    hint = body.number or body.hint
+    if not hint:
+        raise HTTPException(422, "give number or hint")
+    return _remove_recipient(hint)
+
+
+@app.delete("/demo/recipients/{hint}")
+def demo_recipient_remove(hint: str):
+    """{hint} = the masked form shown by GET /demo/recipients, or the last 4 digits. A full number still
+    works (old clients) but puts it in access logs: use DELETE /demo/recipients with a JSON body instead."""
+    return _remove_recipient(hint)
+
+
+# ---------- the scripted journey (frontend Live journey page) ----------
+class JourneyIn(BaseModel):
+    seed: int = 42
+
+
+_journey_lock = threading.Lock()
+
+
+@app.post("/demo/journey/run")
+def demo_journey_run(body: JourneyIn):
+    """Run the crazy journey (replay/journey.py, quick mode) in-process on a fresh temp DB and return it in
+    the player shape (steps with story, borrower card, events). SIMULATED; never touches the API's DB."""
+    from replay.journey import run_player
+    if not lifecycle.accepting:
+        raise HTTPException(503, "shutting down")
+    with _journey_lock:  # one at a time: each run builds its own world
+        return run_player(body.seed)
 
 
 # ---------- live event feed (for the demo UI's streaming panel) ----------
