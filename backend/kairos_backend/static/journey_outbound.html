@@ -5,293 +5,331 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kairos Outbound Journey</title>
 <style>
-/* Journey 1 — one borrower, every engine, a person in control. Calm light ops console (same palette as /demo/live):
-   #FAFAF9 page, white cards, #E7E5E4 lines, one accent (teal #0F766E); green = paid, amber = waiting, red = STOP / blocked.
-   Sized for a 1920×1080 projector and 1440×900 laptops: the page never scrolls, panels scroll inside. */
+/* Journey 1 — one borrower, every engine, a person in control.
+   Cream and calm: #FBF8F1 page, white cards, 1px #E7E5E4 lines, ink #1C1917 / #57534E, one accent (teal #0F766E).
+   Green = paid / passed, amber = waiting for a person, red = blocked / STOP. Nothing else is coloured.
+   Sized for a 1920×1080 projector (1rem ≈ 16.5px) and 1440×900 laptops: the page never scrolls, panels scroll inside.
+   Plain words shows only the story; everything else carries .tech-only and appears with Technical (T). */
 :root {
-  --bg: #fafaf9; --surface: #ffffff; --sunk: #f5f5f4; --hover: #f5f5f4;
+  --bg: #fbf8f1; --surface: #ffffff; --sunk: #f7f4ed; --hover: #f5f2ea;
   --line: #e7e5e4; --line-2: #d6d3d1;
   --ink: #1c1917; --ink-2: #57534e; --ink-3: #78716c; --ink-4: #a8a29e;
-  --accent: #0f766e; --accent-ink: #ffffff; --accent-soft: #f0fdfa; --accent-line: #99d5cd;
+  --accent: #0f766e; --accent-2: #115e59; --accent-soft: #eef8f6; --accent-line: #99d5cd;
   --good: #15803d; --good-soft: #f0fdf4; --good-line: #bbf7d0;
   --wait: #b45309; --wait-soft: #fffbeb; --wait-line: #fde68a;
   --bad: #b91c1c; --bad-soft: #fef2f2; --bad-line: #fecaca;
-  --shadow: 0 1px 2px rgba(28,25,23,.04), 0 1px 3px rgba(28,25,23,.05);
-  --shadow-lg: 0 18px 40px -16px rgba(28,25,23,.25);
+  --shadow: 0 1px 2px rgba(28,25,23,.04), 0 2px 8px rgba(28,25,23,.04);
+  --shadow-lg: 0 18px 40px -18px rgba(28,25,23,.24);
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --r: 12px;
+  --r: 12px; --r-sm: 8px;
+  --out: cubic-bezier(.23, 1, .32, 1);
   color-scheme: light;
 }
-html { font-size: clamp(12.5px, min(.86vw, 1.56vh), 18px); }
+html { font-size: clamp(13px, min(.86vw, 1.53vh), 18px); }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; }
 body { background: var(--bg); color: var(--ink); font: 400 1rem/1.45 var(--sans); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
 button, select { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
 [hidden] { display: none !important; }
-svg.i { width: 1.05em; height: 1.05em; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+body:not(.tech) .tech-only { display: none !important; }
+body.tech .plain-only { display: none !important; }
+svg.i { width: 1.1em; height: 1.1em; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-.app { display: flex; flex-direction: column; height: 100%; padding: .7rem 1rem .6rem; gap: .65rem; }
+.app { display: flex; flex-direction: column; height: 100%; padding: .75rem 1rem; gap: .75rem; }
 
 /* ---------- header ---------- */
-.top { display: flex; align-items: center; gap: .9rem; min-height: 2.6rem; }
-.brand { display: flex; align-items: center; gap: .6rem; white-space: nowrap; }
-.brand .mk { width: 1.9rem; height: 1.9rem; border-radius: 8px; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: .95rem; }
-.brand h1 { margin: 0; font-size: 1.15rem; font-weight: 650; letter-spacing: -.01em; }
-.brand h1 span { color: var(--ink-3); font-weight: 500; }
-.tag { display: inline-flex; align-items: center; height: 1.35rem; padding: 0 .5rem; border-radius: 6px; background: var(--sunk); border: 1px solid var(--line); color: var(--ink-3); font-size: .68rem; font-weight: 650; letter-spacing: .07em; }
-.clock { display: flex; align-items: baseline; gap: .55rem; margin-left: .4rem; white-space: nowrap; }
-.clock .d { font-size: 1.05rem; font-weight: 650; }
-.clock .w { color: var(--ink-3); font-size: .9rem; }
-.clock .t { font-size: 1.35rem; font-weight: 650; letter-spacing: -.01em; min-width: 4.3em; }
-.phase { display: inline-flex; align-items: center; gap: .4rem; height: 1.7rem; padding: 0 .65rem; border-radius: 999px; font-size: .8rem; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); white-space: nowrap; }
+.top { display: flex; align-items: center; gap: 1rem; min-height: 2.75rem; }
+.brand { display: flex; align-items: center; gap: .5rem; white-space: nowrap; }
+.brand .mk { width: 2rem; height: 2rem; border-radius: var(--r-sm); background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 1rem; }
+.brand h1 { margin: 0; font-size: 1.25rem; font-weight: 650; letter-spacing: -.01em; }
+.brand h1 span { color: var(--ink-2); font-weight: 500; }
+.tag { display: inline-flex; align-items: center; height: 1.5rem; padding: 0 .5rem; border-radius: 6px; background: var(--wait-soft); border: 1px solid var(--wait-line); color: var(--wait); font-size: .75rem; font-weight: 700; letter-spacing: .06em; }
+.clock { display: flex; align-items: baseline; gap: .5rem; white-space: nowrap; }
+.clock .d { font-size: 1.25rem; font-weight: 650; }
+.clock .w { color: var(--ink-2); font-size: 1rem; }
+.clock .t { font-size: 1.5rem; font-weight: 650; letter-spacing: -.01em; min-width: 4.6em; }
+.phase { display: inline-flex; align-items: center; gap: .5rem; height: 2rem; padding: 0 .75rem; border-radius: 999px; font-size: .9375rem; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); white-space: nowrap; transition: background-color .2s var(--out), border-color .2s var(--out), color .2s var(--out); }
 .phase i { width: .5rem; height: .5rem; border-radius: 50%; background: var(--ink-4); }
 .phase.win { background: var(--wait-soft); border-color: var(--wait-line); color: var(--wait); } .phase.win i { background: var(--wait); }
 .phase.send { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent); } .phase.send i { background: var(--accent); }
 .phase.end { color: var(--ink-3); }
 .sp { flex: 1; }
-.ctl { display: flex; align-items: center; gap: .4rem; }
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; height: 2.1rem; padding: 0 .8rem; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-size: .88rem; font-weight: 550; cursor: pointer; white-space: nowrap; color: var(--ink); transition: background .15s, border-color .15s, color .15s; }
+.ctl { display: flex; align-items: center; gap: .5rem; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; height: 2.5rem; padding: 0 1rem; border-radius: var(--r-sm); border: 1px solid var(--line-2); background: var(--surface); font-size: .9375rem; font-weight: 600; cursor: pointer; white-space: nowrap; color: var(--ink);
+  transition: background-color .15s var(--out), border-color .15s var(--out), color .15s var(--out), transform .1s var(--out); }
 .btn:hover:not(:disabled) { background: var(--hover); }
+.btn:active:not(:disabled) { transform: scale(.98); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-.btn.primary:hover:not(:disabled) { background: #0d6961; }
-.btn.icon { width: 2.1rem; padding: 0; }
-.btn.sm { height: 1.85rem; font-size: .8rem; padding: 0 .6rem; }
+.btn.primary:hover:not(:disabled) { background: var(--accent-2); }
+.btn.icon { width: 2.5rem; padding: 0; }
+.btn.sm { height: 2.25rem; font-size: .9375rem; padding: 0 .75rem; }
 .btn.good { color: var(--good); border-color: var(--good-line); }
 .btn.good:hover:not(:disabled) { background: var(--good-soft); }
 .btn.bad { color: var(--bad); border-color: var(--bad-line); }
 .btn.bad:hover:not(:disabled) { background: var(--bad-soft); }
-.btn.on { background: var(--sunk); box-shadow: inset 0 0 0 1px var(--line-2); }
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
-.seg button { height: 2.1rem; padding: 0 .6rem; border: 0; background: transparent; font-size: .82rem; color: var(--ink-2); cursor: pointer; }
-.seg button + button { border-left: 1px solid var(--line); }
-.seg button[aria-pressed="true"] { background: var(--sunk); color: var(--ink); font-weight: 650; }
-.chk { display: inline-flex; align-items: center; gap: .35rem; font-size: .8rem; color: var(--ink-2); cursor: pointer; user-select: none; white-space: nowrap; }
-.chk input { accent-color: var(--accent); margin: 0; }
-kbd { font: 600 .7rem var(--mono); border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 4px; padding: 0 .3rem; color: var(--ink-2); background: var(--surface); }
+.btn.on { background: var(--sunk); border-color: var(--ink-4); }
+.seg { display: inline-flex; padding: 3px; gap: 2px; border: 1px solid var(--line); border-radius: 10px; background: var(--sunk); }
+.seg button { height: 2.1rem; padding: 0 .75rem; border: 0; border-radius: 7px; background: transparent; font-size: .9375rem; font-weight: 600; color: var(--ink-2); cursor: pointer; transition: background-color .15s var(--out), color .15s var(--out); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.seg button:active { transform: scale(.98); }
+.chk { display: inline-flex; align-items: center; gap: .5rem; font-size: .9375rem; color: var(--ink-2); cursor: pointer; user-select: none; white-space: nowrap; }
+.chk input { accent-color: var(--accent); margin: 0; width: 1rem; height: 1rem; }
+kbd { font: 600 .75rem var(--mono); border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 4px; padding: 0 .3rem; color: var(--ink-2); background: var(--surface); }
 
-/* ---------- campaign strip ---------- */
-.strip { display: grid; grid-template-columns: 1.25fr repeat(7, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); }
-.strip > div { padding: .5rem .9rem .55rem; min-width: 0; }
+/* ---------- campaign strip: at most 5 numbers in Plain words ---------- */
+.strip { display: grid; grid-template-columns: minmax(0, 1.5fr); grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); }
+.strip > div { padding: .5rem 1rem; min-width: 0; }
 .strip > div + div { border-left: 1px solid var(--line); }
-.strip .l { font-size: .74rem; color: var(--ink-3); font-weight: 550; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.strip .v { font-size: 1.45rem; font-weight: 650; letter-spacing: -.02em; line-height: 1.2; white-space: nowrap; }
-.strip .v small { font-size: .78rem; color: var(--ink-3); font-weight: 500; margin-left: .2rem; letter-spacing: 0; }
-.strip .camp .v { font-size: 1rem; font-weight: 600; letter-spacing: 0; }
-.strip .camp .v span { color: var(--ink-3); font-weight: 500; font-size: .85rem; }
+.strip .l { font-size: .875rem; color: var(--ink-2); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.strip .v { font-size: 1.625rem; font-weight: 650; letter-spacing: -.02em; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.strip .camp .v { font-size: 1.125rem; font-weight: 600; letter-spacing: 0; line-height: 1.75rem; }
+.strip .camp .v span { color: var(--ink-2); font-weight: 500; font-size: 1rem; }
 .v.good { color: var(--good); } .v.bad { color: var(--bad); } .v.wait { color: var(--wait); }
-.strip .flag { display: inline-flex; margin-left: .35rem; height: 1.2rem; align-items: center; padding: 0 .35rem; border-radius: 5px; font-size: .64rem; font-weight: 700; letter-spacing: .05em; vertical-align: middle; }
+.strip .flag { display: inline-flex; margin-right: .5rem; height: 1.5rem; align-items: center; padding: 0 .5rem; border-radius: 6px; font-size: .8125rem; font-weight: 700; letter-spacing: .04em; vertical-align: middle; }
 .flag.red { background: var(--bad-soft); color: var(--bad); border: 1px solid var(--bad-line); }
 .flag.amb { background: var(--wait-soft); color: var(--wait); border: 1px solid var(--wait-line); }
 
-/* ---------- pipeline ---------- */
-.pipe { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: .8rem; position: relative; }
-.stg { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: .6rem .75rem .65rem; cursor: pointer; text-align: left; min-width: 0;
-  display: flex; flex-direction: column; gap: .2rem; height: 7.4rem; transition: border-color .25s, background .25s, box-shadow .25s; box-shadow: var(--shadow); }
+/* ---------- the 8-stage engine strip ---------- */
+.pipe { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: .75rem; }
+.stg { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: .75rem .75rem .75rem; cursor: pointer; text-align: left; min-width: 0;
+  display: flex; flex-direction: column; gap: .25rem; min-height: 6.75rem; box-shadow: var(--shadow);
+  transition: background-color .2s var(--out), border-color .2s var(--out), box-shadow .2s var(--out), transform .1s var(--out); }
 .stg:hover { border-color: var(--line-2); }
-.stg::after { content: ""; position: absolute; right: -.8rem; top: 50%; width: .8rem; height: 2px; background: var(--line); }
+.stg:active { transform: scale(.98); }
+.stg::after { content: ""; position: absolute; right: calc(-.75rem - 1px); top: 1.6rem; width: .75rem; height: 2px; background: var(--line); }
 .stg:last-child::after { display: none; }
-.stg .hd { display: flex; align-items: center; gap: .45rem; }
-.stg .n { width: 1.35rem; height: 1.35rem; border-radius: 50%; border: 1px solid var(--line-2); display: grid; place-items: center; font-size: .72rem; font-weight: 650; color: var(--ink-3); flex: none; background: var(--surface); transition: all .25s; }
-.stg .nm { font-size: .9rem; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.stg .en { font-size: .7rem; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.stg .st { font-size: .8rem; color: var(--ink-2); line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-top: auto; }
-.stg .tm { font-size: .7rem; color: var(--ink-4); }
+.stg .hd { display: flex; align-items: flex-start; gap: .5rem; min-width: 0; }
+.stg .n { width: 1.75rem; height: 1.75rem; border-radius: 50%; border: 1px solid var(--line-2); display: grid; place-items: center; font-size: .875rem; font-weight: 700; color: var(--ink-3); flex: none; background: var(--surface);
+  transition: background-color .2s var(--out), border-color .2s var(--out), color .2s var(--out); }
+.stg .nm { font-size: 1.25rem; line-height: 1.75rem; font-weight: 650; letter-spacing: -.01em; color: var(--ink-3); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; transition: color .2s var(--out); }
+.stg .en { font-size: .75rem; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stg .st { font-size: 1rem; color: var(--ink-4); line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-top: auto; }
+.stg .tm { font-size: .75rem; color: var(--ink-3); }
 .stg.has .n { background: var(--accent); border-color: var(--accent); color: #fff; }
+.stg.has .nm { color: var(--ink); }
+.stg.has .st { color: var(--ink-2); }
 .stg.has::after { background: var(--accent-line); }
-.stg.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow); }
-.stg.hot { background: var(--accent-soft); border-color: var(--accent-line); }
-.stg.hot .n { animation: ring 1.1s ease-out; }
-.stg.blk { background: var(--bad-soft); border-color: var(--bad-line); } .stg.blk .n { background: var(--bad); border-color: var(--bad); }
-.stg.amb { background: var(--wait-soft); border-color: var(--wait-line); } .stg.amb .n { background: var(--wait); border-color: var(--wait); }
-.stg.grn { background: var(--good-soft); border-color: var(--good-line); } .stg.grn .n { background: var(--good); border-color: var(--good); }
-.stg.dim { opacity: .55; }
-@keyframes ring { 0% { box-shadow: 0 0 0 0 rgba(15,118,110,.45); } 100% { box-shadow: 0 0 0 .7rem rgba(15,118,110,0); } }
-.flow { position: absolute; top: 50%; width: .45rem; height: .45rem; margin-top: -.2rem; border-radius: 50%; background: var(--accent); pointer-events: none; opacity: 0; }
-.flow.go { animation: flow .7s ease-in-out; }
-@keyframes flow { 0% { opacity: 0; transform: translateX(0); } 15% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; transform: translateX(var(--dx)); } }
+.stg.blk .n { background: var(--bad); border-color: var(--bad); } .stg.blk .st { color: var(--bad); }
+.stg.amb .n { background: var(--wait); border-color: var(--wait); } .stg.amb .st { color: var(--wait); }
+.stg.grn .n { background: var(--good); border-color: var(--good); } .stg.grn .st { color: var(--good); }
+/* the stage that acted last: the one obvious box */
+.stg.cur { background: var(--accent-soft); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow); }
+.stg.cur .st { color: var(--ink); font-weight: 550; }
+.stg.cur.blk { background: var(--bad-soft); border-color: var(--bad); box-shadow: 0 0 0 1px var(--bad), var(--shadow); }
+.stg.cur.amb { background: var(--wait-soft); border-color: var(--wait); box-shadow: 0 0 0 1px var(--wait), var(--shadow); }
+.stg.cur.grn { background: var(--good-soft); border-color: var(--good); box-shadow: 0 0 0 1px var(--good), var(--shadow); }
+.stg.sel:not(.cur) { border-color: var(--ink-3); box-shadow: 0 0 0 1px var(--ink-3), var(--shadow); }
 
-/* ---------- banner ---------- */
-.banner { display: flex; align-items: center; gap: .8rem; padding: .5rem .9rem; border-radius: 10px; border: 1px solid var(--wait-line); background: var(--wait-soft); color: #78350f; font-size: .92rem; min-height: 2.5rem; }
+/* ---------- banner: what to do now ---------- */
+.banner { display: flex; align-items: center; gap: 1rem; padding: .625rem 1rem; border-radius: var(--r); border: 1px solid var(--wait-line); background: var(--wait-soft); color: #78350f; font-size: 1.0625rem; line-height: 1.4; min-height: 3rem; }
 .banner.ok { border-color: var(--good-line); background: var(--good-soft); color: #14532d; }
-.banner.info { border-color: var(--accent-line); background: var(--accent-soft); color: #134e4a; }
-.banner b { font-weight: 650; }
+.banner.info { border-color: var(--line); background: var(--surface); color: var(--ink-2); }
+.banner b { font-weight: 650; color: inherit; }
+.banner.info b { color: var(--ink); }
 .banner .sp { flex: 1; }
 
 /* ---------- main grid ---------- */
-.main { flex: 1; min-height: 0; display: grid; grid-template-columns: 24.5rem minmax(0, 1fr) 27.5rem; gap: .8rem; }
-.col { display: flex; flex-direction: column; gap: .8rem; min-height: 0; min-width: 0; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: .8rem .95rem; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
-.ch { display: flex; align-items: center; gap: .6rem; margin-bottom: .55rem; }
-.ch h2 { margin: 0; font-size: .92rem; font-weight: 650; }
-.ch .note { font-size: .76rem; color: var(--ink-3); }
+.main { flex: 1; min-height: 0; display: grid; grid-template-columns: 24rem minmax(0, 1fr) 30.5rem; gap: .75rem; }
+.col { display: flex; flex-direction: column; gap: .75rem; min-height: 0; min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 1rem; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
+.ch { display: flex; align-items: baseline; gap: .5rem; margin-bottom: .5rem; }
+.ch h2 { margin: 0; font-size: 1.125rem; font-weight: 650; white-space: nowrap; }
+.ch .note { font-size: .8125rem; color: var(--ink-3); }
 .ch .sp { flex: 1; }
 .scroll { overflow-y: auto; min-height: 0; flex: 1; scrollbar-width: thin; }
 
 /* spotlight card */
-.who { display: flex; align-items: center; gap: .75rem; }
-.av { width: 2.8rem; height: 2.8rem; border-radius: 50%; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line); display: grid; place-items: center; font-weight: 700; font-size: 1.1rem; flex: none; }
-.who .nm { font-size: 1.3rem; font-weight: 650; letter-spacing: -.01em; line-height: 1.15; }
-.who .sub { font-size: .78rem; color: var(--ink-3); }
-.status { margin-left: auto; display: inline-flex; align-items: center; height: 1.6rem; padding: 0 .6rem; border-radius: 999px; font-size: .75rem; font-weight: 650; letter-spacing: .03em; border: 1px solid var(--line); color: var(--ink-2); background: var(--sunk); white-space: nowrap; }
+.who { display: flex; align-items: center; gap: .75rem; min-width: 0; }
+.who > div:nth-child(2) { min-width: 0; }
+.av { width: 3rem; height: 3rem; border-radius: 50%; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line); display: grid; place-items: center; font-weight: 700; font-size: 1.25rem; flex: none; }
+.who .nm { font-size: 1.625rem; font-weight: 650; letter-spacing: -.015em; line-height: 1.15; }
+.who .sub { font-size: .875rem; color: var(--ink-3); line-height: 1.35; }
+.status { margin-left: auto; display: inline-flex; align-items: center; height: 1.875rem; padding: 0 .75rem; border-radius: 999px; font-size: .875rem; font-weight: 650; letter-spacing: .03em; border: 1px solid var(--line); color: var(--ink-2); background: var(--sunk); white-space: nowrap; flex: none;
+  transition: background-color .2s var(--out), border-color .2s var(--out), color .2s var(--out); }
 .status.good { background: var(--good-soft); color: var(--good); border-color: var(--good-line); }
 .status.bad { background: var(--bad-soft); color: var(--bad); border-color: var(--bad-line); }
 .status.wait { background: var(--wait-soft); color: var(--wait); border-color: var(--wait-line); }
-.kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .45rem .7rem; margin-top: .7rem; }
+.kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem 1rem; margin-top: 1rem; }
 .kv div { min-width: 0; }
-.kv .k { font-size: .7rem; color: var(--ink-3); font-weight: 550; text-transform: uppercase; letter-spacing: .05em; }
-.kv .x { font-size: .95rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.kv .x.chg { animation: chg 1.4s ease-out; border-radius: 4px; }
-@keyframes chg { 0% { background: var(--accent-soft); box-shadow: 0 0 0 3px var(--accent-soft); } 100% { background: transparent; box-shadow: none; } }
-.cons { display: flex; gap: .3rem; flex-wrap: wrap; margin-top: .6rem; }
-.chip { display: inline-flex; align-items: center; gap: .3rem; height: 1.55rem; padding: 0 .5rem; border-radius: 6px; font-size: .75rem; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); white-space: nowrap; transition: all .3s; }
+.kv .k { font-size: .875rem; color: var(--ink-3); font-weight: 500; }
+.kv .x { font-size: 1.25rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-radius: 4px; }
+.kv .x.chg { animation: chg 1s var(--out); }
+@keyframes chg { from { background: var(--accent-soft); } to { background: transparent; } }
+.cons { display: flex; gap: .375rem; flex-wrap: wrap; margin-top: 1rem; }
+.chip { display: inline-flex; align-items: center; gap: .3rem; height: 1.875rem; padding: 0 .625rem; border-radius: 6px; font-size: .875rem; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); white-space: nowrap;
+  transition: background-color .2s var(--out), border-color .2s var(--out), color .2s var(--out); }
 .chip.yes { background: var(--good-soft); border-color: var(--good-line); color: var(--good); }
 .chip.no { color: var(--ink-4); background: var(--sunk); text-decoration: line-through; }
 .chip.stop { background: var(--bad-soft); border-color: var(--bad-line); color: var(--bad); }
 .chip.amb { background: var(--wait-soft); border-color: var(--wait-line); color: var(--wait); }
 .chip.acc { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent); }
-.best { margin-top: .6rem; font-size: .82rem; color: var(--ink-2); display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; }
+.ev .meta .chip, .rules span, .lbl + .chip { font-size: .8125rem; height: 1.625rem; }
+.best { margin-top: .75rem; font-size: .9375rem; color: var(--ink-2); display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; }
 .best b { color: var(--ink); }
-.presets { display: flex; gap: .35rem; margin-bottom: .6rem; flex-wrap: wrap; }
-.presets button { height: 1.75rem; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: .76rem; padding: 0 .65rem; cursor: pointer; color: var(--ink-2); }
+.presets { display: flex; gap: .375rem; margin-bottom: .75rem; flex-wrap: wrap; }
+.presets button { height: 2rem; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: .875rem; padding: 0 .75rem; cursor: pointer; color: var(--ink-2); transition: border-color .15s var(--out), transform .1s var(--out); }
+.presets button:active { transform: scale(.98); }
 .presets button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); font-weight: 650; }
 
-/* timeline */
+/* journey so far */
 .tl { list-style: none; margin: 0; padding: 0; }
-.tl li { display: grid; grid-template-columns: 3.4rem 1.1rem minmax(0, 1fr); gap: .45rem; padding: .32rem .2rem; border-radius: 6px; cursor: pointer; font-size: .82rem; align-items: start; }
+.tl li { display: grid; grid-template-columns: 4.5rem .75rem minmax(0, 1fr); gap: .5rem; padding: .375rem .25rem; border-radius: 6px; cursor: pointer; font-size: .9375rem; align-items: start; transition: background-color .15s var(--out); }
 .tl li:hover { background: var(--hover); }
-.tl li.new { animation: chg 1.4s ease-out; }
-.tl .when { color: var(--ink-3); font-size: .74rem; line-height: 1.5; white-space: nowrap; }
-.tl .dot { width: .6rem; height: .6rem; border-radius: 50%; margin-top: .35rem; background: var(--accent); justify-self: center; }
+.tl li.new { animation: enter .18s var(--out) both; }
+@keyframes enter { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.tl .when { color: var(--ink-3); font-size: .875rem; line-height: 1.55; white-space: nowrap; }
+.tl .dot { width: .5rem; height: .5rem; border-radius: 50%; margin-top: .5rem; background: var(--accent); justify-self: center; }
 .tl .dot.bad { background: var(--bad); } .tl .dot.good { background: var(--good); } .tl .dot.wait { background: var(--wait); } .tl .dot.mute { background: var(--line-2); }
 .tl .dot.hum { background: #fff; border: 2px solid var(--ink); }
-.tl .tx { color: var(--ink-2); line-height: 1.35; }
+.tl .tx { color: var(--ink-2); line-height: 1.4; overflow-wrap: anywhere; }
 .tl .tx b { color: var(--ink); font-weight: 600; }
-.tl .dayh { grid-template-columns: 1fr; font-size: .7rem; color: var(--ink-3); font-weight: 650; text-transform: uppercase; letter-spacing: .06em; padding-top: .5rem; cursor: default; }
+.tl .dayh { grid-template-columns: 1fr; font-size: .875rem; color: var(--ink-3); font-weight: 650; padding-top: .75rem; cursor: default; }
+.tl .dayh:first-child { padding-top: 0; }
 .tl .dayh:hover { background: none; }
-.empty { color: var(--ink-3); font-size: .85rem; padding: .6rem 0; }
+.empty { color: var(--ink-3); font-size: 1rem; padding: .5rem 0; }
 
-/* detail */
-.dt-h { display: flex; align-items: center; gap: .7rem; margin-bottom: .6rem; }
-.dt-h .n { width: 1.8rem; height: 1.8rem; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 650; font-size: .9rem; flex: none; }
-.dt-h h2 { margin: 0; font-size: 1.12rem; font-weight: 650; }
-.dt-h .en { font-size: .8rem; color: var(--ink-3); }
-.ev { border: 1px solid var(--line); border-radius: 10px; padding: .75rem .9rem; margin-bottom: .6rem; background: var(--surface); }
-.ev.latest { border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-soft); }
-.ev.bad { border-color: var(--bad-line); box-shadow: 0 0 0 3px var(--bad-soft); }
-.ev .meta { font-size: .74rem; color: var(--ink-3); display: flex; gap: .5rem; align-items: center; margin-bottom: .25rem; flex-wrap: wrap; }
-.ev .sum { font-size: 1.02rem; line-height: 1.4; color: var(--ink); font-weight: 500; }
-.ev.old .sum { font-size: .88rem; color: var(--ink-2); font-weight: 400; }
-.ev .body { margin-top: .6rem; }
-.lbl { font-size: .7rem; color: var(--ink-3); font-weight: 650; text-transform: uppercase; letter-spacing: .06em; margin: .55rem 0 .3rem; }
-pre.raw { margin: .5rem 0 0; padding: .6rem .7rem; background: var(--sunk); border: 1px solid var(--line); border-radius: 8px; font: .74rem/1.45 var(--mono); color: var(--ink-2); white-space: pre-wrap; word-break: break-word; max-height: 18rem; overflow: auto; }
-.grid { display: grid; gap: 3px; font-size: .8rem; }
-.grid .h { font-size: .7rem; color: var(--ink-3); font-weight: 600; padding: .15rem .3rem; }
-.grid .c { padding: .32rem .45rem; border-radius: 6px; text-align: center; font-weight: 600; border: 1px solid transparent; position: relative; }
-.grid .c small { display: block; font-weight: 500; font-size: .66rem; color: var(--ink-3); }
+/* what just happened */
+.dt-h { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; }
+.dt-h .n { width: 2.25rem; height: 2.25rem; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 1.0625rem; flex: none; }
+.dt-h .ey { font-size: .875rem; color: var(--ink-3); font-weight: 500; }
+.dt-h h2 { margin: 0; font-size: 1.5rem; font-weight: 650; letter-spacing: -.015em; line-height: 1.2; }
+.dt-h .en { font-size: .8125rem; color: var(--ink-3); }
+.ev { border: 1px solid var(--line); border-radius: var(--r); padding: 1rem 1.25rem; margin-bottom: .75rem; background: var(--surface); }
+.ev.latest { border-color: var(--accent-line); background: #fcfefd; animation: enter .18s var(--out) both; }
+.ev.bad { border-color: var(--bad-line); background: #fffcfc; animation: enter .18s var(--out) both; }
+.ev .meta { font-size: .875rem; color: var(--ink-3); display: flex; gap: .5rem; align-items: center; margin-bottom: .375rem; flex-wrap: wrap; }
+.ev .meta b { color: var(--ink-2); font-weight: 600; }
+.ev .sum { font-size: 1.375rem; line-height: 1.4; color: var(--ink); font-weight: 550; letter-spacing: -.005em; overflow-wrap: anywhere; }
+.ev.old .sum { font-size: 1rem; color: var(--ink-2); font-weight: 400; }
+.ev .body { margin-top: 1rem; }
+.earlier { font-size: .9375rem; color: var(--ink-3); padding: .25rem .25rem; }
+.lbl { font-size: .875rem; color: var(--ink-3); font-weight: 600; margin: .75rem 0 .375rem; }
+.ev .body > .lbl:first-child { margin-top: 0; }
+pre.raw { margin: .75rem 0 0; padding: .75rem; background: var(--sunk); border: 1px solid var(--line); border-radius: var(--r-sm); font: .8125rem/1.45 var(--mono); color: var(--ink-2); white-space: pre-wrap; word-break: break-word; max-height: 18rem; overflow: auto; }
+.grid { display: grid; gap: 4px; font-size: .9375rem; }
+.grid .h { font-size: .8125rem; color: var(--ink-3); font-weight: 600; padding: .15rem .3rem; }
+.grid .c { padding: .375rem .5rem; border-radius: 6px; text-align: center; font-weight: 600; border: 1px solid transparent; position: relative; }
+.grid .c small { display: block; font-weight: 500; font-size: .75rem; color: var(--ink-2); }
 .grid .c.chosen { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.grid .c.chosen::after { content: "chosen"; position: absolute; top: -.55rem; right: .25rem; font-size: .58rem; background: var(--accent); color: #fff; padding: 0 .3rem; border-radius: 4px; font-weight: 650; }
-.grid .rl { font-weight: 600; padding: .32rem .2rem; font-size: .8rem; }
+.grid .c.chosen::after { content: "chosen"; position: absolute; top: -.6rem; right: .25rem; font-size: .75rem; background: var(--accent); color: #fff; padding: 0 .3rem; border-radius: 4px; font-weight: 650; }
+.grid .rl { font-weight: 600; padding: .375rem .25rem; font-size: .9375rem; }
 .rules { display: flex; flex-wrap: wrap; gap: .25rem; }
-.rules span { font-size: .68rem; padding: .12rem .4rem; border-radius: 5px; border: 1px solid var(--good-line); background: var(--good-soft); color: var(--good); font-weight: 600; }
+.rules span { font-size: .75rem; padding: .15rem .4rem; border-radius: 5px; border: 1px solid var(--good-line); background: var(--good-soft); color: var(--good); font-weight: 600; height: auto; }
 .rules span.x { border-color: var(--bad-line); background: var(--bad-soft); color: var(--bad); }
 .rules span.na { border-color: var(--line); background: var(--sunk); color: var(--ink-4); }
-.verd { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .35rem; }
-.verd div { border: 1px solid var(--line); border-radius: 8px; padding: .4rem .5rem; font-size: .78rem; min-width: 0; }
-.verd div b { display: block; font-size: .8rem; }
-.verd div span { color: var(--ink-3); font-size: .72rem; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.verd { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .5rem; }
+.verd > div { border: 1px solid var(--line); border-radius: var(--r-sm); padding: .5rem .625rem; font-size: .9375rem; min-width: 0; }
+.verd > div b { display: block; font-size: 1rem; }
+.verd > div span { color: var(--ink-2); font-size: .875rem; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.verd.one > div span { white-space: normal; }
 .verd .ok { border-color: var(--good-line); background: var(--good-soft); } .verd .ok b { color: var(--good); }
 .verd .no { border-color: var(--bad-line); background: var(--bad-soft); } .verd .no b { color: var(--bad); }
-.tiers { display: flex; align-items: stretch; gap: .35rem; flex-wrap: wrap; }
-.tiers div { border: 1px solid var(--line); border-radius: 8px; padding: .35rem .6rem; font-size: .78rem; background: var(--sunk); color: var(--ink-3); }
-.tiers div b { display: block; color: var(--ink-2); font-size: .8rem; }
-.tiers div.on { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent); } .tiers div.on b { color: var(--accent); }
-.tiers div.hu { background: var(--wait-soft); border-color: var(--wait-line); color: var(--wait); }
-.tiers .ar { border: 0; background: none; padding: .35rem 0; color: var(--ink-4); }
-.bubble { display: inline-block; max-width: 100%; padding: .55rem .8rem; border-radius: 12px 12px 12px 3px; background: #dcf8c6; color: #1c1917; font-size: .95rem; border: 1px solid #c4ebaa; }
-.move { display: flex; align-items: center; gap: .6rem; font-size: 1.05rem; font-weight: 650; }
+.tiers { display: flex; align-items: stretch; gap: .5rem; flex-wrap: wrap; }
+.tiers > div { border: 1px solid var(--line); border-radius: var(--r-sm); padding: .5rem .75rem; font-size: .875rem; background: var(--sunk); color: var(--ink-3); }
+.tiers > div b { display: block; color: var(--ink-2); font-size: .9375rem; }
+.tiers > div.on { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent); } .tiers > div.on b { color: var(--accent); }
+.tiers > div.hu { background: var(--wait-soft); border-color: var(--wait-line); color: var(--wait); }
+.tiers .ar { border: 0; background: none; padding: .5rem 0; color: var(--ink-4); }
+.bubble { display: inline-block; max-width: 100%; padding: .625rem .875rem; border-radius: 12px 12px 12px 3px; background: #dcf8c6; color: #1c1917; font-size: 1.125rem; border: 1px solid #c4ebaa; }
+.move { display: flex; align-items: center; gap: .75rem; font-size: 1.25rem; font-weight: 650; }
 .move span.f { color: var(--ink-3); text-decoration: line-through; font-weight: 500; }
-.bar { height: .55rem; background: var(--sunk); border-radius: 999px; position: relative; overflow: hidden; border: 1px solid var(--line); }
-.bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 999px; transition: width .6s; }
+.bar { height: .625rem; background: var(--sunk); border-radius: 999px; position: relative; overflow: hidden; border: 1px solid var(--line); }
+.bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 999px; transition: width .4s var(--out); }
 .bar i.was { background: var(--line-2); }
-.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; }
-.facts div { background: var(--sunk); border-radius: 8px; padding: .4rem .6rem; min-width: 0; }
-.facts .k { font-size: .68rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
-.facts .x { font-size: .9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.verd + .facts, .verd + .lbl { margin-top: .75rem; }
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+.facts > div { background: var(--sunk); border-radius: var(--r-sm); padding: .5rem .75rem; min-width: 0; }
+.facts .k { font-size: .875rem; color: var(--ink-3); font-weight: 500; }
+.facts .x { font-size: 1.125rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* controls */
-.grp { border-top: 1px solid var(--line); padding-top: .6rem; margin-top: .6rem; }
+/* take control */
+.grp { border-top: 1px solid var(--line); padding-top: .625rem; margin-top: .625rem; }
 .grp:first-child { border-top: 0; padding-top: 0; margin-top: 0; }
-.grp .gt { font-size: .72rem; color: var(--ink-3); font-weight: 650; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .4rem; display: flex; align-items: center; gap: .4rem; }
+.grp .gt { font-size: .9375rem; color: var(--ink-2); font-weight: 600; margin-bottom: .5rem; display: flex; align-items: baseline; gap: .5rem; }
 .grp .gt .sp { flex: 1; }
-.row { display: flex; gap: .4rem; align-items: center; flex-wrap: wrap; }
-.kill { flex: 1; height: 2.6rem; border-radius: 9px; border: 1px solid var(--bad); background: var(--bad); color: #fff; font-weight: 700; letter-spacing: .02em; font-size: .9rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; }
-.kill:hover { background: #991b1b; }
+.grp .gt .gn { font-weight: 500; color: var(--ink-3); font-size: .875rem; }
+.row { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.kill { flex: 1; height: 2.75rem; border-radius: var(--r-sm); border: 1px solid var(--bad); background: var(--bad); color: #fff; font-weight: 700; letter-spacing: .02em; font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  transition: background-color .15s var(--out), color .15s var(--out), transform .1s var(--out); }
+.kill:hover:not(:disabled) { background: #991b1b; }
+.kill:active:not(:disabled) { transform: scale(.98); }
+.kill:disabled { opacity: .45; cursor: not-allowed; }
 .kill.on { background: var(--surface); color: var(--bad); }
-.kill.on:hover { background: var(--bad-soft); }
-.appr { display: flex; flex-direction: column; gap: .35rem; max-height: 11.5rem; overflow-y: auto; }
-.ap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; align-items: center; padding: .4rem .55rem; border: 1px solid var(--line); border-radius: 8px; }
-.ap.me { border-color: var(--wait-line); background: var(--wait-soft); }
-.ap .t1 { font-size: .85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ap .t2 { font-size: .72rem; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dd { height: 1.85rem; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); font-size: .82rem; padding: 0 .35rem; }
-.verdict { margin-top: .4rem; font-size: .8rem; padding: .35rem .55rem; border-radius: 7px; background: var(--sunk); color: var(--ink-2); border: 1px solid var(--line); min-height: 1.95rem; line-height: 1.35; }
+.kill.on:hover:not(:disabled) { background: var(--bad-soft); }
+.appr { display: flex; flex-direction: column; gap: .5rem; max-height: 16rem; overflow-y: auto; }
+.ap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; align-items: center; padding: .5rem .75rem; border: 1px solid var(--line); border-radius: var(--r-sm); }
+.ap.me { border-color: var(--wait-line); background: var(--wait-soft); animation: enter .18s var(--out) both; }
+.ap .t1 { font-size: 1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ap .t2 { font-size: .875rem; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dd { height: 2.25rem; border: 1px solid var(--line-2); border-radius: var(--r-sm); background: var(--surface); font-size: .9375rem; padding: 0 .375rem; }
+.verdict { margin-top: .5rem; font-size: .9375rem; padding: .5rem .75rem; border-radius: var(--r-sm); background: var(--sunk); color: var(--ink-2); border: 1px solid var(--line); min-height: 2.5rem; line-height: 1.4;
+  transition: background-color .2s var(--out), border-color .2s var(--out), color .2s var(--out); }
 .verdict.ok { background: var(--good-soft); border-color: var(--good-line); color: #14532d; }
 .verdict.no { background: var(--bad-soft); border-color: var(--bad-line); color: #7f1d1d; }
-.applies { font-size: .74rem; color: var(--ink-3); margin-left: auto; }
+.applies { font-size: .875rem; color: var(--ink-3); margin-left: auto; text-align: right; line-height: 1.3; }
+.orsend { font-size: .9375rem; color: var(--ink-3); }
 .audit { list-style: none; margin: 0; padding: 0; }
-.audit li { padding: .4rem .1rem; border-bottom: 1px solid var(--line); font-size: .78rem; display: grid; grid-template-columns: 3.3rem minmax(0, 1fr); gap: .45rem; }
-.audit li.new { animation: chg 1.4s ease-out; }
-.audit .tm { color: var(--ink-3); font-size: .72rem; }
-.audit .w1 { font-weight: 600; color: var(--ink); }
-.audit .w2 { color: var(--ink-3); font-size: .72rem; }
-.audit .rs { font-weight: 600; } .audit .rs.ok { color: var(--good); } .audit .rs.no { color: var(--bad); }
+.audit li { padding: .5rem 0; border-bottom: 1px solid var(--line); font-size: .9375rem; display: grid; grid-template-columns: 4rem minmax(0, 1fr) auto; gap: .25rem 1rem; align-items: baseline; }
+.audit li:last-child { border-bottom: 0; }
+.audit li.new { animation: enter .18s var(--out) both; }
+.audit .tm { color: var(--ink-3); font-size: .875rem; line-height: 1.6; }
+.audit .w1 { font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+.audit .w2 { color: var(--ink-3); font-size: .8125rem; overflow-wrap: anywhere; }
+.audit .rs { font-weight: 600; max-width: 18rem; text-align: right; } .audit .rs.ok { color: var(--good); } .audit .rs.no { color: var(--bad); }
 
-/* footer + overlays */
-.foot { display: flex; align-items: center; gap: .8rem; font-size: .76rem; color: var(--ink-3); min-height: 1.4rem; }
-.foot .feed { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* playback bar */
+.foot { display: flex; align-items: center; gap: .75rem; padding: .5rem .75rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); min-height: 3.5rem; }
+.foot .feed { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: .875rem; color: var(--ink-3); }
 .foot .feed b { color: var(--ink-2); font-weight: 600; }
-.toast { position: fixed; top: 4.2rem; left: 50%; transform: translateX(-50%) translateY(-1rem); opacity: 0; background: var(--ink); color: #fff; padding: .6rem 1rem; border-radius: 10px; font-size: .9rem; box-shadow: var(--shadow-lg); transition: all .25s; pointer-events: none; z-index: 30; max-width: 52rem; }
-.toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+.foot .keys { font-size: .875rem; color: var(--ink-3); white-space: nowrap; }
+.foot .vr { width: 1px; height: 1.75rem; background: var(--line); }
+#bPlay { min-width: 7rem; }
+
+/* overlays */
+.toast { position: fixed; bottom: 5.25rem; right: 1rem; transform: translateY(8px); opacity: 0; background: var(--ink); color: #fff; padding: .75rem 1.25rem; border-radius: 10px; font-size: 1rem; box-shadow: var(--shadow-lg); pointer-events: none; z-index: 30; max-width: 30rem;
+  transition: opacity .18s var(--out), transform .18s var(--out); }
+.toast.on { opacity: 1; transform: none; }
 .toast.bad { background: var(--bad); } .toast.good { background: var(--good); }
-.cue { position: fixed; left: 1rem; bottom: 2.6rem; width: 29rem; background: var(--surface); border: 1px solid var(--line-2); border-radius: 14px; box-shadow: var(--shadow-lg); padding: .9rem 1rem; z-index: 25; }
-.cue .ct { display: flex; align-items: center; gap: .5rem; font-size: .72rem; color: var(--ink-3); font-weight: 650; text-transform: uppercase; letter-spacing: .06em; }
-.cue h3 { margin: .3rem 0 .45rem; font-size: 1.05rem; }
-.cue p { margin: .3rem 0; font-size: .86rem; color: var(--ink-2); line-height: 1.45; }
+.cue { position: fixed; left: 1rem; bottom: 5rem; width: 32rem; max-width: calc(100vw - 2rem); background: var(--surface); border: 1px solid var(--line-2); border-radius: 14px; box-shadow: var(--shadow-lg); padding: 1rem 1.25rem; z-index: 25; animation: rise .2s var(--out) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+.cue .ct { display: flex; align-items: center; gap: .5rem; font-size: .8125rem; color: var(--ink-3); font-weight: 600; }
+.cue h3 { margin: .375rem 0 .5rem; font-size: 1.25rem; letter-spacing: -.01em; }
+.cue p { margin: .375rem 0; font-size: 1rem; color: var(--ink-2); line-height: 1.5; }
 .cue p b { color: var(--accent); }
-.cue .row { margin-top: .5rem; }
-.veil { position: fixed; inset: 0; background: rgba(250,250,249,.86); backdrop-filter: blur(3px); display: grid; place-items: center; z-index: 40; }
-.pick { width: min(64rem, 92vw); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-lg); padding: 1.6rem 1.7rem; }
-.pick h2 { margin: 0 0 .25rem; font-size: 1.5rem; letter-spacing: -.015em; }
-.pick > p { margin: 0 0 1.1rem; color: var(--ink-3); }
-.pcs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .9rem; }
-.pc { text-align: left; border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.05rem; background: var(--surface); cursor: pointer; transition: all .15s; display: flex; flex-direction: column; gap: .35rem; }
+.cue p.say { border-left: 3px solid var(--accent); padding-left: .75rem; }
+.cue .row { margin-top: .75rem; justify-content: space-between; }
+/* the one looping cue: the presenter's next button, only while the script is open */
+#cueNext:not(:disabled) { animation: attn 2.4s ease-in-out infinite; }
+@keyframes attn { 0%, 100% { box-shadow: 0 0 0 0 rgba(15,118,110,0); } 50% { box-shadow: 0 0 0 4px rgba(15,118,110,.18); } }
+.veil { position: fixed; inset: 0; background: rgba(251,248,241,.9); backdrop-filter: blur(3px); display: grid; place-items: center; z-index: 40; }
+.pick { width: min(66rem, 92vw); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-lg); padding: 2rem; }
+.pick h2 { margin: 0 0 .5rem; font-size: 1.75rem; letter-spacing: -.015em; }
+.pick > p { margin: 0 0 1.5rem; color: var(--ink-2); font-size: 1.0625rem; max-width: 52rem; }
+.pcs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.pc { text-align: left; border: 1px solid var(--line); border-radius: var(--r); padding: 1.25rem; background: var(--surface); cursor: pointer; display: flex; flex-direction: column; gap: .375rem;
+  transition: border-color .15s var(--out), box-shadow .15s var(--out), transform .1s var(--out); }
 .pc:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.pc .k { font-size: .72rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
-.pc .nm { font-size: 1.25rem; font-weight: 650; }
-.pc .ti { font-weight: 600; }
-.pc .bl { color: var(--ink-3); font-size: .86rem; }
-.spin { width: 1rem; height: 1rem; border: 2px solid var(--accent-line); border-top-color: var(--accent); border-radius: 50%; animation: sp 0.8s linear infinite; display: inline-block; }
-@keyframes sp { to { transform: rotate(360deg); } }
+.pc:active { transform: scale(.98); }
+.pc .k { font-size: .875rem; color: var(--accent); font-weight: 650; }
+.pc .nm { font-size: 1.5rem; font-weight: 650; }
+.pc .ti { font-weight: 600; font-size: 1.0625rem; }
+.pc .bl { color: var(--ink-2); font-size: 1rem; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 </head>
 <body>
 <div class="app" id="app">
   <header class="top">
-    <div class="brand"><div class="mk">K</div><h1>Kairos <span>· Outbound collections, live</span></h1></div>
+    <div class="brand"><div class="mk">K</div><h1>Kairos <span>· Outbound collections</span></h1></div>
     <span class="tag" title="Synthetic borrowers, DEV simulator, mock channel adapters (dry-run). Nothing is sent.">SIMULATED</span>
     <div class="clock" aria-live="off"><span class="d" id="cDay">Day –</span><span class="w" id="cDate"></span><span class="t" id="cTime">--:--</span></div>
     <span class="phase" id="phase"><i></i><span id="phaseT">Not started</span></span>
     <div class="sp"></div>
     <div class="ctl">
-      <label class="chk" title="Playback stops at each of the spotlight borrower's decisions and approvals"><input type="checkbox" id="autoPause" checked> Pause at decisions</label>
-      <button class="btn icon" id="bPlay" title="Play / pause playback (Space)" aria-label="Play"><svg class="i" viewBox="0 0 24 24" id="playIco"><path d="M7 5l12 7-12 7z"/></svg></button>
-      <button class="btn" id="bStep" title="Step to the spotlight's next event (N)"><svg class="i" viewBox="0 0 24 24"><path d="M5 5l10 7-10 7z M18 5v14"/></svg>Next event</button>
-      <div class="seg" id="speed" role="group" aria-label="Playback speed"><button data-s="1" aria-pressed="true">1×</button><button data-s="2" aria-pressed="false">2×</button><button data-s="4" aria-pressed="false">4×</button></div>
-      <button class="btn" id="bRestart" title="Choose a borrower and start again">Restart</button>
+      <div class="seg" role="group" aria-label="View"><button id="vPlain" aria-pressed="true">Plain words</button><button id="vTech" aria-pressed="false" title="Rule ids, raw payloads, every approval (T)">Technical</button></div>
       <button class="btn" id="bCue" title="Presenter script (P)"><kbd>P</kbd> Script</button>
     </div>
   </header>
@@ -299,45 +337,48 @@ pre.raw { margin: .5rem 0 0; padding: .6rem .7rem; background: var(--sunk); bord
   <section class="strip" aria-label="Campaign today">
     <div class="camp"><div class="l">Campaign (SIMULATED)</div><div class="v" id="kCamp">– <span></span></div></div>
     <div><div class="l">Contacted today</div><div class="v" id="kSent">0</div></div>
-    <div><div class="l">Waiting today</div><div class="v wait" id="kWait">0</div></div>
+    <div class="tech-only"><div class="l">Waiting today</div><div class="v wait" id="kWait">0</div></div>
     <div><div class="l">Held for a person</div><div class="v" id="kHeld">0</div></div>
     <div><div class="l">Paid today</div><div class="v good" id="kPaid">0</div></div>
     <div><div class="l">Recovered so far</div><div class="v good" id="kRec">₹0</div></div>
     <div><div class="l">Aladdin blocks</div><div class="v" id="kBlk">0</div></div>
-    <div><div class="l">Cap breaches</div><div class="v good" id="kCap">0</div></div>
+    <div class="tech-only"><div class="l">Cap breaches</div><div class="v good" id="kCap">0</div></div>
   </section>
 
   <section class="pipe" id="pipe" aria-label="Engine pipeline for the spotlight borrower"></section>
 
-  <div class="banner info" id="banner"><span id="bannerT">Choose a borrower to follow. Every box below is a real Kairos engine; it lights up when that engine acts for them.</span><span class="sp"></span><span id="bannerA"></span></div>
+  <div class="banner info" id="banner"><span id="bannerT">Choose a borrower to follow. Every box above is a real Kairos engine; it lights up when that engine acts for them.</span><span class="sp"></span><span id="bannerA"></span></div>
 
   <section class="main">
     <div class="col">
-      <div class="card" id="cardBox">
-        <div class="presets" id="presets"></div>
+      <div class="card" id="cardBox" style="flex:0 1 auto;overflow-y:auto">
+        <div class="presets tech-only" id="presets"></div>
         <div class="who"><div class="av" id="av">–</div><div><div class="nm" id="nm">–</div><div class="sub" id="sub"></div></div><span class="status" id="stat">–</span></div>
         <div class="kv" id="kv"></div>
         <div class="cons" id="cons"></div>
-        <div class="best" id="best"></div>
+        <div class="best tech-only" id="best"></div>
       </div>
-      <div class="card" style="flex:1">
-        <div class="ch"><h2>Journey so far</h2><span class="note" id="tlNote"></span></div>
+      <div class="card" style="flex:1;min-height:9rem">
+        <div class="ch"><h2>Journey so far</h2><span class="note tech-only" id="tlNote"></span></div>
         <div class="scroll"><ul class="tl" id="tl"></ul></div>
       </div>
     </div>
 
     <div class="col">
       <div class="card" style="flex:1">
-        <div class="dt-h"><div class="n" id="dN">1</div><div><h2 id="dT">–</h2><div class="en" id="dE"></div></div><div class="sp" style="flex:1"></div>
+        <div class="dt-h"><div class="n" id="dN">1</div><div style="min-width:0"><div class="ey">What just happened</div><h2 id="dT">–</h2><div class="en tech-only" id="dE"></div></div><div class="sp" style="flex:1"></div>
           <button class="btn sm" id="bFollow" title="Follow the latest engine">Follow live</button>
-          <div class="seg" role="group" aria-label="View"><button id="vPlain" aria-pressed="true">Plain words</button><button id="vTech" aria-pressed="false">Technical</button></div>
         </div>
         <div class="scroll" id="detail"></div>
+      </div>
+      <div class="card" style="flex:0 0 26%">
+        <div class="ch"><h2>Audit log</h2><span class="note">every human action, checked by Aladdin</span></div>
+        <div class="scroll"><ul class="audit" id="audit"></ul></div>
       </div>
     </div>
 
     <div class="col">
-      <div class="card" style="flex:none">
+      <div class="card" style="flex:1">
         <div class="ch"><h2>Take control</h2><span class="sp"></span><span class="applies" id="applies"></span></div>
         <div class="grp">
           <div class="gt">Campaign</div>
@@ -347,33 +388,39 @@ pre.raw { margin: .5rem 0 0; padding: .6rem .7rem; background: var(--sunk); bord
           </div>
         </div>
         <div class="grp">
-          <div class="gt">Approvals <span class="sp"></span><span id="apN" style="text-transform:none;letter-spacing:0;font-weight:500"></span></div>
+          <div class="gt">Approvals <span class="sp"></span><span class="gn" id="apN"></span></div>
           <div class="appr" id="appr"></div>
         </div>
         <div class="grp">
-          <div class="gt">Spotlight: <span id="spName" style="text-transform:none;letter-spacing:0;color:var(--ink)">–</span></div>
+          <div class="gt">Spotlight: <span id="spName" style="color:var(--ink)">–</span></div>
           <div class="row">
             <button class="btn sm" id="bWait" title="Cancel today's planned touch (HITL cancel_next)">Force WAIT</button>
-            <span style="font-size:.8rem;color:var(--ink-3)">or send</span>
+            <span class="orsend">or send</span>
             <select class="dd" id="oCh" aria-label="Channel"><option value="sms">SMS</option><option value="whatsapp" selected>WhatsApp</option><option value="email">Email</option><option value="ivr">Voice call</option><option value="voicebot">Voice bot</option></select>
             <select class="dd" id="oTm" aria-label="Time"><option>07:30</option><option>09:30</option><option selected>14:30</option><option>17:30</option><option>20:00</option></select>
             <button class="btn sm primary" id="bOv">Apply</button>
           </div>
           <div class="verdict" id="verdict">Aladdin checks any override against every rule before anything is reserved.</div>
-          <div class="row" style="margin-top:.45rem">
+          <div class="row" style="margin-top:.5rem">
             <button class="btn sm" id="bHold">Put on hold</button>
             <button class="btn sm bad" id="bStop" title="Record STOP on the borrower's behalf: every channel off">Mark STOP for borrower</button>
           </div>
         </div>
       </div>
-      <div class="card" style="flex:1">
-        <div class="ch"><h2>Audit log</h2><span class="note">every human action · who · rule check · result</span></div>
-        <div class="scroll"><ul class="audit" id="audit"></ul></div>
-      </div>
     </div>
   </section>
 
-  <footer class="foot"><span class="tag">SIMULATED</span><span class="feed" id="feed">Synthetic borrowers (K03 generator), DEV simulator, mock channel adapters (dry-run): nothing is sent. Supervisor display name: Aladdin (K06).</span><span><kbd>Space</kbd> play · <kbd>N</kbd> next · <kbd>P</kbd> script</span></footer>
+  <footer class="foot" aria-label="Playback">
+    <button class="btn primary" id="bPlay" title="Play / pause playback (Space)" aria-label="Play"><svg class="i" viewBox="0 0 24 24" id="playIco"><path d="M7 5l12 7-12 7z"/></svg><span id="playLbl">Play</span></button>
+    <button class="btn" id="bStep" title="Step to the spotlight's next event (N)"><svg class="i" viewBox="0 0 24 24"><path d="M5 5l10 7-10 7z M18 5v14"/></svg>Next event</button>
+    <div class="seg" id="speed" role="group" aria-label="Playback speed"><button data-s="1" aria-pressed="true">1×</button><button data-s="2" aria-pressed="false">2×</button><button data-s="4" aria-pressed="false">4×</button></div>
+    <label class="chk" title="Playback stops at each of the spotlight borrower's decisions and approvals"><input type="checkbox" id="autoPause" checked> Pause at decisions</label>
+    <span class="vr"></span>
+    <button class="btn" id="bRestart" title="Choose a borrower and start again">Restart</button>
+    <span class="feed" id="feed"><span class="tech-only">Synthetic borrowers (K03 generator), DEV simulator, mock channel adapters (dry-run): nothing is sent. Supervisor display name: Aladdin (K06).</span></span>
+    <span class="keys"><kbd>Space</kbd> play · <kbd>N</kbd> next · <kbd>T</kbd> technical</span>
+    <span class="tag">SIMULATED</span>
+  </footer>
 </div>
 
 <div class="toast" id="toast" role="status"></div>
@@ -382,15 +429,15 @@ pre.raw { margin: .5rem 0 0; padding: .6rem .7rem; background: var(--sunk); bord
   <div class="ct"><span id="cueN">Cue 1 / 6</span><span class="sp" style="flex:1"></span><span>presenter only · <kbd>P</kbd> hides</span></div>
   <h3 id="cueH"></h3>
   <p id="cueDo"></p>
-  <p id="cueSay"></p>
-  <div class="row"><button class="btn sm" id="cuePrev">← Prev</button><button class="btn sm" id="cueNext">Next →</button></div>
+  <p id="cueSay" class="say"></p>
+  <div class="row"><button class="btn sm" id="cuePrev">← Prev</button><button class="btn sm primary" id="cueNext">Next →</button></div>
 </div>
 
 <div class="veil" id="veil">
   <div class="pick">
     <h2>Follow one borrower through a live campaign</h2>
-    <p>A SIMULATED 200-borrower collections campaign runs on Kairos's real engines. Pick whose journey to follow — the engines, not a script, decide what happens.</p>
-    <div class="pcs" id="pcs"><div class="empty"><span class="spin"></span> Loading…</div></div>
+    <p>A SIMULATED 200-borrower collections campaign runs on Kairos's real engines. Pick whose journey to follow: the engines, not a script, decide what happens.</p>
+    <div class="pcs" id="pcs"><div class="empty">Loading…</div></div>
   </div>
 </div>
 
@@ -418,6 +465,8 @@ const inr = (p) => p == null ? "–" : "₹" + Math.round(p / 100).toLocaleStrin
 const inr2 = (p) => p == null ? "–" : "₹" + (p / 100).toLocaleString("en-IN", {minimumFractionDigits: p % 100 ? 2 : 0, maximumFractionDigits: 2});
 const pct = (m) => m == null ? "–" : (m * 100).toFixed(1);
 const ruleName = (r) => String(r || "").toLowerCase().replace(/_/g, " ");
+// Plain words drops rule ids like CONTACT_WINDOW from engine sentences; Technical keeps them.
+const plainText = (t) => S.tech ? String(t || "") : String(t || "").replace(/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b:?\s*/g, "").replace(/\s*\(\s*\)/g, "").replace(/\(\s+/g, "(").replace(/\s+([.,)])/g, "$1");
 const mins = (t) => +t.slice(11, 13) * 60 + +t.slice(14, 16);
 const fmtT = (m) => { m = Math.max(0, Math.min(1439, Math.round(m))); const hh = Math.floor(m / 60), mm = m % 60; return (hh % 12 || 12) + ":" + String(mm).padStart(2, "0") + (hh < 12 ? " am" : " pm"); };
 
@@ -480,6 +529,7 @@ function setPlaying(on) {
   S.paused = !on;
   $("playIco").innerHTML = on ? '<path d="M8 5v14M16 5v14"/>' : '<path d="M7 5l12 7-12 7z"/>';
   $("bPlay").setAttribute("aria-label", on ? "Pause" : "Play");
+  $("playLbl").textContent = on ? "Pause" : "Play";
 }
 
 async function fetchStep() {
@@ -628,7 +678,7 @@ function count(e) {
 
 function campaignEvent(e) {
   if (["daily_summary", "switch", "world_change", "finalized", "day_start"].includes(e.kind) || e.component === "human") {
-    $("feed").innerHTML = `<b>Campaign · Day ${e.day} ${h(fmtT(mins(e.t)))}:</b> ${h(e.summary)}`;
+    $("feed").innerHTML = `<span class="tech-only"><b>Campaign · Day ${e.day} ${h(fmtT(mins(e.t)))}:</b> ${h(e.summary)}</span>`;
   }
 }
 
@@ -675,7 +725,7 @@ function patchCard(e) {
 function short(e) {
   const d = e.detail || {}, c = e.component, k = e.kind;
   if (!e) return "";
-  if (c === "human") return e.summary;
+  if (c === "human") return plainText(e.summary);
   if (c === "churn") return k === "assigned" ? `Cohort ${d.cohort} · ${String(d.risk_tier || "").toLowerCase()} risk · ${d.layer}` : `${d.engine}: ${d.from} → ${d.to}`;
   if (c === "learner") return k === "contact" ? `Contact: ${CH[d.channel]} at ${d.send_time}` : `Wait — ${({REST: "resting", JOURNEY: "no journey step", LEARNER: "not worth it now"})[d.rule] || "not today"}`;
   if (c === "aladdin") {
@@ -707,29 +757,19 @@ function tone(e) {
 function renderPipe(hot) {
   const el = $("pipe");
   if (!el.children.length) {
-    el.innerHTML = STAGES.map((s, i) => `<button class="stg" data-k="${s.k}"><div class="hd"><span class="n">${i + 1}</span><span class="nm">${h(s.t)}</span></div><div class="en">${h(s.e)}</div><div class="st"></div><div class="tm"></div></button>`).join("") + '<span class="flow" id="flow"></span>';
+    el.innerHTML = STAGES.map((s, i) => `<button class="stg" data-k="${s.k}" title="${h(s.t)} · ${h(s.e)}"><div class="hd"><span class="n">${i + 1}</span><span class="nm">${h(s.t)}</span></div><div class="en tech-only">${h(s.e)}</div><div class="st"></div><div class="tm tech-only"></div></button>`).join("");
     el.querySelectorAll(".stg").forEach((b) => b.onclick = () => { S.sel = b.dataset.k; S.follow = false; renderPipe(); renderDetail(); });
   }
   el.querySelectorAll(".stg").forEach((b) => {
     const k = b.dataset.k, e = S.stage[k];
-    b.className = "stg" + (e ? " has" : "") + (S.sel === k ? " sel" : "") + (e ? " " + tone(e) : "") + (hot === k ? " hot" : "");
-    b.querySelector(".st").textContent = e ? short(e) : "waiting for this engine";
+    b.className = "stg" + (e ? " has" : "") + (S.sel === k ? " sel" : "") + (e ? " " + tone(e) : "") + (e && S.lastSpotStage === k ? " cur" : "");
+    b.querySelector(".st").textContent = e ? short(e) : "Not yet";
     b.querySelector(".tm").textContent = e ? `Day ${e.day} · ${fmtT(mins(e.t))}` : "";
-    if (hot === k) { const n = b.querySelector(".n"); n.style.animation = "none"; void n.offsetWidth; n.style.animation = ""; setTimeout(() => b.classList.remove("hot"), 1400); }
   });
   $("bFollow").classList.toggle("on", S.follow);
 }
 
-function flowTo(st) {
-  const from = S.lastSpotStage; S.lastSpotStage = st;
-  if (from == null || from === st || SI[from] > SI[st]) return;
-  const pipe = $("pipe"), a = pipe.querySelector(`[data-k="${from}"]`), b = pipe.querySelector(`[data-k="${st}"]`), f = $("flow");
-  if (!a || !b || !f) return;
-  const pr = pipe.getBoundingClientRect(), ar = a.getBoundingClientRect(), br = b.getBoundingClientRect();
-  f.style.left = (ar.right - pr.left - 4) + "px";
-  f.style.setProperty("--dx", (br.left - ar.right + 8) + "px");
-  f.classList.remove("go"); void f.offsetWidth; f.classList.add("go");
-}
+function flowTo(st) { S.lastSpotStage = st; }   // the stage that acted last is drawn as the current one (.cur)
 
 // ---------------- detail ----------------
 function renderDetail() {
@@ -738,15 +778,19 @@ function renderDetail() {
   const evs = S.spotEvents.filter((e) => (e.stage || "aladdin") === k).slice().reverse();
   const el = $("detail");
   if (!evs.length) { el.innerHTML = `<div class="empty">${h(s.t)} has not acted for ${h(S.card ? S.card.first_name : "this borrower")} yet.</div>`; return; }
+  if (!S.tech) {
+    el.innerHTML = evCard(evs[0], true) + (evs.length > 1 ? `<div class="earlier">${evs.length - 1} earlier event${evs.length > 2 ? "s" : ""} for this engine · <b>Technical</b> shows them all</div>` : "");
+    return;
+  }
   el.innerHTML = evs.slice(0, 12).map((e, j) => evCard(e, j === 0)).join("");
 }
 
 function evCard(e, latest) {
   const t = tone(e);
-  const who = e.component === "human" ? `<span class="chip amb">person · ${h((e.detail && e.detail.api) || "HITL")}</span>` : `<span class="chip">${h(e.component)} · ${h(e.kind)}</span>`;
-  const body = latest ? view(e) : "";
+  const who = e.component === "human" ? (S.tech ? `<span class="chip amb">person · ${h((e.detail && e.detail.api) || "HITL")}</span>` : `<span class="chip amb">a person acted</span>`) : (S.tech ? `<span class="chip">${h(e.component)} · ${h(e.kind)}</span>` : "");
+  const body = latest ? (S.tech ? view(e) : plainView(e)) : "";
   const raw = S.tech ? `<pre class="raw">${h(JSON.stringify({component: e.component, kind: e.kind, t: e.t, borrower_id: e.borrower_id, detail: e.detail, links: e.links, provenance: e.provenance}, null, 2))}</pre>` : "";
-  return `<div class="ev ${latest ? (t === "blk" ? "bad" : "latest") : "old"}"><div class="meta"><b>Day ${e.day} · ${h(fmtT(mins(e.t)))}</b>${who}</div><div class="sum">${h(e.summary)}</div>${body ? `<div class="body">${body}</div>` : ""}${raw}</div>`;
+  return `<div class="ev ${latest ? (t === "blk" ? "bad" : "latest") : "old"}"><div class="meta"><b>Day ${e.day} · ${h(fmtT(mins(e.t)))}</b>${who}</div><div class="sum">${h(plainText(e.summary))}</div>${body ? `<div class="body">${body}</div>` : ""}${raw}</div>`;
 }
 
 function view(e) {
@@ -768,6 +812,24 @@ function view(e) {
   return "";
 }
 
+function plainView(e) {   // Plain words: the few facts that tell the story; Technical keeps view(e)
+  const d = e.detail || {}, c = e.component, k = e.kind;
+  if (c === "learner") return k === "contact" ? facts([["Channel", CH[d.channel]], ["Time", d.send_time], ["Reply chance", d.reply_chance != null ? "≈ " + pct(d.reply_chance) + " in 100" : null]]) : "";
+  if (c === "aladdin" || (c === "human" && (d.checks || d.verdict))) return aladdinView(e, true);
+  if (c === "churn") return k === "assigned" ? facts([["Cohort", d.cohort], ["Risk", String(d.risk_tier || "").toLowerCase()], ["Layer", d.layer]]) : `<div class="move"><span class="f">${h(d.from)}</span>→<span>${h(d.to)}</span></div>`;
+  if (c === "executor") return facts([["Channel", CH[d.channel]], ["Cost", inr2(d.cost_paise)], ["Sent to", "nobody (SIMULATED)"]]);
+  if (c === "voice" && k === "bot_selected") return facts([["Bot", d.bot], ["Language", d.language], ["Dialled", "never (dry-run)"]]);
+  if (c === "voice" && k === "call_ended") return facts([["Result", ruleName(d.disposition)], ["Next step", ruleName(d.action)]]);
+  if (c === "channel") return facts([["Channel", CH[d.channel] || d.channel], ["Counts as a reply", "no: reach only"]]);
+  if (c === "borrower") return `<span class="bubble">${h(d.text || "")}</span>`;
+  if (c === "intent") return intentView(d, true);
+  if (c === "outcomes") return outcomeView(d);
+  if (c === "payments") return facts([["Amount", inr(d.amount_paise)], ["Touches cancelled", d.cancelled_touches != null ? d.cancelled_touches : null], ["Journey", k === "verified" ? "exit (paid)" : null]]);
+  if (c === "hitl") return facts([["Why a person", (d.rules || []).map((r) => RULE_WORD[r] || r).join(", ")], ["Decided by", d.by]]);
+  if (c === "human") return humanView(d, true);
+  return "";
+}
+
 function facts(rows) { rows = rows.filter(([, v]) => v != null && v !== "–" && v !== ""); if (!rows.length) return ""; return `<div class="facts">${rows.map(([k, v]) => `<div><div class="k">${h(k)}</div><div class="x" title="${h(v)}">${h(v == null ? "–" : v)}</div></div>`).join("")}</div>`; }
 
 function scoreGrid(d) {
@@ -782,15 +844,20 @@ function scoreGrid(d) {
     <div class="lbl">Decision · the chosen cell had the best sampled reply chance per ₹ (Thompson sampling keeps exploring)</div><span class="chip ${d.decision === "SEND" ? "acc" : "amb"}">${d.decision === "SEND" ? "CONTACT" : "WAIT"}</span> ${d.reply_chance != null ? `<span class="chip">chosen arm ≈ ${pct(d.reply_chance)} in 100</span>` : ""} ${d.replies_per_inr != null ? `<span class="chip">${d.replies_per_inr} replies per ₹</span>` : ""} ${d.rule ? `<span class="chip">${h(ruleName(d.rule))}</span>` : ""}`;
 }
 
-function aladdinView(e) {
+function aladdinView(e, plain) {
   const d = e.detail || {};
   let out = "";
   const checks = d.checks || (d.verdict ? null : null);
   if (d.verdict) {
     const v = d.verdict;
-    out += `<div class="lbl">Aladdin's verdict for the override</div><div class="verd" style="grid-template-columns:1fr"><div class="${v.allowed ? "ok" : "no"}"><b>${v.allowed ? "✓ allowed" : "✗ " + h(v.rule) + " · " + h(v.reason)}</b><span>${h(v.allowed ? (v.needs_approval && v.needs_approval.length ? "needs " + v.needs_approval.map((r) => RULE_WORD[r] || r).join(", ") : "reserved") : v.why)}${v.locked_by_guardrails ? " · locked by guardrails: no role can override" : ""}</span></div></div>`;
+    out += `<div class="lbl">Aladdin's verdict for the override</div><div class="verd one" style="grid-template-columns:1fr"><div class="${v.allowed ? "ok" : "no"}"><b>${v.allowed ? "✓ allowed" : plain ? "✗ Blocked: " + h(v.why) : "✗ " + h(v.rule) + " · " + h(v.reason)}</b><span>${plain ? (v.allowed ? h(v.needs_approval && v.needs_approval.length ? "then a second person approves" : "reserved") : "") : h(v.allowed ? (v.needs_approval && v.needs_approval.length ? "needs " + v.needs_approval.map((r) => RULE_WORD[r] || r).join(", ") : "reserved") : v.why)}${v.locked_by_guardrails ? (plain ? "Locked by guardrails: no role can override this." : " · locked by guardrails: no role can override") : ""}</span></div></div>`;
   }
-  if (checks) out += `<div class="lbl">Every channel for ${h(e.first_name || "")}${d.at ? " at " + h(d.at) : ""} (Ledger.preview — nothing reserved)</div><div class="verd">${checks.map((g) => `<div class="${g.allowed ? "ok" : "no"}"><b>${g.allowed ? "✓" : "✗"} ${h(CH[g.channel] || g.channel)}</b><span title="${h(g.reason)}">${h(g.allowed ? "allowed" : g.label)}</span></div>`).join("")}</div>`;
+  if (checks) out += `<div class="lbl">Every channel for ${h(e.first_name || "")}${d.at ? " at " + h(d.at) : ""}${plain ? "" : " (Ledger.preview — nothing reserved)"}</div><div class="verd">${checks.map((g) => `<div class="${g.allowed ? "ok" : "no"}"><b>${g.allowed ? "✓" : "✗"} ${h(CH[g.channel] || g.channel)}</b><span title="${h(g.reason)}">${h(g.allowed ? "allowed" : g.label)}</span></div>`).join("")}</div>`;
+  if (plain) {
+    if (e.kind === "allowed" && d.cost_paise != null) out += facts([["Channel", CH[d.channel]], ["Cost reserved", inr2(d.cost_paise)], ["Rules", "all passed"]]);
+    if (e.component === "human") out += humanView(d, true);
+    return out;
+  }
   if (d.rule_order && d.rule_order.length) {
     const blockedAt = e.kind === "blocked" ? d.rule : (e.kind === "checks" ? null : null);
     let past = false;
@@ -807,29 +874,30 @@ function aladdinView(e) {
   return out;
 }
 
-function intentView(d) {
+function intentView(d, plain) {
   const t = d.tier || "";
   const unsure = (x) => ["small_model", "prism", "local_llm", "cloud_llm", "abstain"].indexOf(t) > ["rules", "small_model", "prism"].indexOf(x);
   const tier = (key, name, sub) => { const on = t === key; const u = !on && unsure(key); return `<div class="${on ? "on" : ""}"><b>${name}</b>${on ? "decided" : u ? "unsure → next" : sub}</div>`; };
   return `<div class="tiers">${tier("rules", "Rules", "not needed")}<div class="ar">→</div>${tier("small_model", "Small model", "not needed")}<div class="ar">→</div><div class="${t === "prism" ? "on" : ""}"><b>Prism (Sarvam)</b>${t === "prism" ? "decided" : "skipped: no key in this demo"}</div><div class="ar">→</div><div class="${d.needs_human || t === "abstain" ? "hu" : ""}"><b>Human</b>${d.needs_human || t === "abstain" ? "a person reads it" : "not needed"}</div></div>` +
-    facts([["Label", ruleName(d.label)], ["Confidence", d.confidence], ["Tier", String(t).replace("_", " ")], ["Action", ruleName(d.action)], ["Safety flags", (d.safety_flags || []).join(", ") || "none"], ["Source", CH[d.source] || d.source]]);
+    `<div style="height:.75rem"></div>` + (plain ? facts([["Understood", ruleName(d.label)], ["Next step", ruleName(d.action)]]) :
+    facts([["Label", ruleName(d.label)], ["Confidence", d.confidence], ["Tier", String(t).replace("_", " ")], ["Action", ruleName(d.action)], ["Safety flags", (d.safety_flags || []).join(", ") || "none"], ["Source", CH[d.source] || d.source]]));
 }
 
 function outcomeView(d) {
   const b = d.before, a = d.after, m = Math.max(b || 0, a || 0, .01) * 1.4;
   return facts([["Touch", (CH[d.channel] || d.channel) + " · " + (SLOT[d.slot] || d.slot)], ["Outcome", ({REPLY: "reply", NO_REPLY: "no reply", UNRESOLVED: "unresolved"})[d.status] || d.status], ["Learner update", d.learned ? "yes (once)" : "no"]]) +
     (d.learned && b != null ? `<div class="lbl">Posterior reply chance, people ${h(d.band)} · ${h(CH[d.channel])} · ${h(SLOT[d.slot])}</div>
-      <div style="display:grid;grid-template-columns:4.5rem 1fr 3rem;gap:.4rem .6rem;align-items:center;font-size:.8rem"><span>before</span><div class="bar"><i class="was" style="width:${(b / m * 100).toFixed(1)}%"></i></div><b>${pct(b)}</b><span>after</span><div class="bar"><i style="width:${(a / m * 100).toFixed(1)}%"></i></div><b>${pct(a)}</b></div>` : "");
+      <div style="display:grid;grid-template-columns:4.5rem 1fr 3rem;gap:.5rem .75rem;align-items:center;font-size:1rem"><span>before</span><div class="bar"><i class="was" style="width:${(b / m * 100).toFixed(1)}%"></i></div><b>${pct(b)}</b><span>after</span><div class="bar"><i style="width:${(a / m * 100).toFixed(1)}%"></i></div><b>${pct(a)}</b></div>` : "");
 }
 
-function humanView(d) {
+function humanView(d, plain) {
   const rows = [];
-  if (d.api) rows.push(["Real API", d.api]);
+  if (d.api && !plain) rows.push(["Real API", d.api]);
   if (d.cancelled != null) rows.push(["Cancelled", Array.isArray(d.cancelled) ? d.cancelled.map((x) => `${CH[x.channel]} ${x.time}`).join(", ") || "nothing queued" : (typeof d.cancelled === "object" ? `${CH[d.cancelled.channel]} ${d.cancelled.time}` : d.cancelled)]);
   if (d.consents_opted_out) rows.push(["Channels off", Object.keys(d.consents_opted_out).filter((k) => d.consents_opted_out[k]).map((k) => CH[k]).join(", ")]);
   if (d.still_blocked_by) rows.push(["Still blocked by", d.still_blocked_by.join(", ") || "nothing"]);
   let out = rows.length ? facts(rows) : "";
-  if (d.ledger_audit && d.ledger_audit.length) out += `<div class="lbl">Audit rows written by the ledger</div><div class="rules">${d.ledger_audit.map((a) => `<span class="${/REFUSED|BLOCK/.test(a.type) ? "x" : ""}">#${a.id} ${h(a.type)}</span>`).join("")}</div>`;
+  if (d.ledger_audit && d.ledger_audit.length && !plain) out += `<div class="lbl">Audit rows written by the ledger</div><div class="rules">${d.ledger_audit.map((a) => `<span class="${/REFUSED|BLOCK/.test(a.type) ? "x" : ""}">#${a.id} ${h(a.type)}</span>`).join("")}</div>`;
   return out;
 }
 
@@ -865,19 +933,20 @@ function renderCard() {
   $("av").textContent = (c.first_name || "?")[0];
   $("nm").textContent = c.first_name;
   $("spName").textContent = c.first_name;
-  $("sub").textContent = `${c.masked_name} (masked) · ${c.borrower_id} · phone hidden`;
+  $("sub").innerHTML = `${h(c.masked_name)} (masked) · phone hidden<span class="tech-only"> · ${h(c.borrower_id)}</span>`;
   const st = $("stat");
   const status = c.paid ? ["PAID · EXITED", "good"] : c.stopped ? ["STOP", "bad"] : (c.flags || []).length ? [c.flags[0], "wait"] : ["ACTIVE", ""];
   st.textContent = status[0]; st.className = "status " + status[1];
-  const kv = [["EMI", inr(c.emi_paise)], ["Outstanding", inr(c.outstanding_paise)], ["Days late", c.dpd != null ? c.dpd + " days" : "–"],
-    ["Cohort", c.cohort, "cohort"], ["Risk", String(c.risk_tier || "").toLowerCase(), "risk_tier"], ["Layer", c.layer, "layer"],
-    ["Language", c.language === "hi" ? "Hindi" : c.language === "en" ? "English" : c.language], ["Status", String(c.lifecycle || "").replace(/_/g, " ").toLowerCase(), "lifecycle"], ["Spent on them", inr2(spentOnSpot())]];
-  $("kv").innerHTML = kv.map(([k, v, key]) => `<div><div class="k">${h(k)}</div><div class="x${key && S.patch._chg === key.replace("_tier", "") ? " chg" : ""}" title="${h(v)}">${h(v || "–")}</div></div>`).join("");
+  // Plain words: six facts. Technical adds cohort, layer and lifecycle status.
+  const kv = [["EMI", inr(c.emi_paise)], ["Days late", c.dpd != null ? c.dpd + " days" : "–"], ["Outstanding", inr(c.outstanding_paise)],
+    ["Risk", String(c.risk_tier || "").toLowerCase(), "risk_tier"], ["Language", c.language === "hi" ? "Hindi" : c.language === "en" ? "English" : c.language], ["Spent on them", inr2(spentOnSpot())],
+    ["Cohort", c.cohort, "cohort", 1], ["Layer", c.layer, "layer", 1], ["Status", String(c.lifecycle || "").replace(/_/g, " ").toLowerCase(), "lifecycle", 1]];
+  $("kv").innerHTML = kv.map(([k, v, key, tech]) => `<div${tech ? ' class="tech-only"' : ""}><div class="k">${h(k)}</div><div class="x${key && S.patch._chg === key.replace("_tier", "") ? " chg" : ""}" title="${h(v)}">${h(v || "–")}</div></div>`).join("");
   S.patch._chg = null;
   const cons = c.consents || {}, stopped = c.stopped;
   $("cons").innerHTML = ["sms", "whatsapp", "email", "ivr", "voicebot"].map((ch) => { const v = stopped && cons[ch] !== "no" ? "STOP" : (cons[ch] || "no");
     return `<span class="chip ${v === "yes" ? "yes" : v === "STOP" ? "stop" : "no"}" title="consent: ${h(v)}">${v === "yes" ? "✓" : v === "STOP" ? "✗" : "–"} ${h(CH[ch])}</span>`; }).join("") +
-    (c.flags || []).map((f) => `<span class="chip amb">${h(f)}</span>`).join("");
+    (c.flags || []).map((f) => `<span class="chip ${/STOP/.test(f) ? "stop" : "amb"}">${h(f)}</span>`).join("");
   const b = c.best;
   $("best").innerHTML = (b ? `Learner's best arm for people ${h(c.band_word)}: <b>${h(CH[b.channel])} · ${h(b.slot_word)} ${h(b.time || "")}</b> <span class="chip">${pct(b.reply_chance)} in 100</span>` : "") +
     ((c.queued || []).length && !c.paid && !c.stopped ? ` <span class="chip acc">queued: ${c.queued.map((q) => `${h(CH[q.channel])} ${h(q.time)}${q.status === "PENDING_APPROVAL" ? " (needs approval)" : ""}`).join(", ")}</span>` : "");
@@ -891,8 +960,10 @@ function renderControls(sn) {
   const bc = $("bCamp"); bc.textContent = sn.campaign_paused ? "Resume campaign" : "Pause campaign"; bc.classList.toggle("on", sn.campaign_paused);
   const bk = $("bKill"); bk.classList.toggle("on", sn.outbound_paused); bk.querySelector("span").textContent = sn.outbound_paused ? "RESUME ALL OUTBOUND" : "PAUSE ALL OUTBOUND";
   const ap = sn.pending_approvals || [];
-  $("apN").textContent = win ? (ap.length ? `${ap.length} waiting · window closes 9:25` : "none waiting") : "window opens 8:00";
-  $("appr").innerHTML = ap.length ? ap.slice(0, 30).map((p) => `<div class="ap${p.borrower_id === S.spot ? " me" : ""}"><div style="min-width:0"><div class="t1">${h(p.first_name || p.borrower_id)} · ${h(CH[p.channel] || p.channel)} at ${h(p.send_time)}</div><div class="t2">${h((p.rules || []).map((r) => RULE_WORD[r] || r).join(", "))}${p.manual ? " · you scheduled it" : ""}</div></div><div class="row"><button class="btn sm good" data-a="approve" data-id="${h(p.approval_id)}">Approve</button><button class="btn sm bad" data-a="reject" data-id="${h(p.approval_id)}">Reject</button></div></div>`).join("")
+  const mineN = ap.filter((p) => p.borrower_id === S.spot).length, others = ap.length - mineN;
+  $("apN").innerHTML = win ? (ap.length ? `<span class="tech-only">${ap.length} waiting · window closes 9:25</span><span class="plain-only">${mineN ? "waiting for you · closes 9:25" : "closes 9:25"}</span>` : "none waiting") : "window opens 8:00";
+  const otherNote = !mineN && others ? `<div class="empty plain-only" style="padding:.25rem 0">Nothing waiting for ${h(S.card ? S.card.first_name : "the spotlight")}. ${others} other approval${others === 1 ? "" : "s"} in <b>Technical</b>.</div>` : (mineN && others ? `<div class="empty plain-only" style="padding:0;font-size:.875rem">+ ${others} other borrower${others === 1 ? "" : "s"} (Technical)</div>` : "");
+  $("appr").innerHTML = ap.length ? otherNote + ap.slice(0, 30).map((p) => `<div class="ap${p.borrower_id === S.spot ? " me" : " tech-only"}"><div style="min-width:0"><div class="t1">${h(p.first_name || p.borrower_id)} · ${h(CH[p.channel] || p.channel)} at ${h(p.send_time)}</div><div class="t2">${h((p.rules || []).map((r) => RULE_WORD[r] || r).join(", "))}${p.manual ? " · you scheduled it" : ""}</div></div><div class="row"><button class="btn sm good" data-a="approve" data-id="${h(p.approval_id)}">Approve</button><button class="btn sm bad" data-a="reject" data-id="${h(p.approval_id)}">Reject</button></div></div>`).join("")
     : `<div class="empty" style="padding:.2rem 0">${win ? "Nothing is waiting for a person right now." : "Calls and first-sends-after-hardship wait here for a person during the 8:00–9:30 approval window."}</div>`;
   $("appr").querySelectorAll("button[data-a]").forEach((b) => b.onclick = () => decide(b.dataset.id, b.dataset.a === "approve"));
   const c = Object.assign({}, S.card || {}, S.patch), over = c.paid || c.stopped || sn.phase === "finished";
@@ -917,7 +988,7 @@ async function preview() {
     if (!v.checked) { el.className = "verdict"; el.textContent = v.note || ""; return; }
     el.className = "verdict " + (v.allowed ? "ok" : "no");
     el.innerHTML = v.allowed ? `<b>Aladdin ✓</b> ${h(CH[v.channel])} at ${h(v.time)}: every rule passes${v.replaces ? ` (replaces the learner's ${h(CH[v.replaces.channel])} at ${h(v.replaces.time)})` : ""}${v.needs_approval && v.needs_approval.length ? ` · then a second person approves (${h(v.needs_approval.map((r) => RULE_WORD[r] || r).join(", "))})` : ""}.`
-      : `<b>Aladdin ✗ ${h(v.rule)}</b> · ${h(v.why)}.${v.locked_by_guardrails ? " <b>Locked by guardrails:</b> no person can override this." : ""}`;
+      : `<b>Aladdin ✗ <span class="plain-only">blocked</span><span class="tech-only">${h(v.rule)}</span></b> · ${h(v.why)}.${v.locked_by_guardrails ? " <b>Locked by guardrails:</b> no person can override this." : ""}`;
   } catch (e) { /* preview is advisory */ }
 }
 
@@ -946,14 +1017,14 @@ function renderAudit(rows) {
   rows = rows || [];
   const ul = $("audit");
   if (!rows.length) { ul.innerHTML = `<li style="display:block;border:0" class="empty">No human action yet. Everything you do here is checked by Aladdin and written to the ledger's audit table.</li>`; S.auditSeen = 0; return; }
-  ul.innerHTML = rows.slice().reverse().map((r) => `<li class="${r.seq > S.auditSeen ? "new" : ""}"><span class="tm">D${r.day} ${h(r.time)}</span><div><div class="w1">${h(r.what)}</div><div class="w2">${h(r.who)} · ${h(r.api)}</div><div class="w2">check: ${h(r.check)}</div><div class="rs ${r.ok ? "ok" : "no"}">${r.ok ? "✓" : "✗"} ${h(r.result)}</div></div></li>`).join("");
+  ul.innerHTML = rows.slice().reverse().map((r) => `<li class="${r.seq > S.auditSeen ? "new" : ""}"><span class="tm">D${r.day} ${h(r.time)}</span><div><div class="w1">${h(r.what)}</div><div class="w2 tech-only">${h(r.who)} · ${h(r.api)}</div><div class="w2 tech-only">check: ${h(r.check)}</div></div><div class="rs ${r.ok ? "ok" : "no"}">${r.ok ? "✓" : "✗"} ${h(r.result)}</div></li>`).join("");
   S.auditSeen = rows.length;
 }
 
 // ---------------- strip / clock / banner / toast ----------------
 function renderStrip() {
   const sn = S.snap || {};
-  $("kCamp").innerHTML = `${S.snap ? (sn.campaign_paused ? '<span class="flag amb">CAMPAIGN PAUSED</span>' : "") + (sn.outbound_paused ? '<span class="flag red">OUTBOUND OFF</span>' : "") : ""}${!sn.campaign_paused && !sn.outbound_paused ? "Running" : ""} <span>· ${S.borrowers || 200} borrowers · day ${S.day}/${S.days}</span>`;
+  $("kCamp").innerHTML = `${S.snap ? (sn.campaign_paused ? '<span class="flag amb">PAUSED</span>' : "") + (sn.outbound_paused ? '<span class="flag red">OUTBOUND OFF</span>' : "") : ""}${!sn.campaign_paused && !sn.outbound_paused ? "Running" : ""} <span>· ${S.borrowers || 200} borrowers</span>`;
   $("kSent").textContent = S.today.sent; $("kWait").textContent = S.today.wait; $("kHeld").textContent = S.today.held; $("kPaid").textContent = S.today.paid;
   $("kRec").textContent = inr(S.rec); $("kBlk").textContent = S.blocks.toLocaleString("en-IN");
   const cap = $("kCap"); cap.textContent = S.cap; cap.className = "v " + (S.cap ? "bad" : "good");
@@ -978,7 +1049,7 @@ function renderClock() {
 
 function banner(html, kind) { const b = $("banner"); b.className = "banner " + (kind === "ok" ? "ok" : kind === "info" ? "info" : ""); $("bannerT").innerHTML = html; }
 let tt = 0;
-function toast(msg, kind) { const t = $("toast"); t.textContent = msg; t.className = "toast on " + (kind || ""); clearTimeout(tt); tt = setTimeout(() => t.className = "toast", 3800); }
+function toast(msg, kind) { const t = $("toast"); t.textContent = plainText(msg); t.className = "toast on " + (kind || ""); clearTimeout(tt); tt = setTimeout(() => t.className = "toast", 3800); }
 
 // ---------------- presenter script ----------------
 const CUES = [
@@ -989,7 +1060,7 @@ const CUES = [
   {h: "The payment closes the loop", d: "Press <b>▶</b> (or <b>2×</b>) to Day 7. Click <b>Payment</b>.", s: "The bank confirms ₹7,409 — only bank-verified money counts. The journey exits; queued touches for that EMI are cancelled. Total spent on Vikram: 65 paise."},
   {h: "Kill switch & STOP", d: "Press <b>PAUSE ALL OUTBOUND</b>, then resume. Or pick <b>Aarav</b> / <b>Diya</b> and <b>Mark STOP</b>.", s: "One click cancels everything queued on every channel, and Aladdin refuses every send until a person resumes. A STOP recorded for a borrower turns every channel off at once — and nobody can undo it."},
 ];
-function renderCue() { const c = CUES[S.cue]; $("cueN").textContent = `Cue ${S.cue + 1} / ${CUES.length}`; $("cueH").textContent = c.h; $("cueDo").innerHTML = "<b>Do:</b> " + c.d; $("cueSay").innerHTML = "<b>Say:</b> " + h(c.s); }
+function renderCue() { const c = CUES[S.cue]; $("cueN").textContent = `Cue ${S.cue + 1} / ${CUES.length}`; $("cueH").textContent = c.h; $("cueDo").innerHTML = "<b>Do:</b> " + c.d; $("cueSay").innerHTML = h(c.s); $("cuePrev").disabled = S.cue === 0; $("cueNext").disabled = S.cue === CUES.length - 1; }
 function toggleCue() { $("cue").hidden = !$("cue").hidden; renderCue(); }
 
 // ---------------- wiring ----------------
@@ -1000,8 +1071,9 @@ $("bRestart").onclick = () => { setPlaying(false); $("veil").hidden = false; $("
 $("bCue").onclick = toggleCue;
 $("cuePrev").onclick = () => { S.cue = Math.max(0, S.cue - 1); renderCue(); };
 $("cueNext").onclick = () => { S.cue = Math.min(CUES.length - 1, S.cue + 1); renderCue(); };
-$("vPlain").onclick = () => { S.tech = false; $("vPlain").setAttribute("aria-pressed", "true"); $("vTech").setAttribute("aria-pressed", "false"); renderDetail(); };
-$("vTech").onclick = () => { S.tech = true; $("vTech").setAttribute("aria-pressed", "true"); $("vPlain").setAttribute("aria-pressed", "false"); renderDetail(); };
+function setTech(on) { S.tech = on; document.body.classList.toggle("tech", on); $("vTech").setAttribute("aria-pressed", String(on)); $("vPlain").setAttribute("aria-pressed", String(!on)); renderDetail(); }
+$("vPlain").onclick = () => setTech(false);
+$("vTech").onclick = () => setTech(true);
 $("bFollow").onclick = () => { S.follow = true; const last = S.spotEvents[S.spotEvents.length - 1]; if (last) S.sel = last.stage; renderPipe(); renderDetail(); };
 $("bCamp").onclick = () => act("/campaign", {paused: !(S.snap && S.snap.campaign_paused)}, (r) => r.campaign_paused ? `Campaign paused · ${r.cancelled} queued touches cancelled` : "Campaign resumed");
 $("bKill").onclick = () => act("/outbound", {paused: !(S.snap && S.snap.outbound_paused)}, (r) => r.outbound_paused ? `ALL OUTBOUND PAUSED · ${r.cancelled} queued touches cancelled on every channel` : "Outbound resumed");
@@ -1020,6 +1092,7 @@ document.addEventListener("keydown", (ev) => {
   if (ev.key === "p" || ev.key === "P") { toggleCue(); ev.preventDefault(); }
   else if (ev.key === " ") { $("bPlay").click(); ev.preventDefault(); }
   else if (ev.key === "n" || ev.key === "N") { $("bStep").click(); ev.preventDefault(); }
+  else if (ev.key === "t" || ev.key === "T") { setTech(!S.tech); ev.preventDefault(); }
   else if (ev.key === "]") $("cueNext").click(); else if (ev.key === "[") $("cuePrev").click();
 });
 
