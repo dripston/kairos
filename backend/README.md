@@ -655,3 +655,110 @@ Interpretations (flag if wrong):
 ### How to continue
 
 Real sandbox delivery needs approved sandbox SMTP credentials: `KAIROS_SMTP_HOST`, `KAIROS_SMTP_PORT`, `KAIROS_SMTP_USER`, `KAIROS_SMTP_PASSWORD`, `KAIROS_SMTP_FROM`, `KAIROS_SMTP_SANDBOX=1`, and, if the sandbox inbox domain is not `example.test`, `KAIROS_SMTP_ALLOWED_DOMAINS`. Also set `KAIROS_EMAIL_HASH_KEY` in any shared environment. With those set, `email_provider_from_env` switches sends to the relay. Delivery, bounce and unsubscribe callbacks stay REPLAY until two things exist: the sandbox's webhook or DSN feed, and a List-Unsubscribe endpoint. Each one only needs to build an `EmailEvent` with the provider's `event_id` and `provenance="SANDBOX_SMTP"` and call `EmailEvents.apply`. `api.py` still wires every channel to `FakeProvider`. Hooking email into the API (provider plus a callback endpoint) and supplying a `resolve_address` from the borrower master are the next steps. Address lookup is deliberately injected, because the ledger never stores raw addresses.
+
+## CM-03 WhatsApp servicing (SIMULATED)
+
+Inbound WhatsApp servicing agent: **greet → identify → OTP → intent → resolve or hand off → close**, one
+deterministic state machine per conversation, on the same SQLite file as the K03 spine and K06 ledger.
+Everything is SIMULATED: synthetic borrowers (`Synthetic Borrower <id>`, `+910…` numbers), a synthetic D7
+bank feed, and a WhatsApp adapter in dry-run (nothing leaves the machine).
+
+| File | What |
+|---|---|
+| `kairos_backend/cm03/engine.py` | `ConversationEngine.handle(sender, text, attachment, button, message_id)`: state machine, disclosure guard, hand-offs, D7 recheck, metrics |
+| `kairos_backend/cm03/otp.py` | 6 digits, 5-min expiry, 3 attempts → 30-min lockout (per borrower, across chats) + hand-off; HMAC-SHA256 hash only; bound to conversation + borrower + sender; single use |
+| `kairos_backend/cm03/fraud.py` | Deterministic detectors, each with a reason: injection, phishing link, spoofed lender, OTP social engineering, other people's data, impersonation, cross-account, UTR format / reused (normalised key) / other borrower / amount mismatch / not in feed after T+2, doctored screenshot (edit software, modified after capture, date before loan or in future, wrong payee, instructions in image text) |
+| `kairos_backend/cm03/nlu.py` | Servicing intents (balance, link, statement, NOC, loan details, waiver, complaint, dispute phrasing, language, menu) on top of K09 `intent.py`; one-edit typo tolerance; reference / amount / OTP / claimed-date extractors |
+| `kairos_backend/cm03/tools.py` | The audited tool calls (below) + `DryRunWhatsAppAdapter` + HMAC-signed link tokens |
+| `kairos_backend/cm03/copy.py` | English + Hindi copy (K22 tone); `PRE_VERIFY_SAFE` = the only messages allowed before OTP |
+| `kairos_backend/cm03/api.py`, `static/console.html` | `/cm03/*` routes and the operator console |
+| `kairos_backend/cm03/evaluation.py`, `scripts/run_cm03_eval.py` | Seeded eval + 500-concurrency runs → `reports/cm03_eval.json` (gitignored) |
+| `tests/test_cm03_*.py` | Engine flows, red-team attacks (`test_cm03_redteam.py`), HTTP route, small seeded eval (70 tests) |
+
+**Tools** (each one a TOOL_CALL envelope on the CRM timeline with provenance, redacted args, result and ms):
+`lookup_account`, `account_summary` (K03 `borrower_summary`), `send_otp` / `verify_otp`, `create_payment_link`,
+`get_document`, `check_payment_d7`, `record_payment_claim`, `apply_verified_payment` (K06 `record_payment_verified` →
+K03 `apply_payment`, only for a D7-SETTLED credit), `create_ptp` (K06 `apply_exception(PTP_OFFERED)` → K13 PTP hold),
+`record_stop` (K06 `record_stop` → every channel opted out), `create_ticket` (K13 routed exception or supervisor ticket),
+`send_whatsapp_reply`. Envelope kinds: INBOUND, TOOL_CALL, REPLY, STATE, OUTCOME, HANDOFF, FRAUD_SUSPECT, GUARD_BLOCK, ERROR.
+
+**Rules the engine enforces**
+- Before OTP: only `PRE_VERIFY_SAFE` copy (who we are + verification, STOP / wrong-number / refusal acks). Any other
+  key is swapped for "please verify" and logged as GUARD_BLOCK. A request made before OTP is parked and answered after.
+  An unregistered number gets the same answer whether or not the loan id it names exists (no enumeration).
+- Payment claims never mark anything paid. Only a SETTLED row in the D7 feed is applied to the spine; PENDING is
+  recorded and re-checked (`POST /cm03/d7/recheck`); the receipt is sent when it settles (E14). Partial payments keep
+  the EMI open and say what is left; other loans stay independent (E15). Repeated receipt requests reuse the payment id (E16).
+- Every fake → refuse, FRAUD_SUSPECT envelope + audit row, supervisor ticket, hand-off; the conversation stays with
+  humans (holding reply only; STOP still honoured).
+- STOP from the registered number is honoured without OTP, on all channels (K03 consents + K06 `stopped`).
+- LLM: only K09's path for ambiguous free text (gpt-6-luna on redacted text), used only when `OPENAI_API_KEY` is set.
+  Without a key, unmatched text gets one clarify menu, then a hand-off.
+
+**Defaults chosen where the brief is silent (flag if wrong)**
+- *Resolved* = at least one request fulfilled or a correct terminal outcome (balance shared, link sent, PTP recorded,
+  claim verified **or recorded as pending with auto-recheck**, document sent, NOC info, STOP honoured, wrong number
+  closed) **and** no hand-off. Hardship, dispute, waiver, callback, fraud, OTP lockout, unknown-after-clarify and PTP
+  beyond 7 days are hand-offs: correct, but counted against automation.
+- *Seeded fake* = the 13 kinds in `FAKE_MIX` (fake / reused / mismatched / never-arrived UTRs, doctored and
+  instruction-carrying screenshots, impersonation, prompt injection, phishing link, OTP scam, spoofed lender,
+  cross-account, other borrower's data).
+- PTP window = K13 `auto_accept_max_days` (7); beyond it the bot asks once for an earlier date, then refers.
+- Any URL that is not ours (`pay.kairos.example`, `docs.kairos.example`) is treated as phishing.
+- Unregistered sender naming a loan → hand-off (UNREGISTERED_NUMBER); naming a loan **and** asking for its data → fraud.
+
+### Measured result (SIMULATED, seed 20261120, commit 614d3f4)
+
+`python scripts/run_cm03_eval.py --check-determinism` (1,000 conversations sequentially, then 500 at once through
+the engine and 500 at once through `POST /cm03/whatsapp/inbound`; about 50 s on a laptop):
+
+| Bar | Result | |
+|---|---|---|
+| ≥ 70% resolved without a human | **73.2%** (732 / 1,000) | PASS, thin margin: see below |
+| Every seeded fake caught | **127 / 127**, 0 false positives on 873 genuine | PASS |
+| Zero disclosure before OTP | **0** replies with account tokens before the VERIFIED event (independent scan) | PASS |
+| First reply < 30 s | engine p50 0.6 ms, p95 2.4 ms, max 73 ms; 0 over 30 s | PASS (excludes WhatsApp network time) |
+| 500 concurrent conversations | engine: 1,490 msgs in 7.2 s, turn p95 3.5 s, first reply p95 1.7 s; HTTP: 7.8 s, turn p95 3.4 s, first reply p95 1.3 s; 0 errors, 0 cross-talk, outcomes identical to the sequential run | PASS |
+| Deterministic given a seed | outcome digest `e839b536ca56e4fc` twice | PASS |
+
+Where the 26.8% goes (all hand-offs, by design): fraud 12.7%, hardship 3.8%, dispute 2.9%, callback 2.8%,
+unknown after clarify 2.1%, OTP lockout 1.0%, waiver 0.9%. Resolution is 83.9% of genuine conversations and 99.5% of
+the conversations a bot should close; route accuracy (bot / human / fraud as labelled) is 99.6%.
+
+**Honest caveats.** (1) The 73.2% depends on the conversation mix (`LEGIT_MIX` / `FAKE_MIX` in `evaluation.py`,
+13% fakes, 14% human-by-design); with the hidden mix unknown, more hardship / dispute / fakes would push it below
+70%. (2) 5.9 points come from payment claims that are *recorded with a status reply and auto-rechecked* but not yet
+verified (39 pending + 20 without reference); counting only verified payments the rate is 67.3%. (3) Latency is engine
+processing (and in-process HTTP); WhatsApp delivery time is not included. (4) The scripted borrowers come from the
+same team that wrote the rules; typos are one-edit only, so real free text will be harder. Without an LLM key,
+unmatched free text goes to clarify, then to a human.
+
+### Demo
+
+```bash
+cd backend
+KAIROS_CM03_DEMO_INBOX=1 KAIROS_DB=/tmp/cm03-demo.db uvicorn kairos_backend.api:app --reload
+# open http://127.0.0.1:8000/cm03/console  (seeds B-1042 / B-2001 / B-3003; the right panel shows the simulated
+# phone's OTP, the state, the verified flag and every envelope)
+#   B-1042: "Kal EMI pay kar di thi" -> OTP -> "UTR 512345678901" -> receipt, reminder stopped, 2nd loan still open
+#   B-2001: "UTR 612345678902" -> pending; POST /cm03/demo/settle {"reference":"612345678902"} -> receipt
+#   "Edited screenshot" / "Injection" / "OTP scam" buttons -> refusal + FRAUD_SUSPECT + ticket
+python scripts/run_cm03_eval.py                 # full eval (≈ 50 s)
+pytest tests/test_cm03_redteam.py -q            # CM-03 red-team attacks
+```
+
+### Context for Claude / how to continue
+
+- Entry point is `ConversationEngine.handle`; read `engine.py`'s docstring for the order of checks. New intents: add
+  a rule to `nlu._SERVICING` (or K09 `intent.py`), a handler in `_serve`, copy in `copy.py` (en + hi), an outcome in
+  `RESOLVED_OUTCOMES` only if no human is needed, and a scenario in `evaluation.py`.
+- Never add an account field to a `PRE_VERIFY_SAFE` message; `test_cm03_redteam.py` and the eval's independent token
+  scan will fail if you do.
+- Not merged here, wire when available: HITL (`origin/k06/hitl-control`, `hitl.py`) for the ticket queue UI; the K07
+  phone-demo WhatsApp adapter (`origin/k07-k08/channel-adapters`) only sends approved templates, so free-text replies
+  stay dry-run; `spine.ledger.reference_key` from `origin/redteam/fix-high` (used automatically when present; CM-03
+  has the same normalisation in `store.reference_key`); the red-team runner on `origin/redteam/guardrail-suite`
+  (these attacks live in `tests/test_cm03_redteam.py` because that package is not on this base).
+- Known gaps: media download / OCR / voice-note transcription are simulated (OCR fields arrive on the payload);
+  verification is per conversation with a 30-min idle session; one process (per-sender locks are in memory);
+  `/cm03/*` has no operator auth (same as the rest of the API).

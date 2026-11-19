@@ -30,6 +30,8 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StrictBool, StrictFloat, StrictInt
 
+from .cm03.api import build_router as cm03_router
+from .cm03.engine import ConversationEngine
 from .exceptions import ExceptionEvent
 from .executor import Executor, FakeProvider, Supervisor
 from .gate import Facts, evaluate
@@ -91,6 +93,10 @@ async def lifespan(_app):
 
 app = FastAPI(lifespan=lifespan, title="Kairos K06 · Supervisor guardrails + executor", version="0.2.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+# CM-03 inbound WhatsApp servicing agent (SIMULATED, adapter dry-run): /cm03/*
+cm03_engine = ConversationEngine(ledger)
+app.include_router(cm03_router(cm03_engine))
 
 
 def _call(fn, *a, **k):
