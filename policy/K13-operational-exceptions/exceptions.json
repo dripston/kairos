@@ -1,0 +1,85 @@
+{
+  "policy_id": "kairos-exceptions-policy",
+  "policy_version": "1.0.0",
+  "status": "draft-for-signoff",
+  "owner": "Ojas (Product)",
+  "approved_on": null,
+  "depends_on": { "kairos-outreach-policy": "1.1.0" },
+
+  "queues": {
+    "default": "COLLECTIONS_SUPERVISOR",
+    "available": ["COLLECTIONS_SUPERVISOR"],
+    "official_routing_matrix_overrides": true,
+    "note": "Single fallback queue by decision. When the organisers' routing matrix arrives, its request-type -> queue mapping replaces this."
+  },
+
+  "needs_time": {
+    "edge_case": "E07",
+    "trigger": "borrower says they need time / cannot pay now, without a committed date",
+    "ask": "commit to a payment date and time within the next 2 days",
+    "target_ptp_within_days": 2,
+    "max_rebuttals_by_band": { "PRE_DUE": 1, "B1": 3, "B2": 5, "B3": 7, "B4": 7 },
+    "rebuttal_style": "each rebuttal uses a different, softer reason to commit (date options, amount options, consequences explained factually, help offered); never repeat the same ask; never threaten",
+    "stop_rebuttals_on": ["date given", "STOP", "hardship", "abusive / legal threat / fraud claim", "callback requested", "payment made"],
+    "rebuttals_only_inside_contact_window": true,
+    "outside_window": "acknowledge and capture any date offered; no rebuttals until next contact day",
+    "after_rebuttals_exhausted": "capture whatever date the borrower gives",
+    "no_date_after_rebuttals": "no hold; K01 stop-for-day applies (response captured); resume next contact day at band caps",
+    "rebuttals_count_against_outbound_caps": false
+  },
+
+  "promise_to_pay": {
+    "auto_accept_max_days": 7,
+    "beyond_auto_accept": "capture PTP and hold outreach; open supervisor case to approve or counter",
+    "hold_rules": "see kairos-outreach-policy holds.PROMISE_TO_PAY (check payment on PTP date; unpaid -> BROKEN_PTP, resume next day)",
+    "broken_ptp": {
+      "counted_over": "allocation period",
+      "threshold": 2,
+      "at_or_above_threshold": {
+        "solicit_ptp": false,
+        "if_borrower_offers_ptp": "inform politely that 2 earlier promises were missed; push for payment now with a payment link",
+        "if_paid_now": "run payment verification (CM-03 flow)",
+        "if_not_paid_now": "record PTP in backend with flag NO_HOLD; outreach continues at band caps"
+      }
+    }
+  },
+
+  "callback": {
+    "edge_case": "E08",
+    "trigger": "borrower asks to speak to a person",
+    "sla_working_hours": 2,
+    "working_hours": "K01 contact window on contact days (08:00-19:00, not Sundays/national holidays)",
+    "late_request_rule": "SLA clock runs only inside working hours; remainder rolls to next contact day",
+    "consent": "the borrower's explicit request is recorded as consent for this callback only (consent version logged)",
+    "while_pending": "pause all outbound nudges",
+    "dedupe": "repeat requests attach to the same open task",
+    "if_unanswered": "retry once, 2 hours later",
+    "if_second_attempt_missed": "send one 'we tried to reach you' message with a reply option; resume normal outreach next contact day",
+    "if_answered": "close task; K01 stop-for-day applies (pickup > 10 s)",
+    "queue": "COLLECTIONS_SUPERVISOR"
+  },
+
+  "hardship": {
+    "edge_case": "E09",
+    "acknowledge": "neutral, empathetic acknowledgement; no collection ask in that reply",
+    "hold_rules": "see kairos-outreach-policy holds.HARDSHIP (2 days; borrower date within 4 days -> hold until then; beyond 4 days -> supervisor)",
+    "supervisor_visibility": "only when borrower's date is beyond 4 days (decided)",
+    "queue": "COLLECTIONS_SUPERVISOR"
+  },
+
+  "routed_exceptions": {
+    "description": "Kairos detects, acknowledges, creates a ticket with a 2-line summary and evidence IDs, and never decides.",
+    "types": {
+      "DISPUTE":        { "source": "CM-03 brief (mandatory)", "conversation": "acknowledge, no commitment", "outreach": "continues (K01 stop-for-day applies)" },
+      "COMPLAINT":      { "source": "CM-03 brief (mandatory)", "conversation": "acknowledge, no commitment", "outreach": "continues (K01 stop-for-day applies)" },
+      "WAIVER_REQUEST": { "source": "CM-03 brief (mandatory)", "conversation": "acknowledge, no commitment on waivers or charges", "outreach": "continues (K01 stop-for-day applies)" },
+      "ABUSIVE":        { "source": "Ojas decision", "conversation": "end automated conversation; no argument", "outreach": "paused until supervisor clears" },
+      "LEGAL_THREAT":   { "source": "Ojas decision", "conversation": "end automated conversation; no argument", "outreach": "paused until supervisor clears" },
+      "FRAUD_CLAIM":    { "source": "Ojas decision", "conversation": "end automated conversation; no argument", "outreach": "paused until supervisor clears" }
+    },
+    "queue": "COLLECTIONS_SUPERVISOR",
+    "ticket_fields": ["ticket_id", "idempotency_key", "borrower_id", "obligation_id", "type", "summary_line_1", "summary_line_2", "evidence_ids", "created_at", "sla_due_at", "policy_version"]
+  },
+
+  "not_handled": ["deceased / hospitalised borrower (treated as hardship if detected)", "wrong number (covered by CM-03 verification gate: no disclosure before OTP)"]
+}

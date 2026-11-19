@@ -1,0 +1,15 @@
+# Python (backend)
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+*.db
+*.db-wal
+*.db-shm
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/*
+.idea/

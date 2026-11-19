@@ -1,0 +1,26 @@
+case_id,edge_case,description,event,band,in_window,rebuttals_used,date_offset_days,broken_ptp_count,paid_now,callback_attempts,callback_answered,expected_action,expected_hold,expected_queue
+K13-T01,E07,Needs time in B1 - first rebuttal,NEEDS_TIME,B1,Y,0,,0,,,,REBUTTAL,NONE,
+K13-T02,E07,B1 rebuttals exhausted (3) - accept no date,NEEDS_TIME,B1,Y,3,,0,,,,ACCEPT_NO_DATE,STOP_FOR_DAY,
+K13-T03,E07,B3 allows 7 - 6 used so rebut again,NEEDS_TIME,B3,Y,6,,0,,,,REBUTTAL,NONE,
+K13-T04,E07,B3 rebuttals exhausted (7),NEEDS_TIME,B3,Y,7,,0,,,,ACCEPT_NO_DATE,STOP_FOR_DAY,
+K13-T05,E07,Pre-due allows only 1 rebuttal,NEEDS_TIME,PRE_DUE,Y,1,,0,,,,ACCEPT_NO_DATE,STOP_FOR_DAY,
+K13-T06,E07,Outside contact window - acknowledge only no rebuttal,NEEDS_TIME,B2,N,0,,0,,,,ACK_ONLY,STOP_FOR_DAY,
+K13-T07,E07,PTP within 2 days auto accepted,PTP_OFFERED,B2,Y,1,2,0,,,,CAPTURE_PTP,PTP_HOLD,
+K13-T08,E07,PTP at 7 days still auto accepted,PTP_OFFERED,B2,Y,3,7,1,,,,CAPTURE_PTP,PTP_HOLD,
+K13-T09,E07,PTP at 20 days - capture and supervisor,PTP_OFFERED,B2,Y,5,20,0,,,,CAPTURE_PTP,PTP_HOLD,COLLECTIONS_SUPERVISOR
+K13-T10,E07,2 broken PTPs - no PTP solicitation push payment,NEEDS_TIME,B2,Y,0,,2,,,,PUSH_PAYMENT_NOW,NONE,
+K13-T11,E07,2 broken - borrower offers PTP and does not pay - record no hold,PTP_OFFERED,B2,Y,0,3,2,N,,,RECORD_PTP_NO_HOLD,STOP_FOR_DAY,
+K13-T12,E07,2 broken - borrower pays right away,PTP_OFFERED,B2,Y,0,0,2,Y,,,VERIFY_PAYMENT,NONE,
+K13-T13,E08,Callback requested,CALLBACK_REQUEST,B1,Y,,,0,,0,,CREATE_CALLBACK_TASK,CALLBACK_PENDING,COLLECTIONS_SUPERVISOR
+K13-T14,E08,First callback attempt unanswered - retry in 2h,CALLBACK_DUE,B1,Y,,,0,,1,N,RETRY_CALLBACK_2H,CALLBACK_PENDING,COLLECTIONS_SUPERVISOR
+K13-T15,E08,Second attempt missed - send we-tried message resume next day,CALLBACK_DUE,B1,Y,,,0,,2,N,SEND_MISSED_CALLBACK_MSG,STOP_FOR_DAY,
+K13-T16,E08,Callback answered - close task,CALLBACK_DUE,B1,Y,,,0,,1,Y,CLOSE_CALLBACK_TASK,STOP_FOR_DAY,
+K13-T17,E09,Hardship with no date - 2 day pause,HARDSHIP,B3,Y,,,0,,,,HOLD_2_DAYS,HARDSHIP_HOLD,
+K13-T18,E09,Hardship date in 3 days - hold until date,HARDSHIP,B3,Y,,3,0,,,,HOLD_UNTIL_DATE,HARDSHIP_HOLD,
+K13-T19,E09,Hardship date in 10 days - supervisor,HARDSHIP,B3,Y,,10,0,,,,HOLD_UNTIL_DATE,HARDSHIP_HOLD,COLLECTIONS_SUPERVISOR
+K13-T20,,Dispute routed - no decision,DISPUTE,B2,Y,,,0,,,,CREATE_TICKET,STOP_FOR_DAY,COLLECTIONS_SUPERVISOR
+K13-T21,,Waiver request routed - no commitment,WAIVER_REQUEST,B2,Y,,,0,,,,CREATE_TICKET,STOP_FOR_DAY,COLLECTIONS_SUPERVISOR
+K13-T22,,Complaint routed,COMPLAINT,B1,Y,,,0,,,,CREATE_TICKET,STOP_FOR_DAY,COLLECTIONS_SUPERVISOR
+K13-T23,,Abusive - end conversation and pause outreach,ABUSIVE,B4,Y,,,0,,,,END_CONVERSATION_AND_TICKET,SUPERVISOR_HOLD,COLLECTIONS_SUPERVISOR
+K13-T24,,Legal threat - end conversation,LEGAL_THREAT,B4,Y,,,0,,,,END_CONVERSATION_AND_TICKET,SUPERVISOR_HOLD,COLLECTIONS_SUPERVISOR
+K13-T25,,Fraud claim - end conversation,FRAUD_CLAIM,B2,Y,,,0,,,,END_CONVERSATION_AND_TICKET,SUPERVISOR_HOLD,COLLECTIONS_SUPERVISOR
