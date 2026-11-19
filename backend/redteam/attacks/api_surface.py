@@ -60,7 +60,7 @@ def bad_paise(ctx):
     return chk.result()
 
 
-@attack("RT-API-02", category="api", component="k06.api", finding="RT-F02", requires=("fastapi",),
+@attack("RT-API-02", category="api", component="k06.api", requires=("fastapi",),
         title="Unknown borrower id -> 4xx on every borrower-scoped route (no 500, no silent write)",
         covers=("K06:api",))
 def unknown_borrower(ctx):
@@ -122,7 +122,7 @@ def unknown_other_ids(ctx):
     return chk.result()
 
 
-@attack("RT-API-04", category="api", component="k06.api", finding="RT-F03", requires=("fastapi",),
+@attack("RT-API-04", category="api", component="k06.api", requires=("fastapi",),
         title="Malformed enums, channels, dates and wrong-typed facts -> 4xx, never 500",
         covers=("K06:api",))
 def malformed_inputs(ctx):
@@ -158,7 +158,7 @@ def malformed_inputs(ctx):
     return chk.result()
 
 
-@attack("RT-API-05", category="api", component="k06.api", finding="RT-F10", requires=("fastapi",),
+@attack("RT-API-05", category="api", component="k06.api", requires=("fastapi",),
         title="POST /spine/import refuses paths outside the data directory and echoes nothing",
         covers=("K06:api", "brief:synthetic-data-only"))
 def import_arbitrary_path(ctx):

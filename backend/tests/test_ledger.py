@@ -112,6 +112,30 @@ def test_stable_id_collapses_identical_proposals(ledger):
     assert a.instruction_id == b.instruction_id and b.idempotent_replay
 
 
+def test_reused_instruction_id_for_another_touch_is_a_conflict(ledger):
+    """RT-F07: an explicit id already reserved for another borrower / EMI / channel / campaign is not 'reserved'."""
+    lg = ledger
+    lg.enroll("C1", [add_loan(lg, "B2")])
+    lg.enroll("C1", [add_loan(lg, "B1", loan="B")])
+    assert lg.reserve(ins(iid="SHARED-1")).reserved
+    for other in (ins("B2", t=at(12), iid="SHARED-1"), ins(loan="B", iid="SHARED-1"),
+                  ins(ch="whatsapp", iid="SHARED-1"), ins(camp="C2", iid="SHARED-1"),
+                  ins(camp="NO-SUCH-CAMPAIGN", iid="SHARED-1")):
+        r = lg.reserve(other)
+        assert (r.decision.decision, r.decision.reason, r.reserved) == ("WAIT", "CONFLICT_INSTRUCTION_ID", False)
+    again = lg.reserve(ins(iid="SHARED-1"))  # same payload is still an idempotent replay
+    assert again.reserved and again.idempotent_replay and again.decision.reason == "ALREADY_RESERVED"
+    assert [t["instruction_id"] for t in lg.borrower_state("B1")["touches"]] == ["SHARED-1"]
+    assert lg.borrower_state("B2")["touches"] == []
+
+
+def test_derived_id_still_collapses_two_campaigns_on_one_slot(ledger):
+    """E03 is unchanged: without an explicit id, C2's proposal of C1's slot is a replay, not a conflict."""
+    a = ledger.reserve(ins(t=at(11), camp="C1"))
+    b = ledger.reserve(ins(t=at(11), camp="C2"))
+    assert a.instruction_id == b.instruction_id and b.idempotent_replay and b.decision.reason == "ALREADY_RESERVED"
+
+
 def test_caps_count_across_campaigns(ledger):
     for h in (8, 10, 12):
         assert ledger.reserve(ins(t=at(h), camp="C1")).reserved

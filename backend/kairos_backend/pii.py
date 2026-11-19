@@ -1,9 +1,9 @@
-"""PII scrubber for free text stored at rest (red-team RT-F08).
+"""PII scrubber for free text stored at rest (red-team RT-F08 tickets, RT-F09 audit / events / payments).
 
 scrub() masks e-mail addresses, Indian phone numbers and — when the caller passes them from the K03
 spine — the borrower's own name and number. It uses the same placeholders as hitl.scrub() on the
 k06/hitl-control branch ("[phone]", "[email]"), so the two can be merged into one; until then
-this is the scrubber the Ledger uses for tickets.
+this is the scrubber the Ledger uses for tickets, audit reasons, reply text and reversal reasons.
 """
 from __future__ import annotations
 
@@ -12,7 +12,9 @@ from typing import Optional
 
 __all__ = ["scrub"]
 
-_EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+# Every pattern starts only at a token boundary / a digit or "+", so a long run of letters, digits or
+# spaces (a 200k-character reply) is scanned in linear time, not retried from every position.
+_EMAIL = re.compile(r"(?<![\w.+-])[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 # Indian numbers: optional +91 / 91 / 0 prefix, then 10 digits written together or grouped 5+5, 3+3+4, 4+3+3.
 # Not inside a longer digit run or word, so 12-digit UPI RRNs, dates and ids are left alone.
 _IN_PHONE = re.compile(
@@ -27,7 +29,7 @@ def _own_phone(phone: Optional[str]) -> Optional[re.Pattern]:
     if len(digits) < 8:
         return None
     core = digits[-10:]
-    return re.compile(rf"(?:\+?{_SEP}91{_SEP}|0{_SEP})?" + _SEP.join(core))
+    return re.compile(rf"(?=[+\d])(?:\+?{_SEP}91{_SEP}|0{_SEP})?" + _SEP.join(core))
 
 
 def _own_name(name: Optional[str]) -> Optional[re.Pattern]:

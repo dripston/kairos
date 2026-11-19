@@ -52,7 +52,7 @@ def replay_same_instruction(ctx):
     return chk.result()
 
 
-@attack("RT-CAP-03", category="caps", component="k06.ledger", finding="RT-F07",
+@attack("RT-CAP-03", category="caps", component="k06.ledger",
         title="Reused instruction id with a different payload is not answered 'reserved'",
         covers=("K06:idempotency",))
 def id_reuse_different_payload(ctx):

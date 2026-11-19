@@ -101,7 +101,7 @@ def late_dispatch_blocked(ctx):
     return chk.result()
 
 
-@attack("RT-TIME-05", category="time", component="k06.gate", finding="RT-F04", requires=("fastapi",),
+@attack("RT-TIME-05", category="time", component="k06.gate", requires=("fastapi",),
         title="Stateless Gate (gate.evaluate and POST /gate/evaluate) judges UTC input in IST",
         covers=("K01-T13", "K01:timezone=Asia/Kolkata"))
 def stateless_gate_timezone(ctx):
