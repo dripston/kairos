@@ -431,13 +431,28 @@ class Ledger:
         return None
 
     # ---------- the atomic core ----------
-    def preview(self, ins: Instruction) -> Decision:
-        """Approval-time check (no reservation)."""
+    def preview(self, ins: Instruction, exclude: Optional[str] = None) -> Decision:
+        """Approval-time check (no reservation).
+
+        `exclude` (optional, used by the K06 SupervisorFSM) names one existing live touch to leave
+        out, exactly as begin_dispatch leaves out its own touch: it is not counted toward caps or
+        the same-channel gap (facts_for's exclude), and its reserved cost is given back to the
+        budget it was committed against (same campaign and day). Re-planning the identical
+        stable-id touch then sees the world the first plan saw, and reserve() turns it into an
+        idempotent replay instead of a second reservation."""
         with self.tx() as c:  # write tx because pacing rows may be initialised
             pre = self._pre_gate(c, ins)
             if pre:
                 return pre
-            facts, extra = self.facts_for(c, ins)
+            facts, extra = self.facts_for(c, ins, exclude=exclude)
+            if exclude:
+                own = c.execute("SELECT * FROM touches WHERE instruction_id=?", (exclude,)).fetchone()
+                if (own is not None and own["status"] in LIVE and own["campaign_id"] == ins.campaign_id
+                        and own["day"] == self._loc(ins.at).date().isoformat()):
+                    cost = own["actual_cost_paise"] if own["reconciled"] else own["est_cost_paise"]
+                    b = extra["budget"]
+                    left = min(b["pool_left_paise"], b["today_left_paise"])  # what facts_for used, in paise
+                    facts.budget_remaining_inr = (left + (cost or 0)) / 100  # exact: one int division
             d = evaluate(self.policy, facts)
             d.detail.update(extra)
             return d
