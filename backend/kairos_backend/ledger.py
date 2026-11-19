@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import operator
 import sqlite3
 import threading
 import uuid
@@ -36,12 +37,31 @@ from .exceptions import ExceptionEvent, handle
 from .gate import SEND, WAIT, Decision, Facts, evaluate
 from .policy import Policy
 
-__all__ = ["Ledger", "Instruction", "ReserveResult", "PaymentError", "stable_instruction_id"]
+__all__ = ["Ledger", "Instruction", "ReserveResult", "PaymentError", "stable_instruction_id", "MAX_PAISE", "check_paise"]
 
 # statuses that may reach (or already reached) the borrower -> count toward caps and budget
 LIVE = ("RESERVED", "DISPATCHING", "UNCERTAIN", "SENT", "DELIVERED")
 # provider status ranks: an older/lower status never overwrites a newer one (E04)
 RANK = {"RESERVED": 0, "DISPATCHING": 1, "UNCERTAIN": 2, "SENT": 3, "DELIVERED": 4}
+# Ceiling for any single money value (budget per case, cost estimate, actual charge): 10^12 paise = Rs.1,000 crore.
+# Far above any real figure, far below SQLite's INTEGER limit (2^63 - 1), so sums never overflow (RT-F01).
+MAX_PAISE = 10 ** 12
+
+
+def check_paise(value, field: str, positive: bool = False) -> int:
+    """Money guard (RT-F01): a whole number of paise in [0, MAX_PAISE] ([1, MAX_PAISE] when positive).
+    Anything else (negative, fractional, bool, text, overflowing) raises ValueError -> 422 at the API,
+    so a bad charge can never mint budget or reach SQLite as an overflow."""
+    if isinstance(value, bool):
+        raise ValueError(f"{field} must be a whole number of paise, got bool")
+    try:
+        v = operator.index(value)
+    except TypeError:
+        raise ValueError(f"{field} must be a whole number of paise, got {type(value).__name__}") from None
+    lo = 1 if positive else 0
+    if not lo <= v <= MAX_PAISE:
+        raise ValueError(f"{field} must be between {lo} and {MAX_PAISE} paise, got {v}")
+    return v
 
 K06_SCHEMA = """
 CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);
@@ -253,6 +273,7 @@ class Ledger:
                         name: str = "", status: str = "RUNNING") -> None:
         """budget_per_case and the collection targets are K01 REQUIRED_INPUTs — the caller supplies them.
         The pool is budget_per_case x enrolled cases (see enroll())."""
+        budget_per_case_paise = check_paise(budget_per_case_paise, "budget_per_case_paise", positive=True)
         with self.tx() as c:
             c.execute(
                 "INSERT INTO campaigns (id, name, status, budget_per_case_paise, start_date, end_date,"
@@ -261,7 +282,7 @@ class Ledger:
                 " budget_per_case_paise=excluded.budget_per_case_paise, start_date=excluded.start_date,"
                 " end_date=excluded.end_date, target_amount_pct=excluded.target_amount_pct,"
                 " target_count_pct=excluded.target_count_pct",
-                (id, name, status, int(budget_per_case_paise), start_date.isoformat(), end_date.isoformat(),
+                (id, name, status, budget_per_case_paise, start_date.isoformat(), end_date.isoformat(),
                  target_amount_pct, target_count_pct),
             )
 
@@ -433,6 +454,7 @@ class Ledger:
     # ---------- the atomic core ----------
     def preview(self, ins: Instruction) -> Decision:
         """Approval-time check (no reservation)."""
+        check_paise(ins.est_cost_paise, "est_cost_paise")
         with self.tx() as c:  # write tx because pacing rows may be initialised
             pre = self._pre_gate(c, ins)
             if pre:
@@ -445,6 +467,7 @@ class Ledger:
     def reserve(self, ins: Instruction, actor: str = "supervisor") -> ReserveResult:
         """Check every rule and, if allowed, reserve the touch and its cost — atomically.
         Re-submitting the same instruction_id never creates a second reservation."""
+        ins.est_cost_paise = check_paise(ins.est_cost_paise, "est_cost_paise")
         if ins.instruction_id is None:
             ins.instruction_id = stable_instruction_id(ins.borrower_id, ins.obligation_id, ins.channel,
                                                        self._loc(ins.at), ins.version)
@@ -474,9 +497,9 @@ class Ledger:
                 " scheduled_at, day, status, reason, est_cost_paise, created_at, updated_at)"
                 " VALUES (?,?,?,?,?,?,?,?,?,'RESERVED','ELIGIBLE',?,?,?)",
                 (ins.instruction_id, ins.borrower_id, loan_id, ins.obligation_id, ins.campaign_id, ins.channel,
-                 ins.template_id, self._iso(at), at.date().isoformat(), int(ins.est_cost_paise), now, now),
+                 ins.template_id, self._iso(at), at.date().isoformat(), ins.est_cost_paise, now, now),
             )
-            self._commit_cost(c, ins.campaign_id, at.date().isoformat(), int(ins.est_cost_paise))
+            self._commit_cost(c, ins.campaign_id, at.date().isoformat(), ins.est_cost_paise)
             return ReserveResult(d, ins.instruction_id, True)
 
     def _commit_cost(self, c, campaign_id: str, day: str, delta: int) -> None:
@@ -561,16 +584,19 @@ class Ledger:
             return new
 
     def reconcile(self, instruction_id: str, actual_cost_paise: int) -> bool:
-        """Replace the estimate with the actual charge — exactly once. Returns False on a repeat."""
+        """Replace the estimate with the actual charge — exactly once. Returns False on a repeat.
+        The charge must be a whole, non-negative number of paise (<= MAX_PAISE): a negative 'charge'
+        would hand budget back to the campaign (RT-F01)."""
+        actual_cost_paise = check_paise(actual_cost_paise, "actual_cost_paise")
         with self.tx() as c:
             t = c.execute("SELECT * FROM touches WHERE instruction_id=?", (instruction_id,)).fetchone()
             if t is None:
                 raise KeyError(instruction_id)
             if t["reconciled"] or t["status"] not in LIVE:
                 return False
-            self._commit_cost(c, t["campaign_id"], t["day"], int(actual_cost_paise) - t["est_cost_paise"])
+            self._commit_cost(c, t["campaign_id"], t["day"], actual_cost_paise - t["est_cost_paise"])
             c.execute("UPDATE touches SET actual_cost_paise=?, reconciled=1, updated_at=? WHERE instruction_id=?",
-                      (int(actual_cost_paise), self._iso(self.policy.now()), instruction_id))
+                      (actual_cost_paise, self._iso(self.policy.now()), instruction_id))
             self._audit(c, "executor", "RECONCILED", t["borrower_id"], instruction_id,
                         estimate_paise=t["est_cost_paise"], actual_paise=actual_cost_paise)
             return True

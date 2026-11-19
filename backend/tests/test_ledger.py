@@ -424,3 +424,21 @@ def test_k03_synthetic_dataset_runs_through_k06(policy, tmp_path):
     assert set(reasons) <= {"ELIGIBLE", "NO_CONSENT", "STOP_OPT_OUT"}  # the only reasons this data can produce
     assert lg.cap_breaches() == []
     lg.close()
+
+
+
+# ---------- money guard (red-team RT-F01; the API side is RT-API-01) ----------
+def test_ledger_rejects_bad_paise_and_mints_no_budget(ledger):
+    r = ledger.reserve(ins(t=at(10)))
+    for bad in (-1, -100_000, 1.5, "20", None, True, 2 ** 63, 10 ** 12 + 1):
+        with pytest.raises(ValueError):
+            ledger.reconcile(r.instruction_id, bad)
+        with pytest.raises(ValueError):
+            ledger.reserve(ins(t=at(12), cost=bad))
+    for bad in (0, -5, 2 ** 63):
+        with pytest.raises(ValueError):
+            ledger.upsert_campaign("CX", budget_per_case_paise=bad, start_date=D, end_date=D)
+    assert ledger.campaign_state("C1")["committed_paise"] == 20  # still only the reserved estimate
+    assert ledger.touch(r.instruction_id)["reconciled"] == 0
+    assert ledger.reconcile(r.instruction_id, 0) is True  # a free send is valid
+    assert ledger.campaign_state("C1")["committed_paise"] == 0

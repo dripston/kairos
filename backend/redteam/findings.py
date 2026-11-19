@@ -22,11 +22,6 @@ class Finding:
 
 
 _F = [
-    Finding("RT-F01", "Reconcile accepts negative / overflowing paise: a negative actual cost mints campaign budget",
-            "HIGH", "Rehan (K06)", "api.py POST /reconcile/{id}; ledger.reconcile",
-            "Validate actual_cost_paise >= 0 and <= a sane ceiling in the route (Query(ge=0, le=...)) and in "
-            "Ledger.reconcile (raise ValueError). Bound every *_paise model field (le=10**12) so SQLite never "
-            "overflows (PUT /campaigns with 2**63 is a 500 today)."),
     Finding("RT-F02", "Unknown borrower ids are not rejected: 500 on some routes, 200 with writes on others",
             "MEDIUM", "Rehan (K06)", "api.py events/*, /borrowers/{id}/lender, /control/supervisor-clear, /decide; "
             "ledger._set_state / record_response / record_call / apply_exception",
