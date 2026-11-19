@@ -171,6 +171,8 @@ class Ledger:
         self._gen = 0
         create_spine_schema(self._spine())   # K03 tables
         self._conn().executescript(K06_SCHEMA)  # K06 tables
+        from .fsm_strict import sync_strict_mode  # KAIROS_FSM_STRICT=1: only declared touch transitions (STATES.md)
+        sync_strict_mode(self)
 
     # ---------- connections ----------
     def _conn(self) -> sqlite3.Connection:
