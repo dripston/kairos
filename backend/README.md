@@ -132,29 +132,38 @@ live Sarvam webhook is wired (envelopes say `SIMULATED` unless `KAIROS_VOICE_PRO
 | `kairos_backend/voice/ingest.py` | `decide()` (pure) + `VoiceIngester.ingest(payload)` (ledger effects, reward, CRM envelope). |
 | `kairos_backend/voice/store.py` | Voice-only tables: `voice_calls`, `voice_preferences`, `voice_payment_claims`, `voice_followups`, `voice_contact_flags`. |
 
-API: `POST /webhooks/sarvam/call-end` (idempotent by `attempt_id`; optional `SARVAM_WEBHOOK_SECRET` →
+API: `POST /webhooks/sarvam/call-end` (idempotent by `attempt_id` / inbound `interaction_id`; optional `SARVAM_WEBHOOK_SECRET` →
 header `X-Kairos-Webhook-Secret`), `GET /voice/registry`, `POST /voice/select` (`{borrower_id, at?,
 obligation_id?, touch_id?, lender_name?, human_approved?}`), `GET /voice/calls/{call_id}` (the attempt id).
 
-**Webhook payload.** Matches the Sarvam call-attempt fields observed in CN's live campaign / workflow
-configs (2026-11-19; `docs/sarvam-campaigns-notes.md` on `k27/auto-churn`). **Not yet checked against
-`sarvam://schemas/webhook-payload`**: that MCP resource could not be read from the agent session, so
-re-check it before going LIVE. Sarvam POSTs once per call **attempt**, connected or not:
+**Webhook payload.** Matches `sarvam://schemas/webhook-payload` (read 2026-11-19): `anyOf`
+**outbound** (campaign attempt, sent whether or not it connected; told apart by `campaign_id`) and
+**inbound** (call to a deployment; `deployment_id`). The REQUIRED fields of the shape that applies are
+checked, with their types; missing or wrong → 422 (the message names fields, never values).
 
 | Field | Kairos |
 |---|---|
-| `attempt_id` | idempotency key (`voice_calls.call_id`); a repeat → `DUPLICATE`. Legacy `call_id` / `interaction_id` / `call.id` / `id` still accepted |
-| `status` / `connectivity_status` | normalised (`no-answer` → `NO_ANSWER`, …); `connectivity_status` decides reach when present. `no_answer` / `busy` / `failed` / `voicemail` (and declined / canceled) → reach-only `NO_RESPONSE`, no reward, no intent from stale variables, a due follow-up stays due |
-| `duration` | string or number (`"45"`, `"00:00:45"`) → seconds |
-| `end_datetime` | UTC `Z` → local call end (legacy `ended_at` / `end_time`) |
-| `final_agent_variables` | JSON string or object, decoded; wins over call-start variables |
+| outbound required: `app_id`, `app_version` (int), `attempt_id`, `campaign_id`, `cohort_id`, `completion_status` (failed / partial / completed), `user_identifier`, `user_phone_number` | validated; `app_id` → use case via the registry (so PTP_FOLLOW_UP / CALLBACK follow-ups close) |
+| inbound required: `app_id`, `app_version`, `deployment_id`, `interaction_id`, `user_phone_number`, `agent_phone_number` | validated; connected by definition |
+| `attempt_id` (outbound) / `interaction_id` (inbound) | idempotency key (`voice_calls.call_id`); a repeat → `DUPLICATE`. `retry_attempt` > 0 is suffixed (`<attempt_id>#r<n>`) so a retry is never swallowed as a duplicate |
+| `next_action_status` | non-null = Sarvam will retry: recorded as an attempt only (`ATTEMPT_RECORDED`): no reach, no learner NO_RESPONSE, no follow-up closed. Only a terminal attempt (null) finalizes. Exception: a connected attempt where the bot captured a borrower intent (e.g. STOP on a `short_duration_retry`) is acted on at once |
+| `connectivity_status` (busy / failed / connected / no_answer) + `completion_status` | `connected` → reached; busy / failed / no_answer → reach-only NO_RESPONSE (no reward, no intent from stale variables, a due follow-up stays due) |
+| `duration` | number or null (strings tolerated) |
+| `executed_at` | offset kept as sent; `start_datetime` / `end_datetime` are UTC (a naive value is read as UTC) |
+| `output_agent_variables` → `final_agent_variables` → `initial_agent_variables` | merged, earlier wins; objects (a JSON string is tolerated) |
+| join | `initial_agent_variables.touch_id`, then `user_identifier`, then `metadata.touch_id`: the first that is a Kairos touch. **Our campaign export should set `user_identifier` to the touch id** |
 | `failure_reason` | stored (phones / emails masked) and sent in the CRM envelope |
-| `metadata` | campaign `webhook_config.metadata`, echoed: stored and passed through to the envelope |
-| `event` | `before_call` (workflow gate) → 200 `IGNORED`, nothing recorded; `call_ended` processed |
-| `recording_url` | not stored |
+| `metadata` | echoed campaign webhook metadata: stored and passed through |
+| `experiment.variant_id` / `experiment_id`, `app_version` | stored (`voice_calls.variant_id`, `attempt_detail`) and in the envelope, for A/B |
+| `user_phone_number`, `agent_phone_number`, `recording_url` | **never stored or logged** |
+| `interaction_transcript` | text never stored; turn count only (no PII scrubber on this branch) |
 
-Not a JSON object, no attempt id, a typed field of the wrong type, an unparseable duration / end time, or
-variables that do not decode to an object → 422. Confidence thresholds are unchanged.
+**Fallbacks (not in the schema, kept working):** (1) the body CN's live workflow report node posts —
+`status` / `connectivity_status`, string `duration`, `final_agent_variables` as a JSON string, `event`
+(`before_call` gate → 200 `IGNORED`, nothing recorded); (2) the first inferred shapes — `call_id` /
+`interaction_id` / `call.id` / `id`, nested `call` / `interaction`, `*_variables`, `ended_at` /
+`end_time`, `duration_seconds`, status aliases (`no-answer`, `voicemail`, `rejected`, …). A payload with
+neither `campaign_id` nor `deployment_id` takes this path. Confidence thresholds are unchanged.
 
 **Selection.** Use case: hardship (only with `human_approved`) → `HARDSHIP_TRIAGE`; callback pending →
 `CALLBACK`; promise date reached → `PTP_FOLLOW_UP`; else by band (PRE_DUE → `PRE_DUE_REMINDER`,
@@ -211,6 +220,13 @@ HUMAN_REQUESTED at ≥ 0.6 (after any downgrade). Reach (call connected → touc
   console / MCP); `resolve_payment_claims(now)` and `due_followups(day)` need a scheduler tick;
   the gate template `VB_KAIROS_CALLBACK` (voicebot, `hi`) must be registered via `PUT /templates`.
 - Tests: `tests/test_voice_engine.py` (every threshold both sides of its boundary, idempotency,
-  language / voice / A/B, no PII in variables, Sarvam call-attempt payloads — connected, no answer,
-  busy, failed, voicemail, `before_call`, duplicate `attempt_id`, variables as string / object,
-  metadata, garbage → 422 — and the API).
+  language / voice / A/B, no PII in variables, Sarvam payloads per the schema — outbound connected /
+  no answer / busy / failed, non-terminal vs terminal retries, inbound, join order, duplicate
+  `attempt_id`, variables as object / string, metadata, phones never stored, missing required → 422 —
+  the live-workflow / legacy fallbacks, and the API).
+- **For the `k27/auto-churn` owner (not edited here):** `churn/sarvam_export.cohort_upload()` maps
+  `user_identifier` to its `touch_id` column, but that value is `K27-<borrower>-<day>`, not a ledger
+  touch (`instruction_id`), and the phone column is a `PHONE_REF:<borrower>` token. The voice engine joins
+  on `initial_agent_variables.touch_id` → `user_identifier` → `metadata.touch_id` and only accepts a value
+  that is a Kairos touch, so K27 rows would arrive UNMATCHED until the export puts the reserved touch's
+  `instruction_id` there.

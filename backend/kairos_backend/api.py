@@ -371,11 +371,12 @@ def supervisor_clear(borrower_id: str):
 # ---------- K17/K18 voice engine ----------
 @app.post("/webhooks/sarvam/call-end")
 def sarvam_call_end(payload: dict, x_kairos_webhook_secret: Optional[str] = Header(default=None)):
-    """Sarvam call-attempt webhook (one per attempt, connected or not): attempt_id, status /
-    connectivity_status, duration, end_datetime, failure_reason, final_agent_variables (JSON string or
-    object), metadata. Older inferred shapes (call_id, variables, ended_at) still work.
-    Idempotent by attempt_id (DUPLICATE on a repeat). A workflow `before_call` gate event -> 200, IGNORED.
-    Not a call-attempt payload (no id, wrong field types, undecodable variables) -> 422.
+    """Sarvam webhook per sarvam://schemas/webhook-payload: outbound campaign attempt (campaign_id; one per
+    attempt, connected or not) or inbound deployment call (deployment_id). Missing / mistyped REQUIRED
+    field -> 422. Idempotent by attempt_id (outbound) / interaction_id (inbound): DUPLICATE on a repeat.
+    next_action_status set (Sarvam will retry) -> ATTEMPT_RECORDED only. Fallback: the live workflow body
+    and older inferred shapes; a workflow `before_call` gate event -> 200, IGNORED.
+    Phone numbers, recording URL and transcript text are never stored.
     If SARVAM_WEBHOOK_SECRET is set, the X-Kairos-Webhook-Secret header must match."""
     secret = os.environ.get("SARVAM_WEBHOOK_SECRET")
     if secret and x_kairos_webhook_secret != secret:
