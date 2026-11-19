@@ -20,6 +20,8 @@ jobs:
   backend:
     name: Backend tests (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
+    # setup-python no longer ships 3.9 for current Ubuntu runners: use the official image instead
+    container: python:${{ matrix.python }}-slim
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -30,12 +32,7 @@ jobs:
         working-directory: backend
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python }}
-          cache: pip
-          cache-dependency-path: backend/pyproject.toml
-      - run: pip install -e ".[dev]"
+      - run: pip install -q -e ".[dev]"
       - name: pytest
         run: python -m pytest -q -p no:cacheprovider
       - name: Red-team guardrail suite
@@ -44,12 +41,10 @@ jobs:
   crm:
     name: CRM tests
     runs-on: ubuntu-latest
+    container: python:3.9-slim
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
       - working-directory: crm
         run: python -m unittest discover -s tests -t . -v
 
