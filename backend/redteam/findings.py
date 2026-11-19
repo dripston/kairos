@@ -22,11 +22,6 @@ class Finding:
 
 
 _F = [
-    Finding("RT-F01", "Reconcile accepts negative / overflowing paise: a negative actual cost mints campaign budget",
-            "HIGH", "Rehan (K06)", "api.py POST /reconcile/{id}; ledger.reconcile",
-            "Validate actual_cost_paise >= 0 and <= a sane ceiling in the route (Query(ge=0, le=...)) and in "
-            "Ledger.reconcile (raise ValueError). Bound every *_paise model field (le=10**12) so SQLite never "
-            "overflows (PUT /campaigns with 2**63 is a 500 today)."),
     Finding("RT-F02", "Unknown borrower ids are not rejected: 500 on some routes, 200 with writes on others",
             "MEDIUM", "Rehan (K06)", "api.py events/*, /borrowers/{id}/lender, /control/supervisor-clear, /decide; "
             "ledger._set_state / record_response / record_call / apply_exception",
@@ -41,24 +36,12 @@ _F = [
             "MEDIUM", "Rehan (K06)", "gate._Ctx (today/hhmm from f.at); api.py POST /gate/evaluate",
             "In gate._Ctx use local = policy.local(f.at) for today/hhmm/quiet-day (the Ledger already does this), "
             "so 14:00Z (19:30 IST) is CONTACT_WINDOW, not SEND."),
-    Finding("RT-F05", "A future-dated LMS sync stamp disables the stale-DPD HOLD indefinitely",
-            "HIGH", "Rehan (K06)", "ledger._dpd_age_hours (max(0, ...)); api.py POST /spine/synced",
-            "Reject /spine/synced stamps later than now (+ small skew) with 422, and in _dpd_age_hours treat a "
-            "stamp later than the decision time as invalid (age = inf -> DPD_INVALID HOLD) instead of clamping to 0."),
-    Finding("RT-F06", "Bank-reference reuse check is exact-match: ' utr-1' / 'UTR-1<ZWSP>' pass as new references",
-            "HIGH", "Varun (K03)", "spine/ledger.apply_payment; payments.reference UNIQUE",
-            "Normalise references before the duplicate check and storage (NFKC, strip whitespace and zero-width/"
-            "format characters, upper-case); keep the raw value in a separate column for audit."),
     Finding("RT-F07", "Instruction-id replay never compares the payload: a reused id for another borrower or an "
             "unknown campaign is answered SEND / reserved=true", "MEDIUM", "Rehan (K06)",
             "ledger.reserve (prior-row short-circuit)",
             "On a prior row, compare borrower_id, obligation_id, channel, campaign_id and scheduled_at; on mismatch "
             "return WAIT IDEMPOTENCY_CONFLICT (409 at the API) with reserved=false, and run the campaign "
             "existence check before the replay short-circuit."),
-    Finding("RT-F08", "Ticket summaries and evidence ids store borrower names and phone numbers verbatim",
-            "HIGH", "Rehan (K06)", "ledger._ticket (summary_line_1/2, evidence_ids)",
-            "Redact before insert: replace the borrower's full_name with the borrower_id and mask phone-like digit "
-            "runs (>= 8 digits) and e-mails; add a shared redact() used by _ticket and _audit."),
     Finding("RT-F09", "Free text is persisted unredacted into audit.reason and K03 events/payments",
             "MEDIUM", "Rehan (K06) for audit + record_response; Varun (K03) for reverse_payment",
             "ledger._audit (reason from reversal/pause), ledger.record_response (events.details), "

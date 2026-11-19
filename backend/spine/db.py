@@ -75,7 +75,8 @@ CREATE TABLE IF NOT EXISTS payments (
     amount_paise  INTEGER NOT NULL CHECK (amount_paise > 0),
     paid_on       TEXT NOT NULL,
     mode          TEXT NOT NULL,
-    reference     TEXT NOT NULL UNIQUE,
+    reference     TEXT NOT NULL UNIQUE,  -- as given by the payment feed / borrower
+    reference_key TEXT,                -- normalised reference, unique (spine.ledger.reference_key, RT-F06)
     reversed_on   TEXT,               -- set when the bank reverses the payment (E15)
     reversal_reason TEXT,
     FOREIGN KEY (obligation_id, loan_id) REFERENCES obligations(obligation_id, loan_id)
@@ -112,6 +113,23 @@ def get_connection(path=DB_PATH):
 
 def create_schema(conn):
     conn.executescript(SCHEMA)
+    _add_reference_key(conn)
+
+
+def _add_reference_key(conn):
+    """payments.reference_key (RT-F06): add it to databases created before it existed, fill it from
+    the raw reference, and make it unique. If an older database already holds two variants of one
+    reference (e.g. 'UTR-1' and ' utr-1'), creating the index fails loudly: that is a duplicate
+    payment to investigate, not something to hide."""
+    from spine.ledger import reference_key  # spine.ledger does not import this module
+
+    if "reference_key" not in {r[1] for r in conn.execute("PRAGMA table_info(payments)")}:
+        conn.execute("ALTER TABLE payments ADD COLUMN reference_key TEXT")
+    rows = conn.execute("SELECT payment_id, reference FROM payments WHERE reference_key IS NULL").fetchall()
+    with conn:
+        conn.executemany("UPDATE payments SET reference_key = ? WHERE payment_id = ?",
+                         [(reference_key(r[1]), r[0]) for r in rows])
+        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS ux_payments_reference_key ON payments (reference_key)")
 
 
 def integrity_problems(conn):

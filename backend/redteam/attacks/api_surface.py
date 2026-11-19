@@ -27,7 +27,7 @@ def _record(chk: Checks, label: str, r: dict) -> None:
                body=r["body"] if r["status"] < 500 and not is_4xx(r["status"]) else None)
 
 
-@attack("RT-API-01", category="api", component="k06.api", finding="RT-F01", requires=("fastapi",),
+@attack("RT-API-01", category="api", component="k06.api", requires=("fastapi",),
         title="Negative / non-integer / overflowing paise are rejected with 4xx on every money route",
         covers=("K06:api", "K03:money-in-paise"))
 def bad_paise(ctx):
