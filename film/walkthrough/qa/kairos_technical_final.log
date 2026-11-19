@@ -1,0 +1,11 @@
+integrated -14.07 LUFS (target -14.0)  true peak -1.04 dBTP  duration 112.62 s
+voice on 75.2 s = 67% of runtime, 12 lines
+music under voice -28.2 dB vs in gaps -11.6 dB (duck 18 dB)
+QA collisions: 0
+wrote out/technical3_final.mov  6757 frames in 380 s
+kairos_technical.mp4: 112.617 s, 1920x1080 @ 60.00 fps, 6757 frames decoded (reader completed), audio tracks 1 (112.569 s), last frame ok, 195.2 MB
+kairos_technical_720p.mp4: 112.617 s, 1280x720 @ 60.00 fps, 6757 frames decoded (reader completed), audio tracks 1 (112.569 s), last frame ok, 136.8 MB
+frames sampled 113 · empty 0 · identical seconds 0 · most uniform 94.6% at 3.00 s
+afinfo estimated duration: 112.638549 sec
+encoded duration 112.6385 s (4967360 frames)  peak -0.84 dBFS  integrated -14.08 LUFS  RMS -15.37 dBFS  clipped samples 0 
+done kairos_technical

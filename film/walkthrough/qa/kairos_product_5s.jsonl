@@ -1,0 +1,25 @@
+{"t":0,"layers":[{"kind":"video","src":"comp/M1_flyover.mov","push":false},{"kind":"captions","text":""}]}
+{"t":5,"layers":[{"kind":"video","src":"comp/M5_shopkeeper.mov","push":false},{"kind":"captions","text":"Every month, lenders send the same reminder, at the same time, to everyone."}]}
+{"t":10,"layers":[{"kind":"video","src":"comp/P02_vikram_sms.mov","push":false},{"kind":"captions","text":""}]}
+{"t":15,"layers":[{"kind":"dots","text":""},{"kind":"words","text":"1,262 messages. / <em>23</em> replies."},{"kind":"captions","text":""}]}
+{"t":20,"layers":[{"kind":"logo","text":""},{"kind":"headline","text":"Collections that decide who, when and how.","px":72},{"kind":"captions","text":"Kairos looks at every borrower, every day, and decides."}]}
+{"t":25,"layers":[{"kind":"video","src":"comp/P07_laptop_dashboard.mov","push":true},{"kind":"captions","text":""}]}
+{"t":30,"layers":[{"kind":"card","src":"ov","label":"d1_aladdin_tech","url":"http://127.0.0.1:8773/demo/journey/outbound","zoom":2.49,"text13px":32,"text16px":40},{"kind":"captions","text":"Aladdin, our safety supervisor, checks it against the lender's rules."}]}
+{"t":35,"layers":[{"kind":"card","src":"ov","label":"v11","url":"http://127.0.0.1:8773/demo/journey/outbound","zoom":2.49,"text13px":32,"text16px":40},{"kind":"captions","text":"No reply on SMS. So it learns, and tries WhatsApp."}]}
+{"t":40,"layers":[{"kind":"video","src":"comp/V2_vikram_smiles.mov","push":false},{"kind":"captions","text":""}]}
+{"t":45,"layers":[{"kind":"card","src":"ov","label":"v18","url":"http://127.0.0.1:8773/demo/journey/outbound","zoom":2.49,"text13px":32,"text16px":40},{"kind":"captions","text":""}]}
+{"t":50,"layers":[{"kind":"video","src":"comp/P15_laptop_paid.mov","push":false},{"kind":"captions","text":""}]}
+{"t":55,"layers":[{"kind":"video","src":"comp/V4_vikram_relief.mov","push":false},{"kind":"captions","text":""}]}
+{"t":60,"layers":[{"kind":"card","src":"aarav","label":"approved","url":"http://127.0.0.1:8773/demo/journey/outbound","zoom":3.2,"text13px":42,"text16px":51},{"kind":"captions","text":"Your team stays in charge."}]}
+{"t":65,"layers":[{"kind":"video","src":"comp/P17a_sunita.mov","push":false},{"kind":"captions","text":""}]}
+{"t":70,"layers":[{"kind":"video","src":"comp/P17_sunita_otp.mov","push":false},{"kind":"captions","text":"Kairos: To protect your account,"}]}
+{"t":75,"layers":[{"kind":"video","src":"comp/P17_sunita_otp.mov","push":false},{"kind":"captions","text":"Kairos: Thank you, you are verified."}]}
+{"t":80,"layers":[{"kind":"video","src":"comp/P19_sunita_fake.mov","push":false},{"kind":"captions","text":"Kairos answers in seconds. But only once it knows it's really them."}]}
+{"t":85,"layers":[{"kind":"card","src":"in","label":"fake_tech","url":"http://127.0.0.1:8773/demo/journey/inbound","zoom":2.6,"text13px":34,"text16px":42},{"kind":"captions","text":"Kairos: For your security, I can't help with this request in chat."}]}
+{"t":90,"layers":[{"kind":"card","src":"in","label":"fake_tech","url":"http://127.0.0.1:8773/demo/journey/inbound","zoom":2.6,"text13px":34,"text16px":42},{"kind":"captions","text":"A doctored payment screenshot? It checks with the bank."}]}
+{"t":95,"layers":[{"kind":"video","src":"comp/P20c_laptop_console.mov","push":false},{"kind":"captions","text":""}]}
+{"t":100,"layers":[{"kind":"video","src":"comp/P20d_borrower_b_reply.mov","push":false},{"kind":"captions","text":""}]}
+{"t":105,"layers":[{"kind":"video","src":"comp/P21_sunita_stop.mov","push":false},{"kind":"captions","text":"Kairos: You will not receive further automated reminders from us on any channel."}]}
+{"t":110,"layers":[{"kind":"video","src":"comp/P22_team.mov","push":false},{"kind":"captions","text":"In our tests, about twice the money back for every rupee. With zero rule breaches."}]}
+{"t":115,"layers":[{"kind":"stats","text":""},{"kind":"fine","text":""},{"kind":"captions","text":"In our tests, about twice the money back for every rupee. With zero rule breaches."}]}
+{"t":120,"layers":[{"kind":"logo","text":""},{"kind":"captions","text":""}]}

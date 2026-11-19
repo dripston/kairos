@@ -1,0 +1,94 @@
+WEBVTT
+
+1
+00:00:00.500 --> 00:00:05.540
+This is what happens inside Kairos,
+for one borrower, on one day.
+
+2
+00:00:10.200 --> 00:00:15.978
+Each day, every borrower is re-sorted.
+Every move names its rule.
+
+3
+00:00:18.200 --> 00:00:21.603
+A Bayesian learner tracks reply chances.
+
+4
+00:00:21.623 --> 00:00:26.480
+On day seven, WhatsApp replies drop.
+Kairos isn't told.
+
+5
+00:00:26.500 --> 00:00:30.760
+By the end of day fourteen,
+that segment has moved to SMS.
+
+6
+00:00:30.780 --> 00:00:32.980
+Learned from replies alone.
+
+7
+00:00:33.000 --> 00:00:34.459
+Models only suggest.
+
+8
+00:00:34.479 --> 00:00:40.780
+Aladdin reserves the budget and limits,
+then checks every rule again at send time.
+
+9
+00:00:40.800 --> 00:00:43.272
+Messages go out through each channel.
+
+10
+00:00:43.292 --> 00:00:48.325
+Delivery and replies come back as webhooks,
+and duplicates are ignored.
+
+11
+00:00:48.500 --> 00:00:52.480
+Kairos: Your EMI was due last week.
+Could you pay by Friday?
+
+12
+00:00:52.500 --> 00:00:54.380
+Sunita: Yes, I'll pay on Friday.
+
+13
+00:00:54.400 --> 00:00:56.700
+Voice calls run on Sarvam agents.
+
+14
+00:00:56.720 --> 00:01:00.778
+Every call comes back
+with a disposition and a confidence.
+
+15
+00:01:00.798 --> 00:01:04.380
+Below a hand-set threshold,
+a person reviews it.
+
+16
+00:01:04.400 --> 00:01:08.739
+Replies climb a ladder:
+rules first, then a small model.
+
+17
+00:01:08.759 --> 00:01:11.380
+Still unsure? A person decides.
+
+18
+00:01:11.400 --> 00:01:13.971
+People can step in at any moment.
+
+19
+00:01:13.991 --> 00:01:19.110
+Every action still passes Aladdin,
+and lands in the audit log.
+
+20
+00:01:19.200 --> 00:01:25.448
+Same data in, same decisions out.
+And we attack it, load it, and test it.
+

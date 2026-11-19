@@ -8,6 +8,10 @@
 - **Real UI wording:** cards show the pages' own wording, for example "Locked by guardrails: no person can override this." and engine times in ms. The approval beat crops the Approvals row before and after the click, so no "presenter" wording appears on screen.
 - **Mixed sources:** the Engine Room panels come from a separate local run (seed 42, 300 synthetic borrowers, 14 days). The journey cards come from the K03 demo journeys. They are different SIMULATED runs and are labelled as such.
 
+**Captions never over UI**
+- **Moving band:** in phone shots where the phone reaches the bottom of the frame, the caption band moves to the clean top of the shot. Sunita's phone uses top centre; Vikram's phone uses top left. The band jumps position at those cuts.
+- **No push-ins under narration:** the laptop push-ins carry no narration. In the technical film, the two laptop shots under narration are wide, so the caption sits on the keyboard.
+
 **Timing and sound**
 - **Long phrases:** two narration lines are longer than one caption cue: "Before anything goes out, …" and Kairos's OTP line. They are split at the clause boundary into two complete cues. A few line breaks fall before a conjunction rather than at a comma.
 - **Tight dialogue:** in the Sunita exchange, the gap between speakers is 0.17–0.27 s, including the files' own tail silence.

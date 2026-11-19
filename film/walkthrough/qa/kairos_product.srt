@@ -1,0 +1,96 @@
+1
+00:00:00,400 --> 00:00:06,370
+Every month, lenders send the same reminder,
+at the same time, to everyone.
+
+2
+00:00:18,200 --> 00:00:23,039
+Kairos looks at every borrower,
+every day, and decides.
+
+3
+00:00:25,300 --> 00:00:27,087
+Before anything goes out,
+
+4
+00:00:27,107 --> 00:00:32,345
+Aladdin, our safety supervisor,
+checks it against the lender's rules.
+
+5
+00:00:33,500 --> 00:00:38,893
+No reply on SMS.
+So it learns, and tries WhatsApp.
+
+6
+00:00:42,200 --> 00:00:44,450
+Vikram: I'll pay by the 29th.
+
+7
+00:00:59,400 --> 00:01:01,663
+Your team stays in charge.
+
+8
+00:01:01,900 --> 00:01:04,782
+But even they can't break the rules.
+
+9
+00:01:06,900 --> 00:01:08,580
+Sunita: When is my EMI due?
+
+10
+00:01:08,600 --> 00:01:10,029
+Kairos: To protect your account,
+
+11
+00:01:10,049 --> 00:01:13,980
+Kairos: I have sent a 6-digit code
+to your registered WhatsApp number.
+
+12
+00:01:14,000 --> 00:01:15,780
+Kairos: Thank you, you are verified.
+
+13
+00:01:15,800 --> 00:01:21,080
+Kairos answers in seconds.
+But only once it knows it's really them.
+
+14
+00:01:21,100 --> 00:01:23,580
+Sunita: I already paid,
+here is the screenshot.
+
+15
+00:01:23,600 --> 00:01:26,588
+Kairos: For your security,
+I can't help with this request in chat.
+
+16
+00:01:26,608 --> 00:01:28,980
+Kairos: A specialist
+from our team will review it.
+
+17
+00:01:29,000 --> 00:01:32,579
+A doctored payment screenshot?
+It checks with the bank.
+
+18
+00:01:42,000 --> 00:01:42,682
+Sunita: Stop.
+
+19
+00:01:42,900 --> 00:01:46,680
+Kairos: You will not receive further
+automated reminders from us on any channel.
+
+20
+00:01:46,700 --> 00:01:49,580
+And stop means stop. Everywhere.
+
+21
+00:01:49,600 --> 00:01:56,079
+In our tests, about twice the money back
+for every rupee. With zero rule breaches.
+
