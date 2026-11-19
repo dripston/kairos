@@ -3,13 +3,16 @@
 Environment:
   KAIROS_POLICY_DIR  policy folder (default: <repo>/policy)
   KAIROS_DB          SQLite file shared by the K03 spine and K06 (default: backend/kairos.db)
+  KAIROS_IMPORT_DIR  the only directory POST /spine/import reads from (default: backend/data/imports)
 
 Money is integer paise (100 paise = ₹1), as in the K03 spine. Every *_paise input is a whole number in
 [0, MAX_PAISE] (10^12); anything else is a 422 (RT-F01). The Ledger enforces the same bound.
 """
 from __future__ import annotations
 
+import csv
 import os
+import re
 import sqlite3
 from datetime import date, datetime
 from pathlib import Path
@@ -241,12 +244,51 @@ def cap_breaches():
 
 
 # ---------- setup ----------
+def import_dir() -> Path:
+    return Path(os.environ.get("KAIROS_IMPORT_DIR", BACKEND_DIR / "data" / "imports")).resolve()
+
+
+# K03's rejection reasons quote the offending value; the API returns only line + column + rule (RT-F10).
+_REJECTION_RULES = [
+    (r"missing (.+)$", None, "required"),
+    (r"mobile number must be 10 digits", "Mobile Number", "10_digits"),
+    (r"bad Bounce Date", "Bounce Date", "iso_date"),
+    (r"DPD, Remaining EMIs and Age must be whole numbers", "DPD / Remaining EMIs / Age", "whole_number"),
+    (r"Remaining EMIs cannot be negative", "Remaining EMIs", "non_negative"),
+    (r"bounce string must be", "Bounce String (last 6 months)", "six_of_0_1_NA"),
+    (r"Loan ID .* appears twice", "Loan ID", "unique"),
+    (r"(.+?) must be T or F", None, "T_or_F"),
+    (r"(.+?) is not a number", None, "number"),
+    (r"(.+?) must be more than zero", None, "positive"),
+]
+
+
+def _rejection(r: dict) -> dict:
+    for pattern, column, rule in _REJECTION_RULES:
+        m = re.match(pattern, r.get("reason", ""))
+        if m:  # captured groups are K03 column names, never file values
+            return {"line": r.get("line"), "column": column or m.group(1), "rule": rule}
+    return {"line": r.get("line"), "column": None, "rule": "invalid"}
+
+
 @app.post("/spine/import")
 def spine_import(body: DatasetIn):
-    """Load a PL_Dummy-format CSV into the K03 spine (K03 validation report returned)."""
-    if not Path(body.csv_path).exists():
-        raise HTTPException(404, f"file not found: {body.csv_path}")
-    return ledger.import_dataset(body.csv_path, body.as_of)
+    """Load a PL_Dummy-format CSV into the K03 spine (K03 validation report returned).
+
+    csv_path is resolved against KAIROS_IMPORT_DIR and must stay inside it (no absolute path elsewhere, no
+    ../ or symlink out). Anything else is a 403 that does not say whether the file exists. Rejected rows
+    are reported as line + column + rule, never the raw value (RT-F10)."""
+    base = import_dir()
+    path = (base / body.csv_path).resolve()  # an absolute csv_path replaces base, then must still be under it
+    if base not in path.parents:
+        raise HTTPException(403, "csv_path must name a file inside the import directory")
+    if not path.is_file():
+        raise HTTPException(404, "no such file in the import directory")
+    try:
+        report = ledger.import_dataset(path, body.as_of)
+    except (OSError, UnicodeError, csv.Error, KeyError, ValueError, RuntimeError, StopIteration):
+        raise HTTPException(422, "not a readable dataset CSV")
+    return {**report, "file": str(path.relative_to(base)), "rejected": [_rejection(r) for r in report["rejected"]]}
 
 
 @app.post("/spine/synced")

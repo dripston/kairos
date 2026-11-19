@@ -5,7 +5,7 @@ pytest marks them xfail(strict=True), so a fix turns them into XPASS and forces 
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from typing import Dict
+from typing import Dict, List
 
 
 @dataclass(frozen=True)
@@ -21,11 +21,9 @@ class Finding:
         return asdict(self)
 
 
-_F = [
-    Finding("RT-F10", "POST /spine/import opens any server-side path the caller names",
-            "MEDIUM", "Rehan (K06)", "api.py POST /spine/import",
-            "Resolve csv_path and require it to sit under an allowed data directory (e.g. backend/data); return 403 "
-            "otherwise; never echo rejected row values for files outside it."),
+# Open findings go here. All ten from the first run are fixed (HIGH on redteam/fix-high, MEDIUM on
+# redteam/fix-med); see redteam/README.md "Findings" for what each was and how it was fixed.
+_F: List[Finding] = [
 ]
 
 FINDINGS: Dict[str, Finding] = {f.id: f for f in _F}

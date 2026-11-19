@@ -158,7 +158,7 @@ def malformed_inputs(ctx):
     return chk.result()
 
 
-@attack("RT-API-05", category="api", component="k06.api", finding="RT-F10", requires=("fastapi",),
+@attack("RT-API-05", category="api", component="k06.api", requires=("fastapi",),
         title="POST /spine/import refuses paths outside the data directory and echoes nothing",
         covers=("K06:api", "brief:synthetic-data-only"))
 def import_arbitrary_path(ctx):

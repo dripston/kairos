@@ -13,6 +13,8 @@ from spine.synthetic_dataset import write_dataset
 @pytest.fixture
 def client(tmp_path, monkeypatch):
     monkeypatch.setenv("KAIROS_DB", str(tmp_path / "api.db"))
+    monkeypatch.setenv("KAIROS_IMPORT_DIR", str(tmp_path / "imports"))
+    (tmp_path / "imports").mkdir()
     import kairos_backend.api as api
     api = importlib.reload(api)
     return TestClient(api.app), api
@@ -22,9 +24,8 @@ def test_end_to_end(client):
     c, api = client
     assert c.get("/health").json()["policy_version"] == "1.1.0"
 
-    csv_path = os.path.join(tempfile.mkdtemp(), "syn.csv")
-    write_dataset(csv_path, 20, seed=42)
-    assert c.post("/spine/import", json={"csv_path": csv_path}).json()["loaded"] == 20
+    write_dataset(os.path.join(os.environ["KAIROS_IMPORT_DIR"], "syn.csv"), 20, seed=42)
+    assert c.post("/spine/import", json={"csv_path": "syn.csv"}).json()["loaded"] == 20
 
     c.put("/campaigns", json={"id": "C1", "budget_per_case_paise": 5_000, "start_date": str(AS_OF),
                               "end_date": "2026-08-20"})
@@ -119,3 +120,40 @@ def test_decide_reused_instruction_id_for_another_borrower_is_409(client):
     assert r.status_code == 409
     assert (r.json()["detail"]["reason"], r.json()["detail"]["reserved"]) == ("CONFLICT_INSTRUCTION_ID", False)
     assert c.post("/decide", json=body).json()["reason"] == "ALREADY_RESERVED"
+
+
+def test_spine_import_is_confined_to_the_import_dir_and_echoes_no_values(client, tmp_path):
+    """RT-F10: only files under KAIROS_IMPORT_DIR; outside paths are a 403 whether or not they exist;
+    rejected rows are line + column + rule, never the raw value."""
+    import csv as _csv
+
+    from spine.synthetic_dataset import COLUMNS
+
+    c, _ = client
+    imports = tmp_path / "imports"
+    outside = tmp_path / "outside.csv"
+    write_dataset(str(outside), 2, seed=1)
+    (imports / "link.csv").symlink_to(outside)
+    for path in (str(outside), "../outside.csv", "link.csv", "/etc/hosts", "/definitely/not/here.csv", ".", ""):
+        r = c.post("/spine/import", json={"csv_path": path})
+        assert r.status_code == 403 and "outside" not in r.text and "hosts" not in r.text, path
+    assert c.post("/spine/import", json={"csv_path": "nope.csv"}).status_code == 404
+    (imports / "junk.csv").write_bytes(b"\xff\xfe\x00junk")
+    assert c.post("/spine/import", json={"csv_path": "junk.csv"}).status_code == 422
+
+    row = {col: "" for col in COLUMNS} | {"Loan ID": "X1", "Name": "n", "Mobile Number": "TOKEN-SECRET-42",
+                                          "Product": "p", "EMI Amount": "1", "POS": "1", "TOS": "1",
+                                          "Bounce Date": "2026-08-01", "Remaining EMIs": "1", "Risk Tagging": "r",
+                                          "Payment Link": "l"}
+    bad = [row, {**row, "Loan ID": "X2", "Mobile Number": "0123456789", "EMI Amount": "SECRET-EMI"},
+           {**row, "Loan ID": "X3", "Mobile Number": "0123456789", "Name": ""}]
+    (imports / "sub").mkdir()
+    with open(imports / "sub" / "bad.csv", "w", newline="", encoding="utf-8") as f:
+        w = _csv.DictWriter(f, fieldnames=COLUMNS)
+        w.writeheader()
+        w.writerows(bad)
+    r = c.post("/spine/import", json={"csv_path": str(imports / "sub" / "bad.csv")})  # absolute, but inside
+    assert r.status_code == 200 and "SECRET" not in r.text and r.json()["file"] == os.path.join("sub", "bad.csv")
+    assert r.json()["rejected"] == [{"line": 2, "column": "Mobile Number", "rule": "10_digits"},
+                                    {"line": 3, "column": "EMI Amount", "rule": "number"},
+                                    {"line": 4, "column": "Name", "rule": "required"}]
