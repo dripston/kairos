@@ -1,0 +1,5 @@
+# Large renders: regenerate with `python3 film/music/compose.py` (the .m4a copies are committed)
+music/*.wav
+music/.cache/
+music/__pycache__/
+tools/__pycache__/

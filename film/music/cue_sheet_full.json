@@ -1,0 +1,946 @@
+{
+ "cut": "full",
+ "runtime_s": 216.0,
+ "tempo_bpm": 96.0,
+ "bar_s": 2.5,
+ "sections": [
+  {
+   "scene": "s1",
+   "style": "tense",
+   "start": 0.0,
+   "end": 13.0,
+   "bars": 6,
+   "chords": [
+    "Am",
+    "Fmaj7",
+    "Dm",
+    "E",
+    "Am",
+    "Fmaj7"
+   ]
+  },
+  {
+   "scene": "s2",
+   "style": "tense",
+   "start": 13.0,
+   "end": 24.0,
+   "bars": 5,
+   "chords": [
+    "Am",
+    "Fmaj7",
+    "Dm",
+    "E",
+    "Am"
+   ]
+  },
+  {
+   "scene": "s3",
+   "style": "lift",
+   "start": 24.0,
+   "end": 38.0,
+   "bars": 6,
+   "chords": [
+    "C",
+    "G",
+    "Am",
+    "F",
+    "C",
+    "G"
+   ]
+  },
+  {
+   "scene": "s4",
+   "style": "pulse",
+   "start": 38.0,
+   "end": 67.0,
+   "bars": 12,
+   "chords": [
+    "Am",
+    "F",
+    "C",
+    "G",
+    "Am",
+    "F",
+    "C",
+    "G",
+    "Am",
+    "F",
+    "C",
+    "G"
+   ]
+  },
+  {
+   "scene": "s4b",
+   "style": "pulse",
+   "start": 67.0,
+   "end": 76.0,
+   "bars": 4,
+   "chords": [
+    "Am",
+    "F",
+    "C",
+    "G"
+   ]
+  },
+  {
+   "scene": "s5",
+   "style": "calm",
+   "start": 76.0,
+   "end": 92.0,
+   "bars": 7,
+   "chords": [
+    "Fmaj7",
+    "C",
+    "Dm7",
+    "G",
+    "Fmaj7",
+    "C",
+    "Dm7"
+   ]
+  },
+  {
+   "scene": "s6",
+   "style": "calm",
+   "start": 92.0,
+   "end": 99.0,
+   "bars": 3,
+   "chords": [
+    "Fmaj7",
+    "C",
+    "Dm7"
+   ]
+  },
+  {
+   "scene": "s7",
+   "style": "build",
+   "start": 99.0,
+   "end": 117.0,
+   "bars": 8,
+   "chords": [
+    "Am",
+    "F",
+    "C",
+    "G",
+    "Am",
+    "F",
+    "C",
+    "G"
+   ]
+  },
+  {
+   "scene": "o1",
+   "style": "morning",
+   "start": 117.0,
+   "end": 129.0,
+   "bars": 5,
+   "chords": [
+    "Cmaj7",
+    "Fmaj7",
+    "Cmaj7",
+    "Fmaj7",
+    "Cmaj7"
+   ]
+  },
+  {
+   "scene": "o2",
+   "style": "match",
+   "start": 129.0,
+   "end": 153.0,
+   "bars": 10,
+   "chords": [
+    "C",
+    "F",
+    "G",
+    "C",
+    "C",
+    "F",
+    "G",
+    "C",
+    "C",
+    "F"
+   ]
+  },
+  {
+   "scene": "o3",
+   "style": "calm",
+   "start": 153.0,
+   "end": 167.0,
+   "bars": 6,
+   "chords": [
+    "Fmaj7",
+    "C",
+    "Dm7",
+    "G",
+    "Fmaj7",
+    "C"
+   ]
+  },
+  {
+   "scene": "o4",
+   "style": "morning",
+   "start": 167.0,
+   "end": 179.0,
+   "bars": 5,
+   "chords": [
+    "Cmaj7",
+    "Fmaj7",
+    "Cmaj7",
+    "Fmaj7",
+    "Cmaj7"
+   ]
+  },
+  {
+   "scene": "o5",
+   "style": "result",
+   "start": 179.0,
+   "end": 193.0,
+   "bars": 6,
+   "chords": [
+    "F",
+    "G",
+    "C",
+    "Am",
+    "F",
+    "G"
+   ]
+  },
+  {
+   "scene": "s8",
+   "style": "uplift",
+   "start": 193.0,
+   "end": 209.0,
+   "bars": 7,
+   "chords": [
+    "F",
+    "G",
+    "C",
+    "Am",
+    "F",
+    "G",
+    "C"
+   ]
+  },
+  {
+   "scene": "s9",
+   "style": "close",
+   "start": 209.0,
+   "end": 216.0,
+   "bars": 3,
+   "chords": [
+    "F",
+    "G",
+    "C"
+   ]
+  }
+ ],
+ "music_master": {
+  "peak_dbfs": -1.38,
+  "rms_dbfs": -18.0
+ },
+ "voices": [
+  {
+   "scene": "s1",
+   "t": 0.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 2.78,
+   "gap": 2.88,
+   "overrun": 0.0,
+   "text": "Meet Ravi. His EMI is a few days late."
+  },
+  {
+   "scene": "s1",
+   "t": 3.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 3.42,
+   "gap": 3.58,
+   "overrun": 0.0,
+   "text": "This morning he got the same reminder for the fifth time."
+  },
+  {
+   "scene": "s1",
+   "t": 7.0,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 2.1,
+   "gap": 2.48,
+   "overrun": 0.0,
+   "text": "He stopped reading after the second."
+  },
+  {
+   "scene": "s1",
+   "t": 9.6,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 1.97,
+   "gap": 3.63,
+   "overrun": 0.0,
+   "text": "And the lender paid for all five."
+  },
+  {
+   "scene": "s2",
+   "t": 13.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 171,
+   "dur": 2.98,
+   "gap": 2.98,
+   "overrun": 0.0,
+   "text": "Most collections still run on a fixed calendar:"
+  },
+  {
+   "scene": "s2",
+   "t": 16.4,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 171,
+   "dur": 3.28,
+   "gap": 3.28,
+   "overrun": 0.0,
+   "text": "the same message, to everyone, on every channel."
+  },
+  {
+   "scene": "s2",
+   "t": 19.8,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 4.01,
+   "gap": 4.43,
+   "overrun": 0.0,
+   "text": "Costly, annoying, mostly ignored. Kairos fixes that."
+  },
+  {
+   "scene": "s3",
+   "t": 24.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 1.16,
+   "gap": 1.38,
+   "overrun": 0.0,
+   "text": "Kairos changes that."
+  },
+  {
+   "scene": "s3",
+   "t": 25.8,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 5.03,
+   "gap": 5.08,
+   "overrun": 0.0,
+   "text": "Every day, for every borrower, it first asks: contact, or wait?"
+  },
+  {
+   "scene": "s3",
+   "t": 31.0,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 4.24,
+   "gap": 4.28,
+   "overrun": 0.0,
+   "text": "And if it's contact, it picks the channel, the time and the message"
+  },
+  {
+   "scene": "s3",
+   "t": 35.4,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 1.95,
+   "gap": 2.83,
+   "overrun": 0.0,
+   "text": "most likely to get a reply."
+  },
+  {
+   "scene": "s4",
+   "t": 38.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 2.73,
+   "gap": 3.08,
+   "overrun": 0.0,
+   "text": "Ravi read an SMS but didn't reply."
+  },
+  {
+   "scene": "s4",
+   "t": 41.5,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 2.42,
+   "gap": 2.98,
+   "overrun": 0.0,
+   "text": "So Kairos tried WhatsApp in the evening."
+  },
+  {
+   "scene": "s4",
+   "t": 44.6,
+   "speaker": "Ravi (thinking)",
+   "voice": "Aman",
+   "rate": 150,
+   "dur": 2.06,
+   "gap": 2.08,
+   "overrun": 0.0,
+   "text": "Need time. Salary late hai."
+  },
+  {
+   "scene": "s4",
+   "t": 46.8,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 172,
+   "dur": 2.69,
+   "gap": 2.68,
+   "overrun": 0.01,
+   "text": "Then Ritu, our voice bot, called."
+  },
+  {
+   "scene": "s4",
+   "t": 49.6,
+   "speaker": "Ritu (voice bot)",
+   "voice": "Lekha",
+   "rate": 150,
+   "dur": 4.14,
+   "gap": 4.18,
+   "overrun": 0.0,
+   "text": "रवि जी, क्या आप सत्ताईस तारीख तक भुगतान कर पाएँगे?"
+  },
+  {
+   "scene": "s4",
+   "t": 53.9,
+   "speaker": "Ravi",
+   "voice": "Aman",
+   "rate": 158,
+   "dur": 2.4,
+   "gap": 2.48,
+   "overrun": 0.0,
+   "text": "Haan, sattaees tareekh tak kar doonga."
+  },
+  {
+   "scene": "s4",
+   "t": 56.5,
+   "speaker": "Ritu (voice bot)",
+   "voice": "Lekha",
+   "rate": 150,
+   "dur": 3.5,
+   "gap": 3.58,
+   "overrun": 0.0,
+   "text": "ठीक है, तो सत्ताईस तारीख पक्की। धन्यवाद!"
+  },
+  {
+   "scene": "s4",
+   "t": 60.2,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 1.18,
+   "gap": 1.28,
+   "overrun": 0.0,
+   "text": "Reminders paused."
+  },
+  {
+   "scene": "s4",
+   "t": 61.6,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 4.38,
+   "gap": 5.63,
+   "overrun": 0.0,
+   "text": "When his payment was verified, only that loan's reminders stopped."
+  },
+  {
+   "scene": "s4b",
+   "t": 67.4,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 3.85,
+   "gap": 3.98,
+   "overrun": 0.0,
+   "text": "Every step lands in the lender's CRM, with the evidence:"
+  },
+  {
+   "scene": "s4b",
+   "t": 71.5,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 4.45,
+   "gap": 4.73,
+   "overrun": 0.0,
+   "text": "Loan A cleared, its reminder cancelled. Loan B stays on track."
+  },
+  {
+   "scene": "s5",
+   "t": 76.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 1.33,
+   "gap": 1.38,
+   "overrun": 0.0,
+   "text": "Safety comes first."
+  },
+  {
+   "scene": "s5",
+   "t": 77.8,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 171,
+   "dur": 4.39,
+   "gap": 4.38,
+   "overrun": 0.01,
+   "text": "Aladdin, our supervisor, checks every message. Twice."
+  },
+  {
+   "scene": "s5",
+   "t": 82.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 171,
+   "dur": 3.48,
+   "gap": 3.48,
+   "overrun": 0.0,
+   "text": "Reply STOP on one channel, and every channel stops."
+  },
+  {
+   "scene": "s5",
+   "t": 85.9,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 2.29,
+   "gap": 2.38,
+   "overrun": 0.0,
+   "text": "A fake payment screenshot is caught."
+  },
+  {
+   "scene": "s5",
+   "t": 88.4,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 3.62,
+   "gap": 3.83,
+   "overrun": 0.0,
+   "text": "Lost your job? A person takes over, not a bot."
+  },
+  {
+   "scene": "s6",
+   "t": 92.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 3.78,
+   "gap": 3.88,
+   "overrun": 0.0,
+   "text": "And the lender's team can approve, hold or override anything."
+  },
+  {
+   "scene": "s6",
+   "t": 96.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 1.61,
+   "gap": 2.93,
+   "overrun": 0.0,
+   "text": "Every step is on record."
+  },
+  {
+   "scene": "s7",
+   "t": 99.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 1.83,
+   "gap": 2.18,
+   "overrun": 0.0,
+   "text": "Kairos learns from every reply."
+  },
+  {
+   "scene": "s7",
+   "t": 101.6,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 172,
+   "dur": 3.7,
+   "gap": 3.68,
+   "overrun": 0.02,
+   "text": "Midway through a campaign, WhatsApp starts working less well."
+  },
+  {
+   "scene": "s7",
+   "t": 105.4,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 2.72,
+   "gap": 2.78,
+   "overrun": 0.0,
+   "text": "Kairos notices, and switches on its own."
+  },
+  {
+   "scene": "s7",
+   "t": 108.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 4.72,
+   "gap": 4.78,
+   "overrun": 0.0,
+   "text": "Borrowers move from cheap messages, to WhatsApp, to a call, to a person,"
+  },
+  {
+   "scene": "s7",
+   "t": 113.2,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 3.71,
+   "gap": 4.03,
+   "overrun": 0.0,
+   "text": "and it learns what works in each region, for each borrower."
+  },
+  {
+   "scene": "o1",
+   "t": 117.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 3.36,
+   "gap": 3.78,
+   "overrun": 0.0,
+   "text": "Now, the other side of the desk. Meet Priya."
+  },
+  {
+   "scene": "o1",
+   "t": 121.2,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 4.05,
+   "gap": 4.08,
+   "overrun": 0.0,
+   "text": "Nine a.m., coffee in hand. Today's plan is already done:"
+  },
+  {
+   "scene": "o1",
+   "t": 125.4,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 3.69,
+   "gap": 3.83,
+   "overrun": 0.0,
+   "text": "who to contact, when and how. Nothing to set up."
+  },
+  {
+   "scene": "o2",
+   "t": 129.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 1.75,
+   "gap": 1.98,
+   "overrun": 0.0,
+   "text": "Then she just watches the score."
+  },
+  {
+   "scene": "o2",
+   "t": 131.4,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 5.47,
+   "gap": 5.48,
+   "overrun": 0.0,
+   "text": "Runs are rupees collected. Run rate: money per hour, against today's target."
+  },
+  {
+   "scene": "o2",
+   "t": 137.0,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 5.57,
+   "gap": 5.58,
+   "overrun": 0.0,
+   "text": "Partnerships: the channels at work. Wickets: rule breaches. Zero, all day."
+  },
+  {
+   "scene": "o2",
+   "t": 142.7,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 3.76,
+   "gap": 3.78,
+   "overrun": 0.0,
+   "text": "Extras: money saved on messages that wouldn't have worked."
+  },
+  {
+   "scene": "o2",
+   "t": 146.6,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 4.02,
+   "gap": 4.08,
+   "overrun": 0.0,
+   "text": "And ball by ball, the commentary says what Kairos did, and why."
+  },
+  {
+   "scene": "o2",
+   "t": 150.8,
+   "speaker": "Priya",
+   "voice": "Tara",
+   "rate": 165,
+   "dur": 1.77,
+   "gap": 2.43,
+   "overrun": 0.0,
+   "text": "Zero wickets, again."
+  },
+  {
+   "scene": "o3",
+   "t": 153.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 1.81,
+   "gap": 1.88,
+   "overrun": 0.0,
+   "text": "Only the big calls come to her."
+  },
+  {
+   "scene": "o3",
+   "t": 155.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 4.81,
+   "gap": 5.08,
+   "overrun": 0.0,
+   "text": "Someone lost their job. Kairos suggests a gentle call from a senior colleague."
+  },
+  {
+   "scene": "o3",
+   "t": 160.5,
+   "speaker": "Priya",
+   "voice": "Tara",
+   "rate": 165,
+   "dur": 0.56,
+   "gap": 0.98,
+   "overrun": 0.0,
+   "text": "Approve."
+  },
+  {
+   "scene": "o3",
+   "t": 161.6,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 2.61,
+   "gap": 5.63,
+   "overrun": 0.0,
+   "text": "Aladdin re-checks before anything goes out."
+  },
+  {
+   "scene": "o4",
+   "t": 167.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 173,
+   "dur": 2.41,
+   "gap": 2.38,
+   "overrun": 0.03,
+   "text": "Everything else, at her fingertips:"
+  },
+  {
+   "scene": "o4",
+   "t": 169.8,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 173,
+   "dur": 4.12,
+   "gap": 4.08,
+   "overrun": 0.04,
+   "text": "any borrower's story in one click, and why each decision was made,"
+  },
+  {
+   "scene": "o4",
+   "t": 174.0,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 3.91,
+   "gap": 5.23,
+   "overrun": 0.0,
+   "text": "the lender's reports, ready-made, and what Kairos is learning."
+  },
+  {
+   "scene": "o5",
+   "t": 179.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 1.62,
+   "gap": 1.68,
+   "overrun": 0.0,
+   "text": "Six p.m. Match result."
+  },
+  {
+   "scene": "o5",
+   "t": 181.1,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 4.64,
+   "gap": 4.68,
+   "overrun": 0.0,
+   "text": "Against the fixed schedule, Kairos brings back about twice the money per rupee."
+  },
+  {
+   "scene": "o5",
+   "t": 185.9,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 3.64,
+   "gap": 3.78,
+   "overrun": 0.0,
+   "text": "Player of the match: evening WhatsApp. Wickets: zero."
+  },
+  {
+   "scene": "o5",
+   "t": 189.8,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 3.33,
+   "gap": 3.43,
+   "overrun": 0.0,
+   "text": "Priya closes the laptop, and goes home on time."
+  },
+  {
+   "scene": "s8",
+   "t": 193.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 5.37,
+   "gap": 5.38,
+   "overrun": 0.0,
+   "text": "How do we know? We tested it against the lender's own schedule, on unseen data."
+  },
+  {
+   "scene": "s8",
+   "t": 198.8,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 4.46,
+   "gap": 4.68,
+   "overrun": 0.0,
+   "text": "About twice the money back for every rupee spent, and zero rule breaches."
+  },
+  {
+   "scene": "s8",
+   "t": 203.6,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 5.28,
+   "gap": 5.63,
+   "overrun": 0.0,
+   "text": "Forty-nine of forty-nine attacks blocked. Three in four chats, no human needed."
+  },
+  {
+   "scene": "s9",
+   "t": 209.6,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 165,
+   "dur": 4.0,
+   "gap": 6.63,
+   "overrun": 0.0,
+   "text": "Kairos. Right message. Right time. Or none at all."
+  }
+ ],
+ "vo_master": {
+  "peak_dbfs": -1.33,
+  "rms_dbfs": -18.0
+ },
+ "soundtrack_master": {
+  "peak_dbfs": -1.02,
+  "rms_dbfs": -16.03
+ },
+ "duck_db": -10,
+ "overruns": [
+  {
+   "scene": "s4",
+   "t": 46.8,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 172,
+   "dur": 2.69,
+   "gap": 2.68,
+   "overrun": 0.01,
+   "text": "Then Ritu, our voice bot, called."
+  },
+  {
+   "scene": "s5",
+   "t": 77.8,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 171,
+   "dur": 4.39,
+   "gap": 4.38,
+   "overrun": 0.01,
+   "text": "Aladdin, our supervisor, checks every message. Twice."
+  },
+  {
+   "scene": "s7",
+   "t": 101.6,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 172,
+   "dur": 3.7,
+   "gap": 3.68,
+   "overrun": 0.02,
+   "text": "Midway through a campaign, WhatsApp starts working less well."
+  },
+  {
+   "scene": "o4",
+   "t": 167.3,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 173,
+   "dur": 2.41,
+   "gap": 2.38,
+   "overrun": 0.03,
+   "text": "Everything else, at her fingertips:"
+  },
+  {
+   "scene": "o4",
+   "t": 169.8,
+   "speaker": "Narrator",
+   "voice": "Rishi",
+   "rate": 173,
+   "dur": 4.12,
+   "gap": 4.08,
+   "overrun": 0.04,
+   "text": "any borrower's story in one click, and why each decision was made,"
+  }
+ ]
+}
