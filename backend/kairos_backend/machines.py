@@ -19,6 +19,7 @@ Machines (name -> builder):
     k13.hold.callback       callback pending
     k13.hold.supervisor     supervisor hold (routed stop / handoff) until a person clears it
     k01.consent             per-channel contactability: STOP on any channel, re-entry per channel
+    k09.intent              inbound message -> intent: rules first, at most one LLM call (the only LLM choice)
     k09.learner.arm         where an arm's estimate comes from: prior -> pooled -> segment
     k17.payment_claim       "I already paid" claim: PENDING_VERIFICATION -> VERIFIED / EXPIRED
     k06.hitl.approval       a held send's approval: PENDING -> APPROVED / BLOCKED_AT_RECHECK / ...
@@ -486,6 +487,39 @@ def consent_machine() -> Machine:
 
 
 # =============================================================================================
+# 5b. Borrower intent classification: the ONLY place an LLM is allowed to choose a value
+# =============================================================================================
+def intent_machine() -> Machine:
+    I = "kairos_backend/intent.py IntentClassifier.classify"
+    tr = [
+        T("STRUCTURED", "HIT", "RULES", None, "DTMF map / WhatsApp button map", f"{I}: structured input never reaches the LLM"),
+        T("STRUCTURED", "PASS", "EMPTY", None, None, "no DTMF digits, no button payload"),
+        T("EMPTY", "HIT", "RULES", None, "OTHER (ambiguous)", "empty text"),
+        T("EMPTY", "PASS", "STOP_WORD", None, None, "has text"),
+        T("STOP_WORD", "HIT", "RULES", None, "STOP", "K01 holds.STOP_OPT_OUT keywords on any channel: never the LLM"),
+        T("STOP_WORD", "PASS", "TEXT_RULES", None, None, "not an opt-out"),
+        T("TEXT_RULES", "HIT", "RULES", None, "one rule intent / bare date -> PTP / dated conflict -> PRECEDENCE",
+          "English + Hinglish keyword rules and date extraction"),
+        T("TEXT_RULES", "PASS", "ASK_LLM", None, "redact + truncate (500 chars)", "no rule matched, or rules conflict without a date"),
+        T("ASK_LLM", "LLM_VALID", "LLM", None, "intent from the closed enum; summary <= 160 chars",
+          "gpt-6-luna, reasoning effort none, no tools, strict JSON schema, store=false"),
+        T("ASK_LLM", "LLM_INVALID", "FALLBACK", None, "OTHER, ambiguous, needs review", "schema / refusal / incomplete"),
+        T("ASK_LLM", "LLM_ERROR", "FALLBACK", None, "OTHER, ambiguous, needs review", "transport error never reaches the caller"),
+        T("ASK_LLM", "NO_LLM", "FALLBACK", None, "OTHER, ambiguous, needs review", "no LLM configured"),
+    ]
+    return Machine(
+        "k09.intent", "1", ["STRUCTURED", "EMPTY", "STOP_WORD", "TEXT_RULES", "ASK_LLM", "RULES", "LLM", "FALLBACK"],
+        "STRUCTURED", ["RULES", "LLM", "FALLBACK"], tr,
+        description=("Classify one inbound borrower message into a closed intent enum. Deterministic rules first; at "
+                     "most ONE LLM call, only for free text the rules cannot decide. The LLM's answer is a *value* "
+                     "(an event for k13.exception / STOP / payment verification), never a transition: what the intent "
+                     "does is decided by the K13 table, the Gate and the ledger."),
+        enforced_by=["kairos_backend/intent.py: IntentClassifier.classify / LunaClient / validate_llm_output"],
+        proven_by=["tests/fsm/test_conformance_intent.py (seeded random messages, spy LLM)", "tests/test_intent.py"],
+        llm="classify", source="code")
+
+
+# =============================================================================================
 # 6. K09 learner arm (data lifecycle)
 # =============================================================================================
 def learner_arm_machine() -> Machine:
@@ -682,7 +716,7 @@ def catalog(policy=None, voice_thresholds: Optional[dict] = None) -> "OrderedDic
     ms = [touch_machine(), touch_machine(hitl=True), gate_machine(policy), supervisor_plan_machine(),
           supervisor_dispatch_machine(), outcome_machine(), k13_exception_machine(policy), ptp_hold_machine(),
           hardship_hold_machine(), callback_hold_machine(), supervisor_hold_machine(), consent_machine(),
-          payment_claim_machine(), hitl_approval_machine()]
+          intent_machine(), payment_claim_machine(), hitl_approval_machine()]
     if voice_thresholds is not None:
         ms.append(voice_disposition_machine(voice_thresholds))
     ms += [voice_call_machine(), learner_arm_machine()]
@@ -704,7 +738,8 @@ LEARNER_ARM = learner_arm_machine()
 PAYMENT_CLAIM = payment_claim_machine()
 HITL_APPROVAL = hitl_approval_machine()
 VOICE_CALL = voice_call_machine()
+INTENT = intent_machine()
 
 STATIC: Dict[str, Machine] = {m.name: m for m in (TOUCH, TOUCH_HITL, SUPERVISOR_PLAN, SUPERVISOR_DISPATCH, OUTCOME,
                                                    PTP_HOLD, HARDSHIP_HOLD, CALLBACK_HOLD, SUPERVISOR_HOLD, CONSENT,
-                                                   LEARNER_ARM, PAYMENT_CLAIM, HITL_APPROVAL, VOICE_CALL)}
+                                                   LEARNER_ARM, PAYMENT_CLAIM, HITL_APPROVAL, VOICE_CALL, INTENT)}
