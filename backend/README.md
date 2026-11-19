@@ -297,3 +297,175 @@ final +33.8 / +20.4 → +79.8 / +65.1.
 
 If payments matter more than opt-outs, `{"stop_penalty": 20}` or `{"stop_penalty": 0}` (PR #17) are
 the points to use. The trade-off is set by μ, and the frontier above is the menu.
+
+## K09 RL v2 (cost-optimal collections policy)
+
+`--policy rl2` (`kairos_backend/rl/`). SIMULATED like everything above: DEV simulator, synthetic dataset,
+placeholder costs and caps. The CN10 baseline, budget matching, caps, simulator and Supervisor gate are
+unchanged; the policy only proposes, and the K01 gate re-checks every send.
+
+### In plain words (for judges)
+
+Each morning Kairos asks, for every borrower it may contact: *how likely is a reply on each channel and
+time, how likely is a payment after a reply, how big is the EMI, and how likely is an opt-out?* It turns
+that into one value in "reply units", divides by the channel's cost, and spends money only where value
+per rupee beats a learned **price of money**. Everything it knows comes from the ledger: who replied,
+who paid (verified, inside the touch's reply window), who sent STOP, plus spine facts (DPD band, CN10
+cohort, state, EMI) and channel costs.
+
+The estimates come from one **hierarchical Bayesian model**. Every level is shrunk toward the one above
+it, and the data decides how much (empirical Bayes, below):
+
+```
+global channel x slot -> DPD band                       (decayed 0.7/day: follows the WhatsApp drift)
+  x fatigue (touches in the previous 6 days)            (over-contact lowers response)
+  x channel transition (previous layer + outcome -> this channel) -> per cohort
+  x campaign -> cohort (CN10 C1-C5) -> region (cohort x state)
+  x borrower -> borrower x channel -> borrower x slot   (the borrower's own counts, shrunk to the above)
+```
+
+`P(pay | reply)` (global → campaign → cohort → region → band) and `P(STOP)` (reply propensity × stop
+share → fatigue → cohort → region) use the same machinery. Every finalized outcome updates the counts
+the moment it is finalized (`apply_outcome`); the levels are refit lazily before the next decision.
+
+### Method
+
+* **Empirical-Bayes levels** (`rl/hier.py`). For each level, the levels above give every finalized touch
+  an expected reply count E; the group's multiplier is `m = (O + κ) / (E + κ)` (Gamma(κ, κ) prior, mean 1).
+  κ is estimated per level by the method of moments from the between-group spread of O/E beyond Poisson
+  noise (decay-weighted counts use Σw²·E as the noise term). A level whose groups do not differ beyond
+  noise gets κ → ∞ and collapses onto its parent: that is how the model says "no regional effect".
+  Levels are backfitted twice, so the fatigue effect is not confounded with the borrower effect (repeat
+  touches go to people who did not reply).
+* **Collections value** (`rl/value.py`): `V = P(reply) × (1 + α × P(pay | reply) × EMI / mean EMI) − μ × P(STOP)`.
+* **Price of money** (`rl/pacing.py`, bandits with knapsacks). `pacing="dual"`: λ starts at the
+  value/cost where day 1's K01 allowance would run out, then `λ ← λ·exp(η·(spent/target − 1))` daily
+  (target = ρ × K01 allowance); never below the ratio guard φ × realized replies per paisa (the previous
+  relative floor, `pacing="floor"`); on the last contact day only the guard applies (spend-down). Touches
+  with `V − λ·cost ≥ 0` go to the Supervisor in order of V / cost, so K01's daily allowance funds the
+  best value per rupee first, with the borrower's top 3 arms as fallbacks for the gate.
+* **Contact vs wait** (`rl/lookahead.py`): wait a day when a recent touch leaves the 6-day window
+  tomorrow and `(1 − 1/days_left)·(V_tomorrow − λc) > V_today − λc`, with the learned fatigue effect.
+* **Optimal stopping**: pause a borrower for the rest of the campaign (hand to the next campaign or a
+  human, layer L4) when the one-step value-of-information continuation value is ≤ 0 even at the guard
+  price: `V = (v·m − λc) + (k−1)·[q·max(0, v·m⁺ − λc) + (1−q)·max(0, v·m⁻ − λc)]`, with m the borrower's
+  Gamma posterior, m⁺/m⁻ after a reply / a silence, k the touches still possible. No fixed "k misses"
+  constant: the threshold comes from the learned price and posterior. A reply resumes the borrower.
+* **Layers** (`rl/report.py`): L1 cheap digital (SMS, email), L2 rich digital (WhatsApp), L3 voice (IVR,
+  voicebot), L4 human. The learned rule per cohort is "after a no-reply / undelivered touch at layer L,
+  the next channel with the best transition-adjusted replies per ₹"; printed as a table and a mermaid
+  diagram by `--report-levels`.
+* **Warm start** (`rl/warmstart.py`): at cohort close, export population posteriors only (arm means with
+  effective sample size ≤ 200, level counts with E ≤ 30 per group; never borrower level).
+
+Every quantity is deterministic (no rng, sorted iteration); `--check-determinism` compares two runs.
+
+### Protocol and constraints
+
+1,500 borrowers × 14 days, WhatsApp drift from day 7, pool matched to CN10's unconstrained spend, K15
+caps and the 2-day gap on every arm (as above). Tuned on seeds 7 / 42 / 99 / 2026, validated on held-out
+11 / 123 / 555, then run once on unseen seeds 271828 / 161803 / 141421. The CN10 arm is identical in every
+run (`scripts/rl2_sweep.py` caches it per seed; the final seed was re-run with the real script).
+
+The target, per seed: replies/₹ ≥ +20% vs CN10, STOPs ≤ CN10, verified payments ≥ CN10, spend close to the
+pool. **Selection rule, fixed on the tune seeds before held-out was run:** among configurations with
+replies/₹ ≥ +20% and payments ≥ CN10 on every tune seed, take the one with the smallest total STOP excess
+over CN10 (Σ max(0, STOPs − CN10)). No configuration met the spend target, so spend is reported, not used.
+
+### Isolated effects and the frontier (tune seeds, sums over 7 / 42 / 99 / 2026)
+
+Change = replies/₹ vs CN10. "Failing" lists every seed that misses a constraint (r/₹ < +20%, pay < CN10,
+STOP above CN10, spend < 85% of pool). `rl2` rows add one option to "R2 base" (hierarchy + relative floor
+0.5, α = μ = 0).
+
+| Configuration | STOPs (CN10) | Replies (CN10) | Payments (CN10) | ₹ recovered / ₹ spent (CN10) | Spend vs pool | Change mean / min | Seeds failing a constraint |
+|---|---|---|---|---|---|---|---|
+| current default (`stop_penalty` 25) | 61 (61) | 795 (709) | 193 (186) | 373 (223) | 46–66% | +94.0% / +58.8% | 7: STOP+3; 42: pay; 2026: pay, STOP+2 |
+| R2 base | 69 (61) | 901 (709) | 227 (186) | 315 (223) | 72–85% | +57.5% / +31.8% | 7: STOP+6; 42: STOP+1; 2026: STOP+2 |
+| R2 without cohort / region / transition levels | 80 (61) | 957 (709) | 231 (186) | 309 (223) | 79–82% | +60.3% / +42.7% | STOP excess on all 4 |
+| R2 ratio guard φ 0.3 (spend more) | 72 (61) | 926 (709) | 232 (186) | 285 (223) | 84–95% | +43.8% / +17.1% | 99: r/₹; STOP excess on 3 |
+| **R2 dual price (`pacing: dual`) — selected** | **58 (61)** | **816 (709)** | **219 (186)** | **347 (223)** | **61–70%** | **+68.3% / +56.1%** | **7: STOP+1; 42: STOP+1** |
+| R2 μ 5 (STOP term) | 66 (61) | 894 (709) | 223 (186) | 316 (223) | 70–84% | +61.5% / +31.9% | 7: STOP+4; 42, 2026: STOP+1 |
+| R2 lookahead (contact vs wait) | 70 (61) | 899 (709) | 226 (186) | 314 (223) | 72–85% | +57.3% / +31.8% | as base (rarely triggers) |
+| R2 optimal stopping | 68 (61) | 868 (709) | 219 (186) | 321 (223) | 71–76% | +60.2% / +38.7% | 42: pay; STOP excess on 3 |
+| R2 α 1 (payment × EMI term) | 74 (61) | 890 (709) | 240 (186) | 317 (223) | 72–80% | +54.9% / +22.8% | STOP excess on 3 |
+| R2 α 1 + μ 5 + lookahead + stopping | 72 (61) | 839 (709) | 225 (186) | 337 (223) | 66–69% | +66.7% / +33.3% | STOP excess on 3 |
+| … + dual price | 57 (61) | 715 (709) | 180 (186) | 367 (223) | 52–59% | +73.3% / +37.3% | pay on 3 seeds |
+| … + φ 0.3 | 74 (61) | 854 (709) | 231 (186) | 323 (223) | 71–80% | +55.8% / +26.0% | STOP excess on 3 |
+| R2 base, warm start from another tune seed | 62 (61) | 745 (709) | 166 (186) | 226 (223) | 60–100% | +33.2% / −12.4% | 99, 2026: r/₹ and pay |
+| R2 α1 μ5 look stop, warm start | 66 (61) | 708 (709) | 189 (186) | 341 (223) | 41–73% | +71.7% / +14.5% | 42: r/₹ and pay |
+
+What each method did, alone:
+
+* **Hierarchy.** It learns what is really there and switches off what is not. Fitted κ on a full run:
+  band × channel × slot ≈ 5–15 (B3/B4 WhatsApp ×0.8–0.9), fatigue ≈ 5–9 (1 prior touch ×0.43–0.58,
+  2+ ×0.31–0.34, relative to a first touch ×0.64), channel transition ≈ 8 when present, borrower ≈ 0.5–0.7
+  (borrowers differ a lot). Cohort, region (cohort × state), cohort × transition, borrower × channel and
+  borrower × slot collapse onto their parents (κ → ∞) on every seed. That is correct for this simulator,
+  whose hidden traits do not depend on cohort or state. The drill-down sentences ("WhatsApp morning works
+  1.6× in Bihar B1") come out shrunk toward 1 (κ ≈ 2–5), and on most runs they collapse entirely. Turning
+  the population segment and transition levels off gave more replies and more STOPs. Keeping them is the
+  safer default, because they cost nothing when they collapse.
+* **Pacing.** The dual price spends less in week 1, when the most repeat touches and STOPs happen. It
+  starts at the price where day 1's allowance runs out, about 0.6 replies/₹ on the WhatsApp prior, and
+  decays toward the realized ratio by day 10. It was the only single change that cut STOPs below CN10 on
+  the tune total while keeping payments ≥ CN10 on every tune seed. Spending more by lowering the guard
+  (φ 0.3, or no price at all) bought almost no replies. In round 1, with no price, spend went from 79% to
+  100% and replies went from 232 to 235. The binding resources here are the contact caps and STOP risk,
+  not money.
+* **Collections value.** α = 1 raised payments (240 vs 227) and STOPs (74 vs 69). α = 3 (round 1) cost
+  replies/₹ without more payments. P(pay | reply) is flat at about 0.24 in this simulator (one rate for
+  every band), so the α term mostly moves money toward larger EMIs.
+* **μ (STOP term)** lowers STOPs a little at μ = 5. In round 1, μ = 10 cut spend to 61–79%.
+* **Lookahead** almost never fires. The learned fatigue effect is real, but under the 2-day gap and the
+  3-per-7-days cap, waiting a day rarely beats contacting today once the end-of-campaign hazard is priced.
+* **Optimal stopping** paused only a few borrowers (0–40 per run). It raised replies/₹, cost payments
+  on seed 42, and did not cut STOPs.
+* **Warm start** hurt. The exported week-2 posteriors include the drift, which makes WhatsApp look poor
+  on the next cohort's day 1. On seed 99 it also overspent early (100% of the pool, −12.4%). It stays
+  behind `warm_start=` as a "second campaign onwards" experiment and is not claimed.
+* **Not done:** a cheaper-channel ladder when confidence bounds overlap (6), and per-borrower channel
+  affinity beyond the hierarchy's borrower × channel level (5, which collapses).
+
+### Held-out and final seeds
+
+Selected configuration: `--policy rl2 --rl2-opts '{"pacing": "dual"}'`. Held-out results:
+
+| Seed | CN10 r/₹1k | Current default | **RL v2 (dual)** | STOPs CN10 / default / rl2 | Replies | Payments | ₹ recovered per ₹ spent | Spend ₹ CN10 / default / rl2 |
+|---|---|---|---|---|---|---|---|---|
+| 555 | 66.42 | 101.31 (+52.5%) | **84.39 (+27.1%)** | 15 / 13 / **10** | 192 / 202 / 184 | 48 / 62 / 55 | 246 / 448 / 358 | 2,891 / 1,994 / 2,180 |
+| 11 | 55.17 | 95.64 (+73.4%) | **91.80 (+66.4%)** | 16 / 18 / **16** | 163 / 180 / 154 | 39 / 39 / 40 | 186 / 302 / 356 | 2,954 / 1,882 / 1,678 |
+| 123 | 67.38 | 141.99 (+110.7%) | **110.74 (+64.4%)** | 23 / 22 / **17** | 197 / 203 / 204 | 61 / 56 / 56 | 246 / 531 / 402 | 2,924 / 1,430 / 1,842 |
+
+On held-out, RL v2 (dual) had STOPs ≤ CN10 on all three seeds (43 vs CN10 54, current default 53), and
+replies/₹ ≥ +27%. Payments were ≥ CN10 on 555 and 11 but below on 123 (56 vs 61).
+
+**Final unseen seeds, run once** (CN10 / current default / RL v2 dual). K01 breaches and K15 violations were 0 / 0 everywhere:
+
+| Seed | CN10 r/₹1k | Current default | **RL v2 (dual)** | STOPs | Replies | Payments | ₹ recovered per ₹ spent | Spend ₹ |
+|---|---|---|---|---|---|---|---|---|
+| 271828 | 66.27 | 135.77 (+104.9%) | **106.78 (+61.1%)** | 10 / 15 / 19 | 190 / 224 / 223 | 59 / 63 / 52 | 272 / 517 / 313 | 2,867 / 1,650 / 2,088 |
+| 161803 | 62.23 | 122.21 (+96.4%) | **97.14 (+56.1%)** | 22 / 17 / 15 | 185 / 216 / 191 | 45 / 69 / 54 | 229 / 530 / 425 | 2,973 / 1,767 / 1,966 |
+| 141421 | 68.40 | 123.34 (+80.3%) | **99.15 (+45.0%)** | 14 / 12 / 16 | 194 / 219 / 247 | 56 / 68 / 84 | 268 / 459 / 411 | 2,836 / 1,776 / 2,491 |
+| 42 (reference, tune) | 58.79 | 116.02 (+97.3%) | 103.16 (+75.5%) | 15 / 12 / 16 | 169 / 180 / 221 | 53 / 46 / 59 | 253 / 381 / 365 | 2,875 / 1,552 / 2,142 |
+
+Not selected, for the frontier: R2 μ 5 on the final seeds got +61.2 / +66.6 / +37.3%, STOPs 16 / 22 / 13,
+and payments 74 / 77 / 70 (the most payments of any arm).
+
+**Decision: RL v2 is not the replay default.** The rule was: beat the current default on held-out mean
+replies/₹ and minimum, without more STOPs. On held-out, RL v2 got +52.6% / +27.1% against the current
+default's +78.9% / +52.5%. It is available as `--policy rl2`.
+
+* **Where it is better than the current default:** STOPs on held-out (43 vs 53). It spends more of the
+  pool (54–84% vs 47–66%).
+* **Where it is worse:** replies/₹ on every held-out and final seed, and payments on most seeds.
+* **Against the four constraints, on the 6 held-out + final seeds:**
+  * replies/₹ ≥ +20%: 6 of 6.
+  * STOPs ≤ CN10: 4 of 6 (271828: 19 vs 10; 141421: 16 vs 14).
+  * payments ≥ CN10: 4 of 6 (123: 56 vs 61; 271828: 52 vs 59).
+  * ₹ recovered per ₹ spent above CN10: 6 of 6.
+  * spend: 54–84% of the pool.
+
+Determinism: `--check-determinism` at 1,500 × 14 on seed 271828 with `--policy rl2 --rl2-opts
+'{"pacing": "dual"}'` → IDENTICAL (CRM envelope hash 1bc7d4a67666f318 both runs). The real script gave
+the same numbers as the sweep harness on that seed.
