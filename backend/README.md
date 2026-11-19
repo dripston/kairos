@@ -132,9 +132,29 @@ live Sarvam webhook is wired (envelopes say `SIMULATED` unless `KAIROS_VOICE_PRO
 | `kairos_backend/voice/ingest.py` | `decide()` (pure) + `VoiceIngester.ingest(payload)` (ledger effects, reward, CRM envelope). |
 | `kairos_backend/voice/store.py` | Voice-only tables: `voice_calls`, `voice_preferences`, `voice_payment_claims`, `voice_followups`, `voice_contact_flags`. |
 
-API: `POST /webhooks/sarvam/call-end` (idempotent by call id; optional `SARVAM_WEBHOOK_SECRET` →
+API: `POST /webhooks/sarvam/call-end` (idempotent by `attempt_id`; optional `SARVAM_WEBHOOK_SECRET` →
 header `X-Kairos-Webhook-Secret`), `GET /voice/registry`, `POST /voice/select` (`{borrower_id, at?,
-obligation_id?, touch_id?, lender_name?, human_approved?}`), `GET /voice/calls/{call_id}`.
+obligation_id?, touch_id?, lender_name?, human_approved?}`), `GET /voice/calls/{call_id}` (the attempt id).
+
+**Webhook payload.** Matches the Sarvam call-attempt fields observed in CN's live campaign / workflow
+configs (2026-11-19; `docs/sarvam-campaigns-notes.md` on `k27/auto-churn`). **Not yet checked against
+`sarvam://schemas/webhook-payload`**: that MCP resource could not be read from the agent session, so
+re-check it before going LIVE. Sarvam POSTs once per call **attempt**, connected or not:
+
+| Field | Kairos |
+|---|---|
+| `attempt_id` | idempotency key (`voice_calls.call_id`); a repeat → `DUPLICATE`. Legacy `call_id` / `interaction_id` / `call.id` / `id` still accepted |
+| `status` / `connectivity_status` | normalised (`no-answer` → `NO_ANSWER`, …); `connectivity_status` decides reach when present. `no_answer` / `busy` / `failed` / `voicemail` (and declined / canceled) → reach-only `NO_RESPONSE`, no reward, no intent from stale variables, a due follow-up stays due |
+| `duration` | string or number (`"45"`, `"00:00:45"`) → seconds |
+| `end_datetime` | UTC `Z` → local call end (legacy `ended_at` / `end_time`) |
+| `final_agent_variables` | JSON string or object, decoded; wins over call-start variables |
+| `failure_reason` | stored (phones / emails masked) and sent in the CRM envelope |
+| `metadata` | campaign `webhook_config.metadata`, echoed: stored and passed through to the envelope |
+| `event` | `before_call` (workflow gate) → 200 `IGNORED`, nothing recorded; `call_ended` processed |
+| `recording_url` | not stored |
+
+Not a JSON object, no attempt id, a typed field of the wrong type, an unparseable duration / end time, or
+variables that do not decode to an object → 422. Confidence thresholds are unchanged.
 
 **Selection.** Use case: hardship (only with `human_approved`) → `HARDSHIP_TRIAGE`; callback pending →
 `CALLBACK`; promise date reached → `PTP_FOLLOW_UP`; else by band (PRE_DUE → `PRE_DUE_REMINDER`,
@@ -191,4 +211,6 @@ HUMAN_REQUESTED at ≥ 0.6 (after any downgrade). Reach (call connected → touc
   console / MCP); `resolve_payment_claims(now)` and `due_followups(day)` need a scheduler tick;
   the gate template `VB_KAIROS_CALLBACK` (voicebot, `hi`) must be registered via `PUT /templates`.
 - Tests: `tests/test_voice_engine.py` (every threshold both sides of its boundary, idempotency,
-  language / voice / A/B, no PII in variables, API).
+  language / voice / A/B, no PII in variables, Sarvam call-attempt payloads — connected, no answer,
+  busy, failed, voicemail, `before_call`, duplicate `attempt_id`, variables as string / object,
+  metadata, garbage → 422 — and the API).

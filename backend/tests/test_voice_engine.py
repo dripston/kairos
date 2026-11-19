@@ -708,6 +708,189 @@ def test_hitl_handoff_hook_used_when_present(env):
 
 
 # =====================================================================================
+# 4b. Sarvam call-attempt payload (one webhook per attempt, connected or not)
+#     Fixtures follow the fields Sarvam sends: attempt_id, interaction_id, call_result_id, status /
+#     connectivity_status, duration (string), end_datetime (UTC Z), failure_reason, recording_url,
+#     final_agent_variables (JSON string), metadata (campaign webhook_config.metadata, echoed), event.
+#     Synthetic values only; no phone numbers.
+# =====================================================================================
+META = {"batch_id": "batch-0001", "outbound_campaign_id": "camp-0001", "source": "kairos.k17"}
+
+
+def end_utc(hh, mm=0):
+    """Local IST wall time on D -> the UTC 'Z' string Sarvam sends in end_datetime."""
+    return (datetime(D.year, D.month, D.day, hh, mm) - timedelta(hours=5, minutes=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def attempt(attempt_id, touch_id, disposition=None, conf=None, status="completed", duration="45", end=None,
+            failure_reason="", variables_as="string", metadata=META, **extra_vars):
+    fav = {"touch_id": touch_id, "user_name": "Customer", **extra_vars}
+    if disposition is not None:
+        fav.update(disposition=disposition, disposition_confidence=conf)
+    return {"attempt_id": attempt_id, "interaction_id": f"ix-{attempt_id}" if status == "completed" else "",
+            "call_result_id": f"cr-{attempt_id}", "status": status, "duration": duration,
+            "end_datetime": end or end_utc(10, 5), "failure_reason": failure_reason,
+            "recording_url": "", "final_agent_variables": json.dumps(fav) if variables_as == "string" else fav,
+            "metadata": metadata}
+
+
+def test_attempt_connected_with_disposition_string_variables(env):
+    _, iid = place_call(env, "B-SV1")
+    r = env.ing.ingest(attempt("att-0001", iid, "STOP_REQUESTED", "0.9"))
+    assert r["status"] == "PROCESSED" and r["attempt_id"] == "att-0001" and r["call_id"] == "att-0001"
+    assert r["action"] == "RECORD_STOP_ALL_CHANNELS" and r["call_status"] == "COMPLETED" and r["connected"] is True
+    assert env.lg.touch(iid)["status"] == "DELIVERED"
+    row = env.ing.call("att-0001")
+    assert row["duration_seconds"] == 45.0 and row["interaction_id"] == "ix-att-0001"
+    assert row["ended_at"].startswith("2026-11-20T10:05")  # end_datetime (UTC Z) -> local IST
+
+
+def test_attempt_final_agent_variables_as_object_same_result(env):
+    _, iid = place_call(env, "B-SV2")
+    r = env.ing.ingest(attempt("att-0002", iid, "PAY_NOW_LINK", 0.6, variables_as="object"))
+    assert r["rule"] == "K17.PAY_NOW_LINK.ACCEPT" and r["meaningful_reply"] is True
+    assert r["reward"] == "REPLY_ATTRIBUTED"
+
+
+def test_final_agent_variables_win_over_start_variables():
+    p = normalize_payload({"attempt_id": "a1", "status": "completed",
+                           "agent_variables": {"touch_id": "INS-1234abcd", "disposition": ""},
+                           "final_agent_variables": json.dumps({"disposition": "PTP"})})
+    assert p["variables"] == {"touch_id": "INS-1234abcd", "disposition": "PTP"}
+
+
+@pytest.mark.parametrize("status,reason,canon", [
+    ("no_answer", "NO_ANSWER", "NO_ANSWER"), ("busy", "USER_BUSY", "BUSY"), ("failed", "SIP 503", "FAILED"),
+    ("voicemail", "", "VOICEMAIL")])
+def test_not_connected_attempt_is_reach_only_no_response(env, status, reason, canon):
+    bid = f"B-NC-{status}"
+    _, iid = place_call(env, bid)
+    # stale bot variables on a not-connected attempt must not become intent
+    r = env.ing.ingest(attempt(f"att-nc-{status}", iid, "STOP_REQUESTED", 0.99, status=status, duration="0",
+                               failure_reason=reason))
+    assert r["status"] == "PROCESSED" and r["call_status"] == canon and r["connected"] is False
+    assert (r["disposition"], r["effective_disposition"], r["rule"], r["action"]) == (
+        "NO_RESPONSE", "NO_RESPONSE", "K17.NO_RESPONSE", "NONE")
+    assert r["reason"] == f"NOT_CONNECTED:{canon}"
+    assert r["meaningful_reply"] is False and r["reward"] is None
+    assert r["failure_reason"] == (reason or None)
+    assert env.lg.touch(iid)["status"] == "SENT"                      # not delivered
+    row = outcome_row(env, iid)
+    assert row["reached"] == 0 and row["reply_at"] is None
+    st = state(env, bid)
+    assert (st["stopped"], st["supervisor_hold"]) == (0, 0)
+    assert tickets(env, bid) == [] and r["report_label"] == "Sent"
+    assert env.ing.call(f"att-nc-{status}")["failure_reason"] == (reason or None)
+    assert r["envelope"]["payload"]["failure_reason"] == (reason or None)
+
+
+def test_connectivity_status_decides_reach_when_present(env):
+    _, iid = place_call(env, "B-CS")
+    p = attempt("att-cs", iid, status="completed", duration="")
+    p["connectivity_status"] = "busy"
+    r = env.ing.ingest(p)
+    assert r["call_status"] == "BUSY" and r["connected"] is False and r["effective_disposition"] == "NO_RESPONSE"
+
+
+def test_before_call_gate_event_is_a_no_op(env):
+    _, iid = place_call(env, "B-GATE")
+    audit_n = len(env.lg.audit_log(limit=1000))
+    r = env.ing.ingest({"v": 2, "event": "before_call", "step": "PRE_DUE:0", "line": "line-1",
+                        "workflow": "wf-0001", "status": "", "attempt_id": "", "final_agent_variables": "",
+                        "metadata": META})
+    assert r["status"] == "IGNORED" and r["event"] == "before_call"
+    assert len(env.lg.audit_log(limit=1000)) == audit_n and env.sink.envelopes == []
+    assert env.lg._conn().execute("SELECT COUNT(*) FROM voice_calls").fetchone()[0] == 0
+    assert env.lg.touch(iid)["status"] == "SENT"
+
+
+def test_call_ended_workflow_event_is_processed(env):
+    _, iid = place_call(env, "B-CE")
+    r = env.ing.ingest({**attempt("att-ce", iid, "HUMAN_REQUESTED", "0.6"), "event": "call_ended", "v": 2})
+    assert r["status"] == "PROCESSED" and r["rule"] == "K17.HUMAN_REQUESTED.ACCEPT"
+
+
+def test_duplicate_attempt_id_does_nothing(env):
+    _, iid = place_call(env, "B-ATT-DUP")
+    p = attempt("att-dup", iid, "STOP_REQUESTED", 0.4)
+    first = env.ing.ingest(p)
+    audit_n, tickets_n = len(env.lg.audit_log(limit=1000)), len(tickets(env, "B-ATT-DUP"))
+    again = env.ing.ingest(copy.deepcopy(p))
+    assert first["status"] == "PROCESSED" and again["status"] == "DUPLICATE" and again["call_id"] == "att-dup"
+    assert len(env.lg.audit_log(limit=1000)) == audit_n and len(tickets(env, "B-ATT-DUP")) == tickets_n
+    assert len(env.sink.envelopes) == 1
+    # a redial is a new attempt id for the same touch: processed on its own
+    nxt = env.ing.ingest(attempt("att-dup-2", iid, status="no_answer", duration="0"))
+    assert nxt["status"] == "PROCESSED"
+
+
+def test_attempt_id_wins_over_legacy_ids():
+    p = normalize_payload({"attempt_id": "att-9", "call_id": "legacy-1", "interaction_id": "ix-9", "status": "busy"})
+    assert p["call_id"] == "att-9" and p["interaction_id"] == "ix-9"
+    assert normalize_payload({"call_id": "legacy-1"})["call_id"] == "legacy-1"
+
+
+def test_metadata_passed_through(env):
+    _, iid = place_call(env, "B-META")
+    r = env.ing.ingest(attempt("att-meta", iid, "NEEDS_TIME_NO_DATE", 0.7))
+    assert r["metadata"] == META
+    assert r["envelope"]["payload"]["metadata"] == META
+    assert env.ing.call("att-meta")["metadata"] == META
+
+
+def test_status_duration_and_end_time_normalised():
+    p = normalize_payload({"attempt_id": "a", "status": "No-Answer", "duration": "00:01:05",
+                           "end_datetime": "2026-11-20T04:35:00Z"})
+    assert (p["status"], p["connected"], p["duration_seconds"]) == ("NO_ANSWER", False, 65.0)
+    assert p["ended_at"].isoformat() == "2026-11-20T04:35:00+00:00"
+    assert normalize_payload({"attempt_id": "a", "status": "completed", "duration": "12.5"})["duration_seconds"] == 12.5
+    assert normalize_payload({"attempt_id": "a", "duration": ""})["duration_seconds"] is None
+
+
+@pytest.mark.parametrize("bad", [
+    {"status": "completed"},                                             # no attempt id at all
+    {"attempt_id": "a", "final_agent_variables": "{not json"},
+    {"attempt_id": "a", "final_agent_variables": "42"},
+    {"attempt_id": "a", "final_agent_variables": 7},
+    {"attempt_id": "a", "duration": "forty"},
+    {"attempt_id": "a", "end_datetime": "yesterday"},
+    {"attempt_id": "a", "status": 3},
+    {"attempt_id": "a", "metadata": "batch-0001"},
+    {"attempt_id": ["a"]},
+])
+def test_garbage_payload_rejected(env, bad):
+    from kairos_backend.voice.ingest import PayloadError
+    with pytest.raises(PayloadError):
+        env.ing.ingest(bad)
+    assert env.lg._conn().execute("SELECT COUNT(*) FROM voice_calls").fetchone()[0] == 0
+
+
+def test_not_connected_follow_up_attempt_keeps_follow_up_pending(env):
+    ob, iid = place_call(env, "B-FU")
+    env.ing.ingest(payload("call-fu-ptp", iid, "PTP", 0.9, ptp_date=(D + timedelta(days=2)).isoformat()))
+    assert len(env.ing.due_followups(D + timedelta(days=30))) == 1
+    later = at(11, 0, D + timedelta(days=3))
+    r = env.ing.ingest(attempt("att-fu", iid, status="no_answer", duration="0",
+                               end=(later - timedelta(hours=5, minutes=30)).strftime("%Y-%m-%dT%H:%M:%SZ"))
+                       | {"app_id": APP["PTP_FU"]})
+    assert r["effective_disposition"] == "NO_RESPONSE"
+    assert len(env.ing.due_followups(D + timedelta(days=30))) == 1   # still due: nobody was reached
+
+
+def test_old_voice_calls_table_gets_new_columns(policy, tmp_path):
+    lg = Ledger(policy, tmp_path / "old.db")
+    lg._conn().execute("CREATE TABLE voice_calls (call_id TEXT PRIMARY KEY, app_id TEXT, use_case TEXT, borrower_id TEXT,"
+                       " obligation_id TEXT, touch_id TEXT, status TEXT NOT NULL, received_at TEXT NOT NULL,"
+                       " connected INTEGER, duration_seconds REAL, disposition TEXT, effective_disposition TEXT,"
+                       " confidence REAL, rule TEXT, action TEXT, report_ordinal INTEGER, report_label TEXT,"
+                       " policy_version TEXT, detail TEXT)")
+    VoiceIngester(lg, sink=RecordingSink())
+    cols = {r[1] for r in lg._conn().execute("PRAGMA table_info(voice_calls)")}
+    assert {"call_status", "raw_status", "failure_reason", "interaction_id", "ended_at", "metadata"} <= cols
+    lg.close()
+
+
+# =====================================================================================
 # 5. API
 # =====================================================================================
 @pytest.fixture
@@ -751,6 +934,22 @@ def test_api_registry_select_and_webhook(client, monkeypatch):
     assert c.post("/webhooks/sarvam/call-end", json=body).json()["status"] == "DUPLICATE"
     assert c.get("/voice/calls/sv-1").json()["effective_disposition"] == "STOP_REQUESTED"
     assert c.get("/voice/calls/nope").status_code == 404
+
+    # real call-attempt shape, gate event, garbage
+    ob2 = add_loan(lg, "B-API2", D, dpd=12, consents=VOICE_CONSENT, campaign="C1")
+    r2 = lg.reserve(Instruction("B-API2", ob2, "C1", "voicebot", VOICE_TPL, at(11), 300))
+    assert r2.reserved
+    att = {"attempt_id": "att-api-1", "status": "busy", "duration": "0", "end_datetime": end_utc(11, 1),
+           "failure_reason": "USER_BUSY", "metadata": META,
+           "final_agent_variables": json.dumps({"touch_id": r2.instruction_id})}
+    res = c.post("/webhooks/sarvam/call-end", json=att)
+    assert res.status_code == 200 and res.json()["effective_disposition"] == "NO_RESPONSE"
+    assert res.json()["failure_reason"] == "USER_BUSY"
+    assert c.post("/webhooks/sarvam/call-end", json=att).json()["status"] == "DUPLICATE"
+    gate = c.post("/webhooks/sarvam/call-end", json={"event": "before_call", "v": 2, "step": "s"})
+    assert gate.status_code == 200 and gate.json()["status"] == "IGNORED"
+    for bad in ({"status": "completed"}, {"attempt_id": "x", "final_agent_variables": "{oops"}, [1, 2]):
+        assert c.post("/webhooks/sarvam/call-end", json=bad).status_code == 422
 
     monkeypatch.setenv("SARVAM_WEBHOOK_SECRET", "s3cret")
     assert c.post("/webhooks/sarvam/call-end", json={**body, "call_id": "sv-2"}).status_code == 401

@@ -2,7 +2,11 @@
 
     VoiceIngester(ledger, ...).ingest(payload) -> dict
 
-Order of work for one call (idempotent by call_id: a duplicate webhook does nothing):
+Sarvam sends one webhook per call ATTEMPT, connected or not; idempotent by attempt_id (legacy: call_id /
+interaction_id) — a duplicate does nothing. Workflow `before_call` gate events are acknowledged and ignored;
+a not-connected attempt (no answer / busy / failed / voicemail) is reach-only (NO_RESPONSE, no reward).
+
+Order of work for one call:
   1. Provider delivery (reach): call connected -> touch DELIVERED + OutcomeFinalizer.record_reach;
      answered > K01 pickup threshold -> Ledger.record_call (stop-for-day). Never a reply by itself.
   2. Borrower intent: parse_disposition (strict) -> decide() against policy/K17-voice-dispositions/
@@ -32,7 +36,8 @@ from spine.ledger import record_event
 from ..contracts import SYNTHETIC_COSTS, CrmSink, RecordingSink, crm_envelope
 from ..exceptions import ExceptionEvent
 from ..ledger import Instruction, Ledger
-from .dispositions import (DISPOSITIONS, UNCLEAR, Disposition, parse_disposition, report_level, scrub_text)
+from .dispositions import (_EMAIL, _PHONE, DISPOSITIONS, UNCLEAR, Disposition, parse_disposition, report_level,
+                           scrub_text)
 from .registry import agent_use_case, load_registry, load_thresholds, max_ptp_days, normalize_language
 from .store import ensure_schema
 
@@ -157,9 +162,34 @@ def default_handoff(ledger: Ledger, queue: str, hitl=None):
 
 
 # ---------- payload normalisation ----------
-_CONNECTED = {"completed", "answered", "connected", "in-progress", "in_progress", "success", "ended"}
-_NOT_CONNECTED = {"no-answer", "no_answer", "busy", "failed", "not_connected", "unanswered", "canceled",
-                  "cancelled", "rejected", "not-connected"}
+# Sarvam POSTs one call-attempt payload per dial attempt, connected or not (campaign webhook_config and the
+# workflow "report" node). Fields Kairos reads (live CN workflow / campaign configs, 19 Nov 2026):
+#   attempt_id (idempotency key), interaction_id, call_result_id, status | connectivity_status,
+#   duration (string), end_datetime (UTC "Z"), failure_reason, recording_url (not stored),
+#   final_agent_variables (JSON string or object), metadata (webhook_config.metadata, echoed), event
+#   (workflow protocol: "before_call" gate | "call_ended" report).
+# The older inferred shapes (call_id / interaction / call.*, *_variables, ended_at, duration_seconds) are
+# still accepted.
+class PayloadError(ValueError):
+    """The webhook body is not a call-attempt payload (API -> 422)."""
+
+
+GATE_EVENTS = ("before_call",)
+STATUS_CANON = {  # raw (lowercase, '-'/' ' -> '_') -> canonical
+    "completed": "COMPLETED", "answered": "ANSWERED", "connected": "CONNECTED", "in_progress": "CONNECTED",
+    "success": "COMPLETED", "ended": "COMPLETED", "call_ended": "COMPLETED",
+    "no_answer": "NO_ANSWER", "unanswered": "NO_ANSWER", "not_answered": "NO_ANSWER",
+    "busy": "BUSY", "failed": "FAILED", "failure": "FAILED", "error": "FAILED",
+    "not_connected": "NOT_CONNECTED", "rejected": "DECLINED", "declined": "DECLINED",
+    "canceled": "CANCELED", "cancelled": "CANCELED",
+    "voicemail": "VOICEMAIL", "voice_mail": "VOICEMAIL", "machine_detected": "VOICEMAIL", "answering_machine": "VOICEMAIL"}
+CONNECTED_STATUSES = ("COMPLETED", "ANSWERED", "CONNECTED")
+# not connected to a person: reach-only outcome NO_RESPONSE (voicemail = a machine, not the borrower)
+NOT_CONNECTED_STATUSES = ("NO_ANSWER", "BUSY", "FAILED", "NOT_CONNECTED", "DECLINED", "CANCELED", "VOICEMAIL")
+_ID_KEYS = ("attempt_id", "call_id", "interaction_id", "id", "call_result_id")
+# applied in order, later wins: call-start variables, then post-call ones, then the bot's final state
+_VAR_KEYS = ("agent_variables", "app_variables", "variables", "call_variables", "start_variables",
+             "post_call_variables", "post_interaction_variables", "extracted_variables", "final_agent_variables")
 
 
 def _vars(v) -> dict:
@@ -170,38 +200,129 @@ def _vars(v) -> dict:
     return {}
 
 
+def _decode_vars(key: str, v: Any) -> Any:
+    """final_agent_variables (and any *_variables) may arrive as a JSON string: decode it, 422 if garbage."""
+    if not isinstance(v, str):
+        return v
+    if not v.strip():
+        return {}
+    try:
+        out = json.loads(v)
+    except ValueError:
+        raise PayloadError(f"{key} is a string but not JSON")
+    if not isinstance(out, (dict, list)):
+        raise PayloadError(f"{key} must decode to an object")
+    return out
+
+
+def _canon_status(v: Any) -> str:
+    raw = str(v or "").strip().lower().replace("-", "_").replace(" ", "_")
+    return STATUS_CANON.get(raw, raw.upper())
+
+
+def _duration(v: Any) -> Optional[float]:
+    """Seconds from a number, "45", "45.2" or "00:00:45"; None when absent or unreadable."""
+    if v is None or isinstance(v, bool):
+        return None
+    s = str(v).strip()
+    if not s:
+        return None
+    try:
+        if ":" in s:
+            secs = 0.0
+            for part in s.split(":"):
+                secs = secs * 60 + float(part)
+            return secs
+        f = float(s)
+    except ValueError:
+        return None
+    return f if f >= 0 and f == f else None
+
+
+def _when(v: Any) -> Optional[datetime]:
+    if not v:
+        return None
+    try:
+        return datetime.fromisoformat(str(v).strip().replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def _scrub_reason(v: Any) -> Optional[str]:
+    """Provider failure reason (e.g. "USER_BUSY", "SIP 486"): kept for ops, phones / emails masked."""
+    if v in (None, ""):
+        return None
+    t = _EMAIL.sub("[email]", str(v))
+    return _PHONE.sub("[number]", t).strip()[:200] or None
+
+
+def validate_payload(payload: Any) -> None:
+    """Required: a JSON object; for an outcome (not a before_call gate) an attempt id (attempt_id, or a legacy
+    call_id / interaction_id / call.id / id). Typed fields that are present must have their type."""
+    if not isinstance(payload, dict):
+        raise PayloadError("call-attempt payload must be a JSON object")
+    for k in ("event", "status", "connectivity_status", "call_status", "failure_reason", "end_datetime"):
+        v = payload.get(k)
+        if v is not None and not isinstance(v, str):
+            raise PayloadError(f"{k} must be a string")
+    if payload.get("metadata") is not None and not isinstance(payload["metadata"], dict):
+        raise PayloadError("metadata must be an object")
+    if payload.get("event") in GATE_EVENTS:
+        return
+    for k in _ID_KEYS:
+        v = payload.get(k)
+        if v is not None and (isinstance(v, bool) or not isinstance(v, (str, int))):
+            raise PayloadError(f"{k} must be a string")
+    dur = payload.get("duration")
+    if dur not in (None, "") and (isinstance(dur, (bool, dict, list)) or _duration(dur) is None):
+        raise PayloadError("duration must be a number of seconds")
+    if payload.get("end_datetime") and _when(payload["end_datetime"]) is None:
+        raise PayloadError("end_datetime must be an ISO-8601 datetime")
+    for k in _VAR_KEYS:
+        v = payload.get(k)
+        if v is not None and not isinstance(v, (str, dict, list)):
+            raise PayloadError(f"{k} must be an object or a JSON string")
+
+
 def normalize_payload(payload: dict) -> dict:
-    """Accept the Sarvam post-call payload in the shapes we have seen / expect: top-level or nested
-    `call` / `interaction`, variables as {name: value}, {name: {value}} or [{name, value}]."""
-    p = dict(payload or {})
+    """Sarvam call-attempt payload -> one normalised dict. Real schema first (attempt_id, status /
+    connectivity_status, string duration, end_datetime, final_agent_variables as a JSON string, failure_reason,
+    metadata, event); the older inferred shapes (top-level or nested `call` / `interaction`, variables as
+    {name: value}, {name: {value}} or [{name, value}]) still work."""
+    validate_payload(payload)
+    p = dict(payload)
     call = p.get("call") or p.get("interaction") or {}
     if not isinstance(call, dict):
         call = {}
+    meta = p.get("metadata") if isinstance(p.get("metadata"), dict) else {}
     variables: dict = {}
     for src in (p, call):
-        for key in ("agent_variables", "app_variables", "variables", "call_variables", "start_variables",
-                    "post_call_variables", "post_interaction_variables", "extracted_variables"):
-            variables.update(_vars(src.get(key)))
-    call_id = next((str(v) for v in (p.get("call_id"), p.get("interaction_id"), call.get("id"),
-                                     call.get("interaction_id"), call.get("call_id"), p.get("id")) if v), None)
-    status = str(p.get("call_status") or p.get("status") or call.get("status") or "").strip().lower()
+        for key in _VAR_KEYS:
+            variables.update(_vars(_decode_vars(key, src.get(key))))
+    call_id = next((str(v) for v in (p.get("attempt_id"), p.get("call_id"), p.get("interaction_id"), call.get("id"),
+                                     call.get("interaction_id"), call.get("call_id"), p.get("id"),
+                                     p.get("call_result_id")) if v not in (None, "")), None)
+    # connectivity_status says whether a person was reached; status may only say the attempt finished
+    raw_conn = p.get("connectivity_status")
+    raw_status = p.get("status") or p.get("call_status") or call.get("status")
+    status = _canon_status(raw_conn) if raw_conn else _canon_status(raw_status)
     connected = p.get("connected", call.get("connected"))
     if not isinstance(connected, bool):
-        connected = True if status in _CONNECTED else False if status in _NOT_CONNECTED else None
-    duration = next((v for v in (p.get("duration_seconds"), p.get("duration"), call.get("duration_seconds"),
-                                 call.get("duration")) if v not in (None, "")), None)
-    try:
-        duration = float(duration) if duration is not None else None
-    except (TypeError, ValueError):
-        duration = None
-    ended = p.get("ended_at") or p.get("end_time") or call.get("ended_at") or call.get("end_time")
-    try:
-        ended_at = datetime.fromisoformat(str(ended).replace("Z", "+00:00")) if ended else None
-    except ValueError:
-        ended_at = None
-    return {"call_id": call_id, "app_id": p.get("app_id") or p.get("agent_id") or call.get("app_id"),
-            "touch_id": variables.get("touch_id") or p.get("touch_id"), "variables": variables,
-            "connected": connected, "duration_seconds": duration, "ended_at": ended_at}
+        connected = True if status in CONNECTED_STATUSES else False if status in NOT_CONNECTED_STATUSES else None
+    duration = next((d for d in (_duration(v) for v in (p.get("duration"), p.get("duration_seconds"),
+                                                       call.get("duration_seconds"), call.get("duration")))
+                     if d is not None), None)
+    ended_at = next((t for t in (_when(v) for v in (p.get("end_datetime"), p.get("ended_at"), p.get("end_time"),
+                                                   call.get("ended_at"), call.get("end_time"))) if t), None)
+    return {"call_id": call_id, "attempt_id": call_id, "interaction_id": p.get("interaction_id") or None,
+            "event": p.get("event") or None,
+            "app_id": p.get("app_id") or p.get("agent_id") or call.get("app_id") or meta.get("app_id"),
+            "touch_id": (variables.get("touch_id") or p.get("touch_id") or meta.get("touch_id")
+                         or p.get("user_identifier")),
+            "variables": variables, "metadata": meta, "status": status or None,
+            "raw_status": str(raw_conn or raw_status or "") or None,
+            "connected": connected, "duration_seconds": duration, "ended_at": ended_at,
+            "failure_reason": _scrub_reason(p.get("failure_reason"))}
 
 
 # ---------- the ingester ----------
@@ -255,9 +376,12 @@ class VoiceIngester:
     # ----- public -----
     def ingest(self, payload: dict, borrower_id: Optional[str] = None, now: Optional[datetime] = None) -> dict:
         p = normalize_payload(payload)
+        if p["event"] in GATE_EVENTS:  # workflow gate before a dial: not an outcome, nothing to record
+            return {"status": "IGNORED", "event": p["event"], "reason": "GATE_EVENT_NOT_AN_OUTCOME",
+                    "policy_version": self.version}
         call_id = p["call_id"]
         if not call_id:
-            raise ValueError("call-end payload has no call / interaction id")
+            raise PayloadError("call-attempt payload has no attempt_id (or call / interaction id)")
         at = self._loc(p["ended_at"] or now or self.policy.now())
         touch = self.ledger.touch(str(p["touch_id"])) if p["touch_id"] else None
         bid = borrower_id or (touch["borrower_id"] if touch else None)
@@ -273,13 +397,18 @@ class VoiceIngester:
                 r = lg._event_obligation(c, bid, VOICE_CHANNEL)
                 ob = r["obligation_id"] if r else None
             c.execute("INSERT INTO voice_calls (call_id, app_id, use_case, borrower_id, obligation_id, touch_id, status,"
-                      " received_at, connected, duration_seconds, policy_version) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                      " received_at, connected, duration_seconds, policy_version, call_status, raw_status,"
+                      " failure_reason, interaction_id, ended_at, metadata) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                       (call_id, p["app_id"], use_case, bid, ob, touch["instruction_id"] if touch else p["touch_id"],
                        "PROCESSING" if bid else "UNMATCHED", lg._iso(at),
-                       None if p["connected"] is None else int(p["connected"]), p["duration_seconds"], self.version))
+                       None if p["connected"] is None else int(p["connected"]), p["duration_seconds"], self.version,
+                       p["status"], p["raw_status"], p["failure_reason"], p["interaction_id"],
+                       lg._iso(p["ended_at"]) if p["ended_at"] else None,
+                       json.dumps(p["metadata"], default=str) if p["metadata"] else None))
         if not bid:
-            return {"status": "UNMATCHED", "call_id": call_id, "reason": "no borrower for touch_id",
-                    "policy_version": self.version}
+            return {"status": "UNMATCHED", "call_id": call_id, "attempt_id": call_id,
+                    "reason": "no borrower for touch_id", "call_status": p["status"],
+                    "failure_reason": p["failure_reason"], "policy_version": self.version}
         try:
             result = self._process(call_id, p, at, bid, ob, touch, use_case)
         except BaseException:
@@ -301,17 +430,23 @@ class VoiceIngester:
         if p["duration_seconds"] is not None and p["connected"] is not False:
             effects["call_pickup_canceled"] = lg.record_call(bid, at, p["duration_seconds"], channel=VOICE_CHANNEL)
 
-        # 2. borrower intent
+        # 2. borrower intent. An attempt that never reached a person (no answer / busy / failed / voicemail)
+        # is reach-only: NO_RESPONSE whatever the variables say (the bot never spoke to the borrower).
         d = parse_disposition(p["variables"])
+        not_connected = p["connected"] is False
+        if not_connected:
+            d = Disposition(disposition="NO_RESPONSE", confidence=0.0, raw_disposition=d.raw_disposition)
         band = self._band_of(ob, at)
         v = decide(d, band, use_case, at, self.thresholds, self.policy)
+        if not_connected:
+            v.reason = f"NOT_CONNECTED:{p['status'] or 'UNKNOWN'}"
         if v.effective not in NOT_BORROWER_REPLY:
             effects["stop_for_day_canceled"] = lg.record_response(bid, at, VOICE_CHANNEL, kind=f"voice:{v.effective}",
                                                                   details=f"voice disposition {v.effective}")
         effects.update(self._apply(v, d, at, bid, ob, band, touch, call_id) or {})
         if d.needs_human and v.action not in HANDS_TO_HUMAN:
             effects.update(self._review(bid, ob, at, "NEEDS_HUMAN", d.call_summary or "bot flagged needs_human"))
-        if use_case in ("PTP_FOLLOW_UP", "CALLBACK"):  # this call was the follow-up that was due
+        if use_case in ("PTP_FOLLOW_UP", "CALLBACK") and not not_connected:  # this call was the follow-up due
             with lg.tx() as c:
                 c.execute("UPDATE voice_followups SET status='DONE', closed_by=? WHERE borrower_id=? AND status='PENDING'"
                           " AND use_case=? AND due_on<=? AND call_id<>?",
@@ -327,7 +462,8 @@ class VoiceIngester:
         threshold = self.policy.call_pickup_threshold_s
         ordinal, label = report_level(True, p["connected"], p["duration_seconds"], v.effective, threshold)
         detail = {"verdict": v.reason, "verdict_detail": v.detail, "effects": effects, "errors": d.errors,
-                  "meaningful_reply": meaningful, "reward": reward}
+                  "meaningful_reply": meaningful, "reward": reward, "call_status": p["status"],
+                  "failure_reason": p["failure_reason"], "metadata": p["metadata"]}
         with lg.tx() as c:
             c.execute("UPDATE voice_calls SET status='DONE', disposition=?, effective_disposition=?, confidence=?,"
                       " rule=?, action=?, report_ordinal=?, report_label=?, detail=? WHERE call_id=?",
@@ -341,7 +477,9 @@ class VoiceIngester:
             row = lg._conn().execute("SELECT loan_id FROM obligations WHERE obligation_id=?", (ob,)).fetchone()
             loan_id = row["loan_id"] if row else None
         payload = {
-            "call_id": call_id, "app_id": p["app_id"], "use_case": use_case, "obligation_id": ob,
+            "call_id": call_id, "attempt_id": call_id, "interaction_id": p["interaction_id"],
+            "app_id": p["app_id"], "use_case": use_case, "obligation_id": ob,
+            "call_status": p["status"], "failure_reason": p["failure_reason"], "metadata": p["metadata"],
             "disposition": d.disposition, "raw_disposition": d.raw_disposition, "effective_disposition": v.effective,
             "confidence": d.confidence, "accepted": v.accepted, "rule": v.rule, "action": v.action,
             "reason": v.reason, "policy_version": self.version, "registry_version": self.registry["registry_version"],
@@ -357,7 +495,9 @@ class VoiceIngester:
                            payload=payload, provenance=self.provenance, source=SOURCE, loan_id=loan_id,
                            campaign_id=touch["campaign_id"] if touch else None,
                            touch_id=touch["instruction_id"] if touch else None)
-        return {"status": "PROCESSED", "call_id": call_id, "borrower_id": bid, "disposition": d.disposition,
+        return {"status": "PROCESSED", "call_id": call_id, "attempt_id": call_id, "call_status": p["status"],
+                "connected": p["connected"], "failure_reason": p["failure_reason"], "metadata": p["metadata"],
+                "borrower_id": bid, "disposition": d.disposition,
                 "effective_disposition": v.effective, "confidence": d.confidence, "rule": v.rule, "action": v.action,
                 "accepted": v.accepted, "reason": v.reason, "policy_version": self.version, "effects": effects,
                 "meaningful_reply": meaningful, "reward": reward, "report_label": label, "envelope": env}
@@ -516,8 +656,10 @@ class VoiceIngester:
             return None
         out = dict(r)
         out["detail"] = json.loads(out["detail"] or "{}")
+        out["metadata"] = json.loads(out["metadata"]) if out.get("metadata") else {}
         return out
 
 
-__all__ = ["VoiceIngester", "Verdict", "decide", "is_meaningful", "normalize_payload", "LedgerHandoff",
+__all__ = ["VoiceIngester", "Verdict", "decide", "is_meaningful", "normalize_payload", "validate_payload",
+           "PayloadError", "LedgerHandoff",
            "HitlHandoff", "default_handoff", "DISPOSITIONS", "EVENT_TYPE"]
