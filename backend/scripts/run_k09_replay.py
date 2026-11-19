@@ -6,7 +6,7 @@ Everything is SIMULATED. Run from backend/:
     python3 scripts/run_k09_replay.py --baseline k15         # K15 placeholder schedule instead of CN10
     python3 scripts/run_k09_replay.py --baseline both        # CN10 (budget calibration) and K15, same budget
     python3 scripts/run_k09_replay.py --no-drift             # DEV simulator without the E17 drift scenario
-    python3 scripts/run_k09_replay.py --no-explore           # K09 ranks by posterior mean (no Thompson draws)
+    python3 scripts/run_k09_replay.py --explore              # K09 uses seeded Thompson draws (default: posterior mean, as in PRODUCTION)
     python3 scripts/run_k09_replay.py --no-context           # K09 without the borrower-context layer
     python3 scripts/run_k09_replay.py --dataset data/synthetic_50k.csv   # a K03 dataset file as-is
     python3 scripts/run_k09_replay.py --check-determinism    # run everything twice and compare
@@ -45,8 +45,8 @@ def main() -> int:
     p.add_argument("--baseline", choices=("cn10", "k15", "both"), default="cn10")
     p.add_argument("--drift-day", type=int, default=7, help="1-based day WhatsApp response drops (E17)")
     p.add_argument("--no-drift", action="store_true")
-    p.add_argument("--explore", dest="explore", action="store_true", default=True,
-                   help="seeded Thompson sampling for K09 arm choice (SIMULATOR mode; default)")
+    p.add_argument("--explore", dest="explore", action="store_true", default=False,
+                   help="seeded Thompson sampling for K09 arm choice (SIMULATOR mode); default ranks by posterior mean")
     p.add_argument("--no-explore", dest="explore", action="store_false")
     p.add_argument("--no-context", action="store_true", help="K09 without the borrower-context layer")
     p.add_argument("--dataset", default=None, help="K03-format CSV to use instead of generating one")

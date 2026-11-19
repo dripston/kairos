@@ -115,3 +115,21 @@ official fixed-cadence policy file (K02) arrives**. Same-day multi-channel steps
 one and the matched 1/day cap blocks the extras, exactly as for K09. CN's IVR is a one-way blast; the
 DEV simulator lets IVR produce replies and the replay follows the simulator (flagged in the report).
 `k15` is the K15 placeholder schedule.
+
+
+### Multi-seed result (CM-02 check, SIMULATED)
+
+1,500 borrowers × 14 days, WhatsApp drift from day 7, budget matched to CN10's spend, K15 caps on both arms, K09 ranking by posterior mean (the default; `--explore` adds Thompson draws):
+
+| Seed | CN10 replies / ₹1,000 | K09 replies / ₹1,000 | Change | Verified payments CN10 → K09 | Cap breaches |
+|---|---|---|---|---|---|
+| 7 | 56.18 | 78.30 | +39.4% | 35 → 60 | 0 / 0 |
+| 42 | 58.79 | 74.54 | +26.8% | 53 → 62 | 0 / 0 |
+| 99 | 65.27 | 77.85 | +19.3% | 45 → 62 | 0 / 0 |
+| 2026 | 64.87 | 87.91 | +35.5% | 53 → 69 | 0 / 0 |
+
+Mean +30.2%, minimum +19.3%. With `--explore` (Thompson) the same seeds give +8.1%, +10.6%, −12.4%, +2.9%, so exploration is left to SANDBOX/SIMULATOR learning runs and the comparison uses the production ranking. Reproduce one seed:
+
+```bash
+python3 scripts/run_k09_replay.py --borrowers 1500 --days 14 --seed 42 --baseline both
+```
