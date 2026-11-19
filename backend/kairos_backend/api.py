@@ -34,6 +34,12 @@ executor = Executor(ledger, {ch: FakeProvider(ch) for ch in policy.raw["channels
 app = FastAPI(title="Kairos K06 · Supervisor guardrails + executor", version="0.2.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
+# K27 auto-churn engine (cohort / risk / journey / layer / lifecycle), additive routes under /churn
+from .churn import api as churn_api  # noqa: E402
+
+churn_api.configure(ledger=ledger)
+app.include_router(churn_api.router)
+
 
 def _call(fn, *a, **k):
     try:
