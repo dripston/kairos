@@ -47,7 +47,7 @@ def test_every_component_emits_on_seed_42(run42):
     assert set(COMPONENTS) <= set(comps), set(COMPONENTS) - set(comps)
     kinds = {(e["component"], e["kind"]) for e in st["events"]}
     for want in [("spine", "portfolio_loaded"), ("spine", "budget_scope"), ("churn", "assigned"), ("churn", "moved"),
-                 ("learner", "contact"), ("learner", "wait"), ("learner", "posterior"), ("aladdin", "allowed"),
+                 ("learner", "contact"), ("learner", "wait"), ("learner", "posterior"), ("learner", "switch"), ("aladdin", "allowed"),
                  ("aladdin", "blocked"), ("aladdin", "rechecked"), ("hitl", "approval_pending"), ("hitl", "approved"),
                  ("hitl", "rejected"), ("executor", "dispatched"), ("channel", "delivered"), ("channel", "read"),
                  ("borrower", "replied"), ("intent", "classified"), ("voice", "bot_selected"), ("voice", "call_ended"),

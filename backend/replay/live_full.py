@@ -146,8 +146,8 @@ TEXTS = {
     "DISPUTE": ("this amount is wrong, I already closed this loan", "galat amount hai, maine loan close kar diya tha"),
     "GREETING": ("ok thanks", "thik hai", "hmm dekhta hoon"),
 }
-OTHER_MIX = (("NEEDS_TIME", 0.28), ("LINK", 0.16), ("CALLBACK", 0.14), ("HARDSHIP", 0.16), ("BALANCE", 0.12),
-             ("DISPUTE", 0.06), ("GREETING", 0.08))
+OTHER_MIX = (("PTP", 0.16), ("NEEDS_TIME", 0.20), ("LINK", 0.12), ("CALLBACK", 0.12), ("HARDSHIP", 0.14),
+             ("BALANCE", 0.12), ("DISPUTE", 0.06), ("GREETING", 0.08))
 VOICE_DISPOSITION = {"PTP": "PTP", "ALREADY_PAID": "ALREADY_PAID", "LINK": "PAY_NOW_LINK",
                      "NEEDS_TIME": "NEEDS_TIME_NO_DATE", "HARDSHIP": "HARDSHIP", "CALLBACK": "CALLBACK_REQUESTED",
                      "BALANCE": "NEEDS_TIME_NO_DATE", "DISPUTE": "DISPUTE", "GREETING": "NO_RESPONSE"}
@@ -784,7 +784,7 @@ class FullStackRun(k09.StackRun):
                                               at, ob, ("PTP by text", "SIMULATED"))
             if out["hold"] == "PTP_HOLD":
                 self.promises[bid] = {"date": pd.isoformat(), "obligation_id": ob,
-                                      "keep": _u(self.seed, "keep", bid, pd) < 0.45}
+                                      "keep": _u(self.seed, "keep", bid, pd) < 0.55}
             return out["hold"] if out["hold"] != "NONE" else out["action"]
         if label in ("ALREADY_PAID",):
             if not o.payment_verified:
@@ -964,7 +964,7 @@ class FullStackRun(k09.StackRun):
             tot["replies"] += 1
         if action == "PTP_HOLD" and extra.get("ptp_date"):
             self.promises[bid] = {"date": extra["ptp_date"], "obligation_id": res.obligation_id,
-                                  "keep": _u(self.seed, "keep", bid, extra["ptp_date"]) < 0.45}
+                                  "keep": _u(self.seed, "keep", bid, extra["ptp_date"]) < 0.55}
         if action == "PAYMENT_CLAIM_PENDING":
             self.ev("payments", "claim_pending", ended + timedelta(minutes=1), bid,
                     f"{nm} said on the call they had paid: reminders pause 48 h while the bank (D7) is checked.",
@@ -1113,6 +1113,22 @@ class FullStackRun(k09.StackRun):
         self.snapshot = snap
 
     def _switch_event(self, at: datetime):
+        """Two views of "the best channel changed": the learner's preferred channel per band (posterior replies
+        per rupee among arms above the reply floor, as k09.preference_switches) and the day's send mix."""
+        prefs = {band: (k09.score_table(self.ranker, band, eligible_only=True) or [None])[0] for band in k09.BANDS}
+        self.preference.append(prefs)
+        prev_prefs = getattr(self, "_pref_prev", None) or {}
+        for band, top in prefs.items():
+            old = prev_prefs.get(band)
+            if top and old and top["channel"] != old["channel"]:
+                drift = old["channel"] == "whatsapp" and self._day >= DRIFT_DAY
+                self.ev("learner", "switch", at, None,
+                        f"For people {L.BAND_WORD.get(band, band)}, Kairos now prefers {CH_NAME[top['channel']]} over "
+                        f"{CH_NAME[old['channel']]} ({old['replies_per_inr']} → {top['replies_per_inr']} replies per ₹)"
+                        + (" after WhatsApp replies dropped." if drift else "."), links=[("outcomes", "learner")],
+                        from_channel=old["channel"], to_channel=top["channel"], band=band, basis="posterior",
+                        after_drift=drift)
+        self._pref_prev = prefs
         mix = Counter(ch for (_, ch) in self.mix[-1].elements()) if self.mix else Counter()
         if sum(mix.values()) < 30:
             return
@@ -1124,7 +1140,8 @@ class FullStackRun(k09.StackRun):
         lead = (f"WhatsApp stopped working as well from day {DRIFT_DAY + 1}, so Kairos moved to {CH_NAME[top]}"
                 if drift else f"Kairos moved its main channel from {CH_NAME[prev]} to {CH_NAME[top]}")
         self.ev("learner", "switch", at, None, f"{lead}: today {mix[top]} {CH_NAME[top]} vs {mix[prev]} {CH_NAME[prev]}.",
-                from_channel=prev, to_channel=top, counts=dict(mix))
+                links=[("outcomes", "learner")], from_channel=prev, to_channel=top, counts=dict(mix), basis="send_mix",
+                after_drift=drift)
 
 
 # ---------- counters (built only from released events) ----------
@@ -1298,9 +1315,10 @@ def apply_event(c: dict, e: dict) -> None:
     elif comp == "reports":
         if k == "daily_summary":
             x["daily_reports"] += 1
-            x["last"] = {kk: d.get(kk) for kk in ("attempts", "reach", "meaningful_replies", "spend_paise",
-                                                   "cap_breaches")}
-            for kk, v in x["last"].items():
+            day = {kk: d.get(kk) for kk in ("attempts", "reach", "meaningful_replies", "spend_paise", "cap_breaches")}
+            if day["attempts"] or x["last"] is None:   # a quiet Sunday does not replace the last working day
+                x["last"] = {**day, "day": e["day"]}
+            for kk, v in day.items():
                 if kk != "cap_breaches":
                     x["totals"][kk] += v or 0
         elif k == "day_end":
