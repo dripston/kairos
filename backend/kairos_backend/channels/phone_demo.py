@@ -3,11 +3,13 @@
     MessagesAppSmsProvider     SMS from the Mac's Messages app, relayed by the team member's
                                iPhone (Text Message Forwarding), driven by `osascript`.
     WhatsAppCloudTestProvider  Meta WhatsApp Cloud API with the free TEST business number.
+    (AndroidSmsGatewayProvider lives in android_sms.py: SMS from a team member's Android phone.)
     click_to_chat_url()        zero-setup fallback: a wa.me link a human opens and taps Send.
 
 Hard safety rails (every one must pass, or send() returns REJECTED and nothing leaves the box):
-  1. An explicit env flag: KAIROS_DEMO_SMS=1 / KAIROS_DEMO_WHATSAPP=1.
-  2. The recipient must be in KAIROS_DEMO_ALLOWLIST (comma-separated E.164, e.g. +919812345678).
+  1. An explicit env flag: KAIROS_DEMO_SMS=1 / KAIROS_DEMO_WHATSAPP=1 (/ KAIROS_DEMO_ANDROID_SMS=1).
+  2. The recipient must be in effective_allowlist(): KAIROS_DEMO_ALLOWLIST (comma-separated E.164)
+     plus the runtime demo recipients (~/.kairos/demo_recipients.json, see demo_recipients.py).
   3. The text comes from an approved demo template id — never free text from an agent.
   4. dry_run=True by default: send() builds the exact command / HTTP request, records it in
      `self.dry_runs`, and returns REJECTED("DRY_RUN") so the ledger releases the budget and
@@ -140,6 +142,19 @@ def click_to_chat_url(number: str, text: str) -> str:
     return f"https://wa.me/{digits}?text={urllib.parse.quote(text, safe='')}"
 
 
+def render_demo_sms(templates: Mapping[str, str], touch: dict) -> str:
+    """Approved demo SMS text for touch["template_id"], filled from touch["params"]. Anything else
+    (free text, an unknown id, a missing placeholder) raises DemoSafetyError. Shared by every SMS demo adapter."""
+    tid = touch.get("template_id")
+    if tid not in templates:
+        raise DemoSafetyError(f"TEMPLATE_NOT_APPROVED: {tid!r} is not an approved demo SMS template")
+    params = {**DEMO_SMS_DEFAULTS, **(touch.get("params") or {})}
+    try:
+        return templates[tid].format(**params)
+    except KeyError as e:
+        raise DemoSafetyError(f"TEMPLATE_PARAM_MISSING: {e}") from None
+
+
 @dataclass
 class DemoPreview:
     """What a send would do. Safe to print: numbers and tokens are masked."""
@@ -242,14 +257,7 @@ class MessagesAppSmsProvider(_DemoBase):
         return cmd + [to, text]
 
     def render(self, touch: dict) -> str:
-        tid = touch.get("template_id")
-        if tid not in self.templates:
-            raise DemoSafetyError(f"TEMPLATE_NOT_APPROVED: {tid!r} is not an approved demo SMS template")
-        params = {**DEMO_SMS_DEFAULTS, **(touch.get("params") or {})}
-        try:
-            return self.templates[tid].format(**params)
-        except KeyError as e:
-            raise DemoSafetyError(f"TEMPLATE_PARAM_MISSING: {e}") from None
+        return render_demo_sms(self.templates, touch)
 
     def prepare(self, touch: dict) -> Tuple[List[str], DemoPreview]:
         """Run every safety rail and build the command. Raises DemoSafetyError on refusal."""

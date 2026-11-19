@@ -9,7 +9,7 @@ cd backend
 python -m venv .venv
 .venv/Scripts/activate            # Windows  (macOS/Linux: source .venv/bin/activate)
 pip install -e ".[dev]"
-pytest                            # K01 + K13 cases, K06 ledger/executor/API/SupervisorFSM/HITL, K03 spine + K15 replay, K09, K17/K18 voice, K26 reports, K07/K08 channels, K22 templates + compliance checklist, K20 email, red-team (open findings = strict xfail)
+pytest                            # K01 + K13 cases, K06 ledger/executor/API/SupervisorFSM/HITL, K03 spine + K15 replay, K09, K17/K18 voice, K26 reports, K07/K08 channels + Android SMS gateway, K22 templates + compliance checklist, K20 email, red-team (open findings = strict xfail)
 python scripts/run_redteam.py     # guardrail red-team: PASS/FAIL per attack -> reports/redteam_report.json (see redteam/README.md)
 uvicorn kairos_backend.api:app --reload    # http://127.0.0.1:8000/docs
 python scripts/bench_ledger.py 50000       # 50k decisions on K03's synthetic dataset
@@ -82,6 +82,8 @@ envelopes = apply_all(ledger, providers[channel].callbacks(instruction_id))   # 
 | `mock.py` | `MockChannelProvider(channel, seed, profile)` for sms / whatsapp / ivr / voicebot, `provenance="SIMULATED"`. Deterministic per (seed, instruction_id). Profiles `realistic` (default), `perfect`, `chaos`, or a dict of overrides (`delivery_rate`, `read_rate`, `click_rate`, `reply_rate`, `stop_rate`, `answer_rate`, `busy_rate`, `valid_digit_rate`, `invalid_digit_rate`, `intent_rate`, `decline_rate`, `duplicate_rate`, `late_rate`, `timeout_rate`, `timeout_lost_share`, `reject_rate`). `callbacks(iid)` returns normalized events in arrival order, duplicates and out-of-order arrivals included. |
 | `normalize.py` | `apply_callback(ledger, event)` → envelope `{event_type: provider.delivery / borrower.message / call.outcome, dedupe_key, provenance, applied, duplicate, ignored_reason, counts_as_reply, read_status, reachability, outcome, intent, stop, canceled, touch_status, …}`. Idempotent (claims each `dedupe_key` in a `channel_events` table in the same SQLite file). |
 | `phone_demo.py` | `MessagesAppSmsProvider`, `WhatsAppCloudTestProvider`, `click_to_chat_url()`. OFF unless env flags are set; dry-run by default. |
+| `android_sms.py` | `AndroidSmsGatewayProvider`: SMS from a team member's Android phone via the open-source SMS Gateway for Android app ([sms-gate.app](https://sms-gate.app), Apache-2.0). Same rails; dry-run by default. |
+| `demo_recipients.py` | Runtime allow-list (`~/.kairos/demo_recipients.json`, outside the repo), merged with `KAIROS_DEMO_ALLOWLIST`. |
 
 **Callback rules** (K01 `reply_attribution`, edge cases E02/E04/E06/E10):
 - Delivery, read and link-click are never replies. A click only updates reachability (E06).
@@ -92,7 +94,50 @@ envelopes = apply_all(ledger, providers[channel].callbacks(instruction_id))   # 
 
 ### Phone demo (team member's own phone, no number purchase)
 
-Both adapters refuse unless **all** of these hold: env flag set, recipient in `KAIROS_DEMO_ALLOWLIST`, text from an approved demo template id, credentials in env (never in code). They default to **dry run**: the exact osascript command / Graph API request is built and kept in `provider.dry_runs` (numbers and token masked), and `send()` returns `REJECTED("DRY_RUN")` so the ledger releases the budget. Logs mask phone numbers to the last 4 digits. The recipient is `touch["to"]`, or the borrower's `phone` in the K03 spine when `build_providers(..., ledger=ledger)`.
+Every demo adapter refuses unless **all** of these hold: env flag set, recipient in the allow-list (`KAIROS_DEMO_ALLOWLIST` ∪ `~/.kairos/demo_recipients.json`), text from an approved demo template id, credentials in env (never in code). They default to **dry run**: the exact osascript command / HTTP request is built and kept in `provider.dry_runs` (numbers and token masked), and `send()` returns `REJECTED("DRY_RUN")` so the ledger releases the budget. Logs mask phone numbers to the last 4 digits. The recipient is `touch["to"]`, or the borrower's `phone` in the K03 spine when `build_providers(..., ledger=ledger)`.
+
+**Which SMS provider?** In `phone-demo` mode the `sms` channel is picked by env, first match wins (`channels.select_sms_provider`):
+1. `KAIROS_DEMO_ANDROID_SMS=1` → `AndroidSmsGatewayProvider` (your Android phone, section 0)
+2. `KAIROS_DEMO_SMS=1` → `MessagesAppSmsProvider` (your Mac + iPhone, section 1)
+3. neither → the SIMULATED sms mock (nothing leaves the machine)
+
+**0. Android: send SMS from your own phone**
+
+The free, open-source app *SMS Gateway for Android* ([sms-gate.app](https://sms-gate.app), Apache-2.0) turns your phone into a small SMS server. Kairos asks it to send one approved demo text; your phone sends a normal SMS from your own SIM (your normal SMS charges apply).
+
+1. **Install the app** (Android 5.0 or newer). On the phone, open [github.com/capcom6/android-sms-gateway/releases](https://github.com/capcom6/android-sms-gateway/releases) (also linked as *Download App* on sms-gate.app), download the latest `app-release.apk` and open it. Android will ask to allow installs from your browser: allow it for this install. This is the only source the official docs name (checked 2026-11-19); they don't list Google Play or F-Droid, so avoid copies from other sites.
+2. **Grant permissions.** Open the app and allow **SMS** (sending is required). Allowing **Phone** lets you pick a SIM; allowing receiving SMS lets replies come back as webhooks (optional).
+3. **Turn on Local Server.** Put the phone on the **same Wi-Fi** as your laptop. In the app's **Home** tab, switch on **Local Server**, then tap **Start Service**. The Local Server card now shows the phone's **local address** (like `192.168.1.23`, port `8080`), a **username** and a **password**. Write them down. (Optional check: open `http://<that address>:8080/docs` on the laptop. A login box means the laptop can reach the phone.)
+4. **Set the env vars** in the terminal you'll run Kairos from (values from step 3, never commit them):
+   ```bash
+   export KAIROS_DEMO_ANDROID_SMS=1
+   export SMSGATE_MODE=local
+   export SMSGATE_URL=http://192.168.1.23:8080      # the address the app shows, with :8080
+   export SMSGATE_USER=...                         # username from the app
+   export SMSGATE_PASSWORD=...                     # password from the app
+   # optional: export SMSGATE_SIM=2   (dual SIM)    export SMSGATE_TTL_S=3600   (unsent messages expire; 0 = never)
+   ```
+5. **Add the receiving number to the demo recipients** (only numbers on this list can ever get a demo SMS). Either use the frontend's *Demo recipients* panel / `curl -X POST http://127.0.0.1:8000/demo/recipients -H 'Content-Type: application/json' -d '{"number":"98XXXXXXXX"}'` (saved only on this machine in `~/.kairos/demo_recipients.json`), or `export KAIROS_DEMO_ALLOWLIST=+9198XXXXXXXX`.
+6. **Dry run** (nothing is sent; prints the exact request with the number and password masked). From `backend/`:
+   ```bash
+   python scripts/send_demo_sms.py --to <last 4 digits> --template DEMO_SMS_HELLO
+   ```
+   `python scripts/send_demo_sms.py --list` shows the approved templates and the masked allow-list.
+7. **Real send:** the same command with `--live`. The phone sends the SMS; the command prints `result: ACCEPTED provider_ref=DEMO-CLI-…`. Then ask the phone what happened:
+   ```bash
+   python scripts/send_demo_sms.py --to <last 4 digits> --template DEMO_SMS_HELLO --live
+   python scripts/send_demo_sms.py --status DEMO-CLI-…      # Pending/Processed -> ACCEPTED, Sent, Delivered, Failed
+   ```
+
+*Phone and laptop not on the same Wi-Fi?* Use **cloud mode**: in the app switch on **Cloud Server** instead, tap **Start Service** → **Sign Up**; it shows a generated username and password. Set `SMSGATE_MODE=cloud` and those credentials, and leave `SMSGATE_URL` unset (it uses `https://api.sms-gate.app/3rdparty/v1`). Messages then pass through SMSGate's public relay, so the number and text leave your network; prefer local mode for real numbers.
+
+*Troubleshooting:* `SMSGATE_UNREACHABLE` or a timeout → the service is stopped, the phone is asleep or on another network, or the Wi-Fi blocks devices from talking to each other (guest networks often do). `SMSGATE_401` → username/password don't match the app. `SMSGATE_404` on send → update the app (older versions only had `/message`).
+
+*What Kairos sends* (from the SMSGate API spec): `POST {SMSGATE_URL}/messages` (cloud: `https://api.sms-gate.app/3rdparty/v1/messages`), HTTP Basic auth, body `{"id": "<instruction_id>", "textMessage": {"text": "..."}, "phoneNumbers": ["+91..."], "withDeliveryReport": true, "ttl": 3600}`. `202` → `ACCEPTED` (`provider_ref` = the id). The id is the instruction id, so a resend gets `409` (treated as already accepted, never sent twice) and `status()` can look a send up after a timeout (`GET /messages/{id}`).
+
+*Receipts and replies (optional):* the app can POST `sms:sent` / `sms:delivered` / `sms:failed` / `sms:received` webhooks. Pass each JSON body to `provider.ingest_webhook(payload)` (or `raw_body=..., headers=...`) and the events to `apply_all(ledger, ...)`: sent/delivered/failed only update reach (never a reply); an inbound SMS is a reply on the last demo SMS sent to that number, and `STOP` opts the borrower out on every channel. Register one webhook per event, e.g. `curl -u "$SMSGATE_USER:$SMSGATE_PASSWORD" -X POST "$SMSGATE_URL/webhooks" -H 'Content-Type: application/json' -d '{"id":"kairos-delivered","url":"https://<your-https-endpoint>/smsgate","event":"sms:delivered"}'`. The app only calls HTTPS URLs (or `http://127.0.0.1`, e.g. through `adb reverse`); Kairos has no webhook HTTP route yet. To check signatures, copy *Settings → Webhooks → Signing Key* from the app into `SMSGATE_WEBHOOK_SIGNING_KEY`; then unsigned or stale (> 5 min) webhooks are refused. Without webhooks, use `--status`.
+
+*Have an iPhone instead?* The iPhone can't run a gateway app, so the iPhone path goes through your Mac (section 1). On the iPhone: **Settings → Apps → Messages → Text Message Forwarding** (older iOS: Settings → Messages → Text Message Forwarding) and switch on your Mac. Both devices must be signed in to the same Apple Account in Messages. Then on the Mac `export KAIROS_DEMO_SMS=1` (and *not* `KAIROS_DEMO_ANDROID_SMS`, which takes priority) and use the same `send_demo_sms.py` commands. The first live send asks macOS to let your terminal control Messages; allow it in System Settings → Privacy & Security → Automation.
 
 **1. SMS through your Mac + iPhone (macOS only)**
 1. iPhone: Settings → Apps → Messages → **Text Message Forwarding** → enable your Mac. Sign in to the same Apple Account in Messages on the Mac. Send yourself one SMS by hand from Messages to confirm it goes green.

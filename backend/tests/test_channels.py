@@ -492,11 +492,14 @@ def test_build_providers_modes(monkeypatch):
     assert set(m) == {"sms", "whatsapp", "ivr", "voicebot", "email"}
     assert all(isinstance(m[c], MockChannelProvider) for c in CHANNELS)
     assert isinstance(m["email"], FakeProvider)          # K20 email module absent on this branch
-    d = build_providers("phone-demo", env={})
+    d = build_providers("phone-demo", env={"KAIROS_DEMO_SMS": "1"})
     assert isinstance(d["sms"], MessagesAppSmsProvider) and isinstance(d["whatsapp"], WhatsAppCloudTestProvider)
     assert d["sms"].dry_run and d["whatsapp"].dry_run
     assert isinstance(d["ivr"], MockChannelProvider)
-    assert isinstance(build_providers(env={"KAIROS_CHANNELS": "phone-demo"})["sms"], MessagesAppSmsProvider)
+    assert isinstance(build_providers(env={"KAIROS_CHANNELS": "phone-demo", "KAIROS_DEMO_SMS": "1"})["sms"],
+                      MessagesAppSmsProvider)
+    # no SMS demo flag: phone-demo falls back to the SIMULATED sms mock (Android > Messages > mock)
+    assert isinstance(build_providers("phone-demo", env={})["sms"], MockChannelProvider)
     with pytest.raises(ValueError):
         build_providers("live", env={})
     assert MODES == ("mock", "phone-demo")
