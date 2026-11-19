@@ -41,12 +41,16 @@ improved · ❌ not built yet. "PR #N" is on github.com/dripston/kairos. All num
 | Red-team guardrail pass | ✅ | 49 of 49 attacks pass with all fixes (PR #14 → #16 → #19); no open findings |
 | Synthetic data only | ✅ | Synthetic portfolio and borrowers; no real names or phones in the repo |
 
-## Biggest gaps, in order
+## Biggest gaps, in order (updated 20 Nov; done so far: PROGRESS.md)
 
-1. Merge everything into main (integration branch in progress) and run the full journey once on the merged code.
-2. CM-02 opt-outs: K09 triggers more STOP replies than CN10; add an opt-out risk term to the value score.
-3. Merge the open PRs into main and run the full test suite once on the merged code.
-4. Frontend still uses mock data in places; wire the Control Room and CRM to the API.
+Done since the first list: everything merged into `main` (#25 to #31), full suite green in CI on Python 3.9
+and 3.11, and the Control Room, borrower page, Learning and Voice pages read the API.
+
+1. Real tool calls: live SMS and WhatsApp to team phones plus one live Sarvam call (#32, #33).
+2. Hosted backend so the GitHub Pages UI is live without a laptop (#34).
+3. Recorded demo with a replay backup (#35); re-measure the lift and breaches on merged `main` (#40).
+4. CM-02 opt-outs: K09 triggers more STOP replies than CN10 (#38).
+5. Smart CRM list still uses mock data (#47). Product decisions: #41 to #45, #48, #49.
 
 ## Also built (beyond the brief)
 - Message understanding: rules → small offline model → optional LLM; 95% on 160 hand-written messages, 100% STOP/hardship recall (PR #22).
