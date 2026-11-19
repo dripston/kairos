@@ -473,6 +473,67 @@ final +33.8 / +20.4 → +79.8 / +65.1.
 If payments matter more than opt-outs, `{"stop_penalty": 20}` or `{"stop_penalty": 0}` (PR #17) are
 the points to use. The trade-off is set by μ, and the frontier above is the menu.
 
+## Live collections view (`/demo/live`, SIMULATED)
+
+A projector page that plays the K09 replay in scaled real time: **Kairos (K09, current replay
+default)** vs **CN10 fixed cadence**, on the same synthetic borrowers, seed, caps and matched budget,
+through the same stack as `replay/k09.py` (`StackRun`: K03 spine → K06 SupervisorFSM plan/dispatch →
+executor → DEV simulator with the day-7 WhatsApp drift → ledger → OutcomeFinalizer → learner).
+
+| Endpoint | What |
+|---|---|
+| `GET /demo/live` | The page (`kairos_backend/static/live.html`): plain HTML/CSS/JS, no build, no CDN |
+| `POST /demo/live/start {seed=42, borrowers=300, days=14, speed=1}` | Starts a run in a background thread on a fresh temp dir. 409 while one runs, 503 while shutting down |
+| `GET /demo/live/state?cursor=&limit=` | Events after `cursor`, plus counters per arm (₹ spent, ₹ recovered, replies, verified payments, STOP opt-outs, cap breaches, borrowers by stage, sends by channel), the daily series, the learner snapshot and the day/clock |
+| `POST /demo/live/control {speed?, paused?}` | Display pacing only. The results do not change |
+| `POST /demo/live/stop` | Stops between steps, closes SQLite and removes the temp dir. SIGTERM does the same through `Lifecycle` (`LiveLoop`) |
+
+**Pacing.** Each simulated day is computed in one go, then its events are released over
+`12 s / speed`. Planning fills the first third of the day; sends and outcomes follow by clock time.
+Counters are built **only from released events**, so the page and `/state` always agree. The run also
+starts with a CN10 calibration run (unconstrained) to set the matched budget, exactly as
+`run_comparison` does. That takes about 3 s at 300 borrowers.
+
+**Events** (`kind`): `decision` (SEND, channel, send time, plain-English why from the chosen arm's
+posterior), `wait` (`REST` = the K15 two-day gap; `LEARNER` = queue filter or ranker WAIT),
+`blocked` (gate rule → short label, `stage` plan or send), `sent`, `delivered` / `not_delivered`,
+`reply`, `promise`, `paid` (verified EMI ₹ from the spine), `stop`, `handoff`, `learner` (largest
+posterior moves today), `learning` (channel bars), `switch` (top channel by send mix changed), `world`
+(the day-7 drift notice) and `day_end` (cap breaches from `ledger.cap_breaches()`). Every event says
+`provenance: "SIMULATED"`.
+
+Seed 42, 300 × 14: Kairos ₹1,76,723 recovered / ₹471.05 spent / 49 replies / 11 payments / 2 STOPs; CN10
+₹17,938 / ₹575 / 23 / 2 / 2. Cap breaches 0 on both sides. These equal `StackRun.report()` exactly.
+
+### Context for Claude / how to continue
+
+- **Read first:** the `replay/live.py` docstring. `LiveStackRun` **only watches** a `StackRun`. It
+  wraps `fsm.plan`, `fsm.dispatch` and `simulator.run_day` on the instance and overrides
+  `_plan_queue` / `run_day` just to emit events, then calls `super()`. Never change a decision here.
+  Change the replay, and the view follows. `tests/test_demo_live.py` asserts that the counters equal
+  `StackRun.report()`, so drift is caught.
+- **Mappings that are display choices, not stack facts** (flag if wrong):
+  - DEV-simulator `payment_claimed` is shown as **promise to pay**.
+  - A claim that is not verified becomes a **handoff** event ("a person reviews it"). No HITL ticket
+    is written: the replay has no HITL hook. On the page, the "decision needs you" card is display-only.
+  - `read` receipts are not modelled by the DEV simulator, so there is no `read` event.
+  - Real plan-time `HANDOFF` decisions would show if the gate returned them. In this replay it doesn't.
+- **Quiet hours** never fire, because every candidate slot is inside the contact window. The blocks
+  you will see are quiet day (Sunday), weekly and daily caps, budget, no consent and STOP
+  (mostly on CN10, which keeps scheduling opted-out borrowers).
+- **Kairos `decisions.WAIT`** in `/state` counts the pre-filter waits too (REST and the ranker queue
+  filter), so it is larger than `report()["decisions"]["WAIT"]`, which only counts `fsm.plan` results.
+- **Display name:** the K06 Supervisor / Gate is "Aladdin" in the event texts and the page. Code
+  identifiers are unchanged.
+- **No PII:** `BRW-<loan id>` and the K03 generator's synthetic first name only. No phone, surname,
+  e-mail or POS. `test_no_pii_in_payloads` guards this.
+- **Page:** a single file. Story view (hero, decision river, why-ticker, learning bars, two SVG charts)
+  and Scoreboard view (cricket score bug, template commentary, "the worm"). Presenter mode makes
+  Scoreboard the default. `prefers-reduced-motion` turns off dots and animations. No LLM anywhere:
+  commentary is templates over event fields.
+- **Frontend:** `Shell.jsx` links to it ("Live collections", new tab) via `LIVE_COLLECTIONS_URL`.
+  `npm run build` is not verified here (no Node).
+
 ## Voice engine (K17/K18)
 
 Kairos side of the Sarvam voice bots: **which** bot / voice / language a call uses, and what Kairos

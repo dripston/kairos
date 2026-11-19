@@ -158,6 +158,33 @@ python3 scripts/run_redteam.py
 Prints 49 attacks with PASS/FAIL. Today: 39 pass; the 10 fails are known gaps, each with an owner
 and a fix (the 4 serious ones are being fixed on `redteam/fix-high`).
 
+### Live collections view (`/demo/live`)
+
+The one to put on the projector. A 14-day campaign plays out live (about 3 minutes at 1×, under a
+minute at 4×): Kairos on the left, the usual fixed schedule on the right, with the same 300 synthetic
+borrowers, the same budget and the same rules. Everything on it is **SIMULATED**.
+
+```bash
+cd kairos/backend && source .venv/bin/activate && uvicorn kairos_backend.api:app --port 8000
+```
+
+Then open <http://localhost:8000/demo/live>, pick seed 42 and press **Start** (4× is the default).
+**P** toggles Presenter mode (no controls, big text, Scoreboard view), **S** switches Story ↔
+Scoreboard, and **Space** pauses. `?presenter=1` in the URL opens straight into Presenter mode.
+
+**Presenter script (about 60 seconds).** "Three hundred people have missed an EMI. On the left, Kairos
+decides every morning, for each person, whether to message them and how. On the right, the usual
+fixed calendar does the same job with the same money and the same rules. Every dot is a borrower. Each
+one passes Aladdin, our supervisor, which blocks anything the lender's rules forbid: a STOP, a quiet day,
+a weekly limit. Watch the ticker: it says *why* in plain words, like 'Ravi gets a WhatsApp because people
+like him reply most in the evening' or 'Asha rests today'. On day 7 the world changes and WhatsApp
+stops working as well. Nobody tells Kairos. The bars on the right drop, and by day 11 it has moved to
+SMS. Look at the top: rupees recovered for every rupee spent, and rule breaches stay at zero. The
+borrowers are synthetic and the replies come from a simulator, which is why it says SIMULATED."
+
+Seed 42 ends at Kairos ₹1,76,723 recovered on ₹471 spent (375× per ₹1) vs the fixed schedule's ₹17,938 on
+₹575 (31×), with 0 rule breaches on both sides. Every run of the same seed gives the same numbers.
+
 ---
 
 ## 5. If something goes wrong
