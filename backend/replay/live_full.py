@@ -83,6 +83,8 @@ SUPERVISOR = ("sup.simulated", "supervisor")
 HUMAN = ("demo.supervisor", "supervisor")
 APPROVAL_CUT = 0.345               # display position where the approval window ends (before the 09:30 sends)
 CH_NAME, CH_ARTICLE, SLOT_WORD = L.CH_NAME, L.CH_ARTICLE, L.SLOT_WORD
+SEGMENT_BANDS = ("B1", "B2", "B3")    # learner.segments: 1–30 / 31–60 / 61–90 days late
+SEGMENT_CHANNELS = ("whatsapp", "sms", "ivr")
 LOWER_CH = {"ivr": "voice call", "voicebot": "voice-bot call", "email": "email"}
 MONEY = re.compile(r"(₹|rs\.?|inr)\s*[\d,]+", re.I)
 
@@ -261,7 +263,7 @@ class FullStackRun(k09.StackRun):
             st = self.churn.state(b.borrower_id)
             self.ev("churn", "assigned", at + timedelta(minutes=1), b.borrower_id,
                     f"{self.name(b.borrower_id)} starts in cohort {st.cohort}, {st.risk_tier.lower()} risk, layer "
-                    f"{st.layer}.", links=[("spine", "churn")], pos=0.003 + 0.035 * i / max(1, n),
+                    f"{st.layer}.", links=[("spine", "churn")], pos=0.003 + 0.025 * i / max(1, n),
                     cohort=st.cohort, risk_tier=st.risk_tier, layer=st.layer, journey=st.journey_id,
                     lifecycle=st.lifecycle)
         # CM-03 sample: a synthetic WhatsApp number (+910…, never a real mobile; never put in an event)
@@ -314,7 +316,23 @@ class FullStackRun(k09.StackRun):
             self.ev("churn", "moved", at, bid,
                     f"Auto-churn: {self.name(bid)} moves {what} {t.get('from')} → {t.get('to')} ({trigger}).",
                     links=[("churn", "learner")], engine=eng, **{"from": t.get("from"), "to": t.get("to")},
-                    rule=t.get("rule_id"), cohort=st.cohort, layer=st.layer, risk_tier=st.risk_tier, trigger=trigger)
+                    rule=t.get("rule_id"), cohort=st.cohort, layer=st.layer, risk_tier=st.risk_tier, trigger=trigger,
+                    lifecycle=st.lifecycle, why=[str(w) for w in (t.get("why") or [])][:4])
+
+    def _tick_transitions(self, d: date) -> list:
+        """The K27 daily tick's own transition rows for day d (PTP due, expiries, tick rules), in the order the engine
+        wrote them, grouped per borrower: [(borrower_id, [{engine, from, to, rule_id, why}, ...]), ...]."""
+        import json
+        out: dict = {}
+        for r in self.churn.db.execute(
+                "SELECT borrower_id, engine, from_value, to_value, rule_id, detail FROM churn_transitions"
+                " WHERE day=? AND (event_id=? OR event_id LIKE ?) ORDER BY rowid",
+                (d.isoformat(), f"tick:{d.isoformat()}", f"tick:{d.isoformat()}:%")):
+            why = (json.loads(r["detail"] or "{}") or {}).get("why") or []
+            out.setdefault(r["borrower_id"], []).append(
+                {"engine": r["engine"], "from": None if r["from_value"] in ("None", "-") else r["from_value"],
+                 "to": r["to_value"], "rule_id": r["rule_id"], "why": why})
+        return list(out.items())
 
     # ---------- the day ----------
     def run_day(self, day: int):
@@ -345,15 +363,9 @@ class FullStackRun(k09.StackRun):
         self.hitl.tick(now=self._at(6, 15))
         self._supervisor_cases()
         # K27 daily tick (PTP due → KEPT/BROKEN, expiries); report each borrower's move
-        before = {bid: (s.cohort, s.layer, s.risk_tier) for bid in self.churn.borrower_ids()
-                  for s in (self.churn.state(bid),)}
         self.churn.tick(d)
-        for bid, (c0, l0, r0) in before.items():
-            s = self.churn.state(bid)
-            for eng, a, b in (("cohort", c0, s.cohort), ("layer", l0, s.layer), ("risk", r0, s.risk_tier)):
-                if a != b:
-                    self._churn_moves(bid, [{"engine": eng, "from": a, "to": b, "rule_id": s.cohort_rule or "K27_TICK"}],
-                                      self._at(6, 20), "daily tick")
+        for bid, rows in self._tick_transitions(d):
+            self._churn_moves(bid, rows, self._at(6, 20), "daily tick")
         self._resolve_claims()
         # K09 plan (08:00): the learner's queue, then the Gate per borrower
         plan_at = self._at(8, 0)
@@ -629,6 +641,7 @@ class FullStackRun(k09.StackRun):
                     f"no reply; {learned} outcomes go to the learner.", links=[("outcomes", "learner")],
                     count=len(outs), by_status=dict(sorted(st.items())), learner_updates=learned)
         self._learning_events(self._at(21, 40))
+        self._segments_event(self._at(21, 42))
         self._switch_event(self._at(21, 45))
         self.spend_paise += tot["spend"]
         self.replies += tot["replies"]
@@ -1112,6 +1125,82 @@ class FullStackRun(k09.StackRun):
         self._learn_prev = cells
         self.snapshot = snap
 
+    def _segments_event(self, at: datetime):
+        """learner.segments (additive, day end, after the reply windows closed): the learner's state per segment
+        (SEGMENT_BANDS) and channel, read from the live ranker, never changing it.
+
+        Per channel: its best slot by the learner's estimates() (the per-segment posterior the posterior / switch
+        events use; Beta(alpha, beta), 90% band by normal approximation), replies per rupee, and what tomorrow's
+        08:00 decisions will use (evidence decayed per day, pooled across segments when a segment is thin), the
+        reply-chance points the STOP penalty takes off. `preferred` = k09.score_table(eligible_only)[0], the same
+        rule as the switch event. Plus the value floor, and today's budget pacing from the ledger. Caches the read
+        touches are restored afterwards, so the run's decisions are byte-identical with or without this event."""
+        rk = self.ranker
+        base = getattr(rk, "base", rk)
+        stop = getattr(rk, "stop_model", None)
+        saved = (dict(getattr(base, "_post_cache", {}) or {}), dict(getattr(rk, "_realized_cache", {}) or {}),
+                 dict(getattr(stop, "_cache", {}) or {}) if stop is not None else None)
+        ref = datetime.combine(self._date() + timedelta(days=1), dtime(8, 0))
+        try:
+            segs = []
+            for band in SEGMENT_BANDS:
+                est = {(e["channel"], e["slot"]): e for e in base.estimates(band)}
+                post = base._posteriors(band, ref) if hasattr(base, "_posteriors") else {}
+                table = k09.score_table(rk, band)
+                top = (k09.score_table(rk, band, eligible_only=True) or [None])[0]
+                chans, cells = [], []
+                for ch in SEGMENT_CHANNELS:
+                    rows = [r for r in table if r["channel"] == ch]
+                    if not rows:
+                        continue
+                    best = rows[0]
+                    slot = k09.SLOT_MAP[best["slot"]][0]
+                    e = est[(ch, slot)]
+                    a, b = e["alpha"], e["beta"]
+                    m, sd = a / (a + b), (a * b / ((a + b) ** 2 * (a + b + 1))) ** 0.5
+                    da, db, dn, dsrc = base._arm(post, ch, slot) if hasattr(base, "_arm") else (a, b, e["n_obs"], "")
+                    ps = stop.p_stop(ch, "n1", ref) if stop is not None else None
+                    chans.append({"channel": ch, "slot": slot, "mean": round(m, 4),
+                                  "lo90": round(max(0.0, m - 1.645 * sd), 4), "hi90": round(min(1.0, m + 1.645 * sd), 4),
+                                  "alpha": round(a, 3), "beta": round(b, 3), "n_obs": int(e["n_obs"]),
+                                  "source": e["source"], "replies_per_inr": best["replies_per_inr"],
+                                  "eligible": m >= getattr(rk, "min_reply_prob", 0.0),
+                                  "decision_mean": round(da / (da + db), 4), "decision_n": round(da + db - sum(base.prior(ch, slot)), 2),
+                                  "decision_source": dsrc, "p_stop": None if ps is None else round(ps, 5),
+                                  "stop_points": None if ps is None else round(self.opts.stop_penalty * ps, 4)})
+                    for k15_slot, (sl, _) in k09.SLOT_MAP.items():
+                        c = est[(ch, sl)]
+                        cells.append([ch, sl, round(c["alpha"], 3), round(c["beta"], 3), int(c["n_obs"]), c["source"]])
+                segs.append({"band": band, "label": L.BAND_WORD.get(band, band),
+                             "preferred": top["channel"] if top else None,
+                             "preferred_slot": top["slot"] if top else None, "channels": chans, "cells": cells})
+            realized, n_fin = rk.realized_replies_per_inr(ref) if hasattr(rk, "realized_replies_per_inr") else (None, 0)
+            floor = rk.value_floor(ref) if hasattr(rk, "value_floor") else getattr(base, "min_replies_per_inr", 0.0)
+        finally:
+            if hasattr(base, "_post_cache"):
+                base._post_cache = saved[0]
+            if hasattr(rk, "_realized_cache"):
+                rk._realized_cache = saved[1]
+            if stop is not None:
+                stop._cache = saved[2]
+        bud = self.ledger._conn().execute(
+            "SELECT b.allowance_paise, b.committed_paise, c.budget_per_case_paise * c.allocated_cases AS pool,"
+            " c.committed_paise AS pool_committed FROM budget_days b JOIN campaigns c ON c.id = b.campaign_id"
+            " WHERE b.campaign_id=? AND b.day=?", (CAMPAIGN, self._date().isoformat())).fetchone()
+        pacing = ({"day_allowance_paise": bud["allowance_paise"], "day_committed_paise": bud["committed_paise"],
+                   "pool_paise": bud["pool"], "pool_left_paise": bud["pool"] - bud["pool_committed"]} if bud else None)
+        o = self.opts
+        words = ", ".join(f"{CH_NAME[sg['preferred']]} for people {sg['label']}" for sg in segs if sg["preferred"])
+        self.ev("learner", "segments", at, None,
+                f"Learning loop, end of day {self._day + 1}: best replies per rupee now — {words or 'no channel clears the floor'}.",
+                links=[("outcomes", "learner")], ref=ref.strftime("%Y-%m-%dT%H:%M"), segments=segs,
+                rule={"decay": o.decay, "value_floor_rel": o.value_floor_rel, "stop_penalty": o.stop_penalty,
+                      "min_reply_prob": getattr(rk, "min_reply_prob", None),
+                      "value_floor_replies_per_inr": round(floor, 4),
+                      "realized_replies_per_inr": None if realized is None else round(realized, 4),
+                      "finalized_outcomes": n_fin, "stop_segment": "n1"},
+                pacing=pacing)
+
     def _switch_event(self, at: datetime):
         """Two views of "the best channel changed": the learner's preferred channel per band (posterior replies
         per rupee among arms above the reply floor, as k09.preference_switches) and the day's send mix."""
@@ -1360,6 +1449,7 @@ class NotPending(RuntimeError):
 class FullCampaign(L.LiveCampaign):
     """One full-mode run in a background thread (same control surface as the race's LiveCampaign)."""
     mode = "full"
+    run_cls = FullStackRun      # a subclass may watch the run (kairos_backend/engine_room.py); never change decisions
 
     def __init__(self, seed: int = 42, borrowers: int = 300, days: int = 14, speed: float = 1.0,
                  day_seconds: float = L.DAY_SECONDS, workdir: Optional[str] = None,
@@ -1385,7 +1475,7 @@ class FullCampaign(L.LiveCampaign):
                                                 self.n, self.seed, k09.START)
             names = L._first_names(csv_path)
             portfolio, loans = portfolio_from_csv(csv_path), k09.load_loans(csv_path)
-            r = self._run = FullStackRun(csv_path, self.seed, self.days, os.path.join(self.workdir, "full.db"),
+            r = self._run = self.run_cls(csv_path, self.seed, self.days, os.path.join(self.workdir, "full.db"),
                                          BUDGET_PER_CASE_PAISE, portfolio=portfolio, loans=loans, names=names,
                                          interactive=self.interactive)
             self.budget = {"per_case_paise": BUDGET_PER_CASE_PAISE, "pool_paise": BUDGET_PER_CASE_PAISE * len(portfolio),
