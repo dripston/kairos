@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kairos Live Collections</title>
+<style>
+:root {
+  --bg: #0a1120; --panel: #111a2c; --panel2: #172238; --line: #25324b; --ink: #eef3fb; --muted: #9aabc6;
+  --kairos: #2dd4bf; --kairos-ink: #062a26; --fixed: #f5a524; --fixed-ink: #2e1d02;
+  --paid: #34d399; --block: #f87171; --stop: #fb7185; --learn: #a78bfa; --warn: #fbbf24;
+  --r: 14px; --fs: 15px; --big: 44px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--ink); font: var(--fs)/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  display: flex; flex-direction: column; min-height: 100vh; }
+button, select { font: inherit; color: var(--ink); background: var(--panel2); border: 1px solid var(--line);
+  border-radius: 9px; padding: 6px 12px; cursor: pointer; }
+button:hover { border-color: var(--muted); }
+button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+button.primary { background: var(--kairos); color: var(--kairos-ink); border-color: var(--kairos); font-weight: 700; }
+button:focus-visible, select:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--warn); outline-offset: 2px; }
+.sim { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; letter-spacing: .08em; font-size: 12px;
+  padding: 4px 9px; border-radius: 6px; background: var(--warn); color: #241a00; }
+.muted { color: var(--muted); }
+
+/* top bar */
+header { display: flex; align-items: center; gap: 14px; padding: 10px 18px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+header h1 { font-size: 19px; margin: 0; font-weight: 800; letter-spacing: .01em; }
+header .clock { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 17px; padding: 4px 12px; border-radius: 8px; background: var(--panel2); }
+.daybar { width: 140px; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.daybar > i { display: block; height: 100%; background: var(--kairos); width: 0; transition: width .4s linear; }
+.controls { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.controls .grp { display: inline-flex; gap: 4px; align-items: center; }
+.controls label { color: var(--muted); font-size: 13px; }
+#status { font-size: 13px; color: var(--muted); min-width: 90px; }
+
+main { flex: 1; padding: 14px 18px 18px; display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; min-width: 0; }
+.panel h2 { margin: 0 0 8px; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 700;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.panel h2 .spacer { flex: 1; }
+.panel h2 .note { text-transform: none; letter-spacing: 0; font-weight: 500; }
+
+/* hero */
+.hero { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: stretch; }
+.side { border-radius: var(--r); padding: 12px 18px; background: var(--panel); border: 1px solid var(--line); position: relative; }
+.side.kairos { border-top: 5px solid var(--kairos); }
+.side.fixed { border-top: 5px dashed var(--fixed); }
+.side .who { font-weight: 800; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+.side .who small { font-weight: 500; color: var(--muted); font-size: 13px; }
+.nums { display: flex; gap: 26px; align-items: flex-end; margin-top: 4px; flex-wrap: wrap; }
+.num .v { font-size: var(--big); font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.05; display: inline-block; }
+.num .l { color: var(--muted); font-size: 13px; }
+.num.sm .v { font-size: calc(var(--big) * .55); }
+.mult { font-size: calc(var(--big) * .62); font-weight: 800; padding: 2px 10px; border-radius: 10px; background: var(--panel2); display: inline-block; }
+.side.kairos .mult { color: var(--kairos); } .side.fixed .mult { color: var(--fixed); }
+.mini { display: flex; gap: 16px; margin-top: 6px; color: var(--muted); font-size: 13px; flex-wrap: wrap; }
+.mini b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.mid { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px; min-width: 170px; }
+.breach { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 12px; background: #0f2a22; border: 1px solid #1f6f55; font-weight: 800; }
+.breach.bad { background: #3a1010; border-color: var(--block); }
+.vs { font-weight: 900; color: var(--muted); letter-spacing: .1em; }
+.bump { animation: bump .6s ease; }
+@keyframes bump { 0% { transform: scale(1); } 30% { transform: scale(1.07); color: var(--paid); } 100% { transform: scale(1); } }
+
+/* glossary tooltips */
+.tip { border-bottom: 1px dotted var(--muted); cursor: help; position: relative; }
+.tip::after { content: attr(data-tip); position: absolute; left: 50%; top: calc(100% + 8px); transform: translateX(-50%);
+  width: 260px; background: #f8fafc; color: #0b1220; padding: 8px 10px; border-radius: 8px; font-size: 13px;
+  font-weight: 500; line-height: 1.35; text-transform: none; letter-spacing: 0; opacity: 0; pointer-events: none; transition: opacity .15s; z-index: 50; white-space: normal; }
+.tip:hover::after, .tip:focus::after { opacity: 1; }
+
+/* story grid */
+.story { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(320px, 1fr); gap: 14px; flex: 1; min-height: 0; }
+.col { display: flex; flex-direction: column; gap: 14px; min-height: 0; min-width: 0; }
+
+/* river */
+.river { position: relative; height: 330px; border-radius: 10px; background: linear-gradient(180deg, #0d1628, #0b1322); overflow: hidden; }
+.stage { position: absolute; top: 0; bottom: 0; width: 0; }
+.stage .cap { position: absolute; top: 8px; transform: translateX(-50%); text-align: center; white-space: nowrap; font-size: 13px; color: var(--muted); font-weight: 700; }
+.stage .cap b { display: block; font-size: 20px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.stage .rail { position: absolute; top: 58px; bottom: 10px; left: -1px; border-left: 2px dashed #1e2a42; }
+.stage.paid .cap b { color: var(--paid); }
+.stage.gate .cap b { color: var(--block); }
+.gate { position: absolute; top: 56px; bottom: 10px; width: 16px; transform: translateX(-50%); border-radius: 8px;
+  background: repeating-linear-gradient(180deg, #3b4a6b 0 10px, #26324b 10px 20px); }
+.gate .shield { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 34px; height: 34px; border-radius: 50%;
+  background: var(--panel2); border: 2px solid var(--muted); display: grid; place-items: center; transition: border-color .2s, box-shadow .2s; }
+.gate.hit .shield { border-color: var(--block); box-shadow: 0 0 0 6px rgba(248,113,113,.18); }
+.lane { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700;
+  padding: 3px 8px 3px 6px; border-radius: 8px; background: #16213a; border: 1px solid var(--line); white-space: nowrap; }
+.lane svg { width: 16px; height: 16px; }
+.lane b { font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 600; }
+.dot { position: absolute; left: 0; top: 0; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%;
+  background: #8fb4ff; box-shadow: 0 0 0 2px rgba(10,17,32,.8); transition: transform .9s cubic-bezier(.4,.1,.2,1), background .3s, opacity .8s; will-change: transform; }
+.dot.k { background: var(--kairos); } .dot.f { background: var(--fixed); border-radius: 2px; }
+.dot.rest { opacity: .35; } .dot.gone { opacity: 0; }
+.dot.blocked { background: var(--block); }
+.dot.paid { background: var(--paid); width: 16px; height: 16px; margin: -8px 0 0 -8px; box-shadow: 0 0 0 4px rgba(52,211,153,.25); }
+.dot.stop { background: var(--stop); }
+.dot.human { background: var(--learn); }
+.tag { position: absolute; left: 0; top: 0; font-size: 12px; font-weight: 800; padding: 2px 7px; border-radius: 6px; white-space: nowrap;
+  transform: translate(-50%, -150%); pointer-events: none; transition: opacity .6s, transform 1.6s ease-out; z-index: 3; }
+.tag.block { background: #3a1414; color: #ffd2d2; border: 1px solid var(--block); }
+.tag.money { background: #0f3326; color: #c9ffe9; border: 1px solid var(--paid); font-size: 15px; }
+.tag.stop { background: #3b1020; color: #ffd6df; border: 1px solid var(--stop); }
+.tag.rest { background: #1b2540; color: var(--muted); border: 1px solid var(--line); }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 6px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+
+/* ticker */
+.ticker { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; overflow: hidden; flex: 1; min-height: 120px; }
+.ticker li { display: grid; grid-template-columns: 92px 1fr; gap: 10px; align-items: start; padding: 7px 9px; border-radius: 9px; background: var(--panel2);
+  animation: slide .45s ease; }
+.ticker li .kind { font-size: 11px; font-weight: 800; letter-spacing: .05em; text-align: center; padding: 3px 4px; border-radius: 6px; background: #22304b; }
+.ticker li.paid .kind { background: var(--paid); color: #04281a; }
+.ticker li.stop .kind, .ticker li.blocked .kind { background: var(--block); color: #2b0606; }
+.ticker li.learner .kind, .ticker li.switch .kind, .ticker li.world .kind { background: var(--learn); color: #1b0b3d; }
+.ticker li.decision .kind { background: var(--kairos); color: var(--kairos-ink); }
+.ticker li.handoff .kind { background: var(--warn); color: #241a00; }
+.ticker li .arm { font-size: 11px; font-weight: 700; color: var(--fixed); margin-right: 4px; }
+@keyframes slide { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+/* learning */
+.bars { display: flex; flex-direction: column; gap: 7px; }
+.bar { display: grid; grid-template-columns: 100px 1fr 112px; gap: 10px; align-items: center; font-size: 14px; }
+.bar .name { display: flex; align-items: center; gap: 6px; font-weight: 700; }
+.bar .name svg { width: 16px; height: 16px; flex: none; }
+.bar .track { height: 14px; border-radius: 7px; background: var(--line); overflow: hidden; }
+.bar .track i { display: block; height: 100%; background: var(--learn); border-radius: 7px; transition: width .8s ease; }
+.bar .val { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; text-align: right; }
+.bar.down .val::after { content: " ▼ less"; color: var(--block); } .bar.up .val::after { content: " ▲ more"; color: var(--paid); }
+.callout { margin-top: 10px; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--learn); background: #1d1838; font-weight: 600; display: none; }
+.callout.on { display: block; animation: slide .5s ease; }
+
+/* chart */
+.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.chart svg { width: 100%; height: 150px; display: block; }
+.chart .t { font-size: 13px; color: var(--muted); font-weight: 700; margin-bottom: 2px; }
+svg text { fill: var(--muted); font-size: 11px; font-family: inherit; }
+
+/* scoreboard */
+.board { display: none; flex-direction: column; gap: 16px; flex: 1; min-height: 0; }
+body.scoreboard .board { display: flex; } body.scoreboard .story, body.scoreboard .hero { display: none; }
+.bug { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.team { border-radius: 18px; overflow: hidden; border: 1px solid var(--line); background: var(--panel); }
+.team .band { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; font-weight: 900; font-size: 22px; letter-spacing: .04em; }
+.team.kairos .band { background: var(--kairos); color: var(--kairos-ink); }
+.team.fixed .band { background: repeating-linear-gradient(135deg, var(--fixed) 0 18px, #e3971c 18px 36px); color: var(--fixed-ink); }
+.team .band small { font-weight: 700; font-size: 14px; opacity: .85; letter-spacing: 0; }
+.score { display: grid; grid-template-columns: 1.4fr 1fr 1fr; }
+.score > div { padding: 12px 20px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); min-width: 0; }
+.score .lab { font-size: 13px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.score .val { font-size: 34px; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1.15; white-space: nowrap; }
+.score .sub { font-size: 13px; color: var(--muted); }
+.score .runs { grid-row: span 2; display: flex; flex-direction: column; justify-content: center; }
+.score .runs .val { font-size: 64px; }
+.score .r { border-right: 0; }
+.team.kairos .runs .val { color: var(--kairos); } .team.fixed .runs .val { color: var(--fixed); }
+.score .wide { grid-column: span 3; border-right: 0; border-bottom: 0; }
+.part { display: flex; height: 24px; border-radius: 6px; overflow: hidden; background: var(--line); margin-top: 6px; }
+.part i { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #08101f; font-style: normal; overflow: hidden; white-space: nowrap; transition: width .8s; }
+.partkey { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 5px; }
+.partkey span::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; background: var(--c); }
+.boardlow { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; flex: 1; min-height: 0; }
+.comm { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+.comm li { padding: 10px 14px; border-radius: 10px; background: var(--panel2); font-size: 18px; animation: slide .45s ease; border-left: 5px solid var(--line); }
+.comm li.big { border-left-color: var(--paid); font-weight: 700; }
+.comm li.safe { border-left-color: var(--stop); }
+.comm li.smart { border-left-color: var(--kairos); }
+.comm li.learn { border-left-color: var(--learn); }
+.comm li .who { font-size: 12px; font-weight: 800; color: var(--muted); letter-spacing: .06em; display: block; }
+.ratio { display: flex; gap: 18px; align-items: baseline; flex-wrap: wrap; margin-top: 8px; font-size: 15px; color: var(--muted); }
+.ratio b { font-size: 26px; font-variant-numeric: tabular-nums; }
+
+/* hand-off card */
+.needs { position: fixed; right: 20px; bottom: 20px; width: 380px; background: #fff8e1; color: #2a2000; border-radius: 14px; padding: 14px 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.45); display: none; z-index: 40; border-left: 6px solid var(--warn); }
+.needs.on { display: block; animation: slide .4s ease; }
+.needs b { font-size: 16px; } .needs p { margin: 6px 0 0; font-size: 14px; } .needs small { display: block; margin-top: 6px; color: #6b5a1d; }
+
+/* idle overlay */
+.idle { position: fixed; inset: 0; display: none; place-items: center; background: rgba(5,9,18,.72); z-index: 30; padding: 16px; }
+.idle.on { display: grid; }
+.idle .card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 26px 30px; max-width: 640px; }
+.idle h2 { margin: 0 0 8px; font-size: 26px; }
+.idle p { color: var(--muted); margin: 0 0 14px; }
+
+/* presenter mode: projection at 1920x1080 */
+body.presenter { --fs: 19px; --big: 60px; }
+body.presenter header .controls { display: none; }
+body.presenter .river { height: 400px; }
+body.presenter .ticker li { font-size: 18px; grid-template-columns: 110px 1fr; }
+body.presenter .bar { font-size: 17px; grid-template-columns: 130px 1fr 150px; }
+body.presenter .chart svg { height: 170px; }
+body.presenter .score .val { font-size: 50px; } body.presenter .score .runs .val { font-size: 96px; }
+body.presenter .score .lab { font-size: 15px; } body.presenter .score .sub { font-size: 16px; }
+body.presenter .team .band { font-size: 30px; padding: 14px 24px; } body.presenter .team .band small { font-size: 17px; }
+body.presenter .comm li { font-size: 25px; padding: 13px 18px; } body.presenter .comm li .who { font-size: 14px; }
+body.presenter header h1 { font-size: 26px; } body.presenter header .clock { font-size: 24px; }
+body.presenter .sim { font-size: 15px; }
+body.presenter #worm { height: 300px !important; }
+.exitp { display: none; position: fixed; top: 10px; right: 10px; z-index: 60; opacity: .12; }
+.exitp:hover, .exitp:focus { opacity: 1; }
+body.presenter .exitp { display: block; }
+
+/* 1280x720 and other smaller screens */
+@media (max-width: 1400px) {
+  :root { --big: 34px; --fs: 14px; }
+  .river { height: 260px; }
+  .chart svg { height: 115px; }
+  .score .val { font-size: 26px; } .score .runs .val { font-size: 46px; }
+  .score > div { padding: 9px 14px; }
+  .comm li { font-size: 16px; }
+  body.presenter { --fs: 16px; --big: 44px; }
+  body.presenter .score .val { font-size: 34px; } body.presenter .score .runs .val { font-size: 60px; }
+  body.presenter .comm li { font-size: 19px; } body.presenter .river { height: 300px; }
+  body.presenter #worm { height: 220px !important; }
+}
+@media (max-height: 760px) {
+  .river { height: 230px; } .chart svg { height: 100px; } main { gap: 10px; padding-top: 10px; }
+  .panel { padding: 9px 12px; } .comm li { padding: 7px 12px; }
+}
+@media (max-width: 1000px) {
+  .story, .boardlow, .bug { grid-template-columns: 1fr; }
+  .hero { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-sms" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M4 5h16v11H9l-5 4z"/></symbol>
+  <symbol id="i-whatsapp" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.6-1.2A9 9 0 1 0 12 3z"/><path fill="currentColor" d="M9 8h2l1 2-1 1a6 6 0 0 0 2 2l1-1 2 1v2c-4 0-7-3-7-7z"/></symbol>
+  <symbol id="i-email" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 7l9 6 9-6" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-ivr" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M5 3h4l2 5-3 2a11 11 0 0 0 6 6l2-3 5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2z"/></symbol>
+  <symbol id="i-voicebot" viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 4v4M9 13h.01M15 13h.01" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
+  <symbol id="i-human" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 21a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+</svg>
+
+<header>
+  <h1>Kairos · Live collections</h1>
+  <span class="sim" title="Synthetic borrowers, a simulator for replies, placeholder costs and caps">SIMULATED</span>
+  <span class="clock" id="clock" aria-live="off">Ready</span>
+  <div class="daybar" aria-hidden="true"><i id="daybar"></i></div>
+  <span id="status" role="status">idle</span>
+  <div class="controls" id="controls">
+    <span class="grp"><label for="seed">Seed</label>
+      <select id="seed"><option>42</option><option>7</option><option>11</option><option>2026</option></select></span>
+    <button class="primary" id="startBtn">▶ Start</button>
+    <span class="grp" role="group" aria-label="Speed">
+      <button data-speed="1" aria-pressed="false">1×</button><button data-speed="2" aria-pressed="false">2×</button><button data-speed="4" aria-pressed="true">4×</button></span>
+    <button id="pauseBtn" aria-pressed="false">❚❚ Pause</button>
+    <button id="stopBtn">■ Stop</button>
+    <span class="grp" role="group" aria-label="View">
+      <button id="viewStory" aria-pressed="true">Story</button><button id="viewBoard" aria-pressed="false">Scoreboard</button></span>
+    <button id="presBtn" title="Hide controls, larger text (key P)">Presenter mode</button>
+  </div>
+</header>
+<button class="exitp" id="exitPres">Exit presenter (P)</button>
+
+<main>
+  <!-- HERO -->
+  <section class="hero" aria-label="Money recovered and spent">
+    <div class="side kairos">
+      <div class="who"><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="6" fill="#2dd4bf"/></svg>Kairos <small>learns who to contact, when, and how</small></div>
+      <div class="nums">
+        <div class="num"><div class="v" id="k-rec">₹0</div><div class="l">recovered (bank-confirmed)</div></div>
+        <div class="num sm"><div class="v" id="k-spent">₹0</div><div class="l">spent on messages</div></div>
+        <div class="num"><div class="mult" id="k-mult">–</div><div class="l">₹ recovered per ₹1 spent</div></div>
+      </div>
+      <div class="mini"><span>Replies <b id="k-rep">0</b></span><span>Payments <b id="k-pay">0</b></span>
+        <span><span class="tip" tabindex="0" data-tip="STOP: the borrower asked us to stop messaging. Aladdin then stops every channel for them, not only the one they replied on.">STOP</span> opt-outs <b id="k-stop">0</b></span>
+        <span><span class="tip" tabindex="0" data-tip="Reply per rupee: how many real replies each rupee of messaging buys (shown per ₹1,000). Higher means the money goes to people who answer.">Replies per ₹1,000</span> <b id="k-rpr">0</b></span></div>
+    </div>
+    <div class="mid">
+      <div class="vs">VS</div>
+      <div class="breach" id="breach"><svg width="22" height="22" style="color:var(--paid)" aria-hidden="true"><use href="#i-shield"/></svg>
+        <span><span class="tip" tabindex="0" data-tip="Cap: the most messages one person may get per day and per week, set by the lender. A breach would be even one message over that limit. Aladdin checks every message twice.">Rule breaches</span>: <span id="breaches">0</span></span></div>
+      <span class="muted" style="font-size:12px;text-align:center">same borrowers, same budget,<br>same rules</span>
+    </div>
+    <div class="side fixed">
+      <div class="who"><svg width="14" height="14" aria-hidden="true"><rect x="1" y="1" width="12" height="12" fill="#f5a524"/></svg>Fixed schedule <small>the usual calendar, same plan for everyone</small></div>
+      <div class="nums">
+        <div class="num"><div class="v" id="f-rec">₹0</div><div class="l">recovered (bank-confirmed)</div></div>
+        <div class="num sm"><div class="v" id="f-spent">₹0</div><div class="l">spent on messages</div></div>
+        <div class="num"><div class="mult" id="f-mult">–</div><div class="l">₹ recovered per ₹1 spent</div></div>
+      </div>
+      <div class="mini"><span>Replies <b id="f-rep">0</b></span><span>Payments <b id="f-pay">0</b></span>
+        <span>STOP opt-outs <b id="f-stop">0</b></span><span>Replies per ₹1,000 <b id="f-rpr">0</b></span></div>
+    </div>
+  </section>
+
+  <!-- STORY VIEW -->
+  <section class="story">
+    <div class="col">
+      <div class="panel">
+        <h2>The decision river <span class="note muted">each dot is a borrower (a sample moves; the counts are everyone)</span>
+          <span class="spacer"></span>
+          <span role="group" aria-label="River for"><button id="riverK" aria-pressed="true">Kairos</button> <button id="riverF" aria-pressed="false">Fixed schedule</button></span></h2>
+        <div class="river" id="river" aria-label="Borrowers flowing through the stages"></div>
+        <div class="legend"><span><i style="background:var(--kairos)"></i>on the way</span><span><i style="background:var(--paid)"></i>paid (bank-confirmed)</span>
+          <span><i style="background:var(--block)"></i>blocked by Aladdin</span><span><i style="background:var(--stop)"></i>said STOP</span>
+          <span><i style="background:var(--learn)"></i>handed to a person</span><span><i style="background:#8fb4ff;opacity:.4"></i>resting today</span></div>
+      </div>
+      <div class="panel">
+        <h2>Money over the campaign <span class="spacer"></span><span class="note muted">solid: Kairos · dashed: Fixed schedule</span></h2>
+        <div class="charts">
+          <div class="chart"><div class="t">₹ recovered so far</div><svg id="chartRec" role="img" aria-label="Cumulative rupees recovered by day"></svg></div>
+          <div class="chart"><div class="t">₹ spent so far</div><svg id="chartSpent" role="img" aria-label="Cumulative rupees spent by day"></svg></div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel" style="flex:1;display:flex;flex-direction:column;min-height:0">
+        <h2>Why did Kairos do that?</h2>
+        <ul class="ticker" id="ticker" aria-live="polite"></ul>
+      </div>
+      <div class="panel">
+        <h2>What Kairos is learning <span class="spacer"></span><span class="note muted">how likely to reply</span></h2>
+        <div class="bars" id="bars"></div>
+        <div class="callout" id="callout"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCOREBOARD VIEW -->
+  <section class="board" aria-label="Scoreboard">
+    <div class="bug">
+      <div class="team kairos" id="teamK"></div>
+      <div class="team fixed" id="teamF"></div>
+    </div>
+    <div class="boardlow">
+      <div class="panel" style="display:flex;flex-direction:column;min-height:0">
+        <h2>Commentary <span class="spacer"></span><span class="sim">SIMULATED</span></h2>
+        <ul class="comm" id="comm" aria-live="polite"></ul>
+      </div>
+      <div class="panel">
+        <h2>The worm: ₹ recovered by day</h2>
+        <div class="chart"><svg id="worm" role="img" aria-label="Cumulative rupees recovered by day, both strategies" style="height:230px"></svg></div>
+        <div class="legend"><span><i style="background:var(--kairos)"></i>Kairos (solid)</span><span><i style="background:var(--fixed);border-radius:2px"></i>Fixed schedule (dashed)</span></div>
+        <div class="ratio"><span>₹ recovered per ₹1 spent:</span><span style="color:var(--kairos)">Kairos <b id="b-k-mult">–</b></span><span style="color:var(--fixed)">Fixed <b id="b-f-mult">–</b></span></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="needs" id="needs" role="alert">
+  <b id="needsTitle">1 decision needs you</b>
+  <p id="needsText"></p>
+  <small>Only the big calls come to a person. Display only in this SIMULATED view; real approvals live in the human-in-the-loop queue.</small>
+</div>
+
+<div class="idle on" id="idle">
+  <div class="card">
+    <h2>Watch Kairos collect, live</h2>
+    <p>300 synthetic borrowers, 14 days. Every day Kairos decides for each person: contact them (which channel, what time) or let them rest. The usual fixed schedule works through the same people with the same budget and the same rules. Before anything is sent, <b>Aladdin</b>, the supervisor, checks it against the lender's rules, and checks again just before sending.</p>
+    <p><span class="sim">SIMULATED</span> &nbsp;Synthetic borrowers and a simulator for replies. No real person is contacted.</p>
+    <button class="primary" id="idleStart">▶ Start the campaign</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var CH = { whatsapp: "WhatsApp", sms: "SMS", email: "Email", ivr: "Voice call", voicebot: "Voice bot", human: "Person" };
+  var CH_COLOR = { whatsapp: "#2dd4bf", sms: "#60a5fa", email: "#a78bfa", ivr: "#f472b6", voicebot: "#fbbf24", human: "#a78bfa" };
+  var SLOT = { "08-11": "morning", "11-14": "midday", "14-17": "afternoon", "17-19": "evening" };
+  var LANES = ["sms", "whatsapp", "email", "ivr", "voicebot", "human"];
+  var KIND_LABEL = { decision: "SEND", wait: "RESTING", blocked: "BLOCKED", paid: "PAID", stop: "STOP", reply: "REPLY",
+    promise: "PROMISE", learner: "LEARNING", "switch": "SWITCH", world: "CHANGE", handoff: "TO A PERSON" };
+
+  var cursor = 0, status = "idle", speed = 4, paused = false, riverArm = "kairos", last = null;
+  var prevBars = {}, tickQ = [], commQ = [], needsCount = 0, needsTimer = null;
+
+  function inr(paise) {
+    var r = Math.round(paise / 100), s = String(Math.abs(r));
+    if (s.length > 3) { var head = s.slice(0, -3), tail = s.slice(-3), parts = [];
+      while (head.length > 2) { parts.unshift(head.slice(-2)); head = head.slice(0, -2); }
+      if (head) parts.unshift(head); s = parts.join(",") + "," + tail; }
+    return (r < 0 ? "-₹" : "₹") + s;
+  }
+  function inrExact(paise) { return paise < 10000 && paise % 100 ? "₹" + (paise / 100).toFixed(2) : inr(paise); }
+  function api(path, body) {
+    return fetch(path, body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(typeof j.detail === "string" ? j.detail : r.status); return j; }); });
+  }
+  function hh(t) { if (!t) return ""; var p = t.split(":"), h = +p[0]; return ((h % 12) || 12) + ":" + p[1] + (h < 12 ? " am" : " pm"); }
+
+  // ---------------- controls ----------------
+  function setPressed(sel, on) { document.querySelectorAll(sel).forEach(function (b) { b.setAttribute("aria-pressed", String(on(b))); }); }
+  function start() {
+    paused = false; $("pauseBtn").setAttribute("aria-pressed", "false"); $("pauseBtn").textContent = "❚❚ Pause";
+    resetView();
+    api("/demo/live/start", { seed: +$("seed").value, borrowers: 300, days: 14, speed: speed })
+      .then(function () { $("idle").classList.remove("on"); status = "preparing"; poll(); })
+      .catch(function (e) { $("status").textContent = "Could not start: " + e.message; });
+  }
+  $("startBtn").onclick = start; $("idleStart").onclick = start;
+  $("stopBtn").onclick = function () { api("/demo/live/stop", {}).then(function () { poll(); }); };
+  $("pauseBtn").onclick = function () {
+    paused = !paused; api("/demo/live/control", { paused: paused });
+    $("pauseBtn").setAttribute("aria-pressed", String(paused)); $("pauseBtn").textContent = paused ? "▶ Resume" : "❚❚ Pause";
+  };
+  document.querySelectorAll("[data-speed]").forEach(function (b) {
+    b.onclick = function () { speed = +b.dataset.speed; setPressed("[data-speed]", function (x) { return x === b; });
+      if (status === "running" || status === "preparing") api("/demo/live/control", { speed: speed }); };
+  });
+  function setView(board) { document.body.classList.toggle("scoreboard", board);
+    $("viewBoard").setAttribute("aria-pressed", String(board)); $("viewStory").setAttribute("aria-pressed", String(!board));
+    setTimeout(function () { layoutRiver(); renderCharts(); }, 0); }
+  $("viewStory").onclick = function () { setView(false); };
+  $("viewBoard").onclick = function () { setView(true); };
+  function presenter(on) { document.body.classList.toggle("presenter", on); if (on) setView(true); setTimeout(function () { layoutRiver(); renderCharts(); }, 0); }
+  $("presBtn").onclick = function () { presenter(true); };
+  $("exitPres").onclick = function () { presenter(false); };
+  function riverTo(arm) { riverArm = arm; setPressed("#riverK,#riverF", function (b) { return (b.id === "riverK") === (arm === "kairos"); }); clearDots(); renderCounts(); }
+  $("riverK").onclick = function () { riverTo("kairos"); };
+  $("riverF").onclick = function () { riverTo("cn10"); };
+  document.addEventListener("keydown", function (e) {
+    if (e.target.tagName === "SELECT" || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === "p" || e.key === "P") presenter(!document.body.classList.contains("presenter"));
+    else if (e.key === "s" || e.key === "S") setView(!document.body.classList.contains("scoreboard"));
+    else if (e.key === " " && e.target.tagName !== "BUTTON") { e.preventDefault(); $("pauseBtn").click(); }
+  });
+
+  function resetView() {
+    cursor = 0; last = null; prevBars = {}; tickQ = []; commQ = [];
+    $("ticker").innerHTML = ""; $("comm").innerHTML = ""; $("callout").classList.remove("on"); clearDots();
+    needsCount = 0; $("needs").classList.remove("on"); $("bars").innerHTML = ""; $("bars").dataset.key = "";
+  }
+
+  // ---------------- polling ----------------
+  var pollTimer = null;
+  function poll() {
+    clearTimeout(pollTimer);
+    api("/demo/live/state?cursor=" + cursor + "&limit=3000").then(function (st) {
+      var catchup = st.events.length > 500;
+      cursor = st.cursor; status = st.status; last = st;
+      if (st.status !== "idle") $("idle").classList.remove("on");
+      if (typeof st.speed === "number" && (st.status === "running" || st.status === "preparing")) {
+        speed = st.speed; setPressed("[data-speed]", function (b) { return +b.dataset.speed === speed; }); }
+      st.events.forEach(function (e) { onEvent(e, catchup); });
+      render(st);
+      var more = st.events.length >= 3000, live = st.status === "running" || st.status === "preparing";
+      pollTimer = setTimeout(poll, more ? 30 : live ? 400 : 2500);
+    }).catch(function () { $("status").textContent = "reconnecting…"; pollTimer = setTimeout(poll, 1500); });
+  }
+
+  // ---------------- counters ----------------
+  function bumpSet(id, text) { var el = $(id); if (el.textContent !== text) { el.textContent = text; if (!REDUCED) { el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); } } }
+  function mult(c) { return c && c.spent_paise ? (c.recovered_paise / c.spent_paise).toFixed(0) + "×" : "–"; }
+  function render(st) {
+    var label = { idle: "idle", preparing: "preparing: matching the budget…", running: paused ? "paused" : "running at " + st.speed + "×",
+      finished: "finished", stopped: "stopped", error: "error: " + (st.error || "") }[st.status] || st.status;
+    $("status").textContent = label;
+    if (st.day) $("clock").textContent = "Day " + st.day + " / " + st.days + " · " + hh(st.clock);
+    $("daybar").style.width = st.day ? Math.round(((st.day - 1 + (st.day_progress || 0)) / st.days) * 100) + "%" : "0";
+    var c = st.counters || {};
+    ["kairos", "cn10"].forEach(function (arm) {
+      var x = c[arm]; if (!x) return; var p = arm === "kairos" ? "k" : "f";
+      bumpSet(p + "-rec", inr(x.recovered_paise));
+      $(p + "-spent").textContent = inrExact(x.spent_paise);
+      $(p + "-mult").textContent = mult(x); $("b-" + p + "-mult").textContent = mult(x);
+      $(p + "-rep").textContent = x.replies; $(p + "-pay").textContent = x.verified_payments;
+      $(p + "-stop").textContent = x.stop_opt_outs; $(p + "-rpr").textContent = x.replies_per_1000_inr;
+    });
+    var br = (c.kairos ? c.kairos.cap_breaches : 0) + (c.cn10 ? c.cn10.cap_breaches : 0);
+    $("breaches").textContent = br; $("breach").classList.toggle("bad", br > 0);
+    renderCounts(); renderBars(st.learning); renderCharts(); renderBoard(st);
+  }
+
+  // ---------------- the decision river ----------------
+  var river = $("river"), cols = {}, laneEls = {}, dots = {}, ndots = 0, MAXDOTS = 70;
+  var X = { due: .045, decide: .155, gate: .265, channel: .41, reached: .565, replied: .69, promised: .81, paid: .935 };
+  var STAGES = [["due", "Due"], ["decide", "Decide"], ["gate", "Checked by Aladdin"], ["channel", "Channel"], ["reached", "Reached"],
+    ["replied", "Replied"], ["promised", "Promised"], ["paid", "Paid"]];
+  function buildRiver() {
+    STAGES.forEach(function (s) {
+      var d = document.createElement("div"); d.className = "stage " + s[0];
+      d.innerHTML = '<div class="cap"><b id="cnt-' + s[0] + '">0</b>' + s[1] + (s[0] === "gate" ? " (blocked)" : "") + "</div>" +
+        (s[0] === "gate" || s[0] === "channel" ? "" : '<div class="rail"></div>');
+      river.appendChild(d); cols[s[0]] = d;
+    });
+    var g = document.createElement("div"); g.className = "gate"; g.id = "gate"; g.title = "Aladdin, the supervisor: checks every decision against the lender's rules, and again just before sending";
+    g.innerHTML = '<div class="shield"><svg width="20" height="20" aria-hidden="true"><use href="#i-shield"/></svg></div>';
+    river.appendChild(g);
+    LANES.forEach(function (ch) {
+      var l = document.createElement("div"); l.className = "lane";
+      l.innerHTML = '<svg aria-hidden="true" style="color:' + CH_COLOR[ch] + '"><use href="#i-' + ch + '"/></svg>' + CH[ch] + ' <b id="lane-' + ch + '">0</b>';
+      river.appendChild(l); laneEls[ch] = l;
+    });
+    layoutRiver();
+  }
+  function W() { return river.clientWidth; } function H() { return river.clientHeight; }
+  function laneY(ch) { return 74 + (H() - 92) * (LANES.indexOf(ch) + .5) / LANES.length; }
+  function layoutRiver() {
+    if (!W()) return;
+    STAGES.forEach(function (s) { cols[s[0]].style.left = (X[s[0]] * W()) + "px"; });
+    $("gate").style.left = (X.gate * W()) + "px";
+    LANES.forEach(function (ch) { laneEls[ch].style.left = (X.channel * W()) + "px"; laneEls[ch].style.top = laneY(ch) + "px"; });
+  }
+  window.addEventListener("resize", function () { layoutRiver(); renderCharts(); });
+  function jitter(bid, salt) { var h = 0, s = bid + salt; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return ((h >>> 0) % 1000) / 1000; }
+  function place(d, stage, ch) {
+    var x = X[stage] * W() + (stage === "channel" ? 64 + jitter(d.bid, "c") * 30 : (jitter(d.bid, stage) - .5) * 28);
+    var y = stage === "channel" ? laneY(ch) + (jitter(d.bid, "l") - .5) * 16 : d.y;
+    d.el.style.transform = "translate(" + x.toFixed(1) + "px," + y.toFixed(1) + "px)"; d.stage = stage;
+  }
+  function spawn(bid, stage, ch, force) {
+    if (dots[bid]) return dots[bid];
+    if (REDUCED || !W() || (!force && ndots >= MAXDOTS) || ndots >= MAXDOTS + 30) return null;
+    var el = document.createElement("div"); el.className = "dot " + (riverArm === "kairos" ? "k" : "f");
+    var d = { bid: bid, el: el, y: 76 + (H() - 98) * jitter(bid, "y"), stage: null, timer: null }; dots[bid] = d; ndots++;
+    river.appendChild(el); place(d, stage, ch); void el.offsetWidth; return d;
+  }
+  function scale(ms) { return ms / Math.max(1, speed / 2); }
+  function retire(d, ms) {
+    clearTimeout(d.timer);
+    d.timer = setTimeout(function () { d.el.classList.add("gone");
+      setTimeout(function () { if (dots[d.bid] === d) { delete dots[d.bid]; ndots--; } d.el.remove(); }, 900); }, scale(ms));
+  }
+  function tag(d, cls, text, ms) {
+    var t = document.createElement("div"); t.className = "tag " + cls; t.textContent = text;
+    var m = /translate\(([-\d.]+)px,([-\d.]+)px\)/.exec(d.el.style.transform); if (!m) return;
+    t.style.left = m[1] + "px"; t.style.top = m[2] + "px"; river.appendChild(t);
+    requestAnimationFrame(function () { t.style.transform = "translate(-50%, -260%)"; });
+    setTimeout(function () { t.style.opacity = "0"; setTimeout(function () { t.remove(); }, 700); }, scale(ms || 1800));
+  }
+  var tagBudget = 0; setInterval(function () { tagBudget = 0; }, 1000);
+  function clearDots() { Object.keys(dots).forEach(function (k) { clearTimeout(dots[k].timer); dots[k].el.remove(); }); dots = {}; ndots = 0;
+    river.querySelectorAll(".tag").forEach(function (t) { t.remove(); }); }
+  function riverEvent(e) {
+    if (e.arm !== riverArm || !e.borrower_id || REDUCED || document.body.classList.contains("scoreboard")) return;
+    var d = dots[e.borrower_id], bid = e.borrower_id;
+    switch (e.kind) {
+      case "decision":
+        d = spawn(bid, "due"); if (d) requestAnimationFrame(function () { place(d, "decide"); }); break;
+      case "wait":
+        if (jitter(bid, "w" + e.day) > .3) break;
+        d = spawn(bid, "due"); if (!d) break;
+        requestAnimationFrame(function () { place(d, "decide"); d.el.classList.add("rest"); });
+        if (tagBudget < 1 && jitter(bid, "rt" + e.day) < .3) { tagBudget++; setTimeout(function () { tag(d, "rest", "resting today", 1400); }, 500); }
+        retire(d, 1600); break;
+      case "blocked":
+        if (e.stage === "plan") { if (jitter(bid, "b" + e.day) > .5) break; d = spawn(bid, "decide", null); if (!d) break; }
+        else if (!d) break;
+        (function (d) {
+          requestAnimationFrame(function () { place(d, "gate"); d.el.classList.add("blocked"); });
+          $("gate").classList.add("hit"); setTimeout(function () { $("gate").classList.remove("hit"); }, 500);
+          setTimeout(function () { place(d, "decide"); if (tagBudget < 2) { tagBudget++; tag(d, "block", "Aladdin: " + (e.label || "rule"), 1600); } }, scale(650));
+          retire(d, 1900);
+        })(d); break;
+      case "sent": if (d) place(d, "channel", e.channel); break;
+      case "delivered": if (d) { place(d, "reached"); retire(d, 3200); } break;
+      case "not_delivered": if (d) retire(d, 300); break;
+      case "reply": d = d || spawn(bid, "reached", null, true); if (d) { clearTimeout(d.timer); place(d, "replied"); retire(d, 4500); } break;
+      case "promise": d = d || spawn(bid, "replied", null, true); if (d) { clearTimeout(d.timer); place(d, "promised"); retire(d, 5000); } break;
+      case "paid":
+        d = d || spawn(bid, "promised", null, true);
+        if (d) { clearTimeout(d.timer); place(d, "paid"); d.el.classList.add("paid");
+          setTimeout(function () { tag(d, "money", "+" + inr(e.amount_paise), 2800); }, 700); retire(d, 4200); } break;
+      case "stop":
+        d = d || spawn(bid, "reached", null, true);
+        if (d) { clearTimeout(d.timer); d.el.classList.add("stop"); tag(d, "stop", "STOP: all channels off", 2200); retire(d, 2400); } break;
+      case "handoff":
+        d = d || spawn(bid, "promised", null, true);
+        if (d) { clearTimeout(d.timer); d.el.classList.add("human"); place(d, "channel", "human"); tag(d, "rest", "to a person", 2200); retire(d, 3200); } break;
+    }
+  }
+  function renderCounts() {
+    var c = last && last.counters && last.counters[riverArm]; if (!c) return;
+    var s = c.stages;
+    $("cnt-due").textContent = s.due; $("cnt-decide").textContent = s.decided; $("cnt-gate").textContent = c.blocked;
+    $("cnt-channel").textContent = c.sent; $("cnt-reached").textContent = s.reached; $("cnt-replied").textContent = s.replied;
+    $("cnt-promised").textContent = s.promised; $("cnt-paid").textContent = s.paid;
+    LANES.forEach(function (ch) { $("lane-" + ch).textContent = ch === "human" ? c.handoffs : (c.sent_by_channel[ch] || 0); });
+  }
+
+  // ---------------- tickers ----------------
+  var PRIO = { paid: 9, "switch": 9, world: 9, stop: 8, handoff: 8, learner: 6, promise: 5, reply: 4, blocked: 3, decision: 2, wait: 1 };
+  function onEvent(e, catchup) {
+    if (e.kind === "day_end") { if (e.arm === "kairos") commQ.push({ p: 7, e: e }); return; }
+    if (e.kind === "switch") { var co = $("callout"); co.textContent = e.text; co.classList.add("on"); }
+    if (e.kind === "handoff" && e.arm === "kairos" && !catchup) needs(e);
+    if (!catchup) riverEvent(e);
+    var p = PRIO[e.kind]; if (!p) return;
+    if (e.arm === "kairos" || e.kind === "paid" || e.kind === "stop") {
+      var sampled = (e.kind === "decision" || e.kind === "wait" || e.kind === "blocked") && jitter(e.borrower_id || "", "t" + e.day) > .15;
+      if (!sampled) tickQ.push({ p: p, e: e });
+      if (!sampled || e.kind === "paid") commQ.push({ p: p, e: e });
+    }
+    if (catchup) { tickQ = tickQ.slice(-8); commQ = commQ.slice(-6); }
+    if (tickQ.length > 40) { tickQ.sort(function (a, b) { return b.p - a.p; }); tickQ = tickQ.slice(0, 25); }
+    if (commQ.length > 30) { commQ.sort(function (a, b) { return b.p - a.p; }); commQ = commQ.slice(0, 20); }
+  }
+  function pop(q) { if (!q.length) return null; var bi = 0; for (var i = 1; i < q.length; i++) if (q[i].p > q[bi].p) bi = i;
+    if (q[bi].p < 7) bi = 0; return q.splice(bi, 1)[0].e; }
+  function pushLi(list, li, max) { list.insertBefore(li, list.firstChild); while (list.children.length > max) list.lastChild.remove(); }
+  setInterval(function () {
+    var e = pop(tickQ); if (!e) return;
+    var li = document.createElement("li"); li.className = e.kind;
+    var k = document.createElement("span"); k.className = "kind"; k.textContent = KIND_LABEL[e.kind] || e.kind.toUpperCase();
+    var t = document.createElement("span");
+    if (e.arm === "cn10") { var a = document.createElement("span"); a.className = "arm"; a.textContent = "Fixed schedule:"; t.appendChild(a); }
+    var pre = /^Day \d/.test(e.text) ? "" : "Day " + e.day + ", " + hh(e.time) + ": ";
+    t.appendChild(document.createTextNode(pre + e.text));
+    li.appendChild(k); li.appendChild(t); pushLi($("ticker"), li, document.body.classList.contains("presenter") ? 7 : 9);
+  }, 1100);
+  setInterval(function () {
+    var e, c;
+    while ((e = pop(commQ)) && !(c = commentary(e))) { }
+    if (!e || !c) return;
+    var li = document.createElement("li"); li.className = c.cls;
+    var w = document.createElement("span"); w.className = "who"; w.textContent = "DAY " + e.day + " · " + hh(e.time) + (e.arm === "cn10" ? " · FIXED SCHEDULE" : " · KAIROS");
+    li.appendChild(w); li.appendChild(document.createTextNode(c.text)); pushLi($("comm"), li, 6);
+  }, 1500);
+
+  // Cricket commentary: fixed templates over real events, kind and plain. No LLM.
+  function commentary(e) {
+    var n = e.name || "A borrower", ch = CH[e.channel] || "", sl = SLOT[e.slot] || "";
+    var art = /^[aeiou]/i.test(sl) ? "an" : "a";
+    switch (e.kind) {
+      case "paid": return { cls: "big", text: (e.amount_paise >= 2000000 ? "SIX! " : "FOUR! ") + "A payment of " + inr(e.amount_paise) + " after " + art + " " + sl + " " + ch + ". Confirmed by the bank." };
+      case "wait": if (e.arm !== "kairos") return null;
+        return e.rule === "REST" ? { cls: "smart", text: "Smart captaincy: Kairos rests " + n + " today. A day off makes the next message land better." }
+                                 : { cls: "smart", text: "Leaves it alone: Kairos holds back on " + n + " today and saves the budget for likelier replies." };
+      case "decision": if (e.arm !== "kairos") return null;
+        return { cls: "smart", text: "Kairos sets the field: " + n + " gets " + (ch === "SMS" ? "an SMS" : "a " + ch) + " in the " + (SLOT[e.slot] || "day") + "." };
+      case "stop": return { cls: "safe", text: "Safety first: " + n + " said STOP on " + ch + ", so Aladdin makes every channel go quiet for them." };
+      case "reply": return { cls: "", text: "Good connection: " + n + " replies on " + ch + "." };
+      case "promise": return { cls: "", text: n + " promises to pay. Over to the third umpire: the bank will confirm." };
+      case "handoff": return { cls: "safe", text: "Review! " + n + "'s payment claim goes to a person to check." };
+      case "switch": return { cls: "learn", text: "Change of bowling: " + e.text };
+      case "world": return { cls: "learn", text: "The pitch is changing: from today WhatsApp replies drop. Nobody tells Kairos." };
+      case "learner": return { cls: "learn", text: "Reading the pitch: " + e.text.replace(/^Learning: /, "") };
+      case "blocked":
+        if (e.arm !== "kairos") return null;
+        if (e.label === "quiet day") return { cls: "safe", text: "Rest day: Sunday is a quiet day. Aladdin keeps everyone uncontacted." };
+        if (e.label === "budget used") return { cls: "safe", text: "Aladdin holds " + n + " back: today's budget is used up." };
+        return { cls: "safe", text: "Aladdin blocked this: " + e.label + " for " + n + "." };
+      case "day_end": {
+        var c = last && last.counters; if (!c || !c.kairos) return null;
+        return { cls: "", text: "End of day " + e.day + ": Kairos " + inr(c.kairos.recovered_paise) + ", Fixed schedule " + inr(c.cn10.recovered_paise) + ". Rule breaches: " + (c.kairos.cap_breaches + c.cn10.cap_breaches) + "." };
+      }
+    }
+    return null;
+  }
+
+  function needs(e) {
+    needsCount++;
+    $("needsTitle").textContent = needsCount === 1 ? "1 decision needs you" : needsCount + " decisions need you";
+    $("needsText").textContent = e.text;
+    $("needs").classList.add("on"); clearTimeout(needsTimer);
+    needsTimer = setTimeout(function () { $("needs").classList.remove("on"); }, 9000);
+  }
+
+  // ---------------- learning bars ----------------
+  function renderBars(L) {
+    if (!L || !L.channels) { if (!$("bars").children.length) $("bars").innerHTML = '<span class="muted">Appears after the first day of replies.</span>'; return; }
+    var key = JSON.stringify(L.channels); if ($("bars").dataset.key === key) return;
+    var max = Math.max.apply(null, L.channels.map(function (c) { return c.reply_chance; }).concat([0.05]));
+    $("bars").innerHTML = L.channels.map(function (c) {
+      var prev = prevBars[c.channel], dir = prev == null || Math.abs(prev - c.reply_chance) < 0.0015 ? "" : (c.reply_chance > prev ? "up" : "down");
+      return '<div class="bar ' + dir + '"><span class="name"><svg aria-hidden="true" style="color:' + CH_COLOR[c.channel] + '"><use href="#i-' + c.channel + '"/></svg>' + c.label +
+        '</span><span class="track" role="img" aria-label="' + c.label + ': about ' + (c.reply_chance * 100).toFixed(1) + ' in 100 reply"><i style="width:' + Math.round(c.reply_chance / max * 100) +
+        '%"></i></span><span class="val">' + (c.reply_chance * 100).toFixed(1) + " in 100</span></div>";
+    }).join("");
+    $("bars").dataset.key = key;
+    L.channels.forEach(function (c) { prevBars[c.channel] = c.reply_chance; });
+  }
+
+  // ---------------- charts (inline SVG) ----------------
+  function lineChart(svg, field, opts) {
+    if (!svg || !svg.clientWidth) return;
+    var s = (last && last.series) || { kairos: [], cn10: [] }, days = (last && last.days) || 14;
+    var w = svg.clientWidth, h = svg.clientHeight, L = 66, R = 64, T = 12, B = 22, big = opts && opts.thick;
+    var max = 1; ["kairos", "cn10"].forEach(function (a) { (s[a] || []).forEach(function (p) { max = Math.max(max, p[field]); }); });
+    var x = function (d) { return L + (w - L - R) * d / days; }, y = function (v) { return T + (h - T - B) * (1 - v / max); };
+    var fs = big ? ' style="font-size:13px"' : "", g = "";
+    for (var i = 0; i <= 2; i++) { var v = max * i / 2; g += '<line x1="' + L + '" x2="' + (w - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="#25324b"/>' +
+      '<text x="' + (L - 6) + '" y="' + (y(v) + 4) + '" text-anchor="end"' + fs + ">" + (field === "spent_paise" && max < 100000 ? inrExact(Math.round(v)) : inr(v)) + "</text>"; }
+    for (var d = 0; d <= days; d += 7) g += '<text x="' + x(d) + '" y="' + (h - 5) + '" text-anchor="middle"' + fs + ">" + (d === 0 ? "start" : "day " + d) + "</text>";
+    if (opts && opts.drift && days >= 7) g += '<line x1="' + x(6.5) + '" x2="' + x(6.5) + '" y1="' + T + '" y2="' + (h - B) + '" stroke="#a78bfa" stroke-dasharray="2 4"/><text x="' + (x(6.5) + 4) + '" y="' + (T + 10) + '" style="fill:#a78bfa' + (big ? ";font-size:13px" : "") + '">day 7: WhatsApp drops</text>';
+    [["kairos", "#2dd4bf", ""], ["cn10", "#f5a524", "7 5"]].forEach(function (a) {
+      var pts = [[0, 0]].concat((s[a[0]] || []).map(function (p) { return [p.day - (p.partial ? 1 - ((last && last.day_progress) || 0) : 0), p[field]]; }));
+      var path = pts.map(function (p, i) { return (i ? "L" : "M") + x(p[0]).toFixed(1) + "," + y(p[1]).toFixed(1); }).join("");
+      g += '<path d="' + path + '" fill="none" stroke="' + a[1] + '" stroke-width="' + (big ? 4 : 3) + '" stroke-dasharray="' + a[2] + '" stroke-linejoin="round"/>';
+      var lp = pts[pts.length - 1];
+      g += '<circle cx="' + x(lp[0]) + '" cy="' + y(lp[1]) + '" r="4" fill="' + a[1] + '"/><text x="' + (x(lp[0]) + 7) + '" y="' + (y(lp[1]) + (a[0] === "kairos" ? 0 : 14)) + '" style="fill:' + a[1] + ';font-weight:700' + (big ? ";font-size:14px" : "") + '">' + (a[0] === "kairos" ? "Kairos" : "Fixed") + "</text>";
+    });
+    svg.innerHTML = g;
+  }
+  function renderCharts() {
+    if (document.body.classList.contains("scoreboard")) lineChart($("worm"), "recovered_paise", { drift: true, thick: true });
+    else { lineChart($("chartRec"), "recovered_paise", { drift: true }); lineChart($("chartSpent"), "spent_paise"); }
+  }
+
+  // ---------------- scoreboard ----------------
+  function partBar(byCh, total, what) {
+    if (!total) return '<div class="part"></div><div class="partkey"><span style="--c:#25324b">no ' + what + ' yet</span></div>';
+    var keys = Object.keys(byCh).filter(function (k) { return byCh[k] > 0; }).sort(function (a, b) { return byCh[b] - byCh[a]; });
+    return '<div class="part" role="img" aria-label="' + keys.map(function (k) { return CH[k] + " " + Math.round(byCh[k] / total * 100) + "%"; }).join(", ") + '">' +
+      keys.map(function (k) { var pc = Math.round(byCh[k] / total * 100);
+        return '<i style="width:' + pc + '%;background:' + CH_COLOR[k] + '">' + (pc >= 14 ? CH[k] + " " + pc + "%" : "") + "</i>"; }).join("") +
+      '</div><div class="partkey">' + keys.map(function (k) { return '<span style="--c:' + CH_COLOR[k] + '">' + CH[k] + " " + Math.round(byCh[k] / total * 100) + "%</span>"; }).join("") + "</div>";
+  }
+  function renderBoard(st) {
+    var c = st.counters || {}; if (!c.kairos) return;
+    var elapsed = Math.max(1, (st.day - 1) + (st.day_progress || 0));
+    [["kairos", "teamK", "KAIROS", "learns as it goes"], ["cn10", "teamF", "FIXED SCHEDULE", "the usual calendar"]].forEach(function (t) {
+      var x = c[t[0]], other = c[t[0] === "kairos" ? "cn10" : "kairos"];
+      var parts = x.recovered_paise ? partBar(x.paid_by_channel || {}, x.recovered_paise, "payments") : partBar(x.replies_by_channel || {}, x.replies, "replies");
+      var saved = other.spent_paise - x.spent_paise;
+      $(t[1]).innerHTML =
+        '<div class="band">' + t[2] + " <small>" + t[3] + "</small></div>" +
+        '<div class="score">' +
+        '<div class="runs"><div class="lab">Runs · ₹ recovered</div><div class="val">' + inr(x.recovered_paise) + '</div><div class="sub">' + x.verified_payments + " bank-confirmed payments · " + mult(x) + " per ₹1 spent</div></div>" +
+        '<div><div class="lab">Run rate</div><div class="val">' + inr(x.recovered_paise / elapsed) + '</div><div class="sub">₹ per day</div></div>' +
+        '<div class="r"><div class="lab">Overs</div><div class="val">Day ' + (st.day || 0) + '</div><div class="sub">of ' + st.days + "</div></div>" +
+        '<div><div class="lab">Wickets</div><div class="val" style="color:' + (x.cap_breaches ? "var(--block)" : "var(--paid)") + '">' + x.cap_breaches + '</div><div class="sub">rule breaches</div></div>' +
+        '<div class="r"><div class="lab">Extras</div><div class="val">' + (t[0] === "kairos" ? (saved > 0 ? inrExact(saved) : "₹0") : inrExact(x.spent_paise)) + '</div><div class="sub">' +
+          (t[0] === "kairos" ? "saved by resting vs fixed" : "spent on messages") + "</div></div>" +
+        '<div class="wide"><div class="lab">Partnerships · ' + (x.recovered_paise ? "₹ recovered by channel" : "replies by channel") + "</div>" + parts + "</div>" +
+        "</div>";
+    });
+  }
+
+  buildRiver();
+  if (/[?&]presenter=1/.test(location.search)) presenter(true);
+  if (/[?&]view=scoreboard/.test(location.search)) setView(true);
+  // Pick up a run that is already going (or finished) when the page loads.
+  api("/demo/live/state?cursor=0&limit=1").then(function (st) {
+    if (st.status && st.status !== "idle") { $("idle").classList.remove("on"); poll(); }
+  }).catch(function () {});
+})();
+</script>
+</body>
+</html>

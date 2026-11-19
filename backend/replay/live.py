@@ -15,6 +15,8 @@ Pacing: each simulated day is computed in one go, then its events are released o
 `DAY_SECONDS / speed` wall seconds (planning in the first third of the day, sends and outcomes by clock
 time after that). Counters are built only from released events, so the screen and `/state` agree.
 
+Display name: the K06 Supervisor / Gate is shown as "Aladdin" in event texts (identifiers unchanged).
+
 Payloads carry borrower ids (`BRW-<loan id>`) and the synthetic first name from the K03 generator, never
 phone numbers, e-mails, surnames or loan amounts other than the verified EMI amount.
 """
@@ -235,9 +237,9 @@ class LiveStackRun(k09.StackRun):
         chn = CH_NAME.get(cand_ch or "", "this channel")
         sentence = why.format(name=name, channel=chn)
         if res.reason == "STOP_OPT_OUT" or res.rule == "STOP_OPT_OUT":
-            text = f"Blocked: {name} said STOP, so no more messages on any channel."
+            text = f"Aladdin blocked this: {name} said STOP, so no more messages on any channel."
         else:
-            text = f"Blocked by the safety check: {sentence}."
+            text = f"Aladdin blocked this: {sentence}."
         self._ev("blocked", at, res.borrower_id, pos=self._plan_pos(), decision=res.decision, rule=res.rule,
                  reason=res.reason, label=label, channel=cand_ch, stage="plan", text=text)
 
@@ -250,42 +252,46 @@ class LiveStackRun(k09.StackRun):
             self._sent.append(res)
             cost = k09.COST_PAISE[res.channel]
             self._ev("sent", at, res.borrower_id, channel=res.channel, cost_paise=cost,
-                     text=f"{CH_NAME[res.channel]} sent to {name} ({money(cost)}).")
+                     text=f"{CH_NAME[res.channel]} sent to {name} ({money(cost)}); Aladdin re-checked it before sending.")
         else:
             label, why = block_label(out.rule, out.reason)
             self._ev("blocked", at, res.borrower_id, decision=out.decision or "CANCEL", rule=out.rule,
                      reason=out.reason, label=label, channel=res.channel, stage="send",
-                     text=f"Stopped at send time: {why.format(name=name, channel=CH_NAME[res.channel])}.")
+                     text=f"Aladdin re-checked before sending and stopped it: "
+                          f"{why.format(name=name, channel=CH_NAME[res.channel])}.")
 
     def _on_outcomes(self, outcomes):
         for o, res in zip(outcomes, self._sent):
             at = datetime.fromisoformat(res.send_at).replace(tzinfo=None)
-            bid, ch = res.borrower_id, o.channel
+            bid, ch, slot = res.borrower_id, o.channel, res.slot
             name = self.names.get(bid, "This borrower")
+            kw = {"channel": ch, "slot": slot}
             if o.delivered:
-                self._ev("delivered", at + timedelta(minutes=1), bid, channel=ch,
+                self._ev("delivered", at + timedelta(minutes=1), bid, **kw,
                          text=f"{CH_NAME[ch]} reached {name}.")
             else:
-                self._ev("not_delivered", at + timedelta(minutes=1), bid, channel=ch,
+                self._ev("not_delivered", at + timedelta(minutes=1), bid, **kw,
                          text=f"{CH_NAME[ch]} did not reach {name}.")
             reply_at = at + timedelta(minutes=90)
             if o.opted_out:
-                self._ev("stop", reply_at, bid, channel=ch,
+                self._ev("stop", reply_at, bid, **kw,
                          text=f"{name} said STOP on {CH_NAME[ch]}: all channels stopped for {name}.")
             if o.meaningful_reply:
-                self._ev("reply", reply_at, bid, channel=ch, text=f"{name} replied on {CH_NAME[ch]}.")
+                self._ev("reply", reply_at, bid, **kw, text=f"{name} replied on {CH_NAME[ch]}.")
                 if o.payment_claimed:
-                    self._ev("promise", reply_at + timedelta(minutes=5), bid, channel=ch,
+                    self._ev("promise", reply_at + timedelta(minutes=5), bid, **kw,
                              text=f"{name} promised to pay. Waiting for the bank to confirm.")
                     if not o.payment_verified:
-                        self._ev("handoff", reply_at + timedelta(hours=2), bid, channel=ch, rule="UNMATCHED_CLAIM",
+                        self._ev("handoff", reply_at + timedelta(hours=2), bid, **kw, rule="UNMATCHED_CLAIM",
                                  reason="PAYMENT_CLAIM_NOT_IN_BANK_FEED", needs_human=True,
                                  text=f"{name} says they paid, but the bank has no matching payment yet: "
                                       "a person reviews it.")
             if o.payment_verified:
                 emi = self.loans[self._idx[bid]].emi_paise
-                self._ev("paid", reply_at + timedelta(hours=2), bid, channel=ch, amount_paise=emi,
-                         text=f"{name} paid {money(emi)}, confirmed by the bank (after {CH_ARTICLE[ch]}).")
+                self._ev("paid", reply_at + timedelta(hours=2), bid, **kw, amount_paise=emi,
+                         text=f"{name} paid {money(emi)}, confirmed by the bank (after "
+                              f"{'an' if SLOT_WORD.get(slot, '')[:1] in 'aeiou' else 'a'} {SLOT_WORD.get(slot, '')} "
+                              f"{CH_NAME[ch]}).")
 
     # ---------- learning views (K09 arm) ----------
     def learning_snapshot(self) -> dict:
