@@ -22,12 +22,6 @@ class Finding:
 
 
 _F = [
-    Finding("RT-F09", "Free text is persisted unredacted into audit.reason and K03 events/payments",
-            "MEDIUM", "Rehan (K06) for audit + record_response; Varun (K03) for reverse_payment",
-            "ledger._audit (reason from reversal/pause), ledger.record_response (events.details), "
-            "spine.ledger.reverse_payment (payments.reversal_reason, events.details)",
-            "Apply the same redact() to free-text reasons before _audit and before writing events.details / "
-            "payments.reversal_reason; store raw borrower text only in a dedicated, access-controlled store if needed."),
     Finding("RT-F10", "POST /spine/import opens any server-side path the caller names",
             "MEDIUM", "Rehan (K06)", "api.py POST /spine/import",
             "Resolve csv_path and require it to sit under an allowed data directory (e.g. backend/data); return 403 "

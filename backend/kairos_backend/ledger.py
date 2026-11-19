@@ -226,6 +226,13 @@ class Ledger:
         if c.execute("SELECT 1 FROM borrowers WHERE borrower_id=?", (borrower_id,)).fetchone() is None:
             raise KeyError(f"unknown borrower {borrower_id}")
 
+    def _scrub(self, c, borrower_id: Optional[str], text) -> str:
+        """Free text stored at rest: the borrower's name becomes their id, phones and e-mails are masked
+        (kairos_backend.pii.scrub; RT-F08 tickets, RT-F09 audit / events / payments)."""
+        b = c.execute("SELECT full_name, phone FROM borrowers WHERE borrower_id=?", (borrower_id,)).fetchone()
+        return scrub(None if text is None else str(text), name=b["full_name"] if b else None,
+                     phone=b["phone"] if b else None, name_as=borrower_id or "[name]")
+
     def _state(self, c, borrower_id: str) -> dict:
         r = c.execute("SELECT * FROM borrower_state WHERE borrower_id=?", (borrower_id,)).fetchone()
         return dict(r) if r else {"lender_id": None, "stopped": 0, "hardship_until": None, "hardship_supervisor": 0,
@@ -680,7 +687,7 @@ class Ledger:
             if ob:
                 record_event(c, f"EV-REPLY-{borrower_id}-{self._iso(at)}-{channel}", borrower_id, "reply_received",
                              self._iso(at), channel=channel, loan_id=ob["loan_id"], obligation_id=ob["obligation_id"],
-                             details=details or kind)
+                             details=self._scrub(c, borrower_id, details or kind))
             self._audit(c, "borrower", "RESPONSE", borrower_id, at=at, reason=kind, channel=channel, canceled=n)
             return n
 
@@ -762,14 +769,17 @@ class Ledger:
         """The bank reversed a payment (E15): K03 makes that EMI due again; collection progress is
         rolled back. The Supervisor replans the EMI on its next pass."""
         at = self._loc(at)
-        p = self._conn().execute("SELECT * FROM payments WHERE payment_id=?", (payment_id,)).fetchone()
+        c = self._conn()
+        p = c.execute("SELECT * FROM payments WHERE payment_id=?", (payment_id,)).fetchone()
         if p is None:
             raise KeyError(payment_id)
+        # K03 stores the reason in payments.reversal_reason and events.details: scrub it first (RT-F09)
+        borrower = c.execute("SELECT borrower_id FROM loans WHERE loan_id=?", (p["loan_id"],)).fetchone()[0]
+        reason = self._scrub(c, borrower, reason)
         done = reverse_payment(self._spine(), payment_id, at.date().isoformat(), reason)
         if done:
             with self.tx() as c:
                 self._refresh_progress(c, p["loan_id"], at.date(), -p["amount_paise"])
-                borrower = c.execute("SELECT borrower_id FROM loans WHERE loan_id=?", (p["loan_id"],)).fetchone()[0]
                 self._audit(c, "tool:d7", "PAYMENT_REVERSED", borrower, at=at, obligation_id=p["obligation_id"],
                             amount_paise=p["amount_paise"], reason=reason)
         return done
@@ -802,12 +812,8 @@ class Ledger:
         tid = "TKT-" + uuid.uuid4().hex[:10]
         sla = self._iso(self._loc(at) + timedelta(hours=sla_hours)) if sla_hours else None
         # Tickets are read by human queues: never store the borrower's name, number or an e-mail (RT-F08).
-        # The name becomes the borrower id; phones and e-mails are masked (kairos_backend.pii.scrub).
-        b = c.execute("SELECT full_name, phone FROM borrowers WHERE borrower_id=?", (borrower_id,)).fetchone()
-
         def red(text) -> str:
-            return scrub(None if text is None else str(text), name=b["full_name"] if b else None,
-                         phone=b["phone"] if b else None, name_as=borrower_id)
+            return self._scrub(c, borrower_id, text)
 
         c.execute("INSERT INTO tickets (ticket_id, idempotency_key, queue, borrower_id, obligation_id, type, summary_line_1,"
                   " summary_line_2, evidence_ids, created_at, sla_due_at, policy_version) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
@@ -867,7 +873,7 @@ class Ledger:
             c.execute("INSERT INTO settings VALUES ('outbound_paused', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
                       (json.dumps(paused),))
             n = self._cancel_queued(c, "1=1", (), "OUTBOUND_PAUSED") if paused else 0
-            self._audit(c, actor, "OUTBOUND_PAUSED" if paused else "OUTBOUND_RESUMED", reason=reason, canceled=n)
+            self._audit(c, actor, "OUTBOUND_PAUSED" if paused else "OUTBOUND_RESUMED", reason=scrub(reason), canceled=n)
             return n
 
     # ---------- reads ----------

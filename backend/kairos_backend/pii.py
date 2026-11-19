@@ -1,9 +1,9 @@
-"""PII scrubber for free text stored at rest (red-team RT-F08).
+"""PII scrubber for free text stored at rest (red-team RT-F08 tickets, RT-F09 audit / events / payments).
 
 scrub() masks e-mail addresses, Indian phone numbers and — when the caller passes them from the K03
 spine — the borrower's own name and number. It uses the same placeholders as hitl.scrub() on the
 k06/hitl-control branch ("[phone]", "[email]"), so the two can be merged into one; until then
-this is the scrubber the Ledger uses for tickets.
+this is the scrubber the Ledger uses for tickets, audit reasons, reply text and reversal reasons.
 """
 from __future__ import annotations
 
