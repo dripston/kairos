@@ -168,22 +168,27 @@ borrowers, the same budget and the same rules. Everything on it is **SIMULATED**
 cd kairos/backend && source .venv/bin/activate && uvicorn kairos_backend.api:app --port 8000
 ```
 
-Then open <http://localhost:8000/demo/live>, pick seed 42 and press **Start** (4× is the default).
-**P** toggles Presenter mode (no controls, big text, Scoreboard view), **S** switches Story ↔
-Scoreboard, and **Space** pauses. `?presenter=1` in the URL opens straight into Presenter mode.
+Then open <http://localhost:8000/demo/live>. It looks like the lender's own operations console: a
+sidebar (Overview, Live activity, Approvals, Borrowers, Rules (Aladdin), System) and a small
+**Demo controls** group at the top right. Leave the run type on "vs fixed schedule", pick seed 42 and
+press **Start** (4× is the default). **P** toggles Presenter mode (hides the demo controls, larger
+type), **S** steps Overview → Live activity → System, and **Space** pauses. `?presenter=1` opens
+straight into Presenter mode, `?theme=dark` in the dark theme (light is the default). "Full system
+trace" (or **Start full system trace** on the System page) runs the full-mode campaign through every
+component instead; it has no fixed-schedule comparison.
 
-**Presenter script (about 60 seconds).** "Three hundred people have missed an EMI. On the left, Kairos
-decides every morning, for each person, whether to message them and how. On the right, the usual
-fixed calendar does the same job with the same money and the same rules. Every dot is a borrower. Each
-one passes Aladdin, our supervisor, which blocks anything the lender's rules forbid: a STOP, a quiet day,
-a weekly limit. Watch the ticker: it says *why* in plain words, like 'Ravi gets a WhatsApp because people
-like him reply most in the evening' or 'Asha rests today'. On day 7 the world changes and WhatsApp
-stops working as well. Nobody tells Kairos. The bars on the right drop, and by day 11 it has moved to
-SMS. Look at the top: rupees recovered for every rupee spent, and rule breaches stay at zero. The
-borrowers are synthetic and the replies come from a simulator, which is why it says SIMULATED."
+**Presenter script (about 60 seconds).** "Three hundred people have missed an EMI. This is the
+collections console. Kairos decides every morning, for each person, whether to message them, when, and
+on which channel. The usual fixed schedule does the same job with the same money and the same rules,
+and the chart compares the two. Every message passes Aladdin, our supervisor, which holds back anything
+the lender's rules forbid: a STOP, a quiet day, a weekly limit. The activity feed says what happened in
+plain words, like 'Ravi gets a WhatsApp at 5:30 pm' or 'not contacted today'. Payment claims the bank
+has not confirmed come to a person under Needs you. On day 7 WhatsApp stops working as well. Nobody tells
+Kairos; by day 11 it has moved to SMS. Recovered is confirmed by the bank, and rule breaches stay at zero.
+The borrowers are synthetic and the replies come from a simulator, which is why it says SIMULATED."
 
-Seed 42 ends at Kairos ₹1,76,723 recovered on ₹471 spent (375× per ₹1) vs the fixed schedule's ₹17,938 on
-₹575 (31×), with 0 rule breaches on both sides. Every run of the same seed gives the same numbers.
+Seed 42 ends at Kairos ₹1,76,723 recovered on ₹471 spent vs the fixed schedule's ₹17,938 on ₹575
+(about 9.9× the fixed schedule), with 0 rule breaches on both sides. Every run of the same seed gives the same numbers.
 
 ---
 

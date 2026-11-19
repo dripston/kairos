@@ -527,10 +527,13 @@ Seed 42, 300 × 14: Kairos ₹1,76,723 recovered / ₹471.05 spent / 49 replies 
   identifiers are unchanged.
 - **No PII:** `BRW-<loan id>` and the K03 generator's synthetic first name only. No phone, surname,
   e-mail or POS. `test_no_pii_in_payloads` guards this.
-- **Page:** a single file. Story view (hero, decision river, why-ticker, learning bars, two SVG charts)
-  and Scoreboard view (cricket score bug, template commentary, "the worm"). Presenter mode makes
-  Scoreboard the default. `prefers-reduced-motion` turns off dots and animations. No LLM anywhere:
-  commentary is templates over event fields.
+- **Page:** a single file styled as a lender operations console (light by default, dark on the toggle):
+  sidebar pages Overview (4 KPIs vs the fixed schedule, recovered chart with a cost sparkline, Live
+  activity feed, Needs you), Live activity (stage flow, filtered feed, learning bars), Approvals,
+  Borrowers (masked names), Rules (Aladdin) (held-back reasons, Kairos vs fixed) and System (every
+  component, full mode or derived from the race). Demo controls sit in a small group in the top bar.
+  `prefers-reduced-motion` turns off animations. No LLM anywhere: every line is a template over event
+  fields.
 - **Frontend:** `Shell.jsx` links to it ("Live collections", new tab) via `LIVE_COLLECTIONS_URL`.
   `npm run build` is not verified here (no Node).
 
