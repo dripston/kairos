@@ -18,7 +18,7 @@ from tests.k03.test_dataset import GOOD_ROWS, HEADER
 class K01PolicyTests(unittest.TestCase):
     def test_reads_ojas_policy_file(self):
         self.assertEqual(load_policy()["policy_id"], "kairos-outreach-policy")
-        self.assertEqual(policy_version(), "1.1.0")
+        self.assertEqual(policy_version(), "1.1.1")  # K01 v1.1.1 (Ojas pack e4d4d2a)
 
     def test_e01_band_boundaries_match_k01(self):
         # Same boundaries as K01 test cases T02-T07, T31, T32.
@@ -88,7 +88,7 @@ class K03PolicyAndE15Tests(unittest.TestCase):
 
     def test_every_event_cites_policy_version(self):
         versions = {r[0] for r in self.conn.execute("SELECT policy_version FROM events")}
-        self.assertEqual(versions, {"1.1.0"})
+        self.assertEqual(versions, {policy_version()})
 
     def test_e15_reversal_reopens_only_that_emi(self):
         self.assertTrue(reverse_payment(self.conn, "PAY-K03-0001", "2026-08-07", "UPI reversed by bank"))

@@ -112,6 +112,8 @@ def touch_machine(hitl: bool = False) -> Machine:
         T("DISPATCHING", "PROVIDER_ACCEPTED", "SENT", None, "K03 touch_sent event", "provider ACCEPTED"),
         T("DISPATCHING", "PROVIDER_DELIVERED", "DELIVERED", None, "K03 touch_sent event", "provider DELIVERED / READ (reach only)"),
         T("DISPATCHING", "PROVIDER_UNKNOWN", "UNCERTAIN", None, "keep cap slot + cost", "no provider answer: never resend blindly"),
+        T("DISPATCHING", "SHUTDOWN_GRACE_EXPIRED", "UNCERTAIN", None, "keep cap slot + cost; DISPATCH_UNCERTAIN audit",
+          "graceful shutdown: still in flight at the deadline (Ledger.mark_inflight_uncertain); never re-sent"),
         T("DISPATCHING", "PROVIDER_REJECTED", "FAILED", None, "release cost", "provider REJECTED / NO_ADAPTER"),
         T("UNCERTAIN", "PROVIDER_ACCEPTED", "SENT", None, "K03 touch_sent event", "resolve_uncertain: provider has it"),
         T("UNCERTAIN", "PROVIDER_DELIVERED", "DELIVERED", None, "K03 touch_sent event", "resolve_uncertain: provider delivered it"),

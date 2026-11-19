@@ -1,0 +1,2761 @@
+template_id,channel,band,angle,purpose,language,cta,subject,body,placeholders,rendered_length,sms_segments,sms_encoding,dlt_body,meta_body,meta_variables,meta_category,rendered_sample
+SM-PRE_DUE-A-EN,SMS,PRE_DUE,A,reminder,EN,pay,,{lender_name}: Your EMI of Rs {emi} for loan xx{loan_last4} is due on {due_date}. Pay: {link},"lender_name,emi,loan_last4,due_date,link",93,1,GSM,{#var#}: Your EMI of Rs {#var#} for loan xx{#var#} is due on {#var#}. Pay: {#var#},,,,"Nirvana Finance: Your EMI of Rs 8,500 for loan xx4321 is due on 05-Dec. Pay: nfin.in/p/Ab12Cd"
+WH-PRE_DUE-A-EN,WHATSAPP,PRE_DUE,A,reminder,EN,pay,,"Hi {name},
+
+Your EMI of Rs {emi} for loan xx{loan_last4} is due on {due_date}.
+
+EMI: Rs {emi} | Due: {due_date} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,emi,loan_last4,due_date,link,lender_name",190,,,,"Hi {{1}},
+
+Your EMI of Rs {{2}} for loan xx{{3}} is due on {{4}}.
+
+EMI: Rs {{2}} | Due: {{4}} | Loan: xx{{3}}
+Pay securely: {{5}}
+
+- Kaira, {{6}} | Reply STOP to opt out.",{{1}}=name;{{2}}=emi;{{3}}=loan_last4;{{4}}=due_date;{{5}}=link;{{6}}=lender_name,UTILITY,"Hi Ravi,
+
+Your EMI of Rs 8,500 for loan xx4321 is due on 05-Dec.
+
+EMI: Rs 8,500 | Due: 05-Dec | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-PRE_DUE-A-EN,EMAIL,PRE_DUE,A,reminder,EN,pay,EMI of Rs {emi} due on {due_date},"Dear {name},
+
+Your EMI of Rs {emi} for loan xx{loan_last4} is due on {due_date}.
+
+EMI: Rs {emi} | Due: {due_date} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","emi,due_date,name,loan_last4,link,lender_name,unsubscribe_link",240,,,,,,,"Dear Ravi,
+
+Your EMI of Rs 8,500 for loan xx4321 is due on 05-Dec.
+
+EMI: Rs 8,500 | Due: 05-Dec | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-PRE_DUE-A-EN,IVR,PRE_DUE,A,reminder,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Your EMI of {emi} rupees for loan ending {loan_last4} is due on {due_date}. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,emi,loan_last4,due_date",327,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Your EMI of 8,500 rupees for loan ending 4321 is due on 05-Dec. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-PRE_DUE-A-EN,VOICEBOT,PRE_DUE,A,reminder,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Your EMI of {emi} rupees for loan ending {loan_last4} is due on {due_date}. Would you be able to make this payment today?","name,lender_name,emi,loan_last4,due_date",223,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Your EMI of 8,500 rupees for loan ending 4321 is due on 05-Dec. Would you be able to make this payment today?"
+SM-PRE_DUE-A-HI,SMS,PRE_DUE,A,reminder,HI,pay,,{lender_name}: आपके लोन xx{loan_last4} की ₹{emi} की EMI {due_date} को देय है। भुगतान: {link},"lender_name,loan_last4,emi,due_date,link",92,2,UNICODE,{#var#}: आपके लोन xx{#var#} की ₹{#var#} की EMI {#var#} को देय है। भुगतान: {#var#},,,,"Nirvana Finance: आपके लोन xx4321 की ₹8,500 की EMI 05-Dec को देय है। भुगतान: nfin.in/p/Ab12Cd"
+WH-PRE_DUE-A-HI,WHATSAPP,PRE_DUE,A,reminder,HI,pay,,"नमस्ते {name} जी,
+
+आपके लोन xx{loan_last4} की ₹{emi} की EMI {due_date} को देय है।
+
+EMI: ₹{emi} | देय तिथि: {due_date} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,loan_last4,emi,due_date,link,lender_name",209,,,,"नमस्ते {{1}} जी,
+
+आपके लोन xx{{2}} की ₹{{3}} की EMI {{4}} को देय है।
+
+EMI: ₹{{3}} | देय तिथि: {{4}} | लोन: xx{{2}}
+सुरक्षित भुगतान: {{5}}
+
+- काइरा, {{6}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=loan_last4;{{3}}=emi;{{4}}=due_date;{{5}}=link;{{6}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+आपके लोन xx4321 की ₹8,500 की EMI 05-Dec को देय है।
+
+EMI: ₹8,500 | देय तिथि: 05-Dec | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-PRE_DUE-A-HI,EMAIL,PRE_DUE,A,reminder,HI,pay,₹{emi} की EMI {due_date} को देय,"प्रिय {name} जी,
+
+आपके लोन xx{loan_last4} की ₹{emi} की EMI {due_date} को देय है।
+
+EMI: ₹{emi} | देय तिथि: {due_date} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","emi,due_date,name,loan_last4,link,lender_name,unsubscribe_link",237,,,,,,,"प्रिय Ravi जी,
+
+आपके लोन xx4321 की ₹8,500 की EMI 05-Dec को देय है।
+
+EMI: ₹8,500 | देय तिथि: 05-Dec | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-PRE_DUE-A-HI,IVR,PRE_DUE,A,reminder,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। आपके लोन की {emi} रुपये की EMI {due_date} को देय है। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,emi,due_date",325,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। आपके लोन की 8,500 रुपये की EMI 05-Dec को देय है। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-PRE_DUE-A-HI,VOICEBOT,PRE_DUE,A,reminder,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] आपके लोन की {emi} रुपये की EMI {due_date} को देय है। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,emi,due_date",202,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] आपके लोन की 8,500 रुपये की EMI 05-Dec को देय है। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-PRE_DUE-B-EN,SMS,PRE_DUE,B,reminder,EN,pay,,{lender_name}: You can pay your EMI of Rs {emi} in under a minute by UPI before {due_date}. Pay: {link},"lender_name,emi,due_date,link",111,1,GSM,{#var#}: You can pay your EMI of Rs {#var#} in under a minute by UPI before {#var#}. Pay: {#var#},,,,"Nirvana Finance: You can pay your EMI of Rs 8,500 in under a minute by UPI before 05-Dec. Pay: nfin.in/p/Ab12Cd"
+WH-PRE_DUE-B-EN,WHATSAPP,PRE_DUE,B,reminder,EN,pay,,"Hi {name},
+
+You can pay your EMI of Rs {emi} in under a minute by UPI before {due_date}.
+
+EMI: Rs {emi} | Due: {due_date} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,emi,due_date,loan_last4,link,lender_name",208,,,,"Hi {{1}},
+
+You can pay your EMI of Rs {{2}} in under a minute by UPI before {{3}}.
+
+EMI: Rs {{2}} | Due: {{3}} | Loan: xx{{4}}
+Pay securely: {{5}}
+
+- Kaira, {{6}} | Reply STOP to opt out.",{{1}}=name;{{2}}=emi;{{3}}=due_date;{{4}}=loan_last4;{{5}}=link;{{6}}=lender_name,UTILITY,"Hi Ravi,
+
+You can pay your EMI of Rs 8,500 in under a minute by UPI before 05-Dec.
+
+EMI: Rs 8,500 | Due: 05-Dec | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-PRE_DUE-B-EN,EMAIL,PRE_DUE,B,reminder,EN,pay,Pay your EMI in under a minute,"Dear {name},
+
+You can pay your EMI of Rs {emi} in under a minute by UPI before {due_date}.
+
+EMI: Rs {emi} | Due: {due_date} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,emi,due_date,loan_last4,link,lender_name,unsubscribe_link",258,,,,,,,"Dear Ravi,
+
+You can pay your EMI of Rs 8,500 in under a minute by UPI before 05-Dec.
+
+EMI: Rs 8,500 | Due: 05-Dec | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-PRE_DUE-B-EN,IVR,PRE_DUE,B,reminder,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. You can pay your EMI of {emi} rupees in under a minute by UPI before {due_date}. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,emi,due_date",340,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. You can pay your EMI of 8,500 rupees in under a minute by UPI before 05-Dec. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-PRE_DUE-B-EN,VOICEBOT,PRE_DUE,B,reminder,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] You can pay your EMI of {emi} rupees in under a minute by UPI before {due_date}. Would you be able to make this payment today?","name,lender_name,emi,due_date",236,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] You can pay your EMI of 8,500 rupees in under a minute by UPI before 05-Dec. Would you be able to make this payment today?"
+SM-PRE_DUE-B-HI,SMS,PRE_DUE,B,reminder,HI,pay,,{lender_name}: आप {due_date} से पहले ₹{emi} की EMI UPI से एक मिनट में भर सकते हैं। भुगतान: {link},"lender_name,due_date,emi,link",105,2,UNICODE,{#var#}: आप {#var#} से पहले ₹{#var#} की EMI UPI से एक मिनट में भर सकते हैं। भुगतान: {#var#},,,,"Nirvana Finance: आप 05-Dec से पहले ₹8,500 की EMI UPI से एक मिनट में भर सकते हैं। भुगतान: nfin.in/p/Ab12Cd"
+WH-PRE_DUE-B-HI,WHATSAPP,PRE_DUE,B,reminder,HI,pay,,"नमस्ते {name} जी,
+
+आप {due_date} से पहले ₹{emi} की EMI UPI से एक मिनट में भर सकते हैं।
+
+EMI: ₹{emi} | देय तिथि: {due_date} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,due_date,emi,loan_last4,link,lender_name",222,,,,"नमस्ते {{1}} जी,
+
+आप {{2}} से पहले ₹{{3}} की EMI UPI से एक मिनट में भर सकते हैं।
+
+EMI: ₹{{3}} | देय तिथि: {{2}} | लोन: xx{{4}}
+सुरक्षित भुगतान: {{5}}
+
+- काइरा, {{6}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=due_date;{{3}}=emi;{{4}}=loan_last4;{{5}}=link;{{6}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+आप 05-Dec से पहले ₹8,500 की EMI UPI से एक मिनट में भर सकते हैं।
+
+EMI: ₹8,500 | देय तिथि: 05-Dec | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-PRE_DUE-B-HI,EMAIL,PRE_DUE,B,reminder,HI,pay,एक मिनट में EMI भरें,"प्रिय {name} जी,
+
+आप {due_date} से पहले ₹{emi} की EMI UPI से एक मिनट में भर सकते हैं।
+
+EMI: ₹{emi} | देय तिथि: {due_date} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,due_date,emi,loan_last4,link,lender_name,unsubscribe_link",250,,,,,,,"प्रिय Ravi जी,
+
+आप 05-Dec से पहले ₹8,500 की EMI UPI से एक मिनट में भर सकते हैं।
+
+EMI: ₹8,500 | देय तिथि: 05-Dec | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-PRE_DUE-B-HI,IVR,PRE_DUE,B,reminder,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। आप {due_date} से पहले {emi} रुपये की EMI UPI से एक मिनट में भर सकते हैं। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,due_date,emi",345,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। आप 05-Dec से पहले 8,500 रुपये की EMI UPI से एक मिनट में भर सकते हैं। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-PRE_DUE-B-HI,VOICEBOT,PRE_DUE,B,reminder,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] आप {due_date} से पहले {emi} रुपये की EMI UPI से एक मिनट में भर सकते हैं। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,due_date,emi",222,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] आप 05-Dec से पहले 8,500 रुपये की EMI UPI से एक मिनट में भर सकते हैं। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-PRE_DUE-C-EN,SMS,PRE_DUE,C,reminder,EN,pay,,{lender_name}: Please keep Rs {emi} in your bank account before {due_date} so your auto-debit goes through. Pay: {link},"lender_name,emi,due_date,link",127,1,GSM,{#var#}: Please keep Rs {#var#} in your bank account before {#var#} so your auto-debit goes through. Pay: {#var#},,,,"Nirvana Finance: Please keep Rs 8,500 in your bank account before 05-Dec so your auto-debit goes through. Pay: nfin.in/p/Ab12Cd"
+WH-PRE_DUE-C-EN,WHATSAPP,PRE_DUE,C,reminder,EN,pay,,"Hi {name},
+
+Please keep Rs {emi} in your bank account before {due_date} so your auto-debit goes through.
+
+EMI: Rs {emi} | Due: {due_date} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,emi,due_date,loan_last4,link,lender_name",224,,,,"Hi {{1}},
+
+Please keep Rs {{2}} in your bank account before {{3}} so your auto-debit goes through.
+
+EMI: Rs {{2}} | Due: {{3}} | Loan: xx{{4}}
+Pay securely: {{5}}
+
+- Kaira, {{6}} | Reply STOP to opt out.",{{1}}=name;{{2}}=emi;{{3}}=due_date;{{4}}=loan_last4;{{5}}=link;{{6}}=lender_name,UTILITY,"Hi Ravi,
+
+Please keep Rs 8,500 in your bank account before 05-Dec so your auto-debit goes through.
+
+EMI: Rs 8,500 | Due: 05-Dec | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-PRE_DUE-C-EN,EMAIL,PRE_DUE,C,reminder,EN,pay,Keep your auto-debit on track,"Dear {name},
+
+Please keep Rs {emi} in your bank account before {due_date} so your auto-debit goes through.
+
+EMI: Rs {emi} | Due: {due_date} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,emi,due_date,loan_last4,link,lender_name,unsubscribe_link",274,,,,,,,"Dear Ravi,
+
+Please keep Rs 8,500 in your bank account before 05-Dec so your auto-debit goes through.
+
+EMI: Rs 8,500 | Due: 05-Dec | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-PRE_DUE-C-EN,IVR,PRE_DUE,C,reminder,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Please keep {emi} rupees in your bank account before {due_date} so your auto-debit goes through. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,emi,due_date",356,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Please keep 8,500 rupees in your bank account before 05-Dec so your auto-debit goes through. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-PRE_DUE-C-EN,VOICEBOT,PRE_DUE,C,reminder,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Please keep {emi} rupees in your bank account before {due_date} so your auto-debit goes through. Would you be able to make this payment today?","name,lender_name,emi,due_date",252,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Please keep 8,500 rupees in your bank account before 05-Dec so your auto-debit goes through. Would you be able to make this payment today?"
+SM-PRE_DUE-C-HI,SMS,PRE_DUE,C,reminder,HI,pay,,{lender_name}: कृपया {due_date} से पहले अपने बैंक खाते में ₹{emi} रखें ताकि ऑटो-डेबिट सफल हो। भुगतान: {link},"lender_name,due_date,emi,link",116,2,UNICODE,{#var#}: कृपया {#var#} से पहले अपने बैंक खाते में ₹{#var#} रखें ताकि ऑटो-डेबिट सफल हो। भुगतान: {#var#},,,,"Nirvana Finance: कृपया 05-Dec से पहले अपने बैंक खाते में ₹8,500 रखें ताकि ऑटो-डेबिट सफल हो। भुगतान: nfin.in/p/Ab12Cd"
+WH-PRE_DUE-C-HI,WHATSAPP,PRE_DUE,C,reminder,HI,pay,,"नमस्ते {name} जी,
+
+कृपया {due_date} से पहले अपने बैंक खाते में ₹{emi} रखें ताकि ऑटो-डेबिट सफल हो।
+
+EMI: ₹{emi} | देय तिथि: {due_date} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,due_date,emi,loan_last4,link,lender_name",233,,,,"नमस्ते {{1}} जी,
+
+कृपया {{2}} से पहले अपने बैंक खाते में ₹{{3}} रखें ताकि ऑटो-डेबिट सफल हो।
+
+EMI: ₹{{3}} | देय तिथि: {{2}} | लोन: xx{{4}}
+सुरक्षित भुगतान: {{5}}
+
+- काइरा, {{6}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=due_date;{{3}}=emi;{{4}}=loan_last4;{{5}}=link;{{6}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+कृपया 05-Dec से पहले अपने बैंक खाते में ₹8,500 रखें ताकि ऑटो-डेबिट सफल हो।
+
+EMI: ₹8,500 | देय तिथि: 05-Dec | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-PRE_DUE-C-HI,EMAIL,PRE_DUE,C,reminder,HI,pay,अपना ऑटो-डेबिट सफल रखें,"प्रिय {name} जी,
+
+कृपया {due_date} से पहले अपने बैंक खाते में ₹{emi} रखें ताकि ऑटो-डेबिट सफल हो।
+
+EMI: ₹{emi} | देय तिथि: {due_date} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,due_date,emi,loan_last4,link,lender_name,unsubscribe_link",261,,,,,,,"प्रिय Ravi जी,
+
+कृपया 05-Dec से पहले अपने बैंक खाते में ₹8,500 रखें ताकि ऑटो-डेबिट सफल हो।
+
+EMI: ₹8,500 | देय तिथि: 05-Dec | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-PRE_DUE-C-HI,IVR,PRE_DUE,C,reminder,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। कृपया {due_date} से पहले अपने बैंक खाते में {emi} रुपये रखें ताकि ऑटो-डेबिट सफल हो। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,due_date,emi",356,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। कृपया 05-Dec से पहले अपने बैंक खाते में 8,500 रुपये रखें ताकि ऑटो-डेबिट सफल हो। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-PRE_DUE-C-HI,VOICEBOT,PRE_DUE,C,reminder,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] कृपया {due_date} से पहले अपने बैंक खाते में {emi} रुपये रखें ताकि ऑटो-डेबिट सफल हो। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,due_date,emi",233,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] कृपया 05-Dec से पहले अपने बैंक खाते में 8,500 रुपये रखें ताकि ऑटो-डेबिट सफल हो। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-PRE_DUE-D-EN,SMS,PRE_DUE,D,reminder,EN,help,,"{lender_name}: If you expect any difficulty with your EMI of Rs {emi} due on {due_date}, we are here to help. Reply HELP for assistance.","lender_name,emi,due_date",134,1,GSM,"{#var#}: If you expect any difficulty with your EMI of Rs {#var#} due on {#var#}, we are here to help. Reply HELP for assistance.",,,,"Nirvana Finance: If you expect any difficulty with your EMI of Rs 8,500 due on 05-Dec, we are here to help. Reply HELP for assistance."
+WH-PRE_DUE-D-EN,WHATSAPP,PRE_DUE,D,reminder,EN,help,,"Hi {name},
+
+If you expect any difficulty with your EMI of Rs {emi} due on {due_date}, we are here to help.
+
+EMI: Rs {emi} | Due: {due_date} | Loan: xx{loan_last4}
+Reply HELP here and we will assist you.
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,emi,due_date,loan_last4,lender_name",235,,,,"Hi {{1}},
+
+If you expect any difficulty with your EMI of Rs {{2}} due on {{3}}, we are here to help.
+
+EMI: Rs {{2}} | Due: {{3}} | Loan: xx{{4}}
+Reply HELP here and we will assist you.
+
+- Kaira, {{5}} | Reply STOP to opt out.",{{1}}=name;{{2}}=emi;{{3}}=due_date;{{4}}=loan_last4;{{5}}=lender_name,UTILITY,"Hi Ravi,
+
+If you expect any difficulty with your EMI of Rs 8,500 due on 05-Dec, we are here to help.
+
+EMI: Rs 8,500 | Due: 05-Dec | Loan: xx4321
+Reply HELP here and we will assist you.
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-PRE_DUE-D-EN,EMAIL,PRE_DUE,D,reminder,EN,help,We are here to help with your EMI,"Dear {name},
+
+If you expect any difficulty with your EMI of Rs {emi} due on {due_date}, we are here to help.
+
+EMI: Rs {emi} | Due: {due_date} | Loan: xx{loan_last4}
+Reply to this email or call {helpline} and we will assist you.
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,emi,due_date,loan_last4,helpline,lender_name,unsubscribe_link",311,,,,,,,"Dear Ravi,
+
+If you expect any difficulty with your EMI of Rs 8,500 due on 05-Dec, we are here to help.
+
+EMI: Rs 8,500 | Due: 05-Dec | Loan: xx4321
+Reply to this email or call 1800-123-4567 and we will assist you.
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-PRE_DUE-D-EN,IVR,PRE_DUE,D,reminder,EN,help,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. If you expect any difficulty with your EMI of {emi} rupees due on {due_date}, we are here to help. Press 2 to speak to our team now. Press 1 to receive a secure payment link by SMS. Press 3 if you have already paid.","name,lender_name,emi,due_date",362,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. If you expect any difficulty with your EMI of 8,500 rupees due on 05-Dec, we are here to help. Press 2 to speak to our team now. Press 1 to receive a secure payment link by SMS. Press 3 if you have already paid."
+VO-PRE_DUE-D-EN,VOICEBOT,PRE_DUE,D,reminder,EN,help,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] If you expect any difficulty with your EMI of {emi} rupees due on {due_date}, we are here to help. Is anything making the payment difficult right now?","name,lender_name,emi,due_date",260,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] If you expect any difficulty with your EMI of 8,500 rupees due on 05-Dec, we are here to help. Is anything making the payment difficult right now?"
+SM-PRE_DUE-D-HI,SMS,PRE_DUE,D,reminder,HI,help,,"{lender_name}: अगर {due_date} को देय ₹{emi} की EMI में कोई कठिनाई लगे, तो हम मदद के लिए हैं। सहायता के लिए HELP लिखें।","lender_name,due_date,emi",116,2,UNICODE,"{#var#}: अगर {#var#} को देय ₹{#var#} की EMI में कोई कठिनाई लगे, तो हम मदद के लिए हैं। सहायता के लिए HELP लिखें।",,,,"Nirvana Finance: अगर 05-Dec को देय ₹8,500 की EMI में कोई कठिनाई लगे, तो हम मदद के लिए हैं। सहायता के लिए HELP लिखें।"
+WH-PRE_DUE-D-HI,WHATSAPP,PRE_DUE,D,reminder,HI,help,,"नमस्ते {name} जी,
+
+अगर {due_date} को देय ₹{emi} की EMI में कोई कठिनाई लगे, तो हम मदद के लिए हैं।
+
+EMI: ₹{emi} | देय तिथि: {due_date} | लोन: xx{loan_last4}
+सहायता के लिए यहाँ HELP लिखें।
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,due_date,emi,loan_last4,lender_name",229,,,,"नमस्ते {{1}} जी,
+
+अगर {{2}} को देय ₹{{3}} की EMI में कोई कठिनाई लगे, तो हम मदद के लिए हैं।
+
+EMI: ₹{{3}} | देय तिथि: {{2}} | लोन: xx{{4}}
+सहायता के लिए यहाँ HELP लिखें।
+
+- काइरा, {{5}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=due_date;{{3}}=emi;{{4}}=loan_last4;{{5}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+अगर 05-Dec को देय ₹8,500 की EMI में कोई कठिनाई लगे, तो हम मदद के लिए हैं।
+
+EMI: ₹8,500 | देय तिथि: 05-Dec | लोन: xx4321
+सहायता के लिए यहाँ HELP लिखें।
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-PRE_DUE-D-HI,EMAIL,PRE_DUE,D,reminder,HI,help,आपकी EMI में हम मदद के लिए हैं,"प्रिय {name} जी,
+
+अगर {due_date} को देय ₹{emi} की EMI में कोई कठिनाई लगे, तो हम मदद के लिए हैं।
+
+EMI: ₹{emi} | देय तिथि: {due_date} | लोन: xx{loan_last4}
+इस ईमेल का जवाब दें या {helpline} पर कॉल करें, हम आपकी मदद करेंगे।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,due_date,emi,loan_last4,helpline,lender_name,unsubscribe_link",296,,,,,,,"प्रिय Ravi जी,
+
+अगर 05-Dec को देय ₹8,500 की EMI में कोई कठिनाई लगे, तो हम मदद के लिए हैं।
+
+EMI: ₹8,500 | देय तिथि: 05-Dec | लोन: xx4321
+इस ईमेल का जवाब दें या 1800-123-4567 पर कॉल करें, हम आपकी मदद करेंगे।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-PRE_DUE-D-HI,IVR,PRE_DUE,D,reminder,HI,help,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। अगर {due_date} को देय {emi} रुपये की EMI में कोई कठिनाई लगे, तो हम मदद के लिए हैं। हमारी टीम से अभी बात करने के लिए 2 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,due_date,emi",359,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। अगर 05-Dec को देय 8,500 रुपये की EMI में कोई कठिनाई लगे, तो हम मदद के लिए हैं। हमारी टीम से अभी बात करने के लिए 2 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-PRE_DUE-D-HI,VOICEBOT,PRE_DUE,D,reminder,HI,help,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] अगर {due_date} को देय {emi} रुपये की EMI में कोई कठिनाई लगे, तो हम मदद के लिए हैं। क्या इस समय भुगतान में कोई कठिनाई है?","name,lender_name,due_date,emi",238,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] अगर 05-Dec को देय 8,500 रुपये की EMI में कोई कठिनाई लगे, तो हम मदद के लिए हैं। क्या इस समय भुगतान में कोई कठिनाई है?"
+SM-PRE_DUE-E-EN,SMS,PRE_DUE,E,reminder,EN,date,,{lender_name}: Planning ahead? Let us know when you will pay your EMI of Rs {emi} due on {due_date}. Reply with your payment date.,"lender_name,emi,due_date",128,1,GSM,{#var#}: Planning ahead? Let us know when you will pay your EMI of Rs {#var#} due on {#var#}. Reply with your payment date.,,,,"Nirvana Finance: Planning ahead? Let us know when you will pay your EMI of Rs 8,500 due on 05-Dec. Reply with your payment date."
+WH-PRE_DUE-E-EN,WHATSAPP,PRE_DUE,E,reminder,EN,date,,"Hi {name},
+
+Planning ahead? Let us know when you will pay your EMI of Rs {emi} due on {due_date}.
+
+EMI: Rs {emi} | Due: {due_date} | Loan: xx{loan_last4}
+Reply here with your payment date.
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,emi,due_date,loan_last4,lender_name",221,,,,"Hi {{1}},
+
+Planning ahead? Let us know when you will pay your EMI of Rs {{2}} due on {{3}}.
+
+EMI: Rs {{2}} | Due: {{3}} | Loan: xx{{4}}
+Reply here with your payment date.
+
+- Kaira, {{5}} | Reply STOP to opt out.",{{1}}=name;{{2}}=emi;{{3}}=due_date;{{4}}=loan_last4;{{5}}=lender_name,UTILITY,"Hi Ravi,
+
+Planning ahead? Let us know when you will pay your EMI of Rs 8,500 due on 05-Dec.
+
+EMI: Rs 8,500 | Due: 05-Dec | Loan: xx4321
+Reply here with your payment date.
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-PRE_DUE-E-EN,EMAIL,PRE_DUE,E,reminder,EN,date,Please share your payment date,"Dear {name},
+
+Planning ahead? Let us know when you will pay your EMI of Rs {emi} due on {due_date}.
+
+EMI: Rs {emi} | Due: {due_date} | Loan: xx{loan_last4}
+Reply to this email with your payment date.
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,emi,due_date,loan_last4,lender_name,unsubscribe_link",280,,,,,,,"Dear Ravi,
+
+Planning ahead? Let us know when you will pay your EMI of Rs 8,500 due on 05-Dec.
+
+EMI: Rs 8,500 | Due: 05-Dec | Loan: xx4321
+Reply to this email with your payment date.
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-PRE_DUE-E-EN,IVR,PRE_DUE,E,reminder,EN,date,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Planning ahead? Let us know when you will pay your EMI of {emi} rupees due on {due_date}. Press 4 to tell us your payment date. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,emi,due_date",387,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Planning ahead? Let us know when you will pay your EMI of 8,500 rupees due on 05-Dec. Press 4 to tell us your payment date. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-PRE_DUE-E-EN,VOICEBOT,PRE_DUE,E,reminder,EN,date,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Planning ahead? Let us know when you will pay your EMI of {emi} rupees due on {due_date}. When will you be able to make this payment?","name,lender_name,emi,due_date",243,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Planning ahead? Let us know when you will pay your EMI of 8,500 rupees due on 05-Dec. When will you be able to make this payment?"
+SM-PRE_DUE-E-HI,SMS,PRE_DUE,E,reminder,HI,date,,{lender_name}: पहले से योजना बनाएँ - बताइए आप {due_date} को देय ₹{emi} की EMI कब भरेंगे। भुगतान की तारीख लिखकर जवाब दें।,"lender_name,due_date,emi",118,2,UNICODE,{#var#}: पहले से योजना बनाएँ - बताइए आप {#var#} को देय ₹{#var#} की EMI कब भरेंगे। भुगतान की तारीख लिखकर जवाब दें।,,,,"Nirvana Finance: पहले से योजना बनाएँ - बताइए आप 05-Dec को देय ₹8,500 की EMI कब भरेंगे। भुगतान की तारीख लिखकर जवाब दें।"
+WH-PRE_DUE-E-HI,WHATSAPP,PRE_DUE,E,reminder,HI,date,,"नमस्ते {name} जी,
+
+पहले से योजना बनाएँ - बताइए आप {due_date} को देय ₹{emi} की EMI कब भरेंगे।
+
+EMI: ₹{emi} | देय तिथि: {due_date} | लोन: xx{loan_last4}
+भुगतान की तारीख यहाँ लिखकर जवाब दें।
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,due_date,emi,loan_last4,lender_name",231,,,,"नमस्ते {{1}} जी,
+
+पहले से योजना बनाएँ - बताइए आप {{2}} को देय ₹{{3}} की EMI कब भरेंगे।
+
+EMI: ₹{{3}} | देय तिथि: {{2}} | लोन: xx{{4}}
+भुगतान की तारीख यहाँ लिखकर जवाब दें।
+
+- काइरा, {{5}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=due_date;{{3}}=emi;{{4}}=loan_last4;{{5}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+पहले से योजना बनाएँ - बताइए आप 05-Dec को देय ₹8,500 की EMI कब भरेंगे।
+
+EMI: ₹8,500 | देय तिथि: 05-Dec | लोन: xx4321
+भुगतान की तारीख यहाँ लिखकर जवाब दें।
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-PRE_DUE-E-HI,EMAIL,PRE_DUE,E,reminder,HI,date,कृपया भुगतान की तारीख बताएँ,"प्रिय {name} जी,
+
+पहले से योजना बनाएँ - बताइए आप {due_date} को देय ₹{emi} की EMI कब भरेंगे।
+
+EMI: ₹{emi} | देय तिथि: {due_date} | लोन: xx{loan_last4}
+भुगतान की तारीख के साथ इस ईमेल का जवाब दें।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,due_date,emi,loan_last4,lender_name,unsubscribe_link",266,,,,,,,"प्रिय Ravi जी,
+
+पहले से योजना बनाएँ - बताइए आप 05-Dec को देय ₹8,500 की EMI कब भरेंगे।
+
+EMI: ₹8,500 | देय तिथि: 05-Dec | लोन: xx4321
+भुगतान की तारीख के साथ इस ईमेल का जवाब दें।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-PRE_DUE-E-HI,IVR,PRE_DUE,E,reminder,HI,date,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। पहले से योजना बनाएँ - बताइए आप {due_date} को देय {emi} रुपये की EMI कब भरेंगे। भुगतान की तारीख बताने के लिए 4 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,due_date,emi",389,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। पहले से योजना बनाएँ - बताइए आप 05-Dec को देय 8,500 रुपये की EMI कब भरेंगे। भुगतान की तारीख बताने के लिए 4 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-PRE_DUE-E-HI,VOICEBOT,PRE_DUE,E,reminder,HI,date,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] पहले से योजना बनाएँ - बताइए आप {due_date} को देय {emi} रुपये की EMI कब भरेंगे। आप यह भुगतान कब कर पाएँगे?","name,lender_name,due_date,emi",223,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] पहले से योजना बनाएँ - बताइए आप 05-Dec को देय 8,500 रुपये की EMI कब भरेंगे। आप यह भुगतान कब कर पाएँगे?"
+SM-PRE_DUE-F-EN,SMS,PRE_DUE,F,reminder,EN,pay,,{lender_name}: On-time EMIs build a strong credit record. Your EMI of Rs {emi} is due on {due_date}. Pay: {link},"lender_name,emi,due_date,link",120,1,GSM,{#var#}: On-time EMIs build a strong credit record. Your EMI of Rs {#var#} is due on {#var#}. Pay: {#var#},,,,"Nirvana Finance: On-time EMIs build a strong credit record. Your EMI of Rs 8,500 is due on 05-Dec. Pay: nfin.in/p/Ab12Cd"
+WH-PRE_DUE-F-EN,WHATSAPP,PRE_DUE,F,reminder,EN,pay,,"Hi {name},
+
+On-time EMIs build a strong credit record. Your EMI of Rs {emi} is due on {due_date}.
+
+EMI: Rs {emi} | Due: {due_date} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,emi,due_date,loan_last4,link,lender_name",217,,,,"Hi {{1}},
+
+On-time EMIs build a strong credit record. Your EMI of Rs {{2}} is due on {{3}}.
+
+EMI: Rs {{2}} | Due: {{3}} | Loan: xx{{4}}
+Pay securely: {{5}}
+
+- Kaira, {{6}} | Reply STOP to opt out.",{{1}}=name;{{2}}=emi;{{3}}=due_date;{{4}}=loan_last4;{{5}}=link;{{6}}=lender_name,UTILITY,"Hi Ravi,
+
+On-time EMIs build a strong credit record. Your EMI of Rs 8,500 is due on 05-Dec.
+
+EMI: Rs 8,500 | Due: 05-Dec | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-PRE_DUE-F-EN,EMAIL,PRE_DUE,F,reminder,EN,pay,Build a strong credit record,"Dear {name},
+
+On-time EMIs build a strong credit record. Your EMI of Rs {emi} is due on {due_date}.
+
+EMI: Rs {emi} | Due: {due_date} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,emi,due_date,loan_last4,link,lender_name,unsubscribe_link",267,,,,,,,"Dear Ravi,
+
+On-time EMIs build a strong credit record. Your EMI of Rs 8,500 is due on 05-Dec.
+
+EMI: Rs 8,500 | Due: 05-Dec | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-PRE_DUE-F-EN,IVR,PRE_DUE,F,reminder,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. On-time EMIs build a strong credit record. Your EMI of {emi} rupees is due on {due_date}. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,emi,due_date",349,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. On-time EMIs build a strong credit record. Your EMI of 8,500 rupees is due on 05-Dec. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-PRE_DUE-F-EN,VOICEBOT,PRE_DUE,F,reminder,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] On-time EMIs build a strong credit record. Your EMI of {emi} rupees is due on {due_date}. Would you be able to make this payment today?","name,lender_name,emi,due_date",245,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] On-time EMIs build a strong credit record. Your EMI of 8,500 rupees is due on 05-Dec. Would you be able to make this payment today?"
+SM-PRE_DUE-F-HI,SMS,PRE_DUE,F,reminder,HI,pay,,{lender_name}: समय पर EMI से आपका क्रेडिट रिकॉर्ड मज़बूत बनता है। ₹{emi} की EMI {due_date} को देय है। भुगतान: {link},"lender_name,emi,due_date,link",124,2,UNICODE,{#var#}: समय पर EMI से आपका क्रेडिट रिकॉर्ड मज़बूत बनता है। ₹{#var#} की EMI {#var#} को देय है। भुगतान: {#var#},,,,"Nirvana Finance: समय पर EMI से आपका क्रेडिट रिकॉर्ड मज़बूत बनता है। ₹8,500 की EMI 05-Dec को देय है। भुगतान: nfin.in/p/Ab12Cd"
+WH-PRE_DUE-F-HI,WHATSAPP,PRE_DUE,F,reminder,HI,pay,,"नमस्ते {name} जी,
+
+समय पर EMI से आपका क्रेडिट रिकॉर्ड मज़बूत बनता है। ₹{emi} की EMI {due_date} को देय है।
+
+EMI: ₹{emi} | देय तिथि: {due_date} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,emi,due_date,loan_last4,link,lender_name",241,,,,"नमस्ते {{1}} जी,
+
+समय पर EMI से आपका क्रेडिट रिकॉर्ड मज़बूत बनता है। ₹{{2}} की EMI {{3}} को देय है।
+
+EMI: ₹{{2}} | देय तिथि: {{3}} | लोन: xx{{4}}
+सुरक्षित भुगतान: {{5}}
+
+- काइरा, {{6}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=emi;{{3}}=due_date;{{4}}=loan_last4;{{5}}=link;{{6}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+समय पर EMI से आपका क्रेडिट रिकॉर्ड मज़बूत बनता है। ₹8,500 की EMI 05-Dec को देय है।
+
+EMI: ₹8,500 | देय तिथि: 05-Dec | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-PRE_DUE-F-HI,EMAIL,PRE_DUE,F,reminder,HI,pay,मज़बूत क्रेडिट रिकॉर्ड बनाएँ,"प्रिय {name} जी,
+
+समय पर EMI से आपका क्रेडिट रिकॉर्ड मज़बूत बनता है। ₹{emi} की EMI {due_date} को देय है।
+
+EMI: ₹{emi} | देय तिथि: {due_date} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,emi,due_date,loan_last4,link,lender_name,unsubscribe_link",269,,,,,,,"प्रिय Ravi जी,
+
+समय पर EMI से आपका क्रेडिट रिकॉर्ड मज़बूत बनता है। ₹8,500 की EMI 05-Dec को देय है।
+
+EMI: ₹8,500 | देय तिथि: 05-Dec | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-PRE_DUE-F-HI,IVR,PRE_DUE,F,reminder,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। समय पर EMI से आपका क्रेडिट रिकॉर्ड मज़बूत बनता है। {emi} रुपये की EMI {due_date} को देय है। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,emi,due_date",364,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। समय पर EMI से आपका क्रेडिट रिकॉर्ड मज़बूत बनता है। 8,500 रुपये की EMI 05-Dec को देय है। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-PRE_DUE-F-HI,VOICEBOT,PRE_DUE,F,reminder,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] समय पर EMI से आपका क्रेडिट रिकॉर्ड मज़बूत बनता है। {emi} रुपये की EMI {due_date} को देय है। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,emi,due_date",241,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] समय पर EMI से आपका क्रेडिट रिकॉर्ड मज़बूत बनता है। 8,500 रुपये की EMI 05-Dec को देय है। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-B1-A-EN,SMS,B1,A,collection,EN,pay,,{lender_name}: Your EMI of Rs {amount} for loan xx{loan_last4} is overdue. Please pay at the earliest. Pay: {link},"lender_name,amount,loan_last4,link",115,1,GSM,{#var#}: Your EMI of Rs {#var#} for loan xx{#var#} is overdue. Please pay at the earliest. Pay: {#var#},,,,"Nirvana Finance: Your EMI of Rs 8,500 for loan xx4321 is overdue. Please pay at the earliest. Pay: nfin.in/p/Ab12Cd"
+WH-B1-A-EN,WHATSAPP,B1,A,collection,EN,pay,,"Hi {name},
+
+Your EMI of Rs {amount} for loan xx{loan_last4} is overdue. Please pay at the earliest.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,link,lender_name",202,,,,"Hi {{1}},
+
+Your EMI of Rs {{2}} for loan xx{{3}} is overdue. Please pay at the earliest.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Pay securely: {{4}}
+
+- Kaira, {{5}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"Hi Ravi,
+
+Your EMI of Rs 8,500 for loan xx4321 is overdue. Please pay at the earliest.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B1-A-EN,EMAIL,B1,A,collection,EN,pay,Overdue EMI on loan xx{loan_last4},"Dear {name},
+
+Your EMI of Rs {amount} for loan xx{loan_last4} is overdue. Please pay at the earliest.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","loan_last4,name,amount,link,lender_name,unsubscribe_link",252,,,,,,,"Dear Ravi,
+
+Your EMI of Rs 8,500 for loan xx4321 is overdue. Please pay at the earliest.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B1-A-EN,IVR,B1,A,collection,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Your EMI of {amount} rupees for loan ending {loan_last4} is overdue. Please pay at the earliest. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,amount,loan_last4",349,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Your EMI of 8,500 rupees for loan ending 4321 is overdue. Please pay at the earliest. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B1-A-EN,VOICEBOT,B1,A,collection,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Your EMI of {amount} rupees for loan ending {loan_last4} is overdue. Please pay at the earliest. Would you be able to make this payment today?","name,lender_name,amount,loan_last4",245,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Your EMI of 8,500 rupees for loan ending 4321 is overdue. Please pay at the earliest. Would you be able to make this payment today?"
+SM-B1-A-HI,SMS,B1,A,collection,HI,pay,,{lender_name}: आपके लोन xx{loan_last4} की ₹{amount} की EMI बकाया है। कृपया जल्द भुगतान करें। भुगतान: {link},"lender_name,loan_last4,amount,link",108,2,UNICODE,{#var#}: आपके लोन xx{#var#} की ₹{#var#} की EMI बकाया है। कृपया जल्द भुगतान करें। भुगतान: {#var#},,,,"Nirvana Finance: आपके लोन xx4321 की ₹8,500 की EMI बकाया है। कृपया जल्द भुगतान करें। भुगतान: nfin.in/p/Ab12Cd"
+WH-B1-A-HI,WHATSAPP,B1,A,collection,HI,pay,,"नमस्ते {name} जी,
+
+आपके लोन xx{loan_last4} की ₹{amount} की EMI बकाया है। कृपया जल्द भुगतान करें।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,loan_last4,amount,link,lender_name",208,,,,"नमस्ते {{1}} जी,
+
+आपके लोन xx{{2}} की ₹{{3}} की EMI बकाया है। कृपया जल्द भुगतान करें।
+
+बकाया: ₹{{3}} | लोन: xx{{2}}
+सुरक्षित भुगतान: {{4}}
+
+- काइरा, {{5}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=loan_last4;{{3}}=amount;{{4}}=link;{{5}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+आपके लोन xx4321 की ₹8,500 की EMI बकाया है। कृपया जल्द भुगतान करें।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B1-A-HI,EMAIL,B1,A,collection,HI,pay,लोन xx{loan_last4} पर बकाया EMI,"प्रिय {name} जी,
+
+आपके लोन xx{loan_last4} की ₹{amount} की EMI बकाया है। कृपया जल्द भुगतान करें।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","loan_last4,name,amount,link,lender_name,unsubscribe_link",236,,,,,,,"प्रिय Ravi जी,
+
+आपके लोन xx4321 की ₹8,500 की EMI बकाया है। कृपया जल्द भुगतान करें।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B1-A-HI,IVR,B1,A,collection,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। आपके लोन की {amount} रुपये की EMI बकाया है। कृपया जल्द भुगतान करें। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",341,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। आपके लोन की 8,500 रुपये की EMI बकाया है। कृपया जल्द भुगतान करें। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B1-A-HI,VOICEBOT,B1,A,collection,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] आपके लोन की {amount} रुपये की EMI बकाया है। कृपया जल्द भुगतान करें। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,amount",218,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] आपके लोन की 8,500 रुपये की EMI बकाया है। कृपया जल्द भुगतान करें। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-B1-B-EN,SMS,B1,B,collection,EN,pay,,{lender_name}: You can clear your overdue Rs {amount} in a minute by UPI. Pay: {link},"lender_name,amount,link",94,1,GSM,{#var#}: You can clear your overdue Rs {#var#} in a minute by UPI. Pay: {#var#},,,,"Nirvana Finance: You can clear your overdue Rs 8,500 in a minute by UPI. Pay: nfin.in/p/Ab12Cd"
+WH-B1-B-EN,WHATSAPP,B1,B,collection,EN,pay,,"Hi {name},
+
+You can clear your overdue Rs {amount} in a minute by UPI.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,link,lender_name",181,,,,"Hi {{1}},
+
+You can clear your overdue Rs {{2}} in a minute by UPI.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Pay securely: {{4}}
+
+- Kaira, {{5}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"Hi Ravi,
+
+You can clear your overdue Rs 8,500 in a minute by UPI.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B1-B-EN,EMAIL,B1,B,collection,EN,pay,Clear your overdue in a minute,"Dear {name},
+
+You can clear your overdue Rs {amount} in a minute by UPI.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",231,,,,,,,"Dear Ravi,
+
+You can clear your overdue Rs 8,500 in a minute by UPI.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B1-B-EN,IVR,B1,B,collection,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. You can clear your overdue {amount} rupees in a minute by UPI. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,amount",323,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. You can clear your overdue 8,500 rupees in a minute by UPI. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B1-B-EN,VOICEBOT,B1,B,collection,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] You can clear your overdue {amount} rupees in a minute by UPI. Would you be able to make this payment today?","name,lender_name,amount",219,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] You can clear your overdue 8,500 rupees in a minute by UPI. Would you be able to make this payment today?"
+SM-B1-B-HI,SMS,B1,B,collection,HI,pay,,{lender_name}: आप अपनी बकाया ₹{amount} की राशि UPI से एक मिनट में चुका सकते हैं। भुगतान: {link},"lender_name,amount,link",104,2,UNICODE,{#var#}: आप अपनी बकाया ₹{#var#} की राशि UPI से एक मिनट में चुका सकते हैं। भुगतान: {#var#},,,,"Nirvana Finance: आप अपनी बकाया ₹8,500 की राशि UPI से एक मिनट में चुका सकते हैं। भुगतान: nfin.in/p/Ab12Cd"
+WH-B1-B-HI,WHATSAPP,B1,B,collection,HI,pay,,"नमस्ते {name} जी,
+
+आप अपनी बकाया ₹{amount} की राशि UPI से एक मिनट में चुका सकते हैं।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,link,lender_name",204,,,,"नमस्ते {{1}} जी,
+
+आप अपनी बकाया ₹{{2}} की राशि UPI से एक मिनट में चुका सकते हैं।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+सुरक्षित भुगतान: {{4}}
+
+- काइरा, {{5}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+आप अपनी बकाया ₹8,500 की राशि UPI से एक मिनट में चुका सकते हैं।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B1-B-HI,EMAIL,B1,B,collection,HI,pay,एक मिनट में बकाया चुकाएँ,"प्रिय {name} जी,
+
+आप अपनी बकाया ₹{amount} की राशि UPI से एक मिनट में चुका सकते हैं।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",232,,,,,,,"प्रिय Ravi जी,
+
+आप अपनी बकाया ₹8,500 की राशि UPI से एक मिनट में चुका सकते हैं।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B1-B-HI,IVR,B1,B,collection,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। आप अपनी बकाया {amount} रुपये की राशि UPI से एक मिनट में चुका सकते हैं। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",344,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। आप अपनी बकाया 8,500 रुपये की राशि UPI से एक मिनट में चुका सकते हैं। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B1-B-HI,VOICEBOT,B1,B,collection,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] आप अपनी बकाया {amount} रुपये की राशि UPI से एक मिनट में चुका सकते हैं। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,amount",221,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] आप अपनी बकाया 8,500 रुपये की राशि UPI से एक मिनट में चुका सकते हैं। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-B1-C-EN,SMS,B1,C,collection,EN,pay,,{lender_name}: Paying your overdue Rs {amount} now stops further late charges. Pay: {link},"lender_name,amount,link",99,1,GSM,{#var#}: Paying your overdue Rs {#var#} now stops further late charges. Pay: {#var#},,,,"Nirvana Finance: Paying your overdue Rs 8,500 now stops further late charges. Pay: nfin.in/p/Ab12Cd"
+WH-B1-C-EN,WHATSAPP,B1,C,collection,EN,pay,,"Hi {name},
+
+Paying your overdue Rs {amount} now stops further late charges.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,link,lender_name",186,,,,"Hi {{1}},
+
+Paying your overdue Rs {{2}} now stops further late charges.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Pay securely: {{4}}
+
+- Kaira, {{5}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"Hi Ravi,
+
+Paying your overdue Rs 8,500 now stops further late charges.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B1-C-EN,EMAIL,B1,C,collection,EN,pay,Avoid further late charges,"Dear {name},
+
+Paying your overdue Rs {amount} now stops further late charges.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",236,,,,,,,"Dear Ravi,
+
+Paying your overdue Rs 8,500 now stops further late charges.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B1-C-EN,IVR,B1,C,collection,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Paying your overdue {amount} rupees now stops further late charges. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,amount",328,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Paying your overdue 8,500 rupees now stops further late charges. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B1-C-EN,VOICEBOT,B1,C,collection,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Paying your overdue {amount} rupees now stops further late charges. Would you be able to make this payment today?","name,lender_name,amount",224,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Paying your overdue 8,500 rupees now stops further late charges. Would you be able to make this payment today?"
+SM-B1-C-HI,SMS,B1,C,collection,HI,pay,,{lender_name}: बकाया ₹{amount} अभी चुकाने से आगे विलंब शुल्क नहीं लगेगा। भुगतान: {link},"lender_name,amount,link",96,2,UNICODE,{#var#}: बकाया ₹{#var#} अभी चुकाने से आगे विलंब शुल्क नहीं लगेगा। भुगतान: {#var#},,,,"Nirvana Finance: बकाया ₹8,500 अभी चुकाने से आगे विलंब शुल्क नहीं लगेगा। भुगतान: nfin.in/p/Ab12Cd"
+WH-B1-C-HI,WHATSAPP,B1,C,collection,HI,pay,,"नमस्ते {name} जी,
+
+बकाया ₹{amount} अभी चुकाने से आगे विलंब शुल्क नहीं लगेगा।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,link,lender_name",196,,,,"नमस्ते {{1}} जी,
+
+बकाया ₹{{2}} अभी चुकाने से आगे विलंब शुल्क नहीं लगेगा।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+सुरक्षित भुगतान: {{4}}
+
+- काइरा, {{5}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+बकाया ₹8,500 अभी चुकाने से आगे विलंब शुल्क नहीं लगेगा।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B1-C-HI,EMAIL,B1,C,collection,HI,pay,आगे के विलंब शुल्क से बचें,"प्रिय {name} जी,
+
+बकाया ₹{amount} अभी चुकाने से आगे विलंब शुल्क नहीं लगेगा।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",224,,,,,,,"प्रिय Ravi जी,
+
+बकाया ₹8,500 अभी चुकाने से आगे विलंब शुल्क नहीं लगेगा।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B1-C-HI,IVR,B1,C,collection,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। बकाया {amount} रुपये अभी चुकाने से आगे विलंब शुल्क नहीं लगेगा। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",336,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। बकाया 8,500 रुपये अभी चुकाने से आगे विलंब शुल्क नहीं लगेगा। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B1-C-HI,VOICEBOT,B1,C,collection,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] बकाया {amount} रुपये अभी चुकाने से आगे विलंब शुल्क नहीं लगेगा। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,amount",213,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] बकाया 8,500 रुपये अभी चुकाने से आगे विलंब शुल्क नहीं लगेगा। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-B1-D-EN,SMS,B1,D,collection,EN,help,,"{lender_name}: If something has delayed your EMI of Rs {amount}, we are here to help. Reply HELP for assistance.","lender_name,amount",111,1,GSM,"{#var#}: If something has delayed your EMI of Rs {#var#}, we are here to help. Reply HELP for assistance.",,,,"Nirvana Finance: If something has delayed your EMI of Rs 8,500, we are here to help. Reply HELP for assistance."
+WH-B1-D-EN,WHATSAPP,B1,D,collection,EN,help,,"Hi {name},
+
+If something has delayed your EMI of Rs {amount}, we are here to help.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Reply HELP here and we will assist you.
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,lender_name",202,,,,"Hi {{1}},
+
+If something has delayed your EMI of Rs {{2}}, we are here to help.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Reply HELP here and we will assist you.
+
+- Kaira, {{4}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=lender_name,UTILITY,"Hi Ravi,
+
+If something has delayed your EMI of Rs 8,500, we are here to help.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Reply HELP here and we will assist you.
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B1-D-EN,EMAIL,B1,D,collection,EN,help,We are here to help with your EMI,"Dear {name},
+
+If something has delayed your EMI of Rs {amount}, we are here to help.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Reply to this email or call {helpline} and we will assist you.
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,helpline,lender_name,unsubscribe_link",278,,,,,,,"Dear Ravi,
+
+If something has delayed your EMI of Rs 8,500, we are here to help.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Reply to this email or call 1800-123-4567 and we will assist you.
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B1-D-EN,IVR,B1,D,collection,EN,help,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. If something has delayed your EMI of {amount} rupees, we are here to help. Press 2 to speak to our team now. Press 1 to receive a secure payment link by SMS. Press 3 if you have already paid.","name,lender_name,amount",339,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. If something has delayed your EMI of 8,500 rupees, we are here to help. Press 2 to speak to our team now. Press 1 to receive a secure payment link by SMS. Press 3 if you have already paid."
+VO-B1-D-EN,VOICEBOT,B1,D,collection,EN,help,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] If something has delayed your EMI of {amount} rupees, we are here to help. Is anything making the payment difficult right now?","name,lender_name,amount",237,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] If something has delayed your EMI of 8,500 rupees, we are here to help. Is anything making the payment difficult right now?"
+SM-B1-D-HI,SMS,B1,D,collection,HI,help,,"{lender_name}: अगर किसी कारण ₹{amount} की EMI में देरी हुई है, तो हम मदद के लिए हैं। सहायता के लिए HELP लिखें।","lender_name,amount",109,2,UNICODE,"{#var#}: अगर किसी कारण ₹{#var#} की EMI में देरी हुई है, तो हम मदद के लिए हैं। सहायता के लिए HELP लिखें।",,,,"Nirvana Finance: अगर किसी कारण ₹8,500 की EMI में देरी हुई है, तो हम मदद के लिए हैं। सहायता के लिए HELP लिखें।"
+WH-B1-D-HI,WHATSAPP,B1,D,collection,HI,help,,"नमस्ते {name} जी,
+
+अगर किसी कारण ₹{amount} की EMI में देरी हुई है, तो हम मदद के लिए हैं।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सहायता के लिए यहाँ HELP लिखें।
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,lender_name",205,,,,"नमस्ते {{1}} जी,
+
+अगर किसी कारण ₹{{2}} की EMI में देरी हुई है, तो हम मदद के लिए हैं।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+सहायता के लिए यहाँ HELP लिखें।
+
+- काइरा, {{4}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+अगर किसी कारण ₹8,500 की EMI में देरी हुई है, तो हम मदद के लिए हैं।
+
+बकाया: ₹8,500 | लोन: xx4321
+सहायता के लिए यहाँ HELP लिखें।
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B1-D-HI,EMAIL,B1,D,collection,HI,help,आपकी EMI में हम मदद के लिए हैं,"प्रिय {name} जी,
+
+अगर किसी कारण ₹{amount} की EMI में देरी हुई है, तो हम मदद के लिए हैं।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+इस ईमेल का जवाब दें या {helpline} पर कॉल करें, हम आपकी मदद करेंगे।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,helpline,lender_name,unsubscribe_link",272,,,,,,,"प्रिय Ravi जी,
+
+अगर किसी कारण ₹8,500 की EMI में देरी हुई है, तो हम मदद के लिए हैं।
+
+बकाया: ₹8,500 | लोन: xx4321
+इस ईमेल का जवाब दें या 1800-123-4567 पर कॉल करें, हम आपकी मदद करेंगे।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B1-D-HI,IVR,B1,D,collection,HI,help,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। अगर किसी कारण {amount} रुपये की EMI में देरी हुई है, तो हम मदद के लिए हैं। हमारी टीम से अभी बात करने के लिए 2 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",352,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। अगर किसी कारण 8,500 रुपये की EMI में देरी हुई है, तो हम मदद के लिए हैं। हमारी टीम से अभी बात करने के लिए 2 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B1-D-HI,VOICEBOT,B1,D,collection,HI,help,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] अगर किसी कारण {amount} रुपये की EMI में देरी हुई है, तो हम मदद के लिए हैं। क्या इस समय भुगतान में कोई कठिनाई है?","name,lender_name,amount",231,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] अगर किसी कारण 8,500 रुपये की EMI में देरी हुई है, तो हम मदद के लिए हैं। क्या इस समय भुगतान में कोई कठिनाई है?"
+SM-B1-E-EN,SMS,B1,E,collection,EN,date,,{lender_name}: Please let us know when you can pay your overdue Rs {amount}. Reply with your payment date.,"lender_name,amount",105,1,GSM,{#var#}: Please let us know when you can pay your overdue Rs {#var#}. Reply with your payment date.,,,,"Nirvana Finance: Please let us know when you can pay your overdue Rs 8,500. Reply with your payment date."
+WH-B1-E-EN,WHATSAPP,B1,E,collection,EN,date,,"Hi {name},
+
+Please let us know when you can pay your overdue Rs {amount}.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Reply here with your payment date.
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,lender_name",188,,,,"Hi {{1}},
+
+Please let us know when you can pay your overdue Rs {{2}}.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Reply here with your payment date.
+
+- Kaira, {{4}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=lender_name,UTILITY,"Hi Ravi,
+
+Please let us know when you can pay your overdue Rs 8,500.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Reply here with your payment date.
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B1-E-EN,EMAIL,B1,E,collection,EN,date,Please share your payment date,"Dear {name},
+
+Please let us know when you can pay your overdue Rs {amount}.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Reply to this email with your payment date.
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,lender_name,unsubscribe_link",247,,,,,,,"Dear Ravi,
+
+Please let us know when you can pay your overdue Rs 8,500.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Reply to this email with your payment date.
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B1-E-EN,IVR,B1,E,collection,EN,date,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Please let us know when you can pay your overdue {amount} rupees. Press 4 to tell us your payment date. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,amount",364,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Please let us know when you can pay your overdue 8,500 rupees. Press 4 to tell us your payment date. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B1-E-EN,VOICEBOT,B1,E,collection,EN,date,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Please let us know when you can pay your overdue {amount} rupees. When will you be able to make this payment?","name,lender_name,amount",220,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Please let us know when you can pay your overdue 8,500 rupees. When will you be able to make this payment?"
+SM-B1-E-HI,SMS,B1,E,collection,HI,date,,{lender_name}: कृपया बताइए आप बकाया ₹{amount} कब चुका पाएँगे। भुगतान की तारीख लिखकर जवाब दें।,"lender_name,amount",92,2,UNICODE,{#var#}: कृपया बताइए आप बकाया ₹{#var#} कब चुका पाएँगे। भुगतान की तारीख लिखकर जवाब दें।,,,,"Nirvana Finance: कृपया बताइए आप बकाया ₹8,500 कब चुका पाएँगे। भुगतान की तारीख लिखकर जवाब दें।"
+WH-B1-E-HI,WHATSAPP,B1,E,collection,HI,date,,"नमस्ते {name} जी,
+
+कृपया बताइए आप बकाया ₹{amount} कब चुका पाएँगे।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+भुगतान की तारीख यहाँ लिखकर जवाब दें।
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,lender_name",188,,,,"नमस्ते {{1}} जी,
+
+कृपया बताइए आप बकाया ₹{{2}} कब चुका पाएँगे।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+भुगतान की तारीख यहाँ लिखकर जवाब दें।
+
+- काइरा, {{4}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+कृपया बताइए आप बकाया ₹8,500 कब चुका पाएँगे।
+
+बकाया: ₹8,500 | लोन: xx4321
+भुगतान की तारीख यहाँ लिखकर जवाब दें।
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B1-E-HI,EMAIL,B1,E,collection,HI,date,कृपया भुगतान की तारीख बताएँ,"प्रिय {name} जी,
+
+कृपया बताइए आप बकाया ₹{amount} कब चुका पाएँगे।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+भुगतान की तारीख के साथ इस ईमेल का जवाब दें।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,lender_name,unsubscribe_link",223,,,,,,,"प्रिय Ravi जी,
+
+कृपया बताइए आप बकाया ₹8,500 कब चुका पाएँगे।
+
+बकाया: ₹8,500 | लोन: xx4321
+भुगतान की तारीख के साथ इस ईमेल का जवाब दें।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B1-E-HI,IVR,B1,E,collection,HI,date,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। कृपया बताइए आप बकाया {amount} रुपये कब चुका पाएँगे। भुगतान की तारीख बताने के लिए 4 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",363,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। कृपया बताइए आप बकाया 8,500 रुपये कब चुका पाएँगे। भुगतान की तारीख बताने के लिए 4 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B1-E-HI,VOICEBOT,B1,E,collection,HI,date,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] कृपया बताइए आप बकाया {amount} रुपये कब चुका पाएँगे। आप यह भुगतान कब कर पाएँगे?","name,lender_name,amount",197,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] कृपया बताइए आप बकाया 8,500 रुपये कब चुका पाएँगे। आप यह भुगतान कब कर पाएँगे?"
+SM-B1-F-EN,SMS,B1,F,collection,EN,pay,,{lender_name}: Paying Rs {amount} now keeps your credit record on track. Pay: {link},"lender_name,amount,link",93,1,GSM,{#var#}: Paying Rs {#var#} now keeps your credit record on track. Pay: {#var#},,,,"Nirvana Finance: Paying Rs 8,500 now keeps your credit record on track. Pay: nfin.in/p/Ab12Cd"
+WH-B1-F-EN,WHATSAPP,B1,F,collection,EN,pay,,"Hi {name},
+
+Paying Rs {amount} now keeps your credit record on track.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,link,lender_name",180,,,,"Hi {{1}},
+
+Paying Rs {{2}} now keeps your credit record on track.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Pay securely: {{4}}
+
+- Kaira, {{5}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"Hi Ravi,
+
+Paying Rs 8,500 now keeps your credit record on track.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B1-F-EN,EMAIL,B1,F,collection,EN,pay,Protect your credit score,"Dear {name},
+
+Paying Rs {amount} now keeps your credit record on track.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",230,,,,,,,"Dear Ravi,
+
+Paying Rs 8,500 now keeps your credit record on track.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B1-F-EN,IVR,B1,F,collection,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Paying {amount} rupees now keeps your credit record on track. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,amount",322,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Paying 8,500 rupees now keeps your credit record on track. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B1-F-EN,VOICEBOT,B1,F,collection,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Paying {amount} rupees now keeps your credit record on track. Would you be able to make this payment today?","name,lender_name,amount",218,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Paying 8,500 rupees now keeps your credit record on track. Would you be able to make this payment today?"
+SM-B1-F-HI,SMS,B1,F,collection,HI,pay,,{lender_name}: अभी ₹{amount} चुकाने से आपका क्रेडिट रिकॉर्ड ठीक रहेगा। भुगतान: {link},"lender_name,amount,link",94,2,UNICODE,{#var#}: अभी ₹{#var#} चुकाने से आपका क्रेडिट रिकॉर्ड ठीक रहेगा। भुगतान: {#var#},,,,"Nirvana Finance: अभी ₹8,500 चुकाने से आपका क्रेडिट रिकॉर्ड ठीक रहेगा। भुगतान: nfin.in/p/Ab12Cd"
+WH-B1-F-HI,WHATSAPP,B1,F,collection,HI,pay,,"नमस्ते {name} जी,
+
+अभी ₹{amount} चुकाने से आपका क्रेडिट रिकॉर्ड ठीक रहेगा।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,link,lender_name",194,,,,"नमस्ते {{1}} जी,
+
+अभी ₹{{2}} चुकाने से आपका क्रेडिट रिकॉर्ड ठीक रहेगा।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+सुरक्षित भुगतान: {{4}}
+
+- काइरा, {{5}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+अभी ₹8,500 चुकाने से आपका क्रेडिट रिकॉर्ड ठीक रहेगा।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B1-F-HI,EMAIL,B1,F,collection,HI,pay,अपना क्रेडिट स्कोर सुरक्षित रखें,"प्रिय {name} जी,
+
+अभी ₹{amount} चुकाने से आपका क्रेडिट रिकॉर्ड ठीक रहेगा।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",222,,,,,,,"प्रिय Ravi जी,
+
+अभी ₹8,500 चुकाने से आपका क्रेडिट रिकॉर्ड ठीक रहेगा।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B1-F-HI,IVR,B1,F,collection,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। अभी {amount} रुपये चुकाने से आपका क्रेडिट रिकॉर्ड ठीक रहेगा। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",334,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। अभी 8,500 रुपये चुकाने से आपका क्रेडिट रिकॉर्ड ठीक रहेगा। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B1-F-HI,VOICEBOT,B1,F,collection,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] अभी {amount} रुपये चुकाने से आपका क्रेडिट रिकॉर्ड ठीक रहेगा। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,amount",211,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] अभी 8,500 रुपये चुकाने से आपका क्रेडिट रिकॉर्ड ठीक रहेगा। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-B2-A-EN,SMS,B2,A,collection,EN,pay,,{lender_name}: Your loan xx{loan_last4} is overdue by over a month. Rs {amount} is pending - please pay today. Pay: {link},"lender_name,loan_last4,amount,link",123,1,GSM,{#var#}: Your loan xx{#var#} is overdue by over a month. Rs {#var#} is pending - please pay today. Pay: {#var#},,,,"Nirvana Finance: Your loan xx4321 is overdue by over a month. Rs 8,500 is pending - please pay today. Pay: nfin.in/p/Ab12Cd"
+WH-B2-A-EN,WHATSAPP,B2,A,collection,EN,pay,,"Hi {name},
+
+Your loan xx{loan_last4} is overdue by over a month. Rs {amount} is pending - please pay today.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,loan_last4,amount,link,lender_name",210,,,,"Hi {{1}},
+
+Your loan xx{{2}} is overdue by over a month. Rs {{3}} is pending - please pay today.
+
+Overdue: Rs {{3}} | Loan: xx{{2}}
+Pay securely: {{4}}
+
+- Kaira, {{5}} | Reply STOP to opt out.",{{1}}=name;{{2}}=loan_last4;{{3}}=amount;{{4}}=link;{{5}}=lender_name,UTILITY,"Hi Ravi,
+
+Your loan xx4321 is overdue by over a month. Rs 8,500 is pending - please pay today.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B2-A-EN,EMAIL,B2,A,collection,EN,pay,Overdue EMI on loan xx{loan_last4},"Dear {name},
+
+Your loan xx{loan_last4} is overdue by over a month. Rs {amount} is pending - please pay today.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","loan_last4,name,amount,link,lender_name,unsubscribe_link",260,,,,,,,"Dear Ravi,
+
+Your loan xx4321 is overdue by over a month. Rs 8,500 is pending - please pay today.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B2-A-EN,IVR,B2,A,collection,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Your loan ending {loan_last4} is overdue by over a month. {amount} rupees is pending - please pay today. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,loan_last4,amount",357,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Your loan ending 4321 is overdue by over a month. 8,500 rupees is pending - please pay today. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B2-A-EN,VOICEBOT,B2,A,collection,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Your loan ending {loan_last4} is overdue by over a month. {amount} rupees is pending - please pay today. Would you be able to make this payment today?","name,lender_name,loan_last4,amount",253,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Your loan ending 4321 is overdue by over a month. 8,500 rupees is pending - please pay today. Would you be able to make this payment today?"
+SM-B2-A-HI,SMS,B2,A,collection,HI,pay,,{lender_name}: आपका लोन xx{loan_last4} एक महीने से अधिक से बकाया है। ₹{amount} लंबित है - कृपया आज भुगतान करें। भुगतान: {link},"lender_name,loan_last4,amount,link",127,2,UNICODE,{#var#}: आपका लोन xx{#var#} एक महीने से अधिक से बकाया है। ₹{#var#} लंबित है - कृपया आज भुगतान करें। भुगतान: {#var#},,,,"Nirvana Finance: आपका लोन xx4321 एक महीने से अधिक से बकाया है। ₹8,500 लंबित है - कृपया आज भुगतान करें। भुगतान: nfin.in/p/Ab12Cd"
+WH-B2-A-HI,WHATSAPP,B2,A,collection,HI,pay,,"नमस्ते {name} जी,
+
+आपका लोन xx{loan_last4} एक महीने से अधिक से बकाया है। ₹{amount} लंबित है - कृपया आज भुगतान करें।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,loan_last4,amount,link,lender_name",227,,,,"नमस्ते {{1}} जी,
+
+आपका लोन xx{{2}} एक महीने से अधिक से बकाया है। ₹{{3}} लंबित है - कृपया आज भुगतान करें।
+
+बकाया: ₹{{3}} | लोन: xx{{2}}
+सुरक्षित भुगतान: {{4}}
+
+- काइरा, {{5}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=loan_last4;{{3}}=amount;{{4}}=link;{{5}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+आपका लोन xx4321 एक महीने से अधिक से बकाया है। ₹8,500 लंबित है - कृपया आज भुगतान करें।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B2-A-HI,EMAIL,B2,A,collection,HI,pay,लोन xx{loan_last4} पर बकाया EMI,"प्रिय {name} जी,
+
+आपका लोन xx{loan_last4} एक महीने से अधिक से बकाया है। ₹{amount} लंबित है - कृपया आज भुगतान करें।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","loan_last4,name,amount,link,lender_name,unsubscribe_link",255,,,,,,,"प्रिय Ravi जी,
+
+आपका लोन xx4321 एक महीने से अधिक से बकाया है। ₹8,500 लंबित है - कृपया आज भुगतान करें।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B2-A-HI,IVR,B2,A,collection,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। आपका लोन एक महीने से अधिक से बकाया है। {amount} रुपये लंबित है - कृपया आज भुगतान करें। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",360,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। आपका लोन एक महीने से अधिक से बकाया है। 8,500 रुपये लंबित है - कृपया आज भुगतान करें। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B2-A-HI,VOICEBOT,B2,A,collection,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] आपका लोन एक महीने से अधिक से बकाया है। {amount} रुपये लंबित है - कृपया आज भुगतान करें। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,amount",237,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] आपका लोन एक महीने से अधिक से बकाया है। 8,500 रुपये लंबित है - कृपया आज भुगतान करें। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-B2-B-EN,SMS,B2,B,collection,EN,pay,,"{lender_name}: Rs {amount} is overdue on your loan. Pay securely by UPI, card or net banking. Pay: {link}","lender_name,amount,link",114,1,GSM,"{#var#}: Rs {#var#} is overdue on your loan. Pay securely by UPI, card or net banking. Pay: {#var#}",,,,"Nirvana Finance: Rs 8,500 is overdue on your loan. Pay securely by UPI, card or net banking. Pay: nfin.in/p/Ab12Cd"
+WH-B2-B-EN,WHATSAPP,B2,B,collection,EN,pay,,"Hi {name},
+
+Rs {amount} is overdue on your loan. Pay securely by UPI, card or net banking.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,link,lender_name",201,,,,"Hi {{1}},
+
+Rs {{2}} is overdue on your loan. Pay securely by UPI, card or net banking.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Pay securely: {{4}}
+
+- Kaira, {{5}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"Hi Ravi,
+
+Rs 8,500 is overdue on your loan. Pay securely by UPI, card or net banking.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B2-B-EN,EMAIL,B2,B,collection,EN,pay,Clear your overdue in a minute,"Dear {name},
+
+Rs {amount} is overdue on your loan. Pay securely by UPI, card or net banking.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",251,,,,,,,"Dear Ravi,
+
+Rs 8,500 is overdue on your loan. Pay securely by UPI, card or net banking.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B2-B-EN,IVR,B2,B,collection,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. {amount} rupees is overdue on your loan. Pay securely by UPI, card or net banking. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,amount",343,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. 8,500 rupees is overdue on your loan. Pay securely by UPI, card or net banking. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B2-B-EN,VOICEBOT,B2,B,collection,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] {amount} rupees is overdue on your loan. Pay securely by UPI, card or net banking. Would you be able to make this payment today?","name,lender_name,amount",239,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] 8,500 rupees is overdue on your loan. Pay securely by UPI, card or net banking. Would you be able to make this payment today?"
+SM-B2-B-HI,SMS,B2,B,collection,HI,pay,,"{lender_name}: आपके लोन पर ₹{amount} बकाया है। UPI, कार्ड या नेट बैंकिंग से सुरक्षित भुगतान करें। भुगतान: {link}","lender_name,amount,link",121,2,UNICODE,"{#var#}: आपके लोन पर ₹{#var#} बकाया है। UPI, कार्ड या नेट बैंकिंग से सुरक्षित भुगतान करें। भुगतान: {#var#}",,,,"Nirvana Finance: आपके लोन पर ₹8,500 बकाया है। UPI, कार्ड या नेट बैंकिंग से सुरक्षित भुगतान करें। भुगतान: nfin.in/p/Ab12Cd"
+WH-B2-B-HI,WHATSAPP,B2,B,collection,HI,pay,,"नमस्ते {name} जी,
+
+आपके लोन पर ₹{amount} बकाया है। UPI, कार्ड या नेट बैंकिंग से सुरक्षित भुगतान करें।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,link,lender_name",221,,,,"नमस्ते {{1}} जी,
+
+आपके लोन पर ₹{{2}} बकाया है। UPI, कार्ड या नेट बैंकिंग से सुरक्षित भुगतान करें।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+सुरक्षित भुगतान: {{4}}
+
+- काइरा, {{5}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+आपके लोन पर ₹8,500 बकाया है। UPI, कार्ड या नेट बैंकिंग से सुरक्षित भुगतान करें।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B2-B-HI,EMAIL,B2,B,collection,HI,pay,एक मिनट में बकाया चुकाएँ,"प्रिय {name} जी,
+
+आपके लोन पर ₹{amount} बकाया है। UPI, कार्ड या नेट बैंकिंग से सुरक्षित भुगतान करें।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",249,,,,,,,"प्रिय Ravi जी,
+
+आपके लोन पर ₹8,500 बकाया है। UPI, कार्ड या नेट बैंकिंग से सुरक्षित भुगतान करें।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B2-B-HI,IVR,B2,B,collection,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। आपके लोन पर {amount} रुपये बकाया है। UPI, कार्ड या नेट बैंकिंग से सुरक्षित भुगतान करें। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",361,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। आपके लोन पर 8,500 रुपये बकाया है। UPI, कार्ड या नेट बैंकिंग से सुरक्षित भुगतान करें। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B2-B-HI,VOICEBOT,B2,B,collection,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] आपके लोन पर {amount} रुपये बकाया है। UPI, कार्ड या नेट बैंकिंग से सुरक्षित भुगतान करें। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,amount",238,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] आपके लोन पर 8,500 रुपये बकाया है। UPI, कार्ड या नेट बैंकिंग से सुरक्षित भुगतान करें। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-B2-C-EN,SMS,B2,C,collection,EN,pay,,{lender_name}: Late charges are adding to your overdue Rs {amount}. Paying now stops them growing. Pay: {link},"lender_name,amount,link",119,1,GSM,{#var#}: Late charges are adding to your overdue Rs {#var#}. Paying now stops them growing. Pay: {#var#},,,,"Nirvana Finance: Late charges are adding to your overdue Rs 8,500. Paying now stops them growing. Pay: nfin.in/p/Ab12Cd"
+WH-B2-C-EN,WHATSAPP,B2,C,collection,EN,pay,,"Hi {name},
+
+Late charges are adding to your overdue Rs {amount}. Paying now stops them growing.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,link,lender_name",206,,,,"Hi {{1}},
+
+Late charges are adding to your overdue Rs {{2}}. Paying now stops them growing.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Pay securely: {{4}}
+
+- Kaira, {{5}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"Hi Ravi,
+
+Late charges are adding to your overdue Rs 8,500. Paying now stops them growing.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B2-C-EN,EMAIL,B2,C,collection,EN,pay,Late charges are adding up,"Dear {name},
+
+Late charges are adding to your overdue Rs {amount}. Paying now stops them growing.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",256,,,,,,,"Dear Ravi,
+
+Late charges are adding to your overdue Rs 8,500. Paying now stops them growing.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B2-C-EN,IVR,B2,C,collection,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Late charges are adding to your overdue {amount} rupees. Paying now stops them growing. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,amount",348,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Late charges are adding to your overdue 8,500 rupees. Paying now stops them growing. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B2-C-EN,VOICEBOT,B2,C,collection,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Late charges are adding to your overdue {amount} rupees. Paying now stops them growing. Would you be able to make this payment today?","name,lender_name,amount",244,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Late charges are adding to your overdue 8,500 rupees. Paying now stops them growing. Would you be able to make this payment today?"
+SM-B2-C-HI,SMS,B2,C,collection,HI,pay,,{lender_name}: आपकी बकाया ₹{amount} राशि पर विलंब शुल्क जुड़ रहा है। अभी भुगतान करने से यह बढ़ना रुकेगा। भुगतान: {link},"lender_name,amount,link",128,2,UNICODE,{#var#}: आपकी बकाया ₹{#var#} राशि पर विलंब शुल्क जुड़ रहा है। अभी भुगतान करने से यह बढ़ना रुकेगा। भुगतान: {#var#},,,,"Nirvana Finance: आपकी बकाया ₹8,500 राशि पर विलंब शुल्क जुड़ रहा है। अभी भुगतान करने से यह बढ़ना रुकेगा। भुगतान: nfin.in/p/Ab12Cd"
+WH-B2-C-HI,WHATSAPP,B2,C,collection,HI,pay,,"नमस्ते {name} जी,
+
+आपकी बकाया ₹{amount} राशि पर विलंब शुल्क जुड़ रहा है। अभी भुगतान करने से यह बढ़ना रुकेगा।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,link,lender_name",228,,,,"नमस्ते {{1}} जी,
+
+आपकी बकाया ₹{{2}} राशि पर विलंब शुल्क जुड़ रहा है। अभी भुगतान करने से यह बढ़ना रुकेगा।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+सुरक्षित भुगतान: {{4}}
+
+- काइरा, {{5}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+आपकी बकाया ₹8,500 राशि पर विलंब शुल्क जुड़ रहा है। अभी भुगतान करने से यह बढ़ना रुकेगा।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B2-C-HI,EMAIL,B2,C,collection,HI,pay,विलंब शुल्क बढ़ रहा है,"प्रिय {name} जी,
+
+आपकी बकाया ₹{amount} राशि पर विलंब शुल्क जुड़ रहा है। अभी भुगतान करने से यह बढ़ना रुकेगा।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",256,,,,,,,"प्रिय Ravi जी,
+
+आपकी बकाया ₹8,500 राशि पर विलंब शुल्क जुड़ रहा है। अभी भुगतान करने से यह बढ़ना रुकेगा।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B2-C-HI,IVR,B2,C,collection,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। आपकी बकाया {amount} रुपये राशि पर विलंब शुल्क जुड़ रहा है। अभी भुगतान करने से यह बढ़ना रुकेगा। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",368,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। आपकी बकाया 8,500 रुपये राशि पर विलंब शुल्क जुड़ रहा है। अभी भुगतान करने से यह बढ़ना रुकेगा। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B2-C-HI,VOICEBOT,B2,C,collection,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] आपकी बकाया {amount} रुपये राशि पर विलंब शुल्क जुड़ रहा है। अभी भुगतान करने से यह बढ़ना रुकेगा। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,amount",245,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] आपकी बकाया 8,500 रुपये राशि पर विलंब शुल्क जुड़ रहा है। अभी भुगतान करने से यह बढ़ना रुकेगा। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-B2-D-EN,SMS,B2,D,collection,EN,help,,{lender_name}: We understand things can be difficult. Let us find a way to clear your overdue Rs {amount}. Reply HELP for assistance.,"lender_name,amount",132,1,GSM,{#var#}: We understand things can be difficult. Let us find a way to clear your overdue Rs {#var#}. Reply HELP for assistance.,,,,"Nirvana Finance: We understand things can be difficult. Let us find a way to clear your overdue Rs 8,500. Reply HELP for assistance."
+WH-B2-D-EN,WHATSAPP,B2,D,collection,EN,help,,"Hi {name},
+
+We understand things can be difficult. Let us find a way to clear your overdue Rs {amount}.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Reply HELP here and we will assist you.
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,lender_name",223,,,,"Hi {{1}},
+
+We understand things can be difficult. Let us find a way to clear your overdue Rs {{2}}.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Reply HELP here and we will assist you.
+
+- Kaira, {{4}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=lender_name,UTILITY,"Hi Ravi,
+
+We understand things can be difficult. Let us find a way to clear your overdue Rs 8,500.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Reply HELP here and we will assist you.
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B2-D-EN,EMAIL,B2,D,collection,EN,help,We are here to help with your EMI,"Dear {name},
+
+We understand things can be difficult. Let us find a way to clear your overdue Rs {amount}.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Reply to this email or call {helpline} and we will assist you.
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,helpline,lender_name,unsubscribe_link",299,,,,,,,"Dear Ravi,
+
+We understand things can be difficult. Let us find a way to clear your overdue Rs 8,500.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Reply to this email or call 1800-123-4567 and we will assist you.
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B2-D-EN,IVR,B2,D,collection,EN,help,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. We understand things can be difficult. Let us find a way to clear your overdue {amount} rupees. Press 2 to speak to our team now. Press 1 to receive a secure payment link by SMS. Press 3 if you have already paid.","name,lender_name,amount",360,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. We understand things can be difficult. Let us find a way to clear your overdue 8,500 rupees. Press 2 to speak to our team now. Press 1 to receive a secure payment link by SMS. Press 3 if you have already paid."
+VO-B2-D-EN,VOICEBOT,B2,D,collection,EN,help,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] We understand things can be difficult. Let us find a way to clear your overdue {amount} rupees. Is anything making the payment difficult right now?","name,lender_name,amount",258,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] We understand things can be difficult. Let us find a way to clear your overdue 8,500 rupees. Is anything making the payment difficult right now?"
+SM-B2-D-HI,SMS,B2,D,collection,HI,help,,{lender_name}: हम समझते हैं कि परिस्थितियाँ कठिन हो सकती हैं। आइए बकाया ₹{amount} चुकाने का रास्ता निकालें। सहायता के लिए HELP लिखें।,"lender_name,amount",132,2,UNICODE,{#var#}: हम समझते हैं कि परिस्थितियाँ कठिन हो सकती हैं। आइए बकाया ₹{#var#} चुकाने का रास्ता निकालें। सहायता के लिए HELP लिखें।,,,,"Nirvana Finance: हम समझते हैं कि परिस्थितियाँ कठिन हो सकती हैं। आइए बकाया ₹8,500 चुकाने का रास्ता निकालें। सहायता के लिए HELP लिखें।"
+WH-B2-D-HI,WHATSAPP,B2,D,collection,HI,help,,"नमस्ते {name} जी,
+
+हम समझते हैं कि परिस्थितियाँ कठिन हो सकती हैं। आइए बकाया ₹{amount} चुकाने का रास्ता निकालें।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सहायता के लिए यहाँ HELP लिखें।
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,lender_name",228,,,,"नमस्ते {{1}} जी,
+
+हम समझते हैं कि परिस्थितियाँ कठिन हो सकती हैं। आइए बकाया ₹{{2}} चुकाने का रास्ता निकालें।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+सहायता के लिए यहाँ HELP लिखें।
+
+- काइरा, {{4}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+हम समझते हैं कि परिस्थितियाँ कठिन हो सकती हैं। आइए बकाया ₹8,500 चुकाने का रास्ता निकालें।
+
+बकाया: ₹8,500 | लोन: xx4321
+सहायता के लिए यहाँ HELP लिखें।
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B2-D-HI,EMAIL,B2,D,collection,HI,help,आपकी EMI में हम मदद के लिए हैं,"प्रिय {name} जी,
+
+हम समझते हैं कि परिस्थितियाँ कठिन हो सकती हैं। आइए बकाया ₹{amount} चुकाने का रास्ता निकालें।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+इस ईमेल का जवाब दें या {helpline} पर कॉल करें, हम आपकी मदद करेंगे।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,helpline,lender_name,unsubscribe_link",295,,,,,,,"प्रिय Ravi जी,
+
+हम समझते हैं कि परिस्थितियाँ कठिन हो सकती हैं। आइए बकाया ₹8,500 चुकाने का रास्ता निकालें।
+
+बकाया: ₹8,500 | लोन: xx4321
+इस ईमेल का जवाब दें या 1800-123-4567 पर कॉल करें, हम आपकी मदद करेंगे।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B2-D-HI,IVR,B2,D,collection,HI,help,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। हम समझते हैं कि परिस्थितियाँ कठिन हो सकती हैं। आइए बकाया {amount} रुपये चुकाने का रास्ता निकालें। हमारी टीम से अभी बात करने के लिए 2 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",375,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। हम समझते हैं कि परिस्थितियाँ कठिन हो सकती हैं। आइए बकाया 8,500 रुपये चुकाने का रास्ता निकालें। हमारी टीम से अभी बात करने के लिए 2 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B2-D-HI,VOICEBOT,B2,D,collection,HI,help,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] हम समझते हैं कि परिस्थितियाँ कठिन हो सकती हैं। आइए बकाया {amount} रुपये चुकाने का रास्ता निकालें। क्या इस समय भुगतान में कोई कठिनाई है?","name,lender_name,amount",254,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] हम समझते हैं कि परिस्थितियाँ कठिन हो सकती हैं। आइए बकाया 8,500 रुपये चुकाने का रास्ता निकालें। क्या इस समय भुगतान में कोई कठिनाई है?"
+SM-B2-E-EN,SMS,B2,E,collection,EN,date,,{lender_name}: Please confirm a payment date for your overdue Rs {amount}. Reply with your payment date.,"lender_name,amount",103,1,GSM,{#var#}: Please confirm a payment date for your overdue Rs {#var#}. Reply with your payment date.,,,,"Nirvana Finance: Please confirm a payment date for your overdue Rs 8,500. Reply with your payment date."
+WH-B2-E-EN,WHATSAPP,B2,E,collection,EN,date,,"Hi {name},
+
+Please confirm a payment date for your overdue Rs {amount}.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Reply here with your payment date.
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,lender_name",186,,,,"Hi {{1}},
+
+Please confirm a payment date for your overdue Rs {{2}}.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Reply here with your payment date.
+
+- Kaira, {{4}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=lender_name,UTILITY,"Hi Ravi,
+
+Please confirm a payment date for your overdue Rs 8,500.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Reply here with your payment date.
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B2-E-EN,EMAIL,B2,E,collection,EN,date,Please share your payment date,"Dear {name},
+
+Please confirm a payment date for your overdue Rs {amount}.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Reply to this email with your payment date.
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,lender_name,unsubscribe_link",245,,,,,,,"Dear Ravi,
+
+Please confirm a payment date for your overdue Rs 8,500.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Reply to this email with your payment date.
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B2-E-EN,IVR,B2,E,collection,EN,date,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Please confirm a payment date for your overdue {amount} rupees. Press 4 to tell us your payment date. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,amount",362,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Please confirm a payment date for your overdue 8,500 rupees. Press 4 to tell us your payment date. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B2-E-EN,VOICEBOT,B2,E,collection,EN,date,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Please confirm a payment date for your overdue {amount} rupees. When will you be able to make this payment?","name,lender_name,amount",218,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Please confirm a payment date for your overdue 8,500 rupees. When will you be able to make this payment?"
+SM-B2-E-HI,SMS,B2,E,collection,HI,date,,{lender_name}: कृपया बकाया ₹{amount} के भुगतान की तारीख की पुष्टि करें। भुगतान की तारीख लिखकर जवाब दें।,"lender_name,amount",102,2,UNICODE,{#var#}: कृपया बकाया ₹{#var#} के भुगतान की तारीख की पुष्टि करें। भुगतान की तारीख लिखकर जवाब दें।,,,,"Nirvana Finance: कृपया बकाया ₹8,500 के भुगतान की तारीख की पुष्टि करें। भुगतान की तारीख लिखकर जवाब दें।"
+WH-B2-E-HI,WHATSAPP,B2,E,collection,HI,date,,"नमस्ते {name} जी,
+
+कृपया बकाया ₹{amount} के भुगतान की तारीख की पुष्टि करें।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+भुगतान की तारीख यहाँ लिखकर जवाब दें।
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,lender_name",198,,,,"नमस्ते {{1}} जी,
+
+कृपया बकाया ₹{{2}} के भुगतान की तारीख की पुष्टि करें।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+भुगतान की तारीख यहाँ लिखकर जवाब दें।
+
+- काइरा, {{4}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+कृपया बकाया ₹8,500 के भुगतान की तारीख की पुष्टि करें।
+
+बकाया: ₹8,500 | लोन: xx4321
+भुगतान की तारीख यहाँ लिखकर जवाब दें।
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B2-E-HI,EMAIL,B2,E,collection,HI,date,कृपया भुगतान की तारीख बताएँ,"प्रिय {name} जी,
+
+कृपया बकाया ₹{amount} के भुगतान की तारीख की पुष्टि करें।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+भुगतान की तारीख के साथ इस ईमेल का जवाब दें।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,lender_name,unsubscribe_link",233,,,,,,,"प्रिय Ravi जी,
+
+कृपया बकाया ₹8,500 के भुगतान की तारीख की पुष्टि करें।
+
+बकाया: ₹8,500 | लोन: xx4321
+भुगतान की तारीख के साथ इस ईमेल का जवाब दें।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B2-E-HI,IVR,B2,E,collection,HI,date,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। कृपया बकाया {amount} रुपये के भुगतान की तारीख की पुष्टि करें। भुगतान की तारीख बताने के लिए 4 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",373,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। कृपया बकाया 8,500 रुपये के भुगतान की तारीख की पुष्टि करें। भुगतान की तारीख बताने के लिए 4 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B2-E-HI,VOICEBOT,B2,E,collection,HI,date,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] कृपया बकाया {amount} रुपये के भुगतान की तारीख की पुष्टि करें। आप यह भुगतान कब कर पाएँगे?","name,lender_name,amount",207,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] कृपया बकाया 8,500 रुपये के भुगतान की तारीख की पुष्टि करें। आप यह भुगतान कब कर पाएँगे?"
+SM-B2-F-EN,SMS,B2,F,collection,EN,pay,,{lender_name}: Overdue EMIs are reported to credit bureaus. Paying Rs {amount} now protects your credit score. Pay: {link},"lender_name,amount,link",131,1,GSM,{#var#}: Overdue EMIs are reported to credit bureaus. Paying Rs {#var#} now protects your credit score. Pay: {#var#},,,,"Nirvana Finance: Overdue EMIs are reported to credit bureaus. Paying Rs 8,500 now protects your credit score. Pay: nfin.in/p/Ab12Cd"
+WH-B2-F-EN,WHATSAPP,B2,F,collection,EN,pay,,"Hi {name},
+
+Overdue EMIs are reported to credit bureaus. Paying Rs {amount} now protects your credit score.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,link,lender_name",218,,,,"Hi {{1}},
+
+Overdue EMIs are reported to credit bureaus. Paying Rs {{2}} now protects your credit score.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Pay securely: {{4}}
+
+- Kaira, {{5}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"Hi Ravi,
+
+Overdue EMIs are reported to credit bureaus. Paying Rs 8,500 now protects your credit score.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B2-F-EN,EMAIL,B2,F,collection,EN,pay,Protect your credit score,"Dear {name},
+
+Overdue EMIs are reported to credit bureaus. Paying Rs {amount} now protects your credit score.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",268,,,,,,,"Dear Ravi,
+
+Overdue EMIs are reported to credit bureaus. Paying Rs 8,500 now protects your credit score.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B2-F-EN,IVR,B2,F,collection,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Overdue EMIs are reported to credit bureaus. Paying {amount} rupees now protects your credit score. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,amount",360,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Overdue EMIs are reported to credit bureaus. Paying 8,500 rupees now protects your credit score. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B2-F-EN,VOICEBOT,B2,F,collection,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Overdue EMIs are reported to credit bureaus. Paying {amount} rupees now protects your credit score. Would you be able to make this payment today?","name,lender_name,amount",256,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Overdue EMIs are reported to credit bureaus. Paying 8,500 rupees now protects your credit score. Would you be able to make this payment today?"
+SM-B2-F-HI,SMS,B2,F,collection,HI,pay,,{lender_name}: बकाया EMI की जानकारी क्रेडिट ब्यूरो को दी जाती है। अभी ₹{amount} चुकाने से आपका क्रेडिट स्कोर सुरक्षित रहेगा। भुगतान: {link},"lender_name,amount,link",148,3,UNICODE,{#var#}: बकाया EMI की जानकारी क्रेडिट ब्यूरो को दी जाती है। अभी ₹{#var#} चुकाने से आपका क्रेडिट स्कोर सुरक्षित रहेगा। भुगतान: {#var#},,,,"Nirvana Finance: बकाया EMI की जानकारी क्रेडिट ब्यूरो को दी जाती है। अभी ₹8,500 चुकाने से आपका क्रेडिट स्कोर सुरक्षित रहेगा। भुगतान: nfin.in/p/Ab12Cd"
+WH-B2-F-HI,WHATSAPP,B2,F,collection,HI,pay,,"नमस्ते {name} जी,
+
+बकाया EMI की जानकारी क्रेडिट ब्यूरो को दी जाती है। अभी ₹{amount} चुकाने से आपका क्रेडिट स्कोर सुरक्षित रहेगा।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,link,lender_name",248,,,,"नमस्ते {{1}} जी,
+
+बकाया EMI की जानकारी क्रेडिट ब्यूरो को दी जाती है। अभी ₹{{2}} चुकाने से आपका क्रेडिट स्कोर सुरक्षित रहेगा।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+सुरक्षित भुगतान: {{4}}
+
+- काइरा, {{5}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+बकाया EMI की जानकारी क्रेडिट ब्यूरो को दी जाती है। अभी ₹8,500 चुकाने से आपका क्रेडिट स्कोर सुरक्षित रहेगा।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B2-F-HI,EMAIL,B2,F,collection,HI,pay,अपना क्रेडिट स्कोर सुरक्षित रखें,"प्रिय {name} जी,
+
+बकाया EMI की जानकारी क्रेडिट ब्यूरो को दी जाती है। अभी ₹{amount} चुकाने से आपका क्रेडिट स्कोर सुरक्षित रहेगा।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",276,,,,,,,"प्रिय Ravi जी,
+
+बकाया EMI की जानकारी क्रेडिट ब्यूरो को दी जाती है। अभी ₹8,500 चुकाने से आपका क्रेडिट स्कोर सुरक्षित रहेगा।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B2-F-HI,IVR,B2,F,collection,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। बकाया EMI की जानकारी क्रेडिट ब्यूरो को दी जाती है। अभी {amount} रुपये चुकाने से आपका क्रेडिट स्कोर सुरक्षित रहेगा। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",388,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। बकाया EMI की जानकारी क्रेडिट ब्यूरो को दी जाती है। अभी 8,500 रुपये चुकाने से आपका क्रेडिट स्कोर सुरक्षित रहेगा। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B2-F-HI,VOICEBOT,B2,F,collection,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] बकाया EMI की जानकारी क्रेडिट ब्यूरो को दी जाती है। अभी {amount} रुपये चुकाने से आपका क्रेडिट स्कोर सुरक्षित रहेगा। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,amount",265,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] बकाया EMI की जानकारी क्रेडिट ब्यूरो को दी जाती है। अभी 8,500 रुपये चुकाने से आपका क्रेडिट स्कोर सुरक्षित रहेगा। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-B3-A-EN,SMS,B3,A,collection,EN,pay,,{lender_name}: Your loan xx{loan_last4} has been overdue for over two months. Rs {amount} needs your urgent attention. Pay: {link},"lender_name,loan_last4,amount,link",131,1,GSM,{#var#}: Your loan xx{#var#} has been overdue for over two months. Rs {#var#} needs your urgent attention. Pay: {#var#},,,,"Nirvana Finance: Your loan xx4321 has been overdue for over two months. Rs 8,500 needs your urgent attention. Pay: nfin.in/p/Ab12Cd"
+WH-B3-A-EN,WHATSAPP,B3,A,collection,EN,pay,,"Hi {name},
+
+Your loan xx{loan_last4} has been overdue for over two months. Rs {amount} needs your urgent attention.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,loan_last4,amount,link,lender_name",218,,,,"Hi {{1}},
+
+Your loan xx{{2}} has been overdue for over two months. Rs {{3}} needs your urgent attention.
+
+Overdue: Rs {{3}} | Loan: xx{{2}}
+Pay securely: {{4}}
+
+- Kaira, {{5}} | Reply STOP to opt out.",{{1}}=name;{{2}}=loan_last4;{{3}}=amount;{{4}}=link;{{5}}=lender_name,UTILITY,"Hi Ravi,
+
+Your loan xx4321 has been overdue for over two months. Rs 8,500 needs your urgent attention.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B3-A-EN,EMAIL,B3,A,collection,EN,pay,Overdue EMI on loan xx{loan_last4},"Dear {name},
+
+Your loan xx{loan_last4} has been overdue for over two months. Rs {amount} needs your urgent attention.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","loan_last4,name,amount,link,lender_name,unsubscribe_link",268,,,,,,,"Dear Ravi,
+
+Your loan xx4321 has been overdue for over two months. Rs 8,500 needs your urgent attention.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B3-A-EN,IVR,B3,A,collection,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Your loan ending {loan_last4} has been overdue for over two months. {amount} rupees needs your urgent attention. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,loan_last4,amount",365,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Your loan ending 4321 has been overdue for over two months. 8,500 rupees needs your urgent attention. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B3-A-EN,VOICEBOT,B3,A,collection,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Your loan ending {loan_last4} has been overdue for over two months. {amount} rupees needs your urgent attention. Would you be able to make this payment today?","name,lender_name,loan_last4,amount",261,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Your loan ending 4321 has been overdue for over two months. 8,500 rupees needs your urgent attention. Would you be able to make this payment today?"
+SM-B3-A-HI,SMS,B3,A,collection,HI,pay,,{lender_name}: आपका लोन xx{loan_last4} दो महीने से अधिक से बकाया है। ₹{amount} पर तुरंत ध्यान देना ज़रूरी है। भुगतान: {link},"lender_name,loan_last4,amount,link",125,2,UNICODE,{#var#}: आपका लोन xx{#var#} दो महीने से अधिक से बकाया है। ₹{#var#} पर तुरंत ध्यान देना ज़रूरी है। भुगतान: {#var#},,,,"Nirvana Finance: आपका लोन xx4321 दो महीने से अधिक से बकाया है। ₹8,500 पर तुरंत ध्यान देना ज़रूरी है। भुगतान: nfin.in/p/Ab12Cd"
+WH-B3-A-HI,WHATSAPP,B3,A,collection,HI,pay,,"नमस्ते {name} जी,
+
+आपका लोन xx{loan_last4} दो महीने से अधिक से बकाया है। ₹{amount} पर तुरंत ध्यान देना ज़रूरी है।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,loan_last4,amount,link,lender_name",225,,,,"नमस्ते {{1}} जी,
+
+आपका लोन xx{{2}} दो महीने से अधिक से बकाया है। ₹{{3}} पर तुरंत ध्यान देना ज़रूरी है।
+
+बकाया: ₹{{3}} | लोन: xx{{2}}
+सुरक्षित भुगतान: {{4}}
+
+- काइरा, {{5}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=loan_last4;{{3}}=amount;{{4}}=link;{{5}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+आपका लोन xx4321 दो महीने से अधिक से बकाया है। ₹8,500 पर तुरंत ध्यान देना ज़रूरी है।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B3-A-HI,EMAIL,B3,A,collection,HI,pay,लोन xx{loan_last4} पर बकाया EMI,"प्रिय {name} जी,
+
+आपका लोन xx{loan_last4} दो महीने से अधिक से बकाया है। ₹{amount} पर तुरंत ध्यान देना ज़रूरी है।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","loan_last4,name,amount,link,lender_name,unsubscribe_link",253,,,,,,,"प्रिय Ravi जी,
+
+आपका लोन xx4321 दो महीने से अधिक से बकाया है। ₹8,500 पर तुरंत ध्यान देना ज़रूरी है।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B3-A-HI,IVR,B3,A,collection,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। आपका लोन दो महीने से अधिक से बकाया है। {amount} रुपये पर तुरंत ध्यान देना ज़रूरी है। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",358,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। आपका लोन दो महीने से अधिक से बकाया है। 8,500 रुपये पर तुरंत ध्यान देना ज़रूरी है। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B3-A-HI,VOICEBOT,B3,A,collection,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] आपका लोन दो महीने से अधिक से बकाया है। {amount} रुपये पर तुरंत ध्यान देना ज़रूरी है। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,amount",235,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] आपका लोन दो महीने से अधिक से बकाया है। 8,500 रुपये पर तुरंत ध्यान देना ज़रूरी है। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-B3-B-EN,SMS,B3,B,collection,EN,pay,,{lender_name}: Settle your overdue Rs {amount} today with a secure online payment. Pay: {link},"lender_name,amount,link",103,1,GSM,{#var#}: Settle your overdue Rs {#var#} today with a secure online payment. Pay: {#var#},,,,"Nirvana Finance: Settle your overdue Rs 8,500 today with a secure online payment. Pay: nfin.in/p/Ab12Cd"
+WH-B3-B-EN,WHATSAPP,B3,B,collection,EN,pay,,"Hi {name},
+
+Settle your overdue Rs {amount} today with a secure online payment.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,link,lender_name",190,,,,"Hi {{1}},
+
+Settle your overdue Rs {{2}} today with a secure online payment.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Pay securely: {{4}}
+
+- Kaira, {{5}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"Hi Ravi,
+
+Settle your overdue Rs 8,500 today with a secure online payment.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B3-B-EN,EMAIL,B3,B,collection,EN,pay,Clear your overdue in a minute,"Dear {name},
+
+Settle your overdue Rs {amount} today with a secure online payment.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",240,,,,,,,"Dear Ravi,
+
+Settle your overdue Rs 8,500 today with a secure online payment.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B3-B-EN,IVR,B3,B,collection,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Settle your overdue {amount} rupees today with a secure online payment. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,amount",332,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Settle your overdue 8,500 rupees today with a secure online payment. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B3-B-EN,VOICEBOT,B3,B,collection,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Settle your overdue {amount} rupees today with a secure online payment. Would you be able to make this payment today?","name,lender_name,amount",228,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Settle your overdue 8,500 rupees today with a secure online payment. Would you be able to make this payment today?"
+SM-B3-B-HI,SMS,B3,B,collection,HI,pay,,{lender_name}: सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया ₹{amount} राशि चुकाएँ। भुगतान: {link},"lender_name,amount,link",104,2,UNICODE,{#var#}: सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया ₹{#var#} राशि चुकाएँ। भुगतान: {#var#},,,,"Nirvana Finance: सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया ₹8,500 राशि चुकाएँ। भुगतान: nfin.in/p/Ab12Cd"
+WH-B3-B-HI,WHATSAPP,B3,B,collection,HI,pay,,"नमस्ते {name} जी,
+
+सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया ₹{amount} राशि चुकाएँ।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,link,lender_name",204,,,,"नमस्ते {{1}} जी,
+
+सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया ₹{{2}} राशि चुकाएँ।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+सुरक्षित भुगतान: {{4}}
+
+- काइरा, {{5}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया ₹8,500 राशि चुकाएँ।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B3-B-HI,EMAIL,B3,B,collection,HI,pay,एक मिनट में बकाया चुकाएँ,"प्रिय {name} जी,
+
+सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया ₹{amount} राशि चुकाएँ।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",232,,,,,,,"प्रिय Ravi जी,
+
+सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया ₹8,500 राशि चुकाएँ।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B3-B-HI,IVR,B3,B,collection,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया {amount} रुपये राशि चुकाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",344,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया 8,500 रुपये राशि चुकाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B3-B-HI,VOICEBOT,B3,B,collection,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया {amount} रुपये राशि चुकाएँ। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,amount",221,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया 8,500 रुपये राशि चुकाएँ। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-B3-C-EN,SMS,B3,C,collection,EN,pay,,{lender_name}: Your overdue of Rs {amount} is affecting your credit record. Paying now limits the impact. Pay: {link},"lender_name,amount,link",126,1,GSM,{#var#}: Your overdue of Rs {#var#} is affecting your credit record. Paying now limits the impact. Pay: {#var#},,,,"Nirvana Finance: Your overdue of Rs 8,500 is affecting your credit record. Paying now limits the impact. Pay: nfin.in/p/Ab12Cd"
+WH-B3-C-EN,WHATSAPP,B3,C,collection,EN,pay,,"Hi {name},
+
+Your overdue of Rs {amount} is affecting your credit record. Paying now limits the impact.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,link,lender_name",213,,,,"Hi {{1}},
+
+Your overdue of Rs {{2}} is affecting your credit record. Paying now limits the impact.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Pay securely: {{4}}
+
+- Kaira, {{5}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"Hi Ravi,
+
+Your overdue of Rs 8,500 is affecting your credit record. Paying now limits the impact.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B3-C-EN,EMAIL,B3,C,collection,EN,pay,Important: your credit record,"Dear {name},
+
+Your overdue of Rs {amount} is affecting your credit record. Paying now limits the impact.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",263,,,,,,,"Dear Ravi,
+
+Your overdue of Rs 8,500 is affecting your credit record. Paying now limits the impact.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B3-C-EN,IVR,B3,C,collection,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Your overdue of {amount} rupees is affecting your credit record. Paying now limits the impact. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,amount",355,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Your overdue of 8,500 rupees is affecting your credit record. Paying now limits the impact. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B3-C-EN,VOICEBOT,B3,C,collection,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Your overdue of {amount} rupees is affecting your credit record. Paying now limits the impact. Would you be able to make this payment today?","name,lender_name,amount",251,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Your overdue of 8,500 rupees is affecting your credit record. Paying now limits the impact. Would you be able to make this payment today?"
+SM-B3-C-HI,SMS,B3,C,collection,HI,pay,,{lender_name}: ₹{amount} की बकाया राशि आपके क्रेडिट रिकॉर्ड को प्रभावित कर रही है। अभी भुगतान करने से असर सीमित रहेगा। भुगतान: {link},"lender_name,amount,link",142,3,UNICODE,{#var#}: ₹{#var#} की बकाया राशि आपके क्रेडिट रिकॉर्ड को प्रभावित कर रही है। अभी भुगतान करने से असर सीमित रहेगा। भुगतान: {#var#},,,,"Nirvana Finance: ₹8,500 की बकाया राशि आपके क्रेडिट रिकॉर्ड को प्रभावित कर रही है। अभी भुगतान करने से असर सीमित रहेगा। भुगतान: nfin.in/p/Ab12Cd"
+WH-B3-C-HI,WHATSAPP,B3,C,collection,HI,pay,,"नमस्ते {name} जी,
+
+₹{amount} की बकाया राशि आपके क्रेडिट रिकॉर्ड को प्रभावित कर रही है। अभी भुगतान करने से असर सीमित रहेगा।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,link,lender_name",242,,,,"नमस्ते {{1}} जी,
+
+₹{{2}} की बकाया राशि आपके क्रेडिट रिकॉर्ड को प्रभावित कर रही है। अभी भुगतान करने से असर सीमित रहेगा।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+सुरक्षित भुगतान: {{4}}
+
+- काइरा, {{5}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+₹8,500 की बकाया राशि आपके क्रेडिट रिकॉर्ड को प्रभावित कर रही है। अभी भुगतान करने से असर सीमित रहेगा।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B3-C-HI,EMAIL,B3,C,collection,HI,pay,महत्वपूर्ण: आपका क्रेडिट रिकॉर्ड,"प्रिय {name} जी,
+
+₹{amount} की बकाया राशि आपके क्रेडिट रिकॉर्ड को प्रभावित कर रही है। अभी भुगतान करने से असर सीमित रहेगा।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",270,,,,,,,"प्रिय Ravi जी,
+
+₹8,500 की बकाया राशि आपके क्रेडिट रिकॉर्ड को प्रभावित कर रही है। अभी भुगतान करने से असर सीमित रहेगा।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B3-C-HI,IVR,B3,C,collection,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। {amount} रुपये की बकाया राशि आपके क्रेडिट रिकॉर्ड को प्रभावित कर रही है। अभी भुगतान करने से असर सीमित रहेगा। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",382,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। 8,500 रुपये की बकाया राशि आपके क्रेडिट रिकॉर्ड को प्रभावित कर रही है। अभी भुगतान करने से असर सीमित रहेगा। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B3-C-HI,VOICEBOT,B3,C,collection,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] {amount} रुपये की बकाया राशि आपके क्रेडिट रिकॉर्ड को प्रभावित कर रही है। अभी भुगतान करने से असर सीमित रहेगा। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,amount",259,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] 8,500 रुपये की बकाया राशि आपके क्रेडिट रिकॉर्ड को प्रभावित कर रही है। अभी भुगतान करने से असर सीमित रहेगा। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-B3-D-EN,SMS,B3,D,collection,EN,call,,{lender_name}: Our team can help you plan the payment of your overdue Rs {amount}. Reply CALL to speak to our team.,"lender_name,amount",114,1,GSM,{#var#}: Our team can help you plan the payment of your overdue Rs {#var#}. Reply CALL to speak to our team.,,,,"Nirvana Finance: Our team can help you plan the payment of your overdue Rs 8,500. Reply CALL to speak to our team."
+WH-B3-D-EN,WHATSAPP,B3,D,collection,EN,call,,"Hi {name},
+
+Our team can help you plan the payment of your overdue Rs {amount}.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Reply CALL and our team will call you.
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,lender_name",198,,,,"Hi {{1}},
+
+Our team can help you plan the payment of your overdue Rs {{2}}.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Reply CALL and our team will call you.
+
+- Kaira, {{4}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=lender_name,UTILITY,"Hi Ravi,
+
+Our team can help you plan the payment of your overdue Rs 8,500.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Reply CALL and our team will call you.
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B3-D-EN,EMAIL,B3,D,collection,EN,call,We are here to help with your EMI,"Dear {name},
+
+Our team can help you plan the payment of your overdue Rs {amount}.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Reply to this email or call {helpline} to speak to our team.
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,helpline,lender_name,unsubscribe_link",273,,,,,,,"Dear Ravi,
+
+Our team can help you plan the payment of your overdue Rs 8,500.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Reply to this email or call 1800-123-4567 to speak to our team.
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B3-D-EN,IVR,B3,D,collection,EN,call,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Our team can help you plan the payment of your overdue {amount} rupees. Press 2 to speak to our team now. Press 1 to receive a secure payment link by SMS. Press 3 if you have already paid.","name,lender_name,amount",336,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Our team can help you plan the payment of your overdue 8,500 rupees. Press 2 to speak to our team now. Press 1 to receive a secure payment link by SMS. Press 3 if you have already paid."
+VO-B3-D-EN,VOICEBOT,B3,D,collection,EN,call,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Our team can help you plan the payment of your overdue {amount} rupees. Is anything making the payment difficult right now?","name,lender_name,amount",234,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Our team can help you plan the payment of your overdue 8,500 rupees. Is anything making the payment difficult right now?"
+SM-B3-D-HI,SMS,B3,D,collection,HI,call,,{lender_name}: हमारी टीम बकाया ₹{amount} के भुगतान की योजना बनाने में आपकी मदद कर सकती है। टीम से बात के लिए CALL लिखें।,"lender_name,amount",119,2,UNICODE,{#var#}: हमारी टीम बकाया ₹{#var#} के भुगतान की योजना बनाने में आपकी मदद कर सकती है। टीम से बात के लिए CALL लिखें।,,,,"Nirvana Finance: हमारी टीम बकाया ₹8,500 के भुगतान की योजना बनाने में आपकी मदद कर सकती है। टीम से बात के लिए CALL लिखें।"
+WH-B3-D-HI,WHATSAPP,B3,D,collection,HI,call,,"नमस्ते {name} जी,
+
+हमारी टीम बकाया ₹{amount} के भुगतान की योजना बनाने में आपकी मदद कर सकती है।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+CALL लिखें, हमारी टीम आपको कॉल करेगी।
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,lender_name",218,,,,"नमस्ते {{1}} जी,
+
+हमारी टीम बकाया ₹{{2}} के भुगतान की योजना बनाने में आपकी मदद कर सकती है।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+CALL लिखें, हमारी टीम आपको कॉल करेगी।
+
+- काइरा, {{4}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+हमारी टीम बकाया ₹8,500 के भुगतान की योजना बनाने में आपकी मदद कर सकती है।
+
+बकाया: ₹8,500 | लोन: xx4321
+CALL लिखें, हमारी टीम आपको कॉल करेगी।
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B3-D-HI,EMAIL,B3,D,collection,HI,call,आपकी EMI में हम मदद के लिए हैं,"प्रिय {name} जी,
+
+हमारी टीम बकाया ₹{amount} के भुगतान की योजना बनाने में आपकी मदद कर सकती है।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+हमारी टीम से बात के लिए इस ईमेल का जवाब दें या {helpline} पर कॉल करें।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,helpline,lender_name,unsubscribe_link",282,,,,,,,"प्रिय Ravi जी,
+
+हमारी टीम बकाया ₹8,500 के भुगतान की योजना बनाने में आपकी मदद कर सकती है।
+
+बकाया: ₹8,500 | लोन: xx4321
+हमारी टीम से बात के लिए इस ईमेल का जवाब दें या 1800-123-4567 पर कॉल करें।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B3-D-HI,IVR,B3,D,collection,HI,call,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। हमारी टीम बकाया {amount} रुपये के भुगतान की योजना बनाने में आपकी मदद कर सकती है। हमारी टीम से अभी बात करने के लिए 2 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",358,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। हमारी टीम बकाया 8,500 रुपये के भुगतान की योजना बनाने में आपकी मदद कर सकती है। हमारी टीम से अभी बात करने के लिए 2 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B3-D-HI,VOICEBOT,B3,D,collection,HI,call,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] हमारी टीम बकाया {amount} रुपये के भुगतान की योजना बनाने में आपकी मदद कर सकती है। क्या इस समय भुगतान में कोई कठिनाई है?","name,lender_name,amount",237,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] हमारी टीम बकाया 8,500 रुपये के भुगतान की योजना बनाने में आपकी मदद कर सकती है। क्या इस समय भुगतान में कोई कठिनाई है?"
+SM-B3-E-EN,SMS,B3,E,collection,EN,date,,"{lender_name}: To bring your account back on track, please share a payment date for Rs {amount} today. Reply with your payment date.","lender_name,amount",131,1,GSM,"{#var#}: To bring your account back on track, please share a payment date for Rs {#var#} today. Reply with your payment date.",,,,"Nirvana Finance: To bring your account back on track, please share a payment date for Rs 8,500 today. Reply with your payment date."
+WH-B3-E-EN,WHATSAPP,B3,E,collection,EN,date,,"Hi {name},
+
+To bring your account back on track, please share a payment date for Rs {amount} today.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Reply here with your payment date.
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,lender_name",214,,,,"Hi {{1}},
+
+To bring your account back on track, please share a payment date for Rs {{2}} today.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Reply here with your payment date.
+
+- Kaira, {{4}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=lender_name,UTILITY,"Hi Ravi,
+
+To bring your account back on track, please share a payment date for Rs 8,500 today.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Reply here with your payment date.
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B3-E-EN,EMAIL,B3,E,collection,EN,date,Please share your payment date,"Dear {name},
+
+To bring your account back on track, please share a payment date for Rs {amount} today.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Reply to this email with your payment date.
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,lender_name,unsubscribe_link",273,,,,,,,"Dear Ravi,
+
+To bring your account back on track, please share a payment date for Rs 8,500 today.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Reply to this email with your payment date.
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B3-E-EN,IVR,B3,E,collection,EN,date,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. To bring your account back on track, please share a payment date for {amount} rupees today. Press 4 to tell us your payment date. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,amount",390,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. To bring your account back on track, please share a payment date for 8,500 rupees today. Press 4 to tell us your payment date. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B3-E-EN,VOICEBOT,B3,E,collection,EN,date,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] To bring your account back on track, please share a payment date for {amount} rupees today. When will you be able to make this payment?","name,lender_name,amount",246,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] To bring your account back on track, please share a payment date for 8,500 rupees today. When will you be able to make this payment?"
+SM-B3-E-HI,SMS,B3,E,collection,HI,date,,"{lender_name}: अपने खाते को फिर से सही करने के लिए, कृपया आज ₹{amount} के भुगतान की तारीख बताएँ। भुगतान की तारीख लिखकर जवाब दें।","lender_name,amount",127,2,UNICODE,"{#var#}: अपने खाते को फिर से सही करने के लिए, कृपया आज ₹{#var#} के भुगतान की तारीख बताएँ। भुगतान की तारीख लिखकर जवाब दें।",,,,"Nirvana Finance: अपने खाते को फिर से सही करने के लिए, कृपया आज ₹8,500 के भुगतान की तारीख बताएँ। भुगतान की तारीख लिखकर जवाब दें।"
+WH-B3-E-HI,WHATSAPP,B3,E,collection,HI,date,,"नमस्ते {name} जी,
+
+अपने खाते को फिर से सही करने के लिए, कृपया आज ₹{amount} के भुगतान की तारीख बताएँ।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+भुगतान की तारीख यहाँ लिखकर जवाब दें।
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,lender_name",223,,,,"नमस्ते {{1}} जी,
+
+अपने खाते को फिर से सही करने के लिए, कृपया आज ₹{{2}} के भुगतान की तारीख बताएँ।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+भुगतान की तारीख यहाँ लिखकर जवाब दें।
+
+- काइरा, {{4}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+अपने खाते को फिर से सही करने के लिए, कृपया आज ₹8,500 के भुगतान की तारीख बताएँ।
+
+बकाया: ₹8,500 | लोन: xx4321
+भुगतान की तारीख यहाँ लिखकर जवाब दें।
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B3-E-HI,EMAIL,B3,E,collection,HI,date,कृपया भुगतान की तारीख बताएँ,"प्रिय {name} जी,
+
+अपने खाते को फिर से सही करने के लिए, कृपया आज ₹{amount} के भुगतान की तारीख बताएँ।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+भुगतान की तारीख के साथ इस ईमेल का जवाब दें।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,lender_name,unsubscribe_link",258,,,,,,,"प्रिय Ravi जी,
+
+अपने खाते को फिर से सही करने के लिए, कृपया आज ₹8,500 के भुगतान की तारीख बताएँ।
+
+बकाया: ₹8,500 | लोन: xx4321
+भुगतान की तारीख के साथ इस ईमेल का जवाब दें।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B3-E-HI,IVR,B3,E,collection,HI,date,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। अपने खाते को फिर से सही करने के लिए, कृपया आज {amount} रुपये के भुगतान की तारीख बताएँ। भुगतान की तारीख बताने के लिए 4 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",398,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। अपने खाते को फिर से सही करने के लिए, कृपया आज 8,500 रुपये के भुगतान की तारीख बताएँ। भुगतान की तारीख बताने के लिए 4 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B3-E-HI,VOICEBOT,B3,E,collection,HI,date,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] अपने खाते को फिर से सही करने के लिए, कृपया आज {amount} रुपये के भुगतान की तारीख बताएँ। आप यह भुगतान कब कर पाएँगे?","name,lender_name,amount",232,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] अपने खाते को फिर से सही करने के लिए, कृपया आज 8,500 रुपये के भुगतान की तारीख बताएँ। आप यह भुगतान कब कर पाएँगे?"
+SM-B3-F-EN,SMS,B3,F,collection,EN,pay,,{lender_name}: Even a part payment towards Rs {amount} today helps your account. Pay: {link},"lender_name,amount,link",101,1,GSM,{#var#}: Even a part payment towards Rs {#var#} today helps your account. Pay: {#var#},,,,"Nirvana Finance: Even a part payment towards Rs 8,500 today helps your account. Pay: nfin.in/p/Ab12Cd"
+WH-B3-F-EN,WHATSAPP,B3,F,collection,EN,pay,,"Hi {name},
+
+Even a part payment towards Rs {amount} today helps your account.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,link,lender_name",188,,,,"Hi {{1}},
+
+Even a part payment towards Rs {{2}} today helps your account.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Pay securely: {{4}}
+
+- Kaira, {{5}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"Hi Ravi,
+
+Even a part payment towards Rs 8,500 today helps your account.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B3-F-EN,EMAIL,B3,F,collection,EN,pay,A part payment helps,"Dear {name},
+
+Even a part payment towards Rs {amount} today helps your account.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",238,,,,,,,"Dear Ravi,
+
+Even a part payment towards Rs 8,500 today helps your account.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B3-F-EN,IVR,B3,F,collection,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Even a part payment towards {amount} rupees today helps your account. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,amount",330,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Even a part payment towards 8,500 rupees today helps your account. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B3-F-EN,VOICEBOT,B3,F,collection,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Even a part payment towards {amount} rupees today helps your account. Would you be able to make this payment today?","name,lender_name,amount",226,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Even a part payment towards 8,500 rupees today helps your account. Would you be able to make this payment today?"
+SM-B3-F-HI,SMS,B3,F,collection,HI,pay,,{lender_name}: ₹{amount} में से आज आंशिक भुगतान भी आपके खाते के लिए मददगार है। भुगतान: {link},"lender_name,amount,link",102,2,UNICODE,{#var#}: ₹{#var#} में से आज आंशिक भुगतान भी आपके खाते के लिए मददगार है। भुगतान: {#var#},,,,"Nirvana Finance: ₹8,500 में से आज आंशिक भुगतान भी आपके खाते के लिए मददगार है। भुगतान: nfin.in/p/Ab12Cd"
+WH-B3-F-HI,WHATSAPP,B3,F,collection,HI,pay,,"नमस्ते {name} जी,
+
+₹{amount} में से आज आंशिक भुगतान भी आपके खाते के लिए मददगार है।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,link,lender_name",202,,,,"नमस्ते {{1}} जी,
+
+₹{{2}} में से आज आंशिक भुगतान भी आपके खाते के लिए मददगार है।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+सुरक्षित भुगतान: {{4}}
+
+- काइरा, {{5}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+₹8,500 में से आज आंशिक भुगतान भी आपके खाते के लिए मददगार है।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B3-F-HI,EMAIL,B3,F,collection,HI,pay,आंशिक भुगतान भी मददगार है,"प्रिय {name} जी,
+
+₹{amount} में से आज आंशिक भुगतान भी आपके खाते के लिए मददगार है।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",230,,,,,,,"प्रिय Ravi जी,
+
+₹8,500 में से आज आंशिक भुगतान भी आपके खाते के लिए मददगार है।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B3-F-HI,IVR,B3,F,collection,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। {amount} रुपये में से आज आंशिक भुगतान भी आपके खाते के लिए मददगार है। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",342,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। 8,500 रुपये में से आज आंशिक भुगतान भी आपके खाते के लिए मददगार है। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B3-F-HI,VOICEBOT,B3,F,collection,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] {amount} रुपये में से आज आंशिक भुगतान भी आपके खाते के लिए मददगार है। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,amount",219,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] 8,500 रुपये में से आज आंशिक भुगतान भी आपके खाते के लिए मददगार है। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-B4-A-EN,SMS,B4,A,collection,EN,pay,,{lender_name}: Formal reminder: Rs {amount} on loan xx{loan_last4} has been overdue for over 90 days. Pay: {link},"lender_name,amount,loan_last4,link",114,1,GSM,{#var#}: Formal reminder: Rs {#var#} on loan xx{#var#} has been overdue for over 90 days. Pay: {#var#},,,,"Nirvana Finance: Formal reminder: Rs 8,500 on loan xx4321 has been overdue for over 90 days. Pay: nfin.in/p/Ab12Cd"
+WH-B4-A-EN,WHATSAPP,B4,A,collection,EN,pay,,"Hi {name},
+
+Formal reminder: Rs {amount} on loan xx{loan_last4} has been overdue for over 90 days.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,link,lender_name",201,,,,"Hi {{1}},
+
+Formal reminder: Rs {{2}} on loan xx{{3}} has been overdue for over 90 days.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Pay securely: {{4}}
+
+- Kaira, {{5}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"Hi Ravi,
+
+Formal reminder: Rs 8,500 on loan xx4321 has been overdue for over 90 days.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B4-A-EN,EMAIL,B4,A,collection,EN,pay,Formal reminder: overdue on loan xx{loan_last4},"Dear {name},
+
+Formal reminder: Rs {amount} on loan xx{loan_last4} has been overdue for over 90 days.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","loan_last4,name,amount,link,lender_name,unsubscribe_link",251,,,,,,,"Dear Ravi,
+
+Formal reminder: Rs 8,500 on loan xx4321 has been overdue for over 90 days.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B4-A-EN,IVR,B4,A,collection,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Formal reminder: {amount} rupees on loan ending {loan_last4} has been overdue for over 90 days. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,amount,loan_last4",348,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Formal reminder: 8,500 rupees on loan ending 4321 has been overdue for over 90 days. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B4-A-EN,VOICEBOT,B4,A,collection,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Formal reminder: {amount} rupees on loan ending {loan_last4} has been overdue for over 90 days. Would you be able to make this payment today?","name,lender_name,amount,loan_last4",244,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Formal reminder: 8,500 rupees on loan ending 4321 has been overdue for over 90 days. Would you be able to make this payment today?"
+SM-B4-A-HI,SMS,B4,A,collection,HI,pay,,{lender_name}: औपचारिक सूचना: लोन xx{loan_last4} पर ₹{amount} 90 दिनों से अधिक से बकाया है। भुगतान: {link},"lender_name,loan_last4,amount,link",107,2,UNICODE,{#var#}: औपचारिक सूचना: लोन xx{#var#} पर ₹{#var#} 90 दिनों से अधिक से बकाया है। भुगतान: {#var#},,,,"Nirvana Finance: औपचारिक सूचना: लोन xx4321 पर ₹8,500 90 दिनों से अधिक से बकाया है। भुगतान: nfin.in/p/Ab12Cd"
+WH-B4-A-HI,WHATSAPP,B4,A,collection,HI,pay,,"नमस्ते {name} जी,
+
+औपचारिक सूचना: लोन xx{loan_last4} पर ₹{amount} 90 दिनों से अधिक से बकाया है।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,loan_last4,amount,link,lender_name",207,,,,"नमस्ते {{1}} जी,
+
+औपचारिक सूचना: लोन xx{{2}} पर ₹{{3}} 90 दिनों से अधिक से बकाया है।
+
+बकाया: ₹{{3}} | लोन: xx{{2}}
+सुरक्षित भुगतान: {{4}}
+
+- काइरा, {{5}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=loan_last4;{{3}}=amount;{{4}}=link;{{5}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+औपचारिक सूचना: लोन xx4321 पर ₹8,500 90 दिनों से अधिक से बकाया है।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B4-A-HI,EMAIL,B4,A,collection,HI,pay,औपचारिक सूचना: लोन xx{loan_last4} पर बकाया,"प्रिय {name} जी,
+
+औपचारिक सूचना: लोन xx{loan_last4} पर ₹{amount} 90 दिनों से अधिक से बकाया है।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","loan_last4,name,amount,link,lender_name,unsubscribe_link",235,,,,,,,"प्रिय Ravi जी,
+
+औपचारिक सूचना: लोन xx4321 पर ₹8,500 90 दिनों से अधिक से बकाया है।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B4-A-HI,IVR,B4,A,collection,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। औपचारिक सूचना: लोन पर {amount} रुपये 90 दिनों से अधिक से बकाया है। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",340,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। औपचारिक सूचना: लोन पर 8,500 रुपये 90 दिनों से अधिक से बकाया है। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B4-A-HI,VOICEBOT,B4,A,collection,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] औपचारिक सूचना: लोन पर {amount} रुपये 90 दिनों से अधिक से बकाया है। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,amount",217,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] औपचारिक सूचना: लोन पर 8,500 रुपये 90 दिनों से अधिक से बकाया है। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-B4-B-EN,SMS,B4,B,collection,EN,pay,,{lender_name}: Resolve your overdue Rs {amount} today with a secure online payment. Pay: {link},"lender_name,amount,link",104,1,GSM,{#var#}: Resolve your overdue Rs {#var#} today with a secure online payment. Pay: {#var#},,,,"Nirvana Finance: Resolve your overdue Rs 8,500 today with a secure online payment. Pay: nfin.in/p/Ab12Cd"
+WH-B4-B-EN,WHATSAPP,B4,B,collection,EN,pay,,"Hi {name},
+
+Resolve your overdue Rs {amount} today with a secure online payment.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,link,lender_name",191,,,,"Hi {{1}},
+
+Resolve your overdue Rs {{2}} today with a secure online payment.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Pay securely: {{4}}
+
+- Kaira, {{5}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"Hi Ravi,
+
+Resolve your overdue Rs 8,500 today with a secure online payment.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B4-B-EN,EMAIL,B4,B,collection,EN,pay,Clear your overdue in a minute,"Dear {name},
+
+Resolve your overdue Rs {amount} today with a secure online payment.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",241,,,,,,,"Dear Ravi,
+
+Resolve your overdue Rs 8,500 today with a secure online payment.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B4-B-EN,IVR,B4,B,collection,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Resolve your overdue {amount} rupees today with a secure online payment. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,amount",333,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Resolve your overdue 8,500 rupees today with a secure online payment. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B4-B-EN,VOICEBOT,B4,B,collection,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Resolve your overdue {amount} rupees today with a secure online payment. Would you be able to make this payment today?","name,lender_name,amount",229,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Resolve your overdue 8,500 rupees today with a secure online payment. Would you be able to make this payment today?"
+SM-B4-B-HI,SMS,B4,B,collection,HI,pay,,{lender_name}: सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया ₹{amount} राशि का समाधान करें। भुगतान: {link},"lender_name,amount,link",112,2,UNICODE,{#var#}: सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया ₹{#var#} राशि का समाधान करें। भुगतान: {#var#},,,,"Nirvana Finance: सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया ₹8,500 राशि का समाधान करें। भुगतान: nfin.in/p/Ab12Cd"
+WH-B4-B-HI,WHATSAPP,B4,B,collection,HI,pay,,"नमस्ते {name} जी,
+
+सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया ₹{amount} राशि का समाधान करें।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,link,lender_name",212,,,,"नमस्ते {{1}} जी,
+
+सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया ₹{{2}} राशि का समाधान करें।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+सुरक्षित भुगतान: {{4}}
+
+- काइरा, {{5}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया ₹8,500 राशि का समाधान करें।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B4-B-HI,EMAIL,B4,B,collection,HI,pay,एक मिनट में बकाया चुकाएँ,"प्रिय {name} जी,
+
+सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया ₹{amount} राशि का समाधान करें।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",240,,,,,,,"प्रिय Ravi जी,
+
+सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया ₹8,500 राशि का समाधान करें।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B4-B-HI,IVR,B4,B,collection,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया {amount} रुपये राशि का समाधान करें। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",352,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया 8,500 रुपये राशि का समाधान करें। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B4-B-HI,VOICEBOT,B4,B,collection,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया {amount} रुपये राशि का समाधान करें। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,amount",229,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया 8,500 रुपये राशि का समाधान करें। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-B4-C-EN,SMS,B4,C,collection,EN,pay,,"{lender_name}: As per your loan agreement, continued non-payment of Rs {amount} may lead to further recovery steps. Pay: {link}","lender_name,amount,link",136,1,GSM,"{#var#}: As per your loan agreement, continued non-payment of Rs {#var#} may lead to further recovery steps. Pay: {#var#}",,,,"Nirvana Finance: As per your loan agreement, continued non-payment of Rs 8,500 may lead to further recovery steps. Pay: nfin.in/p/Ab12Cd"
+WH-B4-C-EN,WHATSAPP,B4,C,collection,EN,pay,,"Hi {name},
+
+As per your loan agreement, continued non-payment of Rs {amount} may lead to further recovery steps.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,link,lender_name",223,,,,"Hi {{1}},
+
+As per your loan agreement, continued non-payment of Rs {{2}} may lead to further recovery steps.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Pay securely: {{4}}
+
+- Kaira, {{5}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"Hi Ravi,
+
+As per your loan agreement, continued non-payment of Rs 8,500 may lead to further recovery steps.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B4-C-EN,EMAIL,B4,C,collection,EN,pay,Important information about your loan,"Dear {name},
+
+As per your loan agreement, continued non-payment of Rs {amount} may lead to further recovery steps.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",273,,,,,,,"Dear Ravi,
+
+As per your loan agreement, continued non-payment of Rs 8,500 may lead to further recovery steps.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B4-C-EN,IVR,B4,C,collection,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. As per your loan agreement, continued non-payment of {amount} rupees may lead to further recovery steps. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,amount",365,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. As per your loan agreement, continued non-payment of 8,500 rupees may lead to further recovery steps. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B4-C-EN,VOICEBOT,B4,C,collection,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] As per your loan agreement, continued non-payment of {amount} rupees may lead to further recovery steps. Would you be able to make this payment today?","name,lender_name,amount",261,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] As per your loan agreement, continued non-payment of 8,500 rupees may lead to further recovery steps. Would you be able to make this payment today?"
+SM-B4-C-HI,SMS,B4,C,collection,HI,pay,,"{lender_name}: आपके लोन अनुबंध के अनुसार, ₹{amount} का भुगतान न होने पर आगे की वसूली प्रक्रिया हो सकती है। भुगतान: {link}","lender_name,amount,link",130,2,UNICODE,"{#var#}: आपके लोन अनुबंध के अनुसार, ₹{#var#} का भुगतान न होने पर आगे की वसूली प्रक्रिया हो सकती है। भुगतान: {#var#}",,,,"Nirvana Finance: आपके लोन अनुबंध के अनुसार, ₹8,500 का भुगतान न होने पर आगे की वसूली प्रक्रिया हो सकती है। भुगतान: nfin.in/p/Ab12Cd"
+WH-B4-C-HI,WHATSAPP,B4,C,collection,HI,pay,,"नमस्ते {name} जी,
+
+आपके लोन अनुबंध के अनुसार, ₹{amount} का भुगतान न होने पर आगे की वसूली प्रक्रिया हो सकती है।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,link,lender_name",230,,,,"नमस्ते {{1}} जी,
+
+आपके लोन अनुबंध के अनुसार, ₹{{2}} का भुगतान न होने पर आगे की वसूली प्रक्रिया हो सकती है।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+सुरक्षित भुगतान: {{4}}
+
+- काइरा, {{5}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+आपके लोन अनुबंध के अनुसार, ₹8,500 का भुगतान न होने पर आगे की वसूली प्रक्रिया हो सकती है।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B4-C-HI,EMAIL,B4,C,collection,HI,pay,आपके लोन के बारे में महत्वपूर्ण जानकारी,"प्रिय {name} जी,
+
+आपके लोन अनुबंध के अनुसार, ₹{amount} का भुगतान न होने पर आगे की वसूली प्रक्रिया हो सकती है।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",258,,,,,,,"प्रिय Ravi जी,
+
+आपके लोन अनुबंध के अनुसार, ₹8,500 का भुगतान न होने पर आगे की वसूली प्रक्रिया हो सकती है।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B4-C-HI,IVR,B4,C,collection,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। आपके लोन अनुबंध के अनुसार, {amount} रुपये का भुगतान न होने पर आगे की वसूली प्रक्रिया हो सकती है। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",370,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। आपके लोन अनुबंध के अनुसार, 8,500 रुपये का भुगतान न होने पर आगे की वसूली प्रक्रिया हो सकती है। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B4-C-HI,VOICEBOT,B4,C,collection,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] आपके लोन अनुबंध के अनुसार, {amount} रुपये का भुगतान न होने पर आगे की वसूली प्रक्रिया हो सकती है। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,amount",247,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] आपके लोन अनुबंध के अनुसार, 8,500 रुपये का भुगतान न होने पर आगे की वसूली प्रक्रिया हो सकती है। क्या आप आज यह भुगतान कर पाएँगे?"
+SM-B4-D-EN,SMS,B4,D,collection,EN,call,,{lender_name}: We want to help you resolve your overdue Rs {amount}. A senior officer is available to speak with you. Reply CALL to speak to our team.,"lender_name,amount",149,1,GSM,{#var#}: We want to help you resolve your overdue Rs {#var#}. A senior officer is available to speak with you. Reply CALL to speak to our team.,,,,"Nirvana Finance: We want to help you resolve your overdue Rs 8,500. A senior officer is available to speak with you. Reply CALL to speak to our team."
+WH-B4-D-EN,WHATSAPP,B4,D,collection,EN,call,,"Hi {name},
+
+We want to help you resolve your overdue Rs {amount}. A senior officer is available to speak with you.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Reply CALL and our team will call you.
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,lender_name",233,,,,"Hi {{1}},
+
+We want to help you resolve your overdue Rs {{2}}. A senior officer is available to speak with you.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Reply CALL and our team will call you.
+
+- Kaira, {{4}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=lender_name,UTILITY,"Hi Ravi,
+
+We want to help you resolve your overdue Rs 8,500. A senior officer is available to speak with you.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Reply CALL and our team will call you.
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B4-D-EN,EMAIL,B4,D,collection,EN,call,We are here to help with your EMI,"Dear {name},
+
+We want to help you resolve your overdue Rs {amount}. A senior officer is available to speak with you.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Reply to this email or call {helpline} to speak to our team.
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,helpline,lender_name,unsubscribe_link",308,,,,,,,"Dear Ravi,
+
+We want to help you resolve your overdue Rs 8,500. A senior officer is available to speak with you.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Reply to this email or call 1800-123-4567 to speak to our team.
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B4-D-EN,IVR,B4,D,collection,EN,call,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. We want to help you resolve your overdue {amount} rupees. A senior officer is available to speak with you. Press 2 to speak to our team now. Press 1 to receive a secure payment link by SMS. Press 3 if you have already paid.","name,lender_name,amount",371,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. We want to help you resolve your overdue 8,500 rupees. A senior officer is available to speak with you. Press 2 to speak to our team now. Press 1 to receive a secure payment link by SMS. Press 3 if you have already paid."
+VO-B4-D-EN,VOICEBOT,B4,D,collection,EN,call,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] We want to help you resolve your overdue {amount} rupees. A senior officer is available to speak with you. Is anything making the payment difficult right now?","name,lender_name,amount",269,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] We want to help you resolve your overdue 8,500 rupees. A senior officer is available to speak with you. Is anything making the payment difficult right now?"
+SM-B4-D-HI,SMS,B4,D,collection,HI,call,,{lender_name}: हम बकाया ₹{amount} के समाधान में आपकी मदद करना चाहते हैं। एक वरिष्ठ अधिकारी आपसे बात करने के लिए उपलब्ध हैं। टीम से बात के लिए CALL लिखें।,"lender_name,amount",152,3,UNICODE,{#var#}: हम बकाया ₹{#var#} के समाधान में आपकी मदद करना चाहते हैं। एक वरिष्ठ अधिकारी आपसे बात करने के लिए उपलब्ध हैं। टीम से बात के लिए CALL लिखें।,,,,"Nirvana Finance: हम बकाया ₹8,500 के समाधान में आपकी मदद करना चाहते हैं। एक वरिष्ठ अधिकारी आपसे बात करने के लिए उपलब्ध हैं। टीम से बात के लिए CALL लिखें।"
+WH-B4-D-HI,WHATSAPP,B4,D,collection,HI,call,,"नमस्ते {name} जी,
+
+हम बकाया ₹{amount} के समाधान में आपकी मदद करना चाहते हैं। एक वरिष्ठ अधिकारी आपसे बात करने के लिए उपलब्ध हैं।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+CALL लिखें, हमारी टीम आपको कॉल करेगी।
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,lender_name",251,,,,"नमस्ते {{1}} जी,
+
+हम बकाया ₹{{2}} के समाधान में आपकी मदद करना चाहते हैं। एक वरिष्ठ अधिकारी आपसे बात करने के लिए उपलब्ध हैं।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+CALL लिखें, हमारी टीम आपको कॉल करेगी।
+
+- काइरा, {{4}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+हम बकाया ₹8,500 के समाधान में आपकी मदद करना चाहते हैं। एक वरिष्ठ अधिकारी आपसे बात करने के लिए उपलब्ध हैं।
+
+बकाया: ₹8,500 | लोन: xx4321
+CALL लिखें, हमारी टीम आपको कॉल करेगी।
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B4-D-HI,EMAIL,B4,D,collection,HI,call,आपकी EMI में हम मदद के लिए हैं,"प्रिय {name} जी,
+
+हम बकाया ₹{amount} के समाधान में आपकी मदद करना चाहते हैं। एक वरिष्ठ अधिकारी आपसे बात करने के लिए उपलब्ध हैं।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+हमारी टीम से बात के लिए इस ईमेल का जवाब दें या {helpline} पर कॉल करें।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,helpline,lender_name,unsubscribe_link",315,,,,,,,"प्रिय Ravi जी,
+
+हम बकाया ₹8,500 के समाधान में आपकी मदद करना चाहते हैं। एक वरिष्ठ अधिकारी आपसे बात करने के लिए उपलब्ध हैं।
+
+बकाया: ₹8,500 | लोन: xx4321
+हमारी टीम से बात के लिए इस ईमेल का जवाब दें या 1800-123-4567 पर कॉल करें।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B4-D-HI,IVR,B4,D,collection,HI,call,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। हम बकाया {amount} रुपये के समाधान में आपकी मदद करना चाहते हैं। एक वरिष्ठ अधिकारी आपसे बात करने के लिए उपलब्ध हैं। हमारी टीम से अभी बात करने के लिए 2 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",391,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। हम बकाया 8,500 रुपये के समाधान में आपकी मदद करना चाहते हैं। एक वरिष्ठ अधिकारी आपसे बात करने के लिए उपलब्ध हैं। हमारी टीम से अभी बात करने के लिए 2 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B4-D-HI,VOICEBOT,B4,D,collection,HI,call,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] हम बकाया {amount} रुपये के समाधान में आपकी मदद करना चाहते हैं। एक वरिष्ठ अधिकारी आपसे बात करने के लिए उपलब्ध हैं। क्या इस समय भुगतान में कोई कठिनाई है?","name,lender_name,amount",270,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] हम बकाया 8,500 रुपये के समाधान में आपकी मदद करना चाहते हैं। एक वरिष्ठ अधिकारी आपसे बात करने के लिए उपलब्ध हैं। क्या इस समय भुगतान में कोई कठिनाई है?"
+SM-B4-E-EN,SMS,B4,E,collection,EN,date,,{lender_name}: Please share a firm payment date for your overdue Rs {amount}. Reply with your payment date.,"lender_name,amount",106,1,GSM,{#var#}: Please share a firm payment date for your overdue Rs {#var#}. Reply with your payment date.,,,,"Nirvana Finance: Please share a firm payment date for your overdue Rs 8,500. Reply with your payment date."
+WH-B4-E-EN,WHATSAPP,B4,E,collection,EN,date,,"Hi {name},
+
+Please share a firm payment date for your overdue Rs {amount}.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Reply here with your payment date.
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,lender_name",189,,,,"Hi {{1}},
+
+Please share a firm payment date for your overdue Rs {{2}}.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Reply here with your payment date.
+
+- Kaira, {{4}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=lender_name,UTILITY,"Hi Ravi,
+
+Please share a firm payment date for your overdue Rs 8,500.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Reply here with your payment date.
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B4-E-EN,EMAIL,B4,E,collection,EN,date,Please share your payment date,"Dear {name},
+
+Please share a firm payment date for your overdue Rs {amount}.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Reply to this email with your payment date.
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,lender_name,unsubscribe_link",248,,,,,,,"Dear Ravi,
+
+Please share a firm payment date for your overdue Rs 8,500.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Reply to this email with your payment date.
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B4-E-EN,IVR,B4,E,collection,EN,date,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Please share a firm payment date for your overdue {amount} rupees. Press 4 to tell us your payment date. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,amount",365,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Please share a firm payment date for your overdue 8,500 rupees. Press 4 to tell us your payment date. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B4-E-EN,VOICEBOT,B4,E,collection,EN,date,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Please share a firm payment date for your overdue {amount} rupees. When will you be able to make this payment?","name,lender_name,amount",221,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Please share a firm payment date for your overdue 8,500 rupees. When will you be able to make this payment?"
+SM-B4-E-HI,SMS,B4,E,collection,HI,date,,{lender_name}: कृपया बकाया ₹{amount} के भुगतान की पक्की तारीख बताएँ। भुगतान की तारीख लिखकर जवाब दें।,"lender_name,amount",99,2,UNICODE,{#var#}: कृपया बकाया ₹{#var#} के भुगतान की पक्की तारीख बताएँ। भुगतान की तारीख लिखकर जवाब दें।,,,,"Nirvana Finance: कृपया बकाया ₹8,500 के भुगतान की पक्की तारीख बताएँ। भुगतान की तारीख लिखकर जवाब दें।"
+WH-B4-E-HI,WHATSAPP,B4,E,collection,HI,date,,"नमस्ते {name} जी,
+
+कृपया बकाया ₹{amount} के भुगतान की पक्की तारीख बताएँ।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+भुगतान की तारीख यहाँ लिखकर जवाब दें।
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,lender_name",195,,,,"नमस्ते {{1}} जी,
+
+कृपया बकाया ₹{{2}} के भुगतान की पक्की तारीख बताएँ।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+भुगतान की तारीख यहाँ लिखकर जवाब दें।
+
+- काइरा, {{4}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+कृपया बकाया ₹8,500 के भुगतान की पक्की तारीख बताएँ।
+
+बकाया: ₹8,500 | लोन: xx4321
+भुगतान की तारीख यहाँ लिखकर जवाब दें।
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B4-E-HI,EMAIL,B4,E,collection,HI,date,कृपया भुगतान की तारीख बताएँ,"प्रिय {name} जी,
+
+कृपया बकाया ₹{amount} के भुगतान की पक्की तारीख बताएँ।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+भुगतान की तारीख के साथ इस ईमेल का जवाब दें।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,lender_name,unsubscribe_link",230,,,,,,,"प्रिय Ravi जी,
+
+कृपया बकाया ₹8,500 के भुगतान की पक्की तारीख बताएँ।
+
+बकाया: ₹8,500 | लोन: xx4321
+भुगतान की तारीख के साथ इस ईमेल का जवाब दें।
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B4-E-HI,IVR,B4,E,collection,HI,date,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। कृपया बकाया {amount} रुपये के भुगतान की पक्की तारीख बताएँ। भुगतान की तारीख बताने के लिए 4 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",370,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। कृपया बकाया 8,500 रुपये के भुगतान की पक्की तारीख बताएँ। भुगतान की तारीख बताने के लिए 4 दबाएँ। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B4-E-HI,VOICEBOT,B4,E,collection,HI,date,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] कृपया बकाया {amount} रुपये के भुगतान की पक्की तारीख बताएँ। आप यह भुगतान कब कर पाएँगे?","name,lender_name,amount",204,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] कृपया बकाया 8,500 रुपये के भुगतान की पक्की तारीख बताएँ। आप यह भुगतान कब कर पाएँगे?"
+SM-B4-F-EN,SMS,B4,F,collection,EN,pay,,{lender_name}: Clearing Rs {amount} now stops further impact on your credit record and closes this overdue. Pay: {link},"lender_name,amount,link",128,1,GSM,{#var#}: Clearing Rs {#var#} now stops further impact on your credit record and closes this overdue. Pay: {#var#},,,,"Nirvana Finance: Clearing Rs 8,500 now stops further impact on your credit record and closes this overdue. Pay: nfin.in/p/Ab12Cd"
+WH-B4-F-EN,WHATSAPP,B4,F,collection,EN,pay,,"Hi {name},
+
+Clearing Rs {amount} now stops further impact on your credit record and closes this overdue.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+- Kaira, {lender_name} | Reply STOP to opt out.","name,amount,loan_last4,link,lender_name",215,,,,"Hi {{1}},
+
+Clearing Rs {{2}} now stops further impact on your credit record and closes this overdue.
+
+Overdue: Rs {{2}} | Loan: xx{{3}}
+Pay securely: {{4}}
+
+- Kaira, {{5}} | Reply STOP to opt out.",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"Hi Ravi,
+
+Clearing Rs 8,500 now stops further impact on your credit record and closes this overdue.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+- Kaira, Nirvana Finance | Reply STOP to opt out."
+EM-B4-F-EN,EMAIL,B4,F,collection,EN,pay,Protect your credit score,"Dear {name},
+
+Clearing Rs {amount} now stops further impact on your credit record and closes this overdue.
+
+Overdue: Rs {amount} | Loan: xx{loan_last4}
+Pay securely: {link}
+
+Regards,
+Kaira, virtual assistant, {lender_name}
+
+Unsubscribe from these emails: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",265,,,,,,,"Dear Ravi,
+
+Clearing Rs 8,500 now stops further impact on your credit record and closes this overdue.
+
+Overdue: Rs 8,500 | Loan: xx4321
+Pay securely: nfin.in/p/Ab12Cd
+
+Regards,
+Kaira, virtual assistant, Nirvana Finance
+
+Unsubscribe from these emails: nfin.in/u/Ab12"
+IV-B4-F-EN,IVR,B4,F,collection,EN,pay,,"[OPENER] This call is for {name}. If you are {name}, press 1. [AFTER_CONFIRM] Hello {name}, this is Kaira, a virtual assistant calling from {lender_name}. Clearing {amount} rupees now stops further impact on your credit record and closes this overdue. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid.","name,lender_name,amount",357,,,,,,,"[OPENER] This call is for Ravi. If you are Ravi, press 1. [AFTER_CONFIRM] Hello Ravi, this is Kaira, a virtual assistant calling from Nirvana Finance. Clearing 8,500 rupees now stops further impact on your credit record and closes this overdue. Press 1 to receive a secure payment link by SMS. Press 2 to speak to our team. Press 3 if you have already paid."
+VO-B4-F-EN,VOICEBOT,B4,F,collection,EN,pay,,"[OPENER] Hello, am I speaking with {name}? This is Kaira, a virtual assistant from {lender_name}. [AFTER_CONFIRM] Clearing {amount} rupees now stops further impact on your credit record and closes this overdue. Would you be able to make this payment today?","name,lender_name,amount",253,,,,,,,"[OPENER] Hello, am I speaking with Ravi? This is Kaira, a virtual assistant from Nirvana Finance. [AFTER_CONFIRM] Clearing 8,500 rupees now stops further impact on your credit record and closes this overdue. Would you be able to make this payment today?"
+SM-B4-F-HI,SMS,B4,F,collection,HI,pay,,{lender_name}: अभी ₹{amount} चुकाने से आपके क्रेडिट रिकॉर्ड पर आगे असर नहीं होगा और यह बकाया बंद होगा। भुगतान: {link},"lender_name,amount,link",126,2,UNICODE,{#var#}: अभी ₹{#var#} चुकाने से आपके क्रेडिट रिकॉर्ड पर आगे असर नहीं होगा और यह बकाया बंद होगा। भुगतान: {#var#},,,,"Nirvana Finance: अभी ₹8,500 चुकाने से आपके क्रेडिट रिकॉर्ड पर आगे असर नहीं होगा और यह बकाया बंद होगा। भुगतान: nfin.in/p/Ab12Cd"
+WH-B4-F-HI,WHATSAPP,B4,F,collection,HI,pay,,"नमस्ते {name} जी,
+
+अभी ₹{amount} चुकाने से आपके क्रेडिट रिकॉर्ड पर आगे असर नहीं होगा और यह बकाया बंद होगा।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+- काइरा, {lender_name} | संदेश बंद करने के लिए STOP लिखें।","name,amount,loan_last4,link,lender_name",226,,,,"नमस्ते {{1}} जी,
+
+अभी ₹{{2}} चुकाने से आपके क्रेडिट रिकॉर्ड पर आगे असर नहीं होगा और यह बकाया बंद होगा।
+
+बकाया: ₹{{2}} | लोन: xx{{3}}
+सुरक्षित भुगतान: {{4}}
+
+- काइरा, {{5}} | संदेश बंद करने के लिए STOP लिखें।",{{1}}=name;{{2}}=amount;{{3}}=loan_last4;{{4}}=link;{{5}}=lender_name,UTILITY,"नमस्ते Ravi जी,
+
+अभी ₹8,500 चुकाने से आपके क्रेडिट रिकॉर्ड पर आगे असर नहीं होगा और यह बकाया बंद होगा।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+- काइरा, Nirvana Finance | संदेश बंद करने के लिए STOP लिखें।"
+EM-B4-F-HI,EMAIL,B4,F,collection,HI,pay,अपना क्रेडिट स्कोर सुरक्षित रखें,"प्रिय {name} जी,
+
+अभी ₹{amount} चुकाने से आपके क्रेडिट रिकॉर्ड पर आगे असर नहीं होगा और यह बकाया बंद होगा।
+
+बकाया: ₹{amount} | लोन: xx{loan_last4}
+सुरक्षित भुगतान: {link}
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, {lender_name}
+
+इन ईमेल से सदस्यता हटाएँ: {unsubscribe_link}","name,amount,loan_last4,link,lender_name,unsubscribe_link",254,,,,,,,"प्रिय Ravi जी,
+
+अभी ₹8,500 चुकाने से आपके क्रेडिट रिकॉर्ड पर आगे असर नहीं होगा और यह बकाया बंद होगा।
+
+बकाया: ₹8,500 | लोन: xx4321
+सुरक्षित भुगतान: nfin.in/p/Ab12Cd
+
+सादर,
+काइरा, वर्चुअल असिस्टेंट, Nirvana Finance
+
+इन ईमेल से सदस्यता हटाएँ: nfin.in/u/Ab12"
+IV-B4-F-HI,IVR,B4,F,collection,HI,pay,,"[OPENER] यह कॉल {name} जी के लिए है। अगर आप {name} जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते {name} जी, मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। अभी {amount} रुपये चुकाने से आपके क्रेडिट रिकॉर्ड पर आगे असर नहीं होगा और यह बकाया बंद होगा। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।","name,lender_name,amount",366,,,,,,,"[OPENER] यह कॉल Ravi जी के लिए है। अगर आप Ravi जी हैं, तो 1 दबाएँ। [AFTER_CONFIRM] नमस्ते Ravi जी, मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। अभी 8,500 रुपये चुकाने से आपके क्रेडिट रिकॉर्ड पर आगे असर नहीं होगा और यह बकाया बंद होगा। सुरक्षित भुगतान लिंक SMS पर पाने के लिए 1 दबाएँ। हमारी टीम से बात करने के लिए 2 दबाएँ। अगर आप भुगतान कर चुके हैं तो 3 दबाएँ।"
+VO-B4-F-HI,VOICEBOT,B4,F,collection,HI,pay,,"[OPENER] नमस्ते, क्या मेरी बात {name} जी से हो रही है? मैं काइरा हूँ, {lender_name} की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] अभी {amount} रुपये चुकाने से आपके क्रेडिट रिकॉर्ड पर आगे असर नहीं होगा और यह बकाया बंद होगा। क्या आप आज यह भुगतान कर पाएँगे?","name,lender_name,amount",243,,,,,,,"[OPENER] नमस्ते, क्या मेरी बात Ravi जी से हो रही है? मैं काइरा हूँ, Nirvana Finance की वर्चुअल असिस्टेंट। [AFTER_CONFIRM] अभी 8,500 रुपये चुकाने से आपके क्रेडिट रिकॉर्ड पर आगे असर नहीं होगा और यह बकाया बंद होगा। क्या आप आज यह भुगतान कर पाएँगे?"

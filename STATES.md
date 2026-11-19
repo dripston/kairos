@@ -71,9 +71,9 @@ happens next.
 
 | Machine | Version | States | Transitions | Declared from | Conformance |
 |---|---|---|---|---|---|
-| [`k06.touch`](#k06touch-v1) | 1 | 9 | 52 | this branch | tests/fsm/test_conformance_touch.py |
-| [`k06.touch+hitl`](#k06touchhitl-v1) | 1 | 10 | 67 | this branch | tests/fsm/test_conformance_touch.py |
-| [`k01.gate`](#k01gate-v110) | 1.1.0 | 24 | 41 | this branch | tests/fsm/test_conformance_gate.py |
+| [`k06.touch`](#k06touch-v1) | 1 | 9 | 53 | this branch | tests/fsm/test_conformance_touch.py |
+| [`k06.touch+hitl`](#k06touchhitl-v1) | 1 | 10 | 68 | this branch | tests/fsm/test_conformance_touch.py |
+| [`k01.gate`](#k01gate-v111) | 1.1.1 | 24 | 41 | this branch | tests/fsm/test_conformance_gate.py |
 | [`k06.supervisor.plan`](#k06supervisorplan-v1) | 1 | 7 | 15 | this branch | tests/fsm/test_conformance_supervisor.py |
 | [`k06.supervisor.dispatch`](#k06supervisordispatch-v1) | 1 | 5 | 6 | this branch | tests/fsm/test_conformance_supervisor.py |
 | [`k09.outcome`](#k09outcome-v1) | 1 | 6 | 30 | this branch | tests/fsm/test_conformance_outcome.py |
@@ -131,7 +131,7 @@ stateDiagram-v2
     RESERVED --> CANCELED : BEGIN_DISPATCH [!gate_send] / CANCEL_QUEUED
     DISPATCHING --> SENT : PROVIDER_ACCEPTED
     DISPATCHING --> DELIVERED : PROVIDER_DELIVERED
-    DISPATCHING --> UNCERTAIN : PROVIDER_UNKNOWN
+    DISPATCHING --> UNCERTAIN : PROVIDER_UNKNOWN / SHUTDOWN_GRACE_EXPIRED
     DISPATCHING --> FAILED : PROVIDER_REJECTED
     UNCERTAIN --> SENT : PROVIDER_ACCEPTED
     UNCERTAIN --> DELIVERED : PROVIDER_DELIVERED
@@ -143,7 +143,7 @@ stateDiagram-v2
     CANCELED --> [*]
 ```
 
-States: `PROPOSED`, `REFUSED`, `RESERVED`, `DISPATCHING`, `UNCERTAIN`, `SENT`, `DELIVERED`, `FAILED`, `CANCELED`. Initial: `PROPOSED`. Final: `CANCELED`, `DELIVERED`, `FAILED`, `REFUSED`. Fingerprint `7a2ca7e33989`.
+States: `PROPOSED`, `REFUSED`, `RESERVED`, `DISPATCHING`, `UNCERTAIN`, `SENT`, `DELIVERED`, `FAILED`, `CANCELED`. Initial: `PROPOSED`. Final: `CANCELED`, `DELIVERED`, `FAILED`, `REFUSED`. Fingerprint `16bb3d20d183`.
 
 Transitions (self-loops are events that are accepted and change nothing):
 
@@ -176,6 +176,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 | DISPATCHING | PROVIDER_ACCEPTED | — | SENT | K03 touch_sent event | provider ACCEPTED |
 | DISPATCHING | PROVIDER_DELIVERED | — | DELIVERED | K03 touch_sent event | provider DELIVERED / READ (reach only) |
 | DISPATCHING | PROVIDER_UNKNOWN | — | UNCERTAIN | keep cap slot + cost | no provider answer: never resend blindly |
+| DISPATCHING | SHUTDOWN_GRACE_EXPIRED | — | UNCERTAIN | keep cap slot + cost; DISPATCH_UNCERTAIN audit | graceful shutdown: still in flight at the deadline (Ledger.mark_inflight_uncertain); never re-sent |
 | DISPATCHING | PROVIDER_REJECTED | — | FAILED | release cost | provider REJECTED / NO_ADAPTER |
 | UNCERTAIN | PROVIDER_ACCEPTED | — | SENT | K03 touch_sent event | resolve_uncertain: provider has it |
 | UNCERTAIN | PROVIDER_DELIVERED | — | DELIVERED | K03 touch_sent event | resolve_uncertain: provider delivered it |
@@ -224,7 +225,7 @@ stateDiagram-v2
     PENDING_APPROVAL --> RESERVED : APPROVE [!expired & gate_send]
     DISPATCHING --> SENT : PROVIDER_ACCEPTED
     DISPATCHING --> DELIVERED : PROVIDER_DELIVERED
-    DISPATCHING --> UNCERTAIN : PROVIDER_UNKNOWN
+    DISPATCHING --> UNCERTAIN : PROVIDER_UNKNOWN / SHUTDOWN_GRACE_EXPIRED
     DISPATCHING --> FAILED : PROVIDER_REJECTED
     UNCERTAIN --> SENT : PROVIDER_ACCEPTED
     UNCERTAIN --> DELIVERED : PROVIDER_DELIVERED
@@ -236,7 +237,7 @@ stateDiagram-v2
     CANCELED --> [*]
 ```
 
-States: `PROPOSED`, `REFUSED`, `RESERVED`, `PENDING_APPROVAL`, `DISPATCHING`, `UNCERTAIN`, `SENT`, `DELIVERED`, `FAILED`, `CANCELED`. Initial: `PROPOSED`. Final: `CANCELED`, `DELIVERED`, `FAILED`, `REFUSED`. Fingerprint `426c1253bb6a`.
+States: `PROPOSED`, `REFUSED`, `RESERVED`, `PENDING_APPROVAL`, `DISPATCHING`, `UNCERTAIN`, `SENT`, `DELIVERED`, `FAILED`, `CANCELED`. Initial: `PROPOSED`. Final: `CANCELED`, `DELIVERED`, `FAILED`, `REFUSED`. Fingerprint `31437621df38`.
 
 Transitions (self-loops are events that are accepted and change nothing):
 
@@ -280,6 +281,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 | DISPATCHING | PROVIDER_ACCEPTED | — | SENT | K03 touch_sent event | provider ACCEPTED |
 | DISPATCHING | PROVIDER_DELIVERED | — | DELIVERED | K03 touch_sent event | provider DELIVERED / READ (reach only) |
 | DISPATCHING | PROVIDER_UNKNOWN | — | UNCERTAIN | keep cap slot + cost | no provider answer: never resend blindly |
+| DISPATCHING | SHUTDOWN_GRACE_EXPIRED | — | UNCERTAIN | keep cap slot + cost; DISPATCH_UNCERTAIN audit | graceful shutdown: still in flight at the deadline (Ledger.mark_inflight_uncertain); never re-sent |
 | DISPATCHING | PROVIDER_REJECTED | — | FAILED | release cost | provider REJECTED / NO_ADAPTER |
 | UNCERTAIN | PROVIDER_ACCEPTED | — | SENT | K03 touch_sent event | resolve_uncertain: provider has it |
 | UNCERTAIN | PROVIDER_DELIVERED | — | DELIVERED | K03 touch_sent event | resolve_uncertain: provider delivered it |
@@ -314,7 +316,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_touch.py (seeded random event sequences); tests/test_ledger.py (dispatch once, uncertain, STOP / payment scope); tests/fsm/test_conformance_hitl.py (runs when kairos_backend.hitl is present)
 
-### `k01.gate` (v1.1.0)
+### `k01.gate` (v1.1.1)
 
 **Purpose.** May this touch be sent at this moment? The rules run in policy.json evaluation_order and the first hit wins; every decision carries the rule and policy_version. The Gate is pure: all state arrives as Facts computed atomically by the ledger.
 
@@ -368,7 +370,7 @@ stateDiagram-v2
     HANDOFF --> [*]
 ```
 
-States: `PRE_GATE`, `STOP_OPT_OUT`, `CONSENT`, `DPD_VALID`, `IN_SCOPE`, `HARDSHIP_HOLD`, `CALLBACK_PENDING`, `SUPERVISOR_HOLD`, `PTP_HOLD`, `OBLIGATION_CLEARED`, `QUIET_DAY`, `CONTACT_WINDOW`, `STOP_FOR_DAY`, `CHANNEL_CAP`, `PRE_DUE_TOTAL_CAP`, `WEEKLY_CAPS`, `SAME_CHANNEL_GAP`, `TEMPLATE_APPROVED`, `BUDGET_AVAILABLE`, `CAMPAIGN_STOP_CONDITION`, `SEND`, `WAIT`, `CANCEL`, `HANDOFF`. Initial: `PRE_GATE`. Final: `CANCEL`, `HANDOFF`, `SEND`, `WAIT`. Fingerprint `e8b58670462a`.
+States: `PRE_GATE`, `STOP_OPT_OUT`, `CONSENT`, `DPD_VALID`, `IN_SCOPE`, `HARDSHIP_HOLD`, `CALLBACK_PENDING`, `SUPERVISOR_HOLD`, `PTP_HOLD`, `OBLIGATION_CLEARED`, `QUIET_DAY`, `CONTACT_WINDOW`, `STOP_FOR_DAY`, `CHANNEL_CAP`, `PRE_DUE_TOTAL_CAP`, `WEEKLY_CAPS`, `SAME_CHANNEL_GAP`, `TEMPLATE_APPROVED`, `BUDGET_AVAILABLE`, `CAMPAIGN_STOP_CONDITION`, `SEND`, `WAIT`, `CANCEL`, `HANDOFF`. Initial: `PRE_GATE`. Final: `CANCEL`, `HANDOFF`, `SEND`, `WAIT`. Fingerprint `ea208ab15280`.
 
 Transitions (self-loops are events that are accepted and change nothing):
 

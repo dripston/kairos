@@ -15,6 +15,9 @@ from kairos_backend.supervisor import (BLOCKED, BORROWER_CHECK, DECIDED, DISPATC
                                        PLAN_STATES, RANK, RECEIVED, RESERVE, SKIPPED, SupervisorFSM)
 from kairos_backend.contracts import replies_per_rupee
 from tests.spine_helpers import add_loan
+from spine.policy import policy_version as _k01_version
+
+K01_VERSION = _k01_version()  # read from policy/K01-decision-policy/policy.json, never pinned
 
 D = date(2026, 11, 20)  # Friday — a contact day
 SUNDAY = date(2026, 11, 22)
@@ -127,7 +130,7 @@ def test_send_walks_every_state_and_carries_full_payload(rig):
     env = r.envelope
     assert env["event_type"] == "supervisor.decision" and env["touch_id"] == r.instruction_id
     p = env["payload"]
-    assert p["decision"] == "SEND" and p["policy_version"] == "1.1.0"
+    assert p["decision"] == "SEND" and p["policy_version"] == K01_VERSION
     assert p["model_version"] == "fake-learner/v1@0"
     assert p["chosen"] == {"channel": "whatsapp", "slot": "08-11", "template_id": "WA_HI"}
     assert [s["channel"] for s in p["scores"]] == ["whatsapp", "sms", "email"]  # email below the floor → last
@@ -340,7 +343,7 @@ def test_all_envelopes_carry_policy_version(rig):
     assert len(envs) == 5
     assert {e["payload"]["decision"] for e in envs} >= {"SEND", "WAIT", "CANCEL"}
     for e in envs:
-        assert e["payload"]["policy_version"] == "1.1.0"
+        assert e["payload"]["policy_version"] == K01_VERSION
         assert e["provenance"] == "SIMULATED" and e["borrower_id"] == "B1" and e["dedupe_key"]
         for k in ("decision", "reason", "rule", "expires_at", "instruction_id", "model_version", "chosen",
                   "scores", "rejected"):

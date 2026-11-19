@@ -829,12 +829,13 @@ class Journey:
         tot = {}
         for o in outcomes:
             tot[o.status] = tot.get(o.status, 0) + 1
-        line = (f"red team: {len(outcomes)} attacks, {tot.get('PASS', 0)} PASS, {tot.get('FAIL', 0)} FAIL "
-                f"(known open findings), {tot.get('ERROR', 0)} ERROR")
+        line = (f"red team: {len(outcomes)} attacks, {tot.get('PASS', 0)} PASS, {tot.get('FAIL', 0)} FAIL"
+                + (" (known open findings)" if tot.get("FAIL") else "") + f", {tot.get('ERROR', 0)} ERROR")
         self.ev(8, _at(d5, 23, 59), "guardrail", line, rule="REDTEAM")
         from replay.k09 import run_comparison
-        rep = run_comparison(self.replay_borrowers, self.replay_days, self.seed, drift_day=None,
-                             workdir=os.path.join(self.tmp, "replay"))
+        workdir = os.path.join(self.tmp, "replay")
+        os.makedirs(workdir, exist_ok=True)
+        rep = run_comparison(self.replay_borrowers, self.replay_days, self.seed, drift_day=None, workdir=workdir)
         b, k = rep["baseline"], rep["kairos"]
         lift = (k["replies_per_1000_inr"] / b["replies_per_1000_inr"] - 1) * 100 if b["replies_per_1000_inr"] else 0.0
         head = (f"K09 vs CN10 ({self.replay_borrowers} borrowers x {self.replay_days} days, seed {self.seed}): "

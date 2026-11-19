@@ -3,7 +3,10 @@ precedence, cooldown, Sarvam mapping, determinism, API. Everything SIMULATED (sy
 from __future__ import annotations
 
 import copy
+import csv
+import io
 import json
+import re
 from datetime import date, datetime, timedelta
 
 import pytest
@@ -518,21 +521,42 @@ def test_sarvam_low_confidence_stop_is_not_applied(eng):
     assert not eng.state("B1").flags.get("stop")
 
 
+def dec_reason(d):
+    return d["reason"] if isinstance(d, dict) else d.reason
+
+
 def test_sarvam_export_payloads_dry_run_no_pii(eng):
     eng.enroll("B1", prof(tag="C4 - High", dpd=1), "CMP", D0)
     st = eng.state("B1")
     eng.process(ev("p", "ptp", state="BROKEN"))                 # BROKEN_PTP day 1 = voicebot PTP follow-up
-    up = sarvam_export.cohort_upload(eng, D0)
-    assert up["dry_run"] and up["rows"] == 1 and up["body"]["parent"] == "campaign"
+    from kairos_backend.ledger import stable_instruction_id
+    iid = stable_instruction_id("B1", "OB1", "voicebot", datetime.fromisoformat(at(0, 10)))
+    assert sarvam_export.cohort_upload(eng, D0)["rows"] == 0          # no reservation -> never dialed
+    up = sarvam_export.cohort_upload(eng, D0, {"B1": iid})
+    assert up["dry_run"] and up["rows"] == 1 and up["skipped"] == [] and up["body"]["parent"] == "campaign" and up["body"]["parent"] == "campaign"
     assert "PHONE_REF:B1" in up["body"]["content"] and up["requires_phone_resolution"]
     assert set(up["body"]["transformation"]) == {"phone_number", "user_identifier", "app_variables"}
     assert "Kairos---PT-07a93e21-1a9b" in up["by_agent"]
+    # webhook join: user_identifier column = touch_id column = the reserved ledger instruction_id (INS-<16 hex>)
+    # (voice-engine's join helper is not on this branch: format only)
+    rows = list(csv.DictReader(io.StringIO(up["body"]["content"])))
+    assert rows[0]["touch_id"] == iid and re.fullmatch(r"INS-[0-9a-f]{16}", rows[0]["touch_id"])
+    tf = up["body"]["transformation"]
+    assert tf["user_identifier"] == {"column_name": "touch_id"} and tf["app_variables"]["touch_id"]["column_name"] == "touch_id"
+    assert not any(r["touch_id"].startswith("K27-") for r in rows)
     from kairos_backend.policy import load_policy
     cfg = sarvam_export.campaign_config("BROKEN_PTP", D0, "PTP_FOLLOW_UP", "B1", load_policy())
     rc = cfg["body"]["app_config"]["retry_config"]
     assert cfg["body"]["dry_run"] and rc["max_retries"] == 2 and all(i >= 120 for i in rc["retry_interval_minutes"])
     assert len(rc["retry_interval_minutes"]) == rc["max_retries"]
     assert sarvam_export.retry_plan("B1", per_channel_day_cap=3, attempts_today=2)["max_retries"] == 0
+    from types import SimpleNamespace as NS
+    for dec in (NS(action="WAIT", reason="CAP_REACHED", reserved=False, instruction_id=iid),
+                {"action": "CANCEL", "reason": "STOPPED", "reserved": False, "instruction_id": iid}):
+        sk = sarvam_export.cohort_upload(eng, D0, {"B1": dec})
+        assert sk["rows"] == 0 and sk["skipped"][0]["borrower_id"] == "B1" and dec_reason(dec) in sk["skipped"][0]["reason"]
+    ok = sarvam_export.cohort_upload(eng, D0, {"B1": NS(action="SEND", reason="ELIGIBLE", reserved=True, instruction_id=iid)})
+    assert ok["rows"] == 1
     g = sarvam_export.gate_response(eng, "B1", datetime.fromisoformat(at(0, 10)))
     assert g["ac_next"] == "dial" and st.journey_id == "BROKEN_PTP"
     eng.process(ev("s", "stop", 0, 11, channel="sms"))

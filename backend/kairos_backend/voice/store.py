@@ -3,7 +3,9 @@
 These tables only ADD voice facts. They never replace a ledger fact: holds, STOP, consent, PTP and
 payments stay in the ledger / spine and are written through the ledger's own APIs.
 
-  voice_calls           one row per Sarvam call_id (idempotency key for the call-end webhook)
+  voice_calls           one row per Sarvam call attempt; call_id holds the idempotency key (outbound attempt_id,
+                        inbound interaction_id; legacy: call / interaction id). status DONE | ATTEMPT (non-terminal,
+                        Sarvam will retry) | UNMATCHED. Never phone numbers, recording URL or transcript text
   voice_preferences     borrower language / voice preference (explicit, or observed by a bot)
   voice_payment_claims  "I already paid" claims: PENDING_VERIFICATION -> VERIFIED (ledger) / REJECTED (fraud
                         evidence) / EXPIRED (48 h); never a payment
@@ -18,7 +20,9 @@ CREATE TABLE IF NOT EXISTS voice_calls (
   call_id TEXT PRIMARY KEY, app_id TEXT, use_case TEXT, borrower_id TEXT, obligation_id TEXT, touch_id TEXT,
   status TEXT NOT NULL, received_at TEXT NOT NULL, connected INTEGER, duration_seconds REAL,
   disposition TEXT, effective_disposition TEXT, confidence REAL, rule TEXT, action TEXT,
-  report_ordinal INTEGER, report_label TEXT, policy_version TEXT, detail TEXT);
+  report_ordinal INTEGER, report_label TEXT, policy_version TEXT, detail TEXT, call_status TEXT,
+  raw_status TEXT, failure_reason TEXT, interaction_id TEXT, ended_at TEXT, metadata TEXT, shape TEXT,
+  completion_status TEXT, next_action_status TEXT, retry_attempt INTEGER, variant_id TEXT, attempt_detail TEXT);
 CREATE INDEX IF NOT EXISTS ix_voice_calls_borrower ON voice_calls (borrower_id, received_at);
 CREATE TABLE IF NOT EXISTS voice_preferences (
   borrower_id TEXT PRIMARY KEY, preferred_language TEXT, preferred_voice TEXT, observed_language TEXT,
@@ -36,10 +40,21 @@ CREATE TABLE IF NOT EXISTS voice_contact_flags (
 """
 
 
+# columns added after the first release: an existing voice_calls table gets them on start
+_ADDED_COLUMNS = (("voice_calls", "call_status", "TEXT"), ("voice_calls", "raw_status", "TEXT"),
+                  ("voice_calls", "failure_reason", "TEXT"), ("voice_calls", "interaction_id", "TEXT"),
+                  ("voice_calls", "ended_at", "TEXT"), ("voice_calls", "metadata", "TEXT"),
+                  ("voice_calls", "shape", "TEXT"), ("voice_calls", "completion_status", "TEXT"),
+                  ("voice_calls", "next_action_status", "TEXT"), ("voice_calls", "retry_attempt", "INTEGER"),
+                  ("voice_calls", "variant_id", "TEXT"), ("voice_calls", "attempt_detail", "TEXT"),
+                  # FSM-F4: a REJECTED claim records when and on what evidence
+                  ("voice_payment_claims", "resolved_at", "TEXT"), ("voice_payment_claims", "reason", "TEXT"))
+
+
 def ensure_schema(ledger) -> None:
-    c = ledger._conn()
-    c.executescript(VOICE_SCHEMA)
-    cols = {r[1] for r in c.execute("PRAGMA table_info(voice_payment_claims)")}
-    for col in ("resolved_at", "reason"):  # FSM-F4: REJECTED records its evidence; older files get the columns
-        if col not in cols:
-            c.execute(f"ALTER TABLE voice_payment_claims ADD COLUMN {col} TEXT")
+    conn = ledger._conn()
+    conn.executescript(VOICE_SCHEMA)
+    for table, col, typ in _ADDED_COLUMNS:
+        have = {r[1] for r in conn.execute(f"PRAGMA table_info({table})")}
+        if col not in have:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {col} {typ}")

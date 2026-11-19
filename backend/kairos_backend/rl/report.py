@@ -23,7 +23,8 @@ def drilldown(policy, min_e: float = 2.0, top: int = 8) -> list[str]:
     lv = Level("state x band x channel x slot", lambda r: (r.region, r.band, r.ch, r.slot))
     lv.fit((lv.keyfn(r), r.reply, r.p_arm) for r in policy.model.records)
     out = []
-    for (reg, band, ch, slot), (o, e) in sorted(lv.counts.items(), key=lambda kv: -abs(lv.m[kv[0]] - 1)):
+    items = sorted(lv.counts.items(), key=lambda kv: (-abs(lv.m[kv[0]] - 1), repr(kv[0]))) if lv.kappa < 1e5 else []
+    for (reg, band, ch, slot), (o, e) in items:
         if e < min_e:
             continue
         out.append(f"{ch} {SLOT_NAME.get(slot, slot)} works {lv.m[(reg, band, ch, slot)]:.2f}x in {reg} {band} "

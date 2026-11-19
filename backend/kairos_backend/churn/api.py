@@ -214,6 +214,13 @@ def sarvam_gate(body: GateIn):
 @router.get("/sarvam/export")
 def sarvam_export_route(day: date):
     e = engine()
-    return {"upload_cohort": sarvam_export.cohort_upload(e, day),
+    led = _state["ledger"]
+    reserved = {}
+    if led is not None:  # touches the Supervisor already reserved for that day's voice step; nothing is reserved here
+        for t in led._conn().execute("SELECT borrower_id, instruction_id FROM touches WHERE day=? AND channel=? "
+                                     "AND status='RESERVED' ORDER BY scheduled_at",
+                                     (day.isoformat(), "voicebot")):
+            reserved.setdefault(t["borrower_id"], t["instruction_id"])
+    return {"upload_cohort": sarvam_export.cohort_upload(e, day, reserved),
             "configure_campaign_example": sarvam_export.campaign_config("CN10_C4", day, "MID_BUCKET_RESOLUTION", "B2",
                                                                         e.ledger.policy if e.ledger else None)}

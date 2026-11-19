@@ -9,6 +9,9 @@ from fastapi.testclient import TestClient
 
 from spine.config import DATASET_AS_OF_DATE as AS_OF  # 2026-08-07, a Friday
 from spine.synthetic_dataset import write_dataset
+from spine.policy import policy_version as _k01_version
+
+K01_VERSION = _k01_version()  # read from policy/K01-decision-policy/policy.json, never pinned
 
 
 @pytest.fixture
@@ -23,7 +26,7 @@ def client(tmp_path, monkeypatch):
 
 def test_end_to_end(client):
     c, api = client
-    assert c.get("/health").json()["policy_version"] == "1.1.0"
+    assert c.get("/health").json()["policy_version"] == K01_VERSION
 
     write_dataset(os.path.join(os.environ["KAIROS_IMPORT_DIR"], "syn.csv"), 20, seed=42)
     assert c.post("/spine/import", json={"csv_path": "syn.csv"}).json()["loaded"] == 20
@@ -187,5 +190,5 @@ def test_events_since_is_a_cursor_over_the_audit(client):
     nxt = c.get("/events/since", params={"cursor": first["cursor"]}).json()
     assert [e["event_type"] for e in nxt["events"]] == ["supervisor.decision"]
     e = nxt["events"][0]
-    assert e["decision"] == "SEND" and e["policy_version"] == "1.1.0" and e["detail"]["channel"] == "sms"
+    assert e["decision"] == "SEND" and e["policy_version"] == K01_VERSION and e["detail"]["channel"] == "sms"
     assert c.get("/events/since", params={"cursor": nxt["cursor"]}).json()["events"] == []
