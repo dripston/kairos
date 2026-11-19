@@ -197,3 +197,80 @@ Reproduce one seed (new default, then the previous default):
 python3 scripts/run_k09_replay.py --borrowers 1500 --days 14 --seed 42 --baseline both
 python3 scripts/run_k09_replay.py --borrowers 1500 --days 14 --seed 42 --legacy-k09
 ```
+
+## Voice engine (K17/K18)
+
+Kairos side of the Sarvam voice bots: **which** bot / voice / language a call uses, and what Kairos
+does with the bot's post-call disposition. Selection never decides **whether** a call may happen —
+that stays with the K01 Gate (Supervisor → `Ledger.reserve`). Everything here is SIMULATED until a
+live Sarvam webhook is wired (envelopes say `SIMULATED` unless `KAIROS_VOICE_PROVENANCE` is set).
+
+| File | What |
+|---|---|
+| `kairos_backend/voice/registry.json` | Six use cases → Sarvam agent id + default voice (Ritu / Advait internal ids), supported languages, state → language map, lender overrides, A/B experiment (off). Registry version `0.2.0`, DRAFT. |
+| `kairos_backend/voice/registry.py` | `select_bot(borrower, obligation, context)` (pure, deterministic) and `inputs_from_ledger()` (spine + K06 state → the three dicts). |
+| `kairos_backend/voice/dispositions.py` | Unified post-call schema, strict parsing, PRD report ordinal. |
+| `../policy/K17-voice-dispositions/thresholds.json` | Confidence thresholds, PTP max days, 48 h payment-claim pause, meaningful-reply set. `0.1.0-draft`, pending Ojas. |
+| `kairos_backend/voice/ingest.py` | `decide()` (pure) + `VoiceIngester.ingest(payload)` (ledger effects, reward, CRM envelope). |
+| `kairos_backend/voice/store.py` | Voice-only tables: `voice_calls`, `voice_preferences`, `voice_payment_claims`, `voice_followups`, `voice_contact_flags`. |
+
+API: `POST /webhooks/sarvam/call-end` (idempotent by call id; optional `SARVAM_WEBHOOK_SECRET` →
+header `X-Kairos-Webhook-Secret`), `GET /voice/registry`, `POST /voice/select` (`{borrower_id, at?,
+obligation_id?, touch_id?, lender_name?, human_approved?}`), `GET /voice/calls/{call_id}`.
+
+**Selection.** Use case: hardship (only with `human_approved`) → `HARDSHIP_TRIAGE`; callback pending →
+`CALLBACK`; promise date reached → `PTP_FOLLOW_UP`; else by band (PRE_DUE → `PRE_DUE_REMINDER`,
+B1 → `EMI_REMINDER_EARLY`, B2/B3 → `MID_BUCKET_RESOLUTION`; B4 → no bot). Language: explicit
+preference → K03 `borrowers.language` (except the schema default `en`, which every import writes) →
+language observed by an earlier bot → state map → Hindi; an unsupported language always ends in Hindi.
+Voice: registry default → A/B arm (sha256(borrower_id|experiment_id) mod 2, when enabled) → lender
+override → borrower preference. Call-start variables: `user_name` (first name only), `lender_name`,
+`emi_due_date` / `max_ptp_date` (spoken, "24 November"), `call_date` (YYYY-MM-DD IST), `touch_id`,
+`preferred_language`, plus `overdue_days` (MID_BUCKET), `promise_date` (PTP_FOLLOW_UP),
+`callback_reason` (CALLBACK). `check_variables()` blanks anything carrying a 3+ digit run, a currency
+marker, `@` or `+<digit>`; only `call_date`, `overdue_days` and `touch_id` have fixed formats.
+
+**Thresholds** (fail closed):
+
+| Disposition | Accept at | Accepted → | Below → |
+|---|---|---|---|
+| STOP_REQUESTED | 0.5 | `Ledger.record_stop` (all channels) | supervisor hold + handoff/review |
+| HARDSHIP | 0.5 | K13 hardship hold + handoff | review ticket |
+| ABUSIVE / DISPUTE | 0.6 | K13 (`apply_exception`) + handoff | review ticket |
+| WRONG_PERSON / THIRD_PARTY | 0.8 | voice consent withdrawn (voicebot + ivr), contact UNVERIFIED, re-verify ticket | review ticket |
+| PTP / PARTIAL_PTP | 0.8 and date within max days (PRE_DUE/B1 7, B2 5, B3/B4 3; PTP_FOLLOW_UP calls 3) | K13 PTP hold through the promise date; `PTP_FOLLOW_UP` due the day after | downgraded to NEEDS_TIME_NO_DATE (no hold) |
+| ALREADY_PAID | 0.6 | claim pending; ledger `stop_for_day` rows (trigger `PAYMENT_CLAIM_PENDING`) for every day the 48 h touch; **never** a payment | review ticket |
+| CALLBACK_REQUESTED | 0.7 and `callback_at` future + inside 08:00–19:00 | `Supervisor.decide` voicebot touch; refused → WAIT with the gate's reason | review ticket |
+| HUMAN_REQUESTED | 0.6 | K13 CALLBACK_REQUEST (callback task + pause) | UNCLEAR → review |
+| other (PAY_NOW_LINK, NEEDS_TIME_NO_DATE, REFUSED_TO_PAY, LANGUAGE_BARRIER) | 0.6 | intent recorded (LANGUAGE_BARRIER stores the observed language) | UNCLEAR → review |
+| unknown enum | — | UNCLEAR, confidence 0 → review, no automated action | |
+
+Learner reward: `OutcomeFinalizer.record_reply(meaningful=True)` only for PTP, PARTIAL_PTP,
+PAY_NOW_LINK, ALREADY_PAID, NEEDS_TIME_NO_DATE, CALLBACK_REQUESTED, HARDSHIP, DISPUTE,
+HUMAN_REQUESTED at ≥ 0.6 (after any downgrade). Reach (call connected → touch DELIVERED,
+`record_reach`; answered > 10 s → `Ledger.record_call`) is recorded separately and is never a reply.
+
+### Context for Claude / how to continue
+
+- **Read first:** `voice/ingest.py` docstring, then `thresholds.json`. `decide()` is pure — change
+  behaviour in the JSON (accept_at / accept / below) before touching code; an action name the code
+  does not implement raises.
+- **Ledger semantics are untouched.** Effects go through `record_stop`, `apply_exception`,
+  `record_response`, `record_call`, `record_provider_status`, `Supervisor.decide`. Where no public
+  ledger method exists the ingester uses the same private primitives `apply_exception` and the HITL
+  module use (`_set_state`, `_cancel_queued`, `_ticket`, `_audit`) inside `ledger.tx()`.
+- **HITL (k06/hitl-control, unmerged):** pass `hitl=HITL(ledger)` to `VoiceIngester` (the API picks
+  up a module-level `hitl` if one exists) and handoffs call `hitl.act(..., "handoff", role="operator")`.
+  Without it, `LedgerHandoff` places a SUPERVISOR_HOLD + `HUMAN_HANDOFF` ticket; a person clears it
+  with `/control/supervisor-clear/{borrower_id}`.
+- **Interpretations to confirm with Ojas:** (1) any voice reply triggers K01 stop-for-day, so a
+  same-day callback is refused (`STOP_FOR_DAY`); (2) a callback more than 24 h after the last LMS
+  refresh fails K01 `DPD_VALID` at request time — it is kept in `voice_followups` and
+  `select_bot` picks `CALLBACK` on that day; (3) the 48 h claim pause rounds up to whole local
+  days; (4) wrong person withdraws voice consent only (SMS/WhatsApp to the same number continue);
+  (5) DISPUTE handoff pauses outreach (K13 alone would let it continue); (6) B4 has no voice bot.
+- **Not done:** no Sarvam client places calls from here (agents are configured in the Sarvam
+  console / MCP); `resolve_payment_claims(now)` and `due_followups(day)` need a scheduler tick;
+  the gate template `VB_KAIROS_CALLBACK` (voicebot, `hi`) must be registered via `PUT /templates`.
+- Tests: `tests/test_voice_engine.py` (every threshold both sides of its boundary, idempotency,
+  language / voice / A/B, no PII in variables, API).
