@@ -38,7 +38,7 @@ improved · ❌ not built yet. "PR #N" is on github.com/dripston/kairos. All num
 | Gate | Status | Evidence |
 |---|---|---|
 | ≥ 3 real tool calls end to end | 🟡 | Sarvam bots exercised live by chat; phone-demo SMS and WhatsApp to the team's own numbers ready (dry-run until switched on); report generation |
-| Red-team guardrail pass | 🟡 | 43 of 49 attacks pass with the HIGH fixes (PR #16 on top of #14); the 6 remaining are MED findings with owners |
+| Red-team guardrail pass | ✅ | 49 of 49 attacks pass with all fixes (PR #14 → #16 → #19); no open findings |
 | Synthetic data only | ✅ | Synthetic portfolio and borrowers; no real names or phones in the repo |
 
 ## Biggest gaps, in order

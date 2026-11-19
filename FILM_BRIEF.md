@@ -31,7 +31,7 @@ what we built, why it matters, and how it actually works, without code.
   unseen seeds +48% / +61% / +56% replies per rupee, 0 cap breaches, more verified payments on every seed (PR #17).
   Caveat to fix before filming: STOP opt-outs higher than CN10 (opt-out penalty in progress).
 - 50,000 daily decisions in ~2 minutes. Deterministic: same seed, same result.
-- Red-team: 43/49 guardrail attacks pass after HIGH fixes (PR #16); MED fixes in progress.
+- Red-team: 49/49 guardrail attacks pass, no open findings (PRs #14, #16, #19).
 - Voice: 6 bots (Ritu / Advait), 8 languages, structured outcomes with confidence thresholds.
 
 ## Moments to capture (screen recordings / audio)
