@@ -124,9 +124,15 @@ pointer. K27 does not use experiments; the K09 learner and K27 layers decide cha
 
 ## How K27 uses this (dry run only)
 
-- `cohort_upload()` builds an `upload_cohort` body for today's voicebot step members: one row per
-  borrower, `touch_id = K27-<borrower>-<day>` as `user_identifier`, first name only, no amounts or loan
-  numbers, and a `PHONE_REF:<borrower>` token instead of the phone (resolved inside the lender system).
+- `cohort_upload(engine, day, reserved_touches)` builds an `upload_cohort` body for the voicebot step members
+  that have a **reserved ledger touch**: `reserved_touches` maps borrower to the instruction id the Supervisor
+  reserved for that day's voice step (or the Supervisor decision). `user_identifier` = the `touch_id` agent
+  variable = that `instruction_id` (`INS-<16 hex>`), which is what the voice engine's webhook join looks for
+  (`initial_agent_variables.touch_id`, then `user_identifier`, then `metadata.touch_id`: the first that is a
+  ledger touch). Without it the call arrives UNMATCHED. A borrower with no reservation (K06 gate refused, WAIT,
+  CANCEL) is left out and listed under `skipped` with the gate's reason: never dial without a reservation.
+  First name only, no amounts or loan numbers. The phone column is a `PHONE_REF:<borrower>` token; the real
+  number is resolved at dial time outside this repo, inside the lender system.
 - `campaign_config()` builds a `configure_campaign` body with `dry_run: true`, a schedule inside the K01
   window (Sundays off), the K17 agent for the use case, and a **K01-safe retry plan**: every redial is a
   voice contact, so `1 + max_retries ≤ per-channel daily cap − attempts already made today`, intervals

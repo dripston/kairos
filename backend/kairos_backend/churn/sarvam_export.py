@@ -1,6 +1,6 @@
 """K27 <-> Sarvam voice campaigns (DRY RUN ONLY: builds payloads, never calls Sarvam).
 
-    cohort_upload(engine, day, use_case, ...)      -> upload_cohort body for today's voice-step borrowers
+    cohort_upload(engine, day, reserved_touches, ...) -> upload_cohort body for today's RESERVED voice touches (rest skipped)
     campaign_config(journey_id, step, ...)         -> configure_campaign body (dry_run=True) with a K01-safe retry plan
     gate_response(engine, borrower_id, at)         -> CN AICC "auto churn" gate reply {ac_next, ac_until, ac_step}
     webhook_to_events(payload, borrower_of=...)    -> normalized ChurnEvents from a Sarvam call-attempt payload
@@ -58,10 +58,32 @@ def voice_members(engine, day: date) -> list[tuple[str, str]]:
     return out
 
 
-def cohort_upload(engine, day: date, use_case: Optional[str] = None, lender_name: str = "Kairos Demo Finance",
+def _reservation(v: Any) -> tuple[Optional[str], str]:
+    """(instruction_id, "") for a reserved touch, else (None, gate reason). `v` is the ledger instruction id
+    (str, already reserved) or a Supervisor decision (SupervisorInstruction / dict with instruction_id, reserved,
+    action, reason): only reserved=True / action SEND counts, a WAIT or CANCEL carries the gate's reason."""
+    if isinstance(v, str):
+        return (v or None), ("" if v else "NO_RESERVATION")
+    get = (lambda k: v.get(k)) if isinstance(v, Mapping) else (lambda k: getattr(v, k, None))
+    iid, reserved, action = get("instruction_id"), get("reserved"), get("action") or get("decision")
+    if iid and reserved is not False and action in (None, "SEND"):
+        return iid, ""
+    return None, ":".join(x for x in (action, get("reason")) if x) or "NO_RESERVATION"
+
+
+def cohort_upload(engine, day: date, reserved_touches: Optional[Mapping[str, Any]] = None,
+                  use_case: Optional[str] = None, lender_name: str = "Kairos Demo Finance",
                   names: Optional[Callable[[str], str]] = None, campaign_id: str = "<DRY-RUN-CAMPAIGN-ID>") -> dict:
-    """upload_cohort body (sarvam-voice-agents MCP) for today's voicebot step members. DRY RUN."""
-    rows = []
+    """upload_cohort body (sarvam-voice-agents MCP) for today's voicebot step members. DRY RUN.
+
+    `reserved_touches` maps borrower_id -> the ledger touch the Supervisor reserved for that day's voice step
+    (an instruction_id, or the Supervisor decision). `user_identifier` and the `touch_id` agent variable are that
+    instruction_id, so the voice engine's webhook join (initial_agent_variables.touch_id, user_identifier,
+    metadata.touch_id) finds a ledger touch. A member with no reservation (gate refused, WAIT, CANCEL, never
+    submitted) is NOT uploaded and is listed in `skipped` with the gate's reason: the K06 gate decides, never dial
+    without a reservation."""
+    reserved_touches = reserved_touches or {}
+    rows, skipped = [], []
     for bid, ch in voice_members(engine, day):
         if ch != "voicebot":
             continue
@@ -70,8 +92,12 @@ def cohort_upload(engine, day: date, use_case: Optional[str] = None, lender_name
         uc = use_case or ("PTP_FOLLOW_UP" if st.journey_id == "BROKEN_PTP" else USE_CASE_BY_BAND.get(feats["band"]))
         if uc is None:
             continue
+        iid, why = _reservation(reserved_touches[bid]) if bid in reserved_touches else (None, "NO_RESERVATION")
+        if iid is None:
+            skipped.append({"borrower_id": bid, "reason": why})
+            continue
         lang = st.static.get("language", "en")
-        rows.append({"phone_ref": f"PHONE_REF:{bid}", "touch_id": f"K27-{bid}-{day.isoformat()}",
+        rows.append({"phone_ref": f"PHONE_REF:{bid}", "touch_id": iid,
                      "user_name": _first_name(names(bid)) if names else "Customer", "lender_name": lender_name,
                      "emi_due_date": "", "preferred_language": {"hi": "Hindi"}.get(lang, "English"),
                      "call_date": day.isoformat(),
@@ -95,9 +121,10 @@ def cohort_upload(engine, day: date, use_case: Optional[str] = None, lender_name
             "tool": "upload_cohort",
             "body": {"parent": "campaign", "parent_id": campaign_id, "name": f"K27 voice {day.isoformat()}",
                      "content": buf.getvalue(), "transformation": transformation},
-            "rows": len(rows), "by_agent": by_agent,
-            "note": "One campaign per agent: split rows by agent_id. Phone column is a reference token; resolve it "
-                    "inside the lender system. Variables must exist in the committed agent config or they reach the "
+            "rows": len(rows), "by_agent": by_agent, "skipped": skipped,
+            "note": "One campaign per agent: split rows by agent_id. user_identifier = touch_id = the reserved ledger "
+                    "instruction_id (webhook join). Phone column is a reference token; resolve it "
+                    "inside the lender system at dial time. Variables must exist in the committed agent config or they reach the "
                     "call as nothing (upload_cohort contract)."}
 
 
