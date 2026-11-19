@@ -30,6 +30,9 @@ COMPLAINT = "COMPLAINT"
 MENU_PICK = "MENU_PICK"
 RESEND_OTP = "RESEND_OTP"
 
+# intent_stack labels (use_stack=True) that are CM-03 servicing asks rather than K09 collection intents
+STACK_SERVICING = {"BALANCE_QUERY": BALANCE, "LINK_REQUEST": PAY_LINK, "STATEMENT_REQUEST": STATEMENT, "GREETING": GREETING}
+
 MENU = {"1": BALANCE, "2": PAY_LINK, "3": k09.CLAIMS_PAID, "4": k09.NEEDS_TIME, "5": STATEMENT, "6": k09.CALLBACK}
 
 _R = lambda *ps: [re.compile(p, re.I) for p in ps]  # noqa: E731
@@ -257,4 +260,9 @@ class Nlu:
             return Understanding(LANG_CHANGE, None, lang_request=lang)
         r = self.classifier.classify(k09.InboundMessage(borrower_id="cm03", channel="whatsapp", received_at=at,
                                                         text=t), known_names=known_names)
+        st = getattr(r, "stack", None)
+        if st and r.intent == k09.OTHER and not st.get("needs_human") and st.get("label") in STACK_SERVICING:
+            # use_stack=True only: the tiered stack also names servicing asks (e.g. a Devanagari balance question
+            # its small model recognised); K09's legacy intents have no slot for them, so map them here.
+            return Understanding(STACK_SERVICING[st["label"]], r)
         return Understanding(r.intent, r, agreed_date=r.agreed_date)

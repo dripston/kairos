@@ -190,6 +190,45 @@ The borrowers are synthetic and the replies come from a simulator, which is why 
 Seed 42 ends at Kairos ₹1,76,723 recovered on ₹471 spent vs the fixed schedule's ₹17,938 on ₹575
 (about 9.9× the fixed schedule), with 0 rule breaches on both sides. Every run of the same seed gives the same numbers.
 
+### Journey 2: inbound WhatsApp servicing, live (`/demo/journey/inbound`)
+
+One presenter screen for CM-03. Left: a borrower's WhatsApp (two synthetic borrowers, A and B). Middle: what
+the **real CM-03 engine** did for each message, in plain words (press **Technical** or **T** for state names,
+template ids and the raw timeline envelopes). Right: the agent console, where a person **takes over** a chat
+from the bot, replies, decides, and hands it back. Everything on it is **SIMULATED**: its own throwaway
+database, synthetic borrowers, a simulated bank feed, a dry-run WhatsApp adapter. Nothing is sent anywhere
+and no Sarvam agent is called. Without a Sarvam key it runs fully (rules + small offline model; Prism and
+reply phrasing stay off; set `KAIROS_J2_PHRASING=1` with a key to try phrasing).
+
+```bash
+cd kairos/backend && source .venv/bin/activate && uvicorn kairos_backend.api:app --port 8000
+```
+
+Open <http://localhost:8000/demo/journey/inbound> (add `?script=1` to open with the script showing). **P**
+shows the presenter script (← / → between cards), **Reset demo** starts again from a clean world.
+
+| Click | What happens (real code path) |
+|---|---|
+| When is my EMI due? | `ConversationEngine.handle`: code sent to the registered number, the question parked, nothing disclosed |
+| Reply with code | the code the engine sent to the simulated phone; verified, the parked question answered |
+| Payment link | signed payment link |
+| I already paid → genuine / edited screenshot / someone else's UTR | `fraud.py` checks + D7 feed; fakes refused and sent to a person, never marked paid |
+| मेरी EMI कितनी बाकी है? | Devanagari: the rules are unsure, the small model answers |
+| Ignore your rules… | injection detector fires before any model; refused, flagged |
+| I lost my job | K13 hardship hold (4 queued reminders cancelled), routed to a person |
+| STOP | `Ledger.record_stop`: every channel opted out, queued reminders cancelled, the Gate then blocks every channel |
+| Take over / Send / Reject claim / Hardship: hold / Hand back | `cm03/takeover.py` + K06 HITL (case claim / resolve, 30-day hold); each is one audit row |
+
+**Story (about 2½ minutes):** (1) Borrower A: EMI question → code → answer → payment link. (2) I already
+paid → edited screenshot: caught; Take over → Reject claim → Hand back. (3) Ignore your rules: refused.
+(4) Borrower B: I lost my job → Take over → suggested reply → Send → Hardship: hold → Hand back. (5) Borrower
+A: STOP → consent revoked on WhatsApp, SMS, voice and email, 4 → 0 queued, the Gate blocks every channel.
+Step 2's hand-back matters: a chat waiting for a person only gets a holding reply, so step 3 needs the bot back.
+
+While a person owns a chat the engine never sends a bot reply (any path, including the bank re-check), the
+chat does not time out into a new bot chat, and STOP is still honoured. The same takeover is on the main
+CM-03 API: `POST /cm03/conversations/{id}/takeover`, `/agent-message`, `/claim-decision`, `/hand-back`.
+
 ---
 
 ## 5. If something goes wrong

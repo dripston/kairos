@@ -6,7 +6,9 @@
                                                                             └─► HANDOFF (hardship, dispute, fraud…)
 Order inside one inbound message:
   1. log INBOUND (OTP-looking digits and phone numbers masked)
-  2. a conversation already handed to a human only gets a holding reply (STOP still honoured)
+  2. a conversation a person has TAKEN OVER (takeover.py) gets no bot reply at all; STOP is still
+     honoured (consent revoked on every channel) and the person sees it on the timeline
+     a conversation already handed to a human only gets a holding reply (STOP still honoured)
   3. fraud text detectors (injection, phishing link, spoofed lender, OTP social engineering,
      other people's data) -> refuse + FRAUD_SUSPECT + ticket + hand off
   4. STOP -> Ledger.record_stop (all channels) when the sender is the registered number
@@ -43,6 +45,7 @@ from .fraud import (ALREADY_APPLIED, FAKE, PENDING, REVERSED, SETTLED, Signal, c
                     scan_text)
 from .otp import EXPIRED, LOCKED, NO_OTP, VERIFIED, WRONG
 from .store import dumps, init_schema, mask_phone, scrub
+from .takeover import human_owned, owner_of
 from .tools import DryRunWhatsAppAdapter, ToolBox, Turn
 
 NEW, AWAIT_LOAN_ID, AWAIT_OTP = "NEW", "AWAIT_LOAN_ID", "AWAIT_OTP"
@@ -169,8 +172,8 @@ class ConversationEngine:
         r = self.ledger._conn().execute(
             "SELECT * FROM cm03_conversations WHERE sender=? AND state<>? ORDER BY updated_at DESC, rowid DESC LIMIT 1",
             (sender, CLOSED)).fetchone()
-        if r and datetime.fromisoformat(r["updated_at"]) >= now - SESSION_TTL:
-            return self._row_to_conv(r)
+        if r and (datetime.fromisoformat(r["updated_at"]) >= now - SESSION_TTL or human_owned(json.loads(r["data"]))):
+            return self._row_to_conv(r)   # a conversation a person owns never times out into a new bot chat
         iso = now.isoformat(timespec="seconds")
         return Conversation("WA-" + uuid.uuid4().hex[:12], sender, created_at=iso, updated_at=iso)
 
@@ -237,6 +240,11 @@ class ConversationEngine:
 
     # ------------------------------------------------------------------ replies, hand-offs, fraud
     def _reply(self, conv: Conversation, turn: Turn, key: str, **kw) -> None:
+        if human_owned(conv.data):
+            # Takeover guard: while a person owns the conversation the bot never sends anything.
+            turn.add("GUARD_BLOCK", key, {"reason": "a person owns this conversation; the bot does not reply",
+                                          "owner": (owner_of(conv.data) or {}).get("agent")}, self._iso())
+            return
         if not conv.verified and key not in PRE_VERIFY_SAFE:
             # Disclosure guard: the engine never sends account copy before OTP verification.
             turn.add("GUARD_BLOCK", key, {"reason": "account copy requested before verification"}, self._iso())
@@ -307,6 +315,9 @@ class ConversationEngine:
         if conv.lang != "hi" and text:
             conv.data["hinglish"] = bool(N._HINGLISH.search(text)) and not N._DEVANAGARI.search(text)
 
+        if human_owned(conv.data):
+            self._human_owned(conv, turn, text)
+            return
         if conv.state == HANDOFF:
             if k09.is_stop(text):
                 self._stop(conv, turn)
@@ -337,6 +348,19 @@ class ConversationEngine:
             self._pre_verify(conv, turn, text, attachment)
             return
         self._serve(conv, turn, text, attachment)
+
+    def _human_owned(self, conv: Conversation, turn: Turn, text: str) -> None:
+        """A person owns this conversation (takeover.py): the bot stays silent. The message is on the timeline for
+        the agent. STOP is still honoured at once (every channel, queued sends canceled); the agent sees it."""
+        owner = owner_of(conv.data) or {}
+        stop = bool(text) and (k09.is_stop(text) or k09.is_stop(N.fix_typos(text)))
+        if stop:
+            bid = self._registered_borrower(conv, turn)
+            if bid is not None:
+                self.tools.record_stop(turn, bid)
+                self._outcome(conv, turn, "STOP_HONOURED")
+            conv.data["stopped"] = True
+        turn.add("HUMAN_OWNED", owner.get("agent") or "human", {"bot_reply": False, "stop": stop}, self._iso())
 
     # ---------------- before verification: identify + OTP, nothing else ----------------
     def _pre_verify(self, conv: Conversation, turn: Turn, text: str, attachment: Optional[dict]) -> None:

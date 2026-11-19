@@ -100,6 +100,8 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 # CM-03 inbound WhatsApp servicing agent (SIMULATED, adapter dry-run): /cm03/*
 cm03_engine = ConversationEngine(ledger, phraser="auto")  # phrasing only with a Sarvam key
 app.include_router(cm03_router(cm03_engine))
+from .journey_inbound import router as journey_inbound_router  # noqa: E402  Journey 2: /demo/journey/inbound
+app.include_router(journey_inbound_router)
 
 # K27 auto-churn engine (cohort / risk / journey / layer / lifecycle), additive routes under /churn
 from .churn import api as churn_api  # noqa: E402
