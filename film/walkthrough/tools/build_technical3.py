@@ -23,26 +23,26 @@ clip("T01_engineer", 3.0);                          say(0.5, "t01")
 other("headline", 2.2, text="How Kairos works.", sub="One decision per borrower, per day. Every step checked.")
 other("diagram_build", 4.4)
 # churn + learning: single panels of the Engine Room (the real K27 + K09 + Aladdin run, seed 42, SIMULATED)
-ER_FLOW, ER_RULE, ER_LEARN7, ER_LEARN14 = [27, 199, 582, 321], [27, 677, 582, 200], [647, 199, 606, 225], [647, 199, 606, 237]
+ER_FLOW, ER_RULE, ER_LEARN7, ER_LEARN14 = [27, 199, 400, 240], [27, 677, 582, 200], [647, 199, 606, 225], [647, 199, 606, 237]
 ER_TAG = "Engine Room · SIMULATED · seed 42 · 300 synthetic borrowers · 14 days"
 clip("T03_street", 2.0);                            say(0.6, "t02b")
-card("er", "d7", ER_FLOW, 3.0, node="churn", maxh=680)
-card("er", "d7", ER_RULE, 3.4, node="churn")
+card("er", "d7", ER_FLOW, 3.0, node="churn", maxh=680, maxScale=3.0)   # cohort + risk + contact layer only
+card("er", "d7", ER_RULE, 3.4, node="churn", maxw=1700, cy=490)
 clip("V1_vikram_reads", 2.0);                      say(0.2, "t03b")
 card("er", "d7", ER_LEARN7, 6.0, node="learn", tag=ER_TAG)
 card("er", "d14", ER_LEARN14, 6.0, node="learn", tag=ER_TAG); say(0.5, "t03c")
 clip("P16a_asha_close", 1.8);                              say(1.0, "t04")
-clip("P16b_laptop_held", 2.4, push=[0.8, 2.4, [380, 80, 900, 506]])
+clip("P16b_laptop_held", 2.4)                       # no push: the caption band stays on the keyboard, never on UI
 card("aarav", "blocked", [349, 333, 658, 187], 4.4, node="ald")
 clip("P03_phone_lights", 1.8);                      say(0.2, "t05")
 card("sys", "trace", [410, 278, 322, 296], 5.8, node="hook", play=[5, 10])
 clip("T07_sunita_call", 5.2);                       call(0.3, "vc_a2", "Kairos"); call(4.3, "vc_b2", "Sunita")
-card("dv", "voice", [700, 715, 700, 150], 6.0, node="chan", maxScale=2.4); say(1.0, "tv_voice")
+card("dv", "voice", [722, 718, 690, 158], 6.0, node="chan", maxScale=2.6, maxw=1700, cy=490); say(1.0, "tv_voice")   # the whole calls table
 clip("T07b_person_reviews", 4.4)
-clip("P12_vikram_whatsapp", 2.4, start=1.2);        say(0.6, "tv_intent")
+clip("P12_vikram_whatsapp", 2.4, start=1.2, cc="topleft");        say(0.6, "tv_intent")
 card("ov", "d3_intent_tech", [349, 384, 658, 218], 5.0, node="intent")
 clip("P20b_asha_side", 1.4);                              say(0.2, "t07")
-clip("P20c_laptop_console", 3.0, push=[1.2, 3.0, [380, 80, 900, 506]])
+clip("P20c_laptop_console", 3.0)
 card("in", "takeoverB", [972, 357, 448, 313], 3.2, node="people", maxScale=2.2)
 clip("T10_engineer", 2.6);                          say(0.4, "tv_proof")
 other("terminal", 16.5)
@@ -90,14 +90,16 @@ for i, (kind, dur, p) in enumerate(seq):
         layers.append(L)
     elif kind == "card":
         fr = [{"at": round(t0, 3), "label": p["label"], "play": p["play"][0], "from": p["play"][1]}] if "play" in p else [{"at": 0, "label": p["label"]}]
-        layers.append({"kind": "card", "cap": p["cap"], "frames": fr, "rect": p["rect"], "t0": round(t0 - 0.05, 3), "t1": round(t1, 3), "maxw": 1500, "maxh": p.get("maxh", 640),
-                       "cx": 900, "cy": 470, "maxScale": p.get("maxScale", 2.6), "enter": {"dur": 0.4}, "exit": {"dur": 0}})
+        layers.append({"kind": "card", "cap": p["cap"], "frames": fr, "rect": p["rect"], "t0": round(t0 - 0.05, 3), "t1": round(t1, 3), "maxw": p.get("maxw", 1500), "maxh": p.get("maxh", 640),
+                       "cx": p.get("cx", 900), "cy": p.get("cy", 470), "maxScale": p.get("maxScale", 2.6), "enter": {"dur": 0.4}, "exit": {"dur": 0}})
         if p.get("tag"): layers.append({"kind": "tag", "t0": round(t0 + 0.2, 3), "t1": round(t1, 3), "pos": "t", "text": p["tag"], "exit": {"dur": 0}})
         if p.get("node"): mini_focus.append({"t": round(t0, 3), "nodes": [p["node"]]}); mini_spans.append((t0, t1))
     elif kind == "headline":
         layers.append({"kind": "headline", "t0": t0, "t1": t1, "pos": "c", "text": p["text"], "sub": p["sub"], "size": 108, "stagger": 0.15, "exit": {"dur": 0}, "bgCream": True})
     elif kind == "diagram_build":
-        layers.append(diagram(t0, t1, appear_from=t0 + 0.4))
+        D = diagram(t0, t1, appear_from=t0 - 0.1)       # K03 is there on the first frame, 1.4x and centred; then the camera pulls out
+        D["cam"] = [{"t": 0, "node": "rec", "z": 1.4}, {"t": round(t0 + 0.7, 3), "full": True, "z": 0.74, "dur": 1.8}]
+        layers.append(D)
     elif kind == "pulse":
         layers.append(diagram(t0, t1, pulse=t0 + 0.4))
     elif kind == "research":
@@ -117,9 +119,10 @@ for i, (kind, dur, p) in enumerate(seq):
             {"rec": "pytest", "at": a + 10.6, "cadence": 0.05, "fit": 0.7, "clear": True, "hi": "passed", "badge": "74 s run · shown 90× faster"},
             {"rec": "ope", "at": a + 13.2, "cadence": 0.012, "fit": 0.4, "clear": True, "keep": "^OPE|^replies per 1,000 decisions|^CN10.*18\\.4 +18\\.2", "hi": "^CN10", "badge": "SIMULATED · 20 s run, 50× faster", "prompt": "kairos/backend (research) %"}]})
         for o, d, k, h in [(1.6, 2.0, "Same seed, run twice", "Deterministic replay: <em>IDENTICAL</em>"), (5.2, 2.0, "Our own red-team suite", "49 attacks: <em>49 PASS</em>, 0 FAIL"),
-                           (8.3, 2.1, "Ledger benchmark", "<em>50,000</em> atomic decisions in 11.1 s<br>cap breaches: <em>0</em>"), (11.6, 1.5, "Full test suite", "<em>3030 passed</em> in 74 s"),
+                           (8.3, 2.1, "Ledger benchmark", "<em>50,000</em> atomic decisions in 11.1 s<br>cap breaches: <em>0</em>"), (11.6, 2.0, "Full test suite", "<em>3030 passed</em> in 74 s"),
                            (14.1, 2.3, "Off-policy evaluation · CN10 fixed schedule · SIMULATED", "From logs: <em>18.2</em>. Truth: <em>18.4</em>.")]:
-            layers.append({"kind": "callout", "t0": a + o, "t1": a + o + d, "dark": True, "x": 260, "y": 560, "maxw": 1500, "kicker": k, "mono": True, "html": h})
+            layers.append({"kind": "callout", "t0": a + o, "t1": a + o + d, "dark": True, "x": 260, "y": 560, "maxw": 1500, "kicker": k, "mono": True, "html": h,
+                           "stagger": 0, "enterDur": 0.2})   # the result enters with its pill, never an empty pill
 # the "you are here" map, top-right, over every component card
 if mini_spans:
     m0, m1 = mini_spans[0][0], mini_spans[-1][1]
@@ -128,7 +131,8 @@ if mini_spans:
 layers.append({"kind": "logo", "t0": HARD_STOP, "t1": END, "opa0": 1, "y": 330, "line": "Built to be trusted with every rupee.", "lineSize": 60, "stagger": 0.08, "enterDur": 0.22,
                "credits": "Music: “Inspiring Technology” by The_Mountain (Pixabay licence) · Voices: Sarvam bulbul:v3 (Neha, Ritu, Pooja), AI-generated<br>Footage: Pexels · Every screen and terminal run is the real Kairos software · All data SIMULATED",
                "creditsY": 820, "exit": {"dur": 0}, "bgCream": True})
-film = {"duration": round(END, 3), "cues": "audio/technical3_cues.json", "bg": "#FBF8F1",
+cc_top = [[round(starts[i], 3), round(starts[i] + d - 0.06, 3), p["cc"]] for i, (k, d, p) in enumerate(seq) if k == "clip" and p.get("cc")]
+film = {"ccTop": cc_top, "duration": round(END, 3), "cues": "audio/technical3_cues.json", "bg": "#FBF8F1",
         "captures": {"ov": "captures/out_vikram", "aarav": "captures/out_aarav", "in": "captures/inbound2", "sys": "captures/live_system", "dv": "captures/deployed_voice", "er": "captures/engine_room"},
         "terms": {"redteam": "term/redteam.json", "bench": "term/bench.json", "determinism": "term/determinism.json", "pytest": "term/pytest.json", "ope": "term/ope.json"},
         "layers": layers}

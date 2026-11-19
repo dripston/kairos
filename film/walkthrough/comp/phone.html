@@ -32,6 +32,13 @@
   .wa .m i { position: absolute; right: 8px; bottom: 3px; font-style: normal; font-size: 11px; color: #667781; }
   .wa .bar { height: 64px; background: #f0f2f5; display: flex; align-items: center; gap: 8px; padding: 0 10px 8px; }
   .wa .bar div { flex: 1; height: 42px; border-radius: 21px; background: #fff; font-size: 16px; color: #8696a0; padding: 11px 16px; }
+  /* WhatsApp at phone-in-hand distance: larger type, a fuller screen, a slightly deeper wallpaper for contrast */
+  .wa { background: #e6ddd3; }
+  .wa .m { font-size: 21px; line-height: 1.3; max-width: 90%; padding: 9px 12px 22px; }
+  .wa .m.out { font-size: 27px; padding: 10px 14px 24px; }
+  .wa .m i { font-size: 13px; }
+  .wa .chip { align-self: center; font-size: 14px; color: #54656f; background: #fff; border-radius: 8px; padding: 5px 12px; box-shadow: 0 1px 0 rgba(0,0,0,.08); }
+  .wa .bar div.typed { color: #111; font-size: 19px; padding: 9px 16px; white-space: nowrap; overflow: hidden; }
   .wa .bar span { width: 42px; height: 42px; border-radius: 50%; background: #00a884; display: block; }
   .sim { align-self: center; font-size: 11.5px; color: #54656f; background: #fdf4c5; border-radius: 7px; padding: 5px 9px; margin-bottom: 4px; text-align: center; max-width: 92%; }
   /* voice call */
@@ -69,6 +76,7 @@
   <div class="hd"><div class="av">K</div><div class="nm"><b>Kairos Demo Finance</b><small>Official business account</small></div></div>
   <div class="body">
     <div class="sim">SIMULATED · synthetic borrower · nothing leaves this machine</div>
+    <div class="chip">Today</div>
     <div class="m in">Hi Vikram, this is a message from Kairos Demo Finance regarding your Personal Loan (account ending 0073). We noticed your EMI of ₹7,409, due on 13 Nov, hasn't been received yet. This is sometimes a temporary issue. Please arrange payment here: pay.kairos.example/p/…
 
 If you've already paid, please disregard this message.
@@ -76,10 +84,23 @@ If you've already paid, please disregard this message.
   </div>
   <div class="bar"><div>Message</div><span></span></div>
 </div>
+<div class="scene wa" id="wa1t">
+  <div class="hd"><div class="av">K</div><div class="nm"><b>Kairos Demo Finance</b><small>Official business account</small></div></div>
+  <div class="body">
+    <div class="sim">SIMULATED · synthetic borrower · nothing leaves this machine</div>
+    <div class="chip">Today</div>
+    <div class="m in">Hi Vikram, this is a message from Kairos Demo Finance regarding your Personal Loan (account ending 0073). We noticed your EMI of ₹7,409, due on 13 Nov, hasn't been received yet. This is sometimes a temporary issue. Please arrange payment here: pay.kairos.example/p/…
+
+If you've already paid, please disregard this message.
+– Team Kairos Demo Finance<i>9:30 am</i></div>
+  </div>
+  <div class="bar"><div class="typed">मैं 29 तारीख तक भुगतान कर दूंगा</div><span></span></div>
+</div>
 <div class="scene wa" id="wa2">
   <div class="hd"><div class="av">K</div><div class="nm"><b>Kairos Demo Finance</b><small>Official business account</small></div></div>
   <div class="body">
     <div class="sim">SIMULATED · synthetic borrower · nothing leaves this machine</div>
+    <div class="chip">Today</div>
     <div class="m in">Hi Vikram, this is a message from Kairos Demo Finance regarding your Personal Loan (account ending 0073). We noticed your EMI of ₹7,409, due on 13 Nov, hasn't been received yet. This is sometimes a temporary issue. Please arrange payment here: pay.kairos.example/p/…
 
 If you've already paid, please disregard this message.

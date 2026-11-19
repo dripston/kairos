@@ -8,10 +8,15 @@
   -1
  ],
  "expand": 0.12,
+ "uiContrast": 1.08,
  "ui": [
   {
    "t": 0,
    "img": "captures/phone_wa1/f00001.jpg"
+  },
+  {
+   "t": 0.9,
+   "img": "captures/phone_wa1t/f00001.jpg"
   },
   {
    "t": 1.6,

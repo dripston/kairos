@@ -52,7 +52,7 @@ SHOTS = {
   "P07_laptop_dashboard": {"clip": H + "H6_3_ots_woman_typing_blank.mp4", "in": 1.0, "dur": 4.5, "mode": "white", "roi": OTS_ROI, "expand": 0.0, "landscape": True,
                            "ui": [{"t": 0, "img": DL % 1}]},
   "P12_vikram_whatsapp": {"clip": H + "H8_4_hands_34_table_green.mp4", "in": 4.3, "dur": 3.7, "mode": "green", "up": [0.35, -1], "expand": 0.12,
-                          "ui": [{"t": 0, "img": ph("wa1")}, {"t": 1.6, "img": ph("wa2")}]},
+                          "uiContrast": 1.08, "ui": [{"t": 0, "img": ph("wa1")}, {"t": 0.9, "img": ph("wa1t")}, {"t": 1.6, "img": ph("wa2")}]},
   "P14_upi": {"clip": H + "H9_3_hand_scanning_qr_window.mp4", "in": 0.2, "dur": 2.6, "mode": "none"},
   "P15_laptop_paid": {"clip": H + "H6_3_ots_woman_typing_blank.mp4", "in": 6.0, "dur": 2.8, "mode": "white", "roi": OTS_ROI, "expand": 0.0, "landscape": True,
                       "ui": [{"t": 0, "img": OV % lbl("out_vikram", "v41")}]},

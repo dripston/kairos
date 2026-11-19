@@ -612,6 +612,13 @@
     var cue = null; (FILM.cueList || []).forEach(function (c) { if (t >= c.t0 && t < c.t1) cue = c; });
     if (!cue) { L.pill.style.opacity = 0; L.cueNow = null; return null; }
     var a = Math.min(clamp((t - cue.t0) / 0.12, 0, 1), clamp((cue.t1 - t) / 0.12, 0, 1));
+    // over a phone that reaches the bottom of the frame, the caption band moves to the clean top of the shot
+    var top = null; (FILM.ccTop || []).forEach(function (sp) { if (t >= sp[0] && t < sp[1]) top = sp[2] || "top"; });
+    if (top !== L.topNow) {
+      L.pill.style.top = top ? "56px" : ""; L.pill.style.bottom = top ? "auto" : "";
+      L.pill.style.left = top === "topleft" ? "96px" : ""; L.pill.style.transform = top === "topleft" ? "none" : "";
+      L.topNow = top;
+    }
     if (L.cueNow !== cue) { L.pill.innerHTML = (cue.who ? '<b>' + esc(cue.who) + ':</b> ' : "") + cue.lines.map(esc).join("<br>"); L.cueNow = cue; }
     L.pill.style.opacity = a;
     return null;

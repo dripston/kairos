@@ -40,19 +40,19 @@ clip("P04_asha_frustrated", 2.0)
 other("hook", 3.0)                             # unit chart 1,262 → 23 on cream
 other("logo", 2.6);                            say(0.2, "p02")
 clip("P06_asha_typing", 1.6)
-clip("P07_laptop_dashboard", 3.0, push=[1.2, 3.0, OTS_PUSH]); say(0.8, "p03")
-card("ov", "v02", [349, 335, 658, 163], 2.4)
+clip("P07_laptop_dashboard", 3.0, push=[1.2, 3.0, OTS_PUSH])
+card("ov", "v02", [349, 335, 658, 163], 2.4); say(0.1, "p03")
 card("ov", "v03", [349, 335, 658, 245], 4.0)
 clip("V1b_vikram_no_reply", 1.6)               # Vikram does not reply
 card("ov", "v10", [349, 335, 658, 263], 3.0); say(0.3, "p04")
 card("ov", "v11", [349, 335, 658, 163], 2.4)
 clip("V2_vikram_smiles", 2.0)
-clip("P12_vikram_whatsapp", 3.2);              caption(1.6, 2.0, "I'll pay by the 29th.", "Vikram")
+clip("P12_vikram_whatsapp", 3.2, cc="topleft");              caption(1.6, 2.0, "I'll pay by the 29th.", "Vikram")
 card("ov", "v17", [349, 335, 658, 127], 2.4)
 clip("V2b_vikram_before_pay", 1.4)
 clip("V3_vikram_pays", 2.0)
 clip("P15_laptop_paid", 2.2, push=[0.5, 2.2, OTS_PUSH])
-card("ov", "v41", [13, 219, 640, 301], 2.8)
+card("ov", "v41", [13, 219, 730, 301], 2.8)   # wide enough for "…to pay on 29 Nov."
 clip("V4_vikram_relief", 1.4)
 clip("P16a_asha_close", 1.2)
 clip("P16b_laptop_held", 2.0, push=[0.6, 2.0, OTS_PUSH])
@@ -60,9 +60,9 @@ card("aarav", "blocked", [1044, 398, 368, 104], 2.4, maxScale=3.2, after=(1.25, 
      cursor=[{"t": 0.35, "at": [1360, 520]}, {"t": 1.1, "at": [1301, 477], "click": True, "move": 0.6}]); say(0.2, "p05")
 card("aarav", "blocked", [349, 335, 658, 189], 3.2); say(0.3, "p06")
 clip("P17a_sunita", 1.8)
-clip("P17_sunita_otp", 8.6);                   say(0.3, "s_emi"); say(2.0, "k_otp"); say(7.4, "k_ver")
+clip("P17_sunita_otp", 8.6, cc="top");                   say(0.3, "s_emi"); say(2.0, "k_otp"); say(7.4, "k_ver")
 card("in", "emi", [414, 200, 523, 212], 4.6, maxScale=2.6); say(0.6, "p07")
-clip("P19_sunita_fake", 4.6);                  say(1.3, "s_paid"); say(3.8, "k_fake")
+clip("P19_sunita_fake", 4.6, cc="top");                  say(1.3, "s_paid"); say(3.8, "k_fake")
 card("in", "fake", [414, 200, 523, 235], 6.0, maxScale=2.6); say(4.6, "p08")
 clip("B1_borrower_b", 1.4)
 clip("P20a_borrower_b", 1.8)
@@ -70,7 +70,7 @@ clip("P20b_asha_side", 1.0)
 clip("P20c_laptop_console", 2.6, push=[1.0, 2.6, OTS_PUSH])
 card("in", "takeoverB", [972, 357, 448, 313], 2.2, maxScale=2.2)
 clip("P20d_borrower_b_reply", 1.8)
-clip("P21_sunita_stop", 4.2);                  say(0.8, "s_stop"); say(1.7, "k_stop")
+clip("P21_sunita_stop", 4.2, cc="top");                  say(0.8, "s_stop"); say(1.7, "k_stop")
 card("in", "stop", [414, 200, 523, 181], 3.2, maxScale=2.6); say(1.3, "p09")
 clip("P22_team", 2.6);                         say(1.0, "p10")
 other("proof", 4.4)
@@ -118,7 +118,8 @@ layers.append({"kind": "logo", "t0": HARD_STOP, "t1": END, "opa0": 1, "y": 330, 
                "credits": "Music: “Corporate Inspirational” by AtlasAudio (Pixabay licence) · Voices: Sarvam bulbul:v3 (Neha, Ritu, Pooja), AI-generated<br>Footage: Pexels · Every screen is the real Kairos software · All data SIMULATED",
                "creditsY": 820, "exit": {"dur": 0}, "bgCream": True})
 
-film = {"duration": round(END, 3), "cues": "audio/product3_cues.json",
+cc_top = [[round(starts[i], 3), round(starts[i] + d - 0.06, 3), p["cc"]] for i, (k, d, p) in enumerate(seq) if k == "clip" and p.get("cc")]
+film = {"ccTop": cc_top, "duration": round(END, 3), "cues": "audio/product3_cues.json",
         "captures": {"ov": "captures/out_vikram", "aarav": "captures/out_aarav", "in": "captures/inbound2"}, "layers": layers}
 import os
 for L in layers:
