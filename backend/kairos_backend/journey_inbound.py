@@ -175,6 +175,7 @@ def _model_flags() -> dict:
 class World:
     def __init__(self):
         self.lock = threading.RLock()
+        self.closed = False
         self.policy = load_policy()
         self.dir = tempfile.mkdtemp(prefix="kairos-j2-")
         self.ledger = Ledger(self.policy, Path(self.dir) / "journey_inbound.db")
@@ -225,6 +226,7 @@ class World:
         self.clock.offset = timedelta(0)
 
     def close(self) -> None:
+        self.closed = True  # a request that picked up this world before a reset gets a 409, not a closed-DB 500
         try:
             self.ledger.close_all()
         finally:
@@ -904,10 +906,24 @@ def page():
     return PAGE.read_text(encoding="utf-8")
 
 
+WORLD_RESET = {"code": "WORLD_RESET", "message": "Someone reset the demo while this request was running. Refresh to continue."}
+
+
+def _open(w: World) -> World:
+    """Call with w.lock held: refuse a world another client's Reset demo closed meanwhile."""
+    if w.closed:
+        raise HTTPException(409, WORLD_RESET)
+    return w
+
+
 @router.get("/state")
 def get_state():
     w = world()
     with w.lock:
+        if w.closed:  # reset meanwhile: show the new world
+            w = world()
+            with w.lock:
+                return _open(w).state()
         return w.state()
 
 
@@ -917,7 +933,7 @@ async def send(body: dict):
 
     def run():
         with w.lock:
-            tr = w.send(str(body.get("phone") or ""), body.get("text"), body.get("scenario"))
+            tr = _open(w).send(str(body.get("phone") or ""), body.get("text"), body.get("scenario"))
             return {"trace": tr, "state": w.state()}
     return await run_in_threadpool(run)
 
@@ -928,7 +944,7 @@ async def agent(action: str, body: dict):
 
     def run():
         with w.lock:
-            tr = w.human(action, str(body.get("conversation_id") or ""), str(body.get("text") or ""),
+            tr = _open(w).human(action, str(body.get("conversation_id") or ""), str(body.get("text") or ""),
                          str(body.get("decision") or ""))
             return {"trace": tr, "state": w.state()}
     return await run_in_threadpool(run)

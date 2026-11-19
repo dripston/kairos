@@ -39,6 +39,8 @@ import queue
 import shutil
 import tempfile
 import threading
+import time as _time
+import uuid
 from datetime import date, datetime, time as dtime, timedelta
 from typing import Callable, Optional
 
@@ -106,21 +108,50 @@ class Refusal(Exception):
         self.code, self.message, self.http, self.audit = code, message, http, audit
 
 
+class SessionClosed(RuntimeError):
+    """The session was closed or replaced (another client's /start or /close) while a request was using it."""
+
+    code = "SESSION_REPLACED"
+
+
 # ---------- one owner thread for every SQLite call of a session ----------
 class _Worker:
+    """Runs every call of one session on one thread. After shutdown() no call is accepted (SessionClosed at once):
+    before this, a request that had picked up the session just before another client's /start or /close queued its
+    call behind the worker's stop marker and waited the full timeout (120 s, then a 500; >4 min on the deployment)."""
+
     def __init__(self):
         self.q: "queue.Queue" = queue.Queue()
+        self._lock = threading.Lock()
+        self.closed = False
         self.t = threading.Thread(target=self._loop, name="journey-outbound", daemon=True)
         self.t.start()
 
     def call(self, fn: Callable, timeout: float = 120.0):
         box = {"done": threading.Event()}
-        self.q.put((fn, box))
+        with self._lock:  # every accepted call is queued before shutdown's final call and stop marker
+            if self.closed:
+                raise SessionClosed("this journey session was closed or replaced by another client")
+            self.q.put((fn, box))
         if not box["done"].wait(timeout):
             raise TimeoutError("journey worker did not answer in time")
         if "exc" in box:
             raise box["exc"]
         return box["result"]
+
+    def shutdown(self, final: Optional[Callable] = None, timeout: float = 20.0) -> None:
+        """Stop accepting calls, let the ones already queued finish, run `final` last, then stop the thread."""
+        with self._lock:
+            if self.closed:
+                return
+            self.closed = True
+            box = {"done": threading.Event()}
+            if final is not None:
+                self.q.put((final, box))
+            self.q.put(None)
+        if final is not None:
+            box["done"].wait(timeout)
+        self.t.join(5)
 
     def _loop(self):
         while True:
@@ -136,8 +167,7 @@ class _Worker:
                 box["done"].set()
 
     def close(self):
-        self.q.put(None)
-        self.t.join(5)
+        self.shutdown()
 
 
 class _Shim:
@@ -927,11 +957,7 @@ class OutboundJourney:
                         fn()
                     except Exception:
                         pass
-        try:
-            self.worker.call(_shut, timeout=20)
-        except Exception:
-            pass
-        self.worker.close()
+        self.worker.shutdown(_shut, timeout=20)
         if self._own:
             shutil.rmtree(self.workdir, ignore_errors=True)
 
@@ -970,28 +996,70 @@ def compact(e: dict) -> dict:
 
 
 # ---------- one session at a time (the router's singleton) ----------
-class Manager:
-    def __init__(self):
-        self._lock = threading.Lock()
-        self.session: Optional[OutboundJourney] = None
+class PresenterLocked(RuntimeError):
+    """/start or /close from a client without the presenter's token while a presenter session holds the lock."""
 
-    def start(self, **kw) -> OutboundJourney:
-        new = OutboundJourney(**kw)
+    code = "PRESENTER_LOCK"
+
+
+class Manager:
+    """One session at a time. Each session gets a `session_id`; a client that passes it back (X-Journey-Session)
+    gets SessionClosed (HTTP 409) instead of acting on a session another client started meanwhile.
+
+    Opt-in presenter lock: /start with a presenter token holds the session for PRESENTER_HOLD_S (renewed by each
+    /start with that token): /start or /close without the token is refused (PresenterLocked). /close by the presenter
+    releases it. Without a token nothing changes (anyone may start or close)."""
+
+    PRESENTER_HOLD_S = 30 * 60
+
+    def __init__(self, clock: Callable[[], float] = _time.monotonic):
+        self._lock = threading.Lock()
+        self._clock = clock
+        self.session: Optional[OutboundJourney] = None
+        self._presenter: Optional[tuple] = None  # (token, held_until)
+
+    def presenter_locked(self, token: Optional[str] = None) -> bool:
+        p = self._presenter
+        return p is not None and self._clock() < p[1] and token != p[0]
+
+    def _check_presenter(self, token: Optional[str]) -> None:
+        if self.presenter_locked(token):
+            mins = max(1, int((self._presenter[1] - self._clock()) // 60))
+            raise PresenterLocked(f"A presenter session is running; it can be restarted only from the presenter's page "
+                                  f"(lock ends in about {mins} min)")
+
+    def start(self, presenter: Optional[str] = None, **kw) -> OutboundJourney:
         with self._lock:
+            self._check_presenter(presenter)
+        new = OutboundJourney(**kw)  # slow (builds the world): outside the lock
+        new.session_id = uuid.uuid4().hex[:12]
+        with self._lock:
+            try:
+                self._check_presenter(presenter)  # a presenter may have locked it while we were building
+            except PresenterLocked:
+                new.close()
+                raise
             old, self.session = self.session, new
+            if presenter:
+                self._presenter = (presenter, self._clock() + self.PRESENTER_HOLD_S)
         if old is not None:
-            old.close()
+            old.close()  # an in-flight call on it finishes; later calls get SessionClosed at once (never hang)
         return new
 
-    def get(self) -> OutboundJourney:
+    def get(self, session_id: Optional[str] = None) -> OutboundJourney:
         s = self.session
         if s is None:
             raise LookupError("no journey running: POST /demo/journey/outbound/api/start first")
+        if session_id and session_id != getattr(s, "session_id", None):
+            raise SessionClosed("another presenter started a new session; this one was replaced")
         return s
 
-    def close(self):
+    def close(self, presenter: Optional[str] = None):
         with self._lock:
+            self._check_presenter(presenter)
             old, self.session = self.session, None
+            if presenter and self._presenter and self._presenter[0] == presenter:
+                self._presenter = None
         if old is not None:
             old.close()
 
@@ -1000,5 +1068,5 @@ def presets_for(seed: int = DEFAULT_SEED, borrowers: int = DEFAULT_BORROWERS) ->
     return [dict(p) for p in PRESETS] if (seed, borrowers) == (DEFAULT_SEED, DEFAULT_BORROWERS) else []
 
 
-__all__ = ["OutboundJourney", "JourneyRun", "Manager", "Refusal", "PRESETS", "STAGES", "CHANNELS", "OVERRIDE_TIMES",
-           "compact", "stage_of", "presets_for"]
+__all__ = ["OutboundJourney", "JourneyRun", "Manager", "Refusal", "SessionClosed", "PresenterLocked", "PRESETS", "STAGES",
+           "CHANNELS", "OVERRIDE_TIMES", "compact", "stage_of", "presets_for"]
