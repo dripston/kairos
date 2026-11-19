@@ -35,6 +35,7 @@ from spine.ledger import PaymentError, apply_payment, record_event, reverse_paym
 
 from .exceptions import ExceptionEvent, handle
 from .gate import SEND, WAIT, Decision, Facts, evaluate
+from .pii import scrub
 from .policy import Policy
 
 __all__ = ["Ledger", "Instruction", "ReserveResult", "PaymentError", "stable_instruction_id", "MAX_PAISE", "check_paise"]
@@ -776,9 +777,18 @@ class Ledger:
             return existing["ticket_id"]  # repeat requests attach to the same open task
         tid = "TKT-" + uuid.uuid4().hex[:10]
         sla = self._iso(self._loc(at) + timedelta(hours=sla_hours)) if sla_hours else None
+        # Tickets are read by human queues: never store the borrower's name, number or an e-mail (RT-F08).
+        # The name becomes the borrower id; phones and e-mails are masked (kairos_backend.pii.scrub).
+        b = c.execute("SELECT full_name, phone FROM borrowers WHERE borrower_id=?", (borrower_id,)).fetchone()
+
+        def red(text) -> str:
+            return scrub(None if text is None else str(text), name=b["full_name"] if b else None,
+                         phone=b["phone"] if b else None, name_as=borrower_id)
+
         c.execute("INSERT INTO tickets (ticket_id, idempotency_key, queue, borrower_id, obligation_id, type, summary_line_1,"
                   " summary_line_2, evidence_ids, created_at, sla_due_at, policy_version) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                  (tid, key, queue, borrower_id, obligation_id, type_, summary[0], summary[1], json.dumps(list(evidence_ids)),
+                  (tid, key, queue, borrower_id, obligation_id, type_, red(summary[0]), red(summary[1]),
+                   json.dumps([red(e) for e in evidence_ids]),
                    self._iso(at), sla, self.policy.exceptions_version or self.policy.version))
         return tid
 

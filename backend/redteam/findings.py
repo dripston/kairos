@@ -42,10 +42,6 @@ _F = [
             "On a prior row, compare borrower_id, obligation_id, channel, campaign_id and scheduled_at; on mismatch "
             "return WAIT IDEMPOTENCY_CONFLICT (409 at the API) with reserved=false, and run the campaign "
             "existence check before the replay short-circuit."),
-    Finding("RT-F08", "Ticket summaries and evidence ids store borrower names and phone numbers verbatim",
-            "HIGH", "Rehan (K06)", "ledger._ticket (summary_line_1/2, evidence_ids)",
-            "Redact before insert: replace the borrower's full_name with the borrower_id and mask phone-like digit "
-            "runs (>= 8 digits) and e-mails; add a shared redact() used by _ticket and _audit."),
     Finding("RT-F09", "Free text is persisted unredacted into audit.reason and K03 events/payments",
             "MEDIUM", "Rehan (K06) for audit + record_response; Varun (K03) for reverse_payment",
             "ledger._audit (reason from reversal/pause), ledger.record_response (events.details), "

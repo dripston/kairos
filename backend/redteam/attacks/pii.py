@@ -56,7 +56,7 @@ def audit_has_no_identity(ctx):
     return chk.result()
 
 
-@attack("RT-PII-02", category="pii", component="k06.ledger", finding="RT-F08", requires=("fastapi",),
+@attack("RT-PII-02", category="pii", component="k06.ledger", requires=("fastapi",),
         title="Ticket summary lines and evidence ids never store the borrower's raw name or phone",
         covers=("K13:routed-exceptions", "K13-T13", "K13-T20"))
 def tickets_have_no_identity(ctx):
