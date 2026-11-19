@@ -145,7 +145,7 @@ for step in (script["steps"] as! [[String: Any]]) {
         let ok = waitUntil(((step["timeout"] as? Double) ?? 15000) / 1000) { (js("!!(\(cond))") as? Bool) == true }
         if !ok { FileHandle.standardError.write("waitFor timed out: \(cond)\n".data(using: .utf8)!) }
     }
-    else if let code = step["js"] as? String { let r = js(code); if let r = r { print("js →", String(describing: r).prefix(200)) } }
+    else if let code = step["js"] as? String { let r = js(code); if let r = r { print("js →", String(describing: r).prefix(6000)) } }
     else if step["click"] != nil {
         if logRect(step, "click", "click") {
             spin(0.05)

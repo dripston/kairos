@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H5_1_asha_frustrated_laptop.mp4",
+ "in": 3.6,
+ "dur": 3.6,
+ "mode": "none",
+ "out": "comp/P04_asha_frustrated.mov",
+ "fps": 30
+}

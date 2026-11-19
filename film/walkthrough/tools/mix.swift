@@ -107,6 +107,7 @@ if let mu = spec["music"] as? [String: Any] {
 // ---------- narration: trim, level, light high-pass, place
 var voL = [Float](repeating: 0, count: N), voR = voL
 var voIntervals: [(Double, Double)] = []
+var rawCues: [[String: Any]] = []
 let voLevel = (spec["voLevel"] as? Double) ?? -20
 var report: [String] = []
 for v in (spec["vo"] as? [[String: Any]]) ?? [] {
@@ -128,6 +129,7 @@ for v in (spec["vo"] as? [[String: Any]]) ?? [] {
     for k in 0..<l.count where d0 + k < N { voL[d0 + k] += l[k] * g; voR[d0 + k] += l[k] * g }
     let len = Double(l.count) / SR
     voIntervals.append((at, at + len))
+    if let txt = v["text"] as? String { rawCues.append(["t0": at, "t1": at + len, "text": txt, "who": (v["who"] as? String) ?? ""]) }
     report.append(String(format: "  vo %@ at %.2f–%.2f (%.2f s)", (v["file"] as! NSString).lastPathComponent, at, at + len, len))
 }
 
@@ -215,3 +217,7 @@ do { // scoped so the file is closed (header written) before the process exits
     try of.write(from: ob)
 } catch { fail("write: \(error)") }
 print("wrote \(outPath)")
+if let co = spec["cuesOut"] as? String {
+    try! JSONSerialization.data(withJSONObject: rawCues.sorted { ($0["t0"] as! Double) < ($1["t0"] as! Double) }, options: [.prettyPrinted]).write(to: URL(fileURLWithPath: co))
+    print("cues \(rawCues.count) → \(co)")
+}

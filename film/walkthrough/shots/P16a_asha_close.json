@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H5_3_asha_typing_close.mp4",
+ "in": 12.0,
+ "dur": 2.4,
+ "mode": "none",
+ "out": "comp/P16a_asha_close.mov",
+ "fps": 30
+}

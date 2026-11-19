@@ -1,0 +1,19 @@
+{
+ "clip": "../assets/human/H8_4_hands_34_table_green.mp4",
+ "in": 0.4,
+ "dur": 5.3,
+ "mode": "green",
+ "up": [
+  0.35,
+  -1
+ ],
+ "expand": 0.12,
+ "ui": [
+  {
+   "t": 0,
+   "img": "captures/phone_sms3/f00001.jpg"
+  }
+ ],
+ "out": "comp/P02_vikram_sms.mov",
+ "fps": 30
+}

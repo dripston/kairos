@@ -1,0 +1,47 @@
+{
+ "clip": "../assets/human/H6_1_pov_hands_typing_blank.mp4",
+ "in": 13.0,
+ "dur": 3.8,
+ "mode": "white",
+ "roi": [
+  430,
+  150,
+  1060,
+  680
+ ],
+ "expand": 0.0,
+ "ui": [
+  {
+   "t": 0,
+   "img": "captures/inbound_tall/f00017.jpg",
+   "crop": [
+    0,
+    0,
+    3600,
+    2250
+   ]
+  },
+  {
+   "t": 1.5,
+   "img": "captures/inbound_tall/f00018.jpg",
+   "crop": [
+    0,
+    0,
+    3600,
+    2250
+   ]
+  },
+  {
+   "t": 2.7,
+   "img": "captures/inbound_tall/f00019.jpg",
+   "crop": [
+    0,
+    0,
+    3600,
+    2250
+   ]
+  }
+ ],
+ "out": "comp/P20c_laptop_console.mov",
+ "fps": 30
+}

@@ -1,0 +1,189 @@
+[
+ {
+  "t0": 0.6,
+  "t1": 6.57,
+  "who": "",
+  "lines": [
+   "Every month, lenders send the same",
+   "reminder, at the same time, to everyone."
+  ]
+ },
+ {
+  "t0": 17.6,
+  "t1": 22.439,
+  "who": "",
+  "lines": [
+   "Kairos looks at every borrower, every day,",
+   "and decides."
+  ]
+ },
+ {
+  "t0": 31.9,
+  "t1": 36.001,
+  "who": "",
+  "lines": [
+   "Before anything goes out, Aladdin, our",
+   "safety supervisor,"
+  ]
+ },
+ {
+  "t0": 36.021,
+  "t1": 38.945,
+  "who": "",
+  "lines": [
+   "checks it against the lender's rules."
+  ]
+ },
+ {
+  "t0": 39.1,
+  "t1": 44.493,
+  "who": "",
+  "lines": [
+   "No reply on SMS. So it learns, and tries",
+   "WhatsApp."
+  ]
+ },
+ {
+  "t0": 45.9,
+  "t1": 48.65,
+  "who": "Vikram",
+  "lines": [
+   "I'll pay by the 29th."
+  ]
+ },
+ {
+  "t0": 62,
+  "t1": 64.263,
+  "who": "",
+  "lines": [
+   "Your team stays in charge."
+  ]
+ },
+ {
+  "t0": 65,
+  "t1": 67.882,
+  "who": "",
+  "lines": [
+   "But even they can't break the rules."
+  ]
+ },
+ {
+  "t0": 69.4,
+  "t1": 71.18,
+  "who": "Sunita",
+  "lines": [
+   "When is my EMI due?"
+  ]
+ },
+ {
+  "t0": 71.2,
+  "t1": 72.629,
+  "who": "Kairos",
+  "lines": [
+   "To protect your account,"
+  ]
+ },
+ {
+  "t0": 72.649,
+  "t1": 76.58,
+  "who": "",
+  "lines": [
+   "I have sent a 6-digit code to your",
+   "registered WhatsApp number."
+  ]
+ },
+ {
+  "t0": 76.6,
+  "t1": 78.452,
+  "who": "Kairos",
+  "lines": [
+   "Thank you, you are verified."
+  ]
+ },
+ {
+  "t0": 78.5,
+  "t1": 83.58,
+  "who": "",
+  "lines": [
+   "Kairos answers in seconds. But only once",
+   "it knows it's really them."
+  ]
+ },
+ {
+  "t0": 83.6,
+  "t1": 86.18,
+  "who": "Sunita",
+  "lines": [
+   "I already paid, here is the",
+   "screenshot."
+  ]
+ },
+ {
+  "t0": 86.2,
+  "t1": 89.188,
+  "who": "Kairos",
+  "lines": [
+   "For your security, I can't help",
+   "with this request in chat."
+  ]
+ },
+ {
+  "t0": 89.208,
+  "t1": 91.58,
+  "who": "",
+  "lines": [
+   "A specialist from our team will review it."
+  ]
+ },
+ {
+  "t0": 91.6,
+  "t1": 95.179,
+  "who": "",
+  "lines": [
+   "A doctored payment screenshot? It checks",
+   "with the bank."
+  ]
+ },
+ {
+  "t0": 107.3,
+  "t1": 107.982,
+  "who": "Sunita",
+  "lines": [
+   "Stop."
+  ]
+ },
+ {
+  "t0": 108.2,
+  "t1": 111.388,
+  "who": "Kairos",
+  "lines": [
+   "You will not receive further",
+   "automated reminders from us on any"
+  ]
+ },
+ {
+  "t0": 111.408,
+  "t1": 112.066,
+  "who": "",
+  "lines": [
+   "channel."
+  ]
+ },
+ {
+  "t0": 112.2,
+  "t1": 115.169,
+  "who": "",
+  "lines": [
+   "And stop means stop. Everywhere."
+  ]
+ },
+ {
+  "t0": 115.4,
+  "t1": 121.879,
+  "who": "",
+  "lines": [
+   "In our tests, about twice the money back",
+   "for every rupee. With zero rule breaches."
+  ]
+ }
+]

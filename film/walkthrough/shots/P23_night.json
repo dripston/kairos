@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H12_3_delhi_skyline_night.mp4",
+ "in": 9.0,
+ "dur": 3.0,
+ "mode": "none",
+ "out": "comp/P23_night.mov",
+ "fps": 30
+}

@@ -1,0 +1,37 @@
+{
+ "s_emi": {
+  "speaker": "pooja",
+  "who": "Sunita",
+  "text": "When is my EMI due?"
+ },
+ "k_otp": {
+  "speaker": "ritu",
+  "who": "Kairos",
+  "text": "To protect your account, I have sent a 6-digit code to your registered WhatsApp number."
+ },
+ "k_ver": {
+  "speaker": "ritu",
+  "who": "Kairos",
+  "text": "Thank you, you are verified."
+ },
+ "s_paid": {
+  "speaker": "pooja",
+  "who": "Sunita",
+  "text": "I already paid, here is the screenshot."
+ },
+ "k_fake": {
+  "speaker": "ritu",
+  "who": "Kairos",
+  "text": "For your security, I can't help with this request in chat. A specialist from our team will review it."
+ },
+ "s_stop": {
+  "speaker": "pooja",
+  "who": "Sunita",
+  "text": "Stop."
+ },
+ "k_stop": {
+  "speaker": "ritu",
+  "who": "Kairos",
+  "text": "You will not receive further automated reminders from us on any channel."
+ }
+}

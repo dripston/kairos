@@ -1,0 +1,139 @@
+{
+"url": "https://dripston.github.io/kairos/?theme=light",
+"width": 1440,
+"height": 900,
+"scale": 2.5,
+"steps": [
+{
+"wait": 7000
+},
+{
+"waitFor": "document.body.innerText.indexOf('API live')>=0",
+"timeout": 30000
+},
+{
+"snap": "control"
+},
+{
+"rect": "main",
+"name": "main"
+},
+{
+"js": "document.body.innerText.slice(0,2500)"
+},
+{
+"click": "button, [role=tab]",
+"text": "Live activity",
+"name": "tab_activity"
+},
+{
+"wait": 4000
+},
+{
+"snap": "activity"
+},
+{
+"click": "button, [role=tab]",
+"text": "Budget & channels",
+"name": "tab_budget"
+},
+{
+"wait": 4000
+},
+{
+"snap": "budget"
+},
+{
+"click": "button, [role=tab]",
+"text": "Overview",
+"name": "tab_over"
+},
+{
+"wait": 2500
+},
+{
+"click": "a, button, nav *",
+"text": "Smart CRM",
+"name": "nav_crm"
+},
+{
+"wait": 5000
+},
+{
+"snap": "crm"
+},
+{
+"js": "location.pathname+' :: '+document.querySelector('main') ? document.querySelector('main').innerText.slice(0,1500) : ''"
+},
+{
+"click": "a, button, nav *",
+"text": "Learning & Proof",
+"name": "nav_learning"
+},
+{
+"wait": 5000
+},
+{
+"snap": "learning"
+},
+{
+"js": "location.pathname+' :: '+document.querySelector('main') ? document.querySelector('main').innerText.slice(0,1500) : ''"
+},
+{
+"click": "a, button, nav *",
+"text": "Voice bots",
+"name": "nav_voice"
+},
+{
+"wait": 5000
+},
+{
+"snap": "voice"
+},
+{
+"js": "location.pathname+' :: '+document.querySelector('main') ? document.querySelector('main').innerText.slice(0,1500) : ''"
+},
+{
+"click": "a, button, nav *",
+"text": "Live journey",
+"name": "nav_journey"
+},
+{
+"wait": 5000
+},
+{
+"snap": "journey"
+},
+{
+"js": "location.pathname+' :: '+document.querySelector('main') ? document.querySelector('main').innerText.slice(0,1500) : ''"
+},
+{
+"click": "a, button, nav *",
+"text": "Cohorts",
+"name": "nav_cohorts"
+},
+{
+"wait": 5000
+},
+{
+"snap": "cohorts"
+},
+{
+"js": "location.pathname+' :: '+document.querySelector('main') ? document.querySelector('main').innerText.slice(0,1500) : ''"
+},
+{
+"click": "a, button, nav *",
+"text": "Campaigns",
+"name": "nav_campaigns"
+},
+{
+"wait": 5000
+},
+{
+"snap": "campaigns"
+},
+{
+"js": "location.pathname+' :: '+document.querySelector('main') ? document.querySelector('main').innerText.slice(0,1500) : ''"
+}
+]
+}

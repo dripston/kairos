@@ -1,0 +1,31 @@
+{
+ "expand": 0.12,
+ "clip": "../assets/human/H8_1_brown_hands_typing_green.mp4",
+ "in": 15.5,
+ "dur": 4.6,
+ "mode": "green",
+ "ui": [
+  {
+   "img": "captures/inbound_tall/f00022.jpg",
+   "crop": [
+    70,
+    457,
+    855,
+    1425
+   ],
+   "t": 0
+  },
+  {
+   "img": "captures/inbound_tall/f00023.jpg",
+   "crop": [
+    70,
+    457,
+    855,
+    1425
+   ],
+   "t": 0.7
+  }
+ ],
+ "out": "comp/P21_sunita_stop.mov",
+ "fps": 30
+}

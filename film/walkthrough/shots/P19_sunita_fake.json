@@ -1,0 +1,31 @@
+{
+ "expand": 0.12,
+ "clip": "../assets/human/H8_2_brown_hands_scroll_green.mp4",
+ "in": 6.5,
+ "dur": 4.8,
+ "mode": "green",
+ "ui": [
+  {
+   "img": "captures/inbound_tall/f00005.jpg",
+   "crop": [
+    70,
+    457,
+    855,
+    1425
+   ],
+   "t": 0
+  },
+  {
+   "img": "captures/inbound_tall/f00008.jpg",
+   "crop": [
+    70,
+    457,
+    855,
+    1425
+   ],
+   "t": 0.5
+  }
+ ],
+ "out": "comp/P19_sunita_fake.mov",
+ "fps": 30
+}

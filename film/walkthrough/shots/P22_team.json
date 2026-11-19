@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H11_3_team_meeting_clapping.mp4",
+ "in": 4.2,
+ "dur": 3.2,
+ "mode": "none",
+ "out": "comp/P22_team.mov",
+ "fps": 30
+}

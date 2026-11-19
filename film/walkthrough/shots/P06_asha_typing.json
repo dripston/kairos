@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H5_2_asha_typing_wide.mp4",
+ "in": 2.0,
+ "dur": 3.0,
+ "mode": "none",
+ "out": "comp/P06_asha_typing.mov",
+ "fps": 30
+}

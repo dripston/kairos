@@ -1,0 +1,21 @@
+{
+ "clip": "../assets/human/H6_1_pov_hands_typing_blank.mp4",
+ "in": 2.0,
+ "dur": 4.5,
+ "mode": "white",
+ "roi": [
+  430,
+  150,
+  1060,
+  680
+ ],
+ "expand": 0.0,
+ "ui": [
+  {
+   "t": 0,
+   "img": "captures/deployed_light/f00001.jpg"
+  }
+ ],
+ "out": "comp/P07_laptop_dashboard.mov",
+ "fps": 30
+}

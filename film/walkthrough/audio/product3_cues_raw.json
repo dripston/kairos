@@ -1,0 +1,104 @@
+[
+  {
+    "text" : "Every month, lenders send the same reminder, at the same time, to everyone.",
+    "t1" : 6.319614512471655,
+    "who" : "",
+    "t0" : 0.59999999999999998
+  },
+  {
+    "t0" : 17.600000000000001,
+    "t1" : 22.188866213151929,
+    "who" : "",
+    "text" : "Kairos looks at every borrower, every day, and decides."
+  },
+  {
+    "who" : "",
+    "t0" : 31.899999999999999,
+    "t1" : 38.695306122448976,
+    "text" : "Before anything goes out, Aladdin, our safety supervisor, checks it against the lender's rules."
+  },
+  {
+    "text" : "No reply on SMS. So it learns, and tries WhatsApp.",
+    "t0" : 39.100000000000001,
+    "t1" : 44.243492063492063,
+    "who" : ""
+  },
+  {
+    "t0" : 62,
+    "text" : "Your team stays in charge.",
+    "t1" : 64.013469387755109,
+    "who" : ""
+  },
+  {
+    "t1" : 67.631700680272104,
+    "who" : "",
+    "text" : "But even they can't break the rules.",
+    "t0" : 65
+  },
+  {
+    "who" : "Sunita",
+    "t0" : 69.400000000000006,
+    "t1" : 70.944603174603174,
+    "text" : "When is my EMI due?"
+  },
+  {
+    "t1" : 76.393990929705211,
+    "who" : "Kairos",
+    "t0" : 71.200000000000003,
+    "text" : "To protect your account, I have sent a 6-digit code to your registered WhatsApp number."
+  },
+  {
+    "who" : "Kairos",
+    "t1" : 78.20204081632653,
+    "t0" : 76.599999999999994,
+    "text" : "Thank you, you are verified."
+  },
+  {
+    "text" : "Kairos answers in seconds. But only once it knows it's really them.",
+    "t1" : 83.566371882086173,
+    "t0" : 78.5,
+    "who" : ""
+  },
+  {
+    "t0" : 83.599999999999994,
+    "text" : "I already paid, here is the screenshot.",
+    "t1" : 85.99424036281178,
+    "who" : "Sunita"
+  },
+  {
+    "who" : "Kairos",
+    "t0" : 86.200000000000003,
+    "t1" : 91.386394557823138,
+    "text" : "For your security, I can't help with this request in chat. A specialist from our team will review it."
+  },
+  {
+    "text" : "A doctored payment screenshot? It checks with the bank.",
+    "t1" : 94.929024943310651,
+    "who" : "",
+    "t0" : 91.599999999999994
+  },
+  {
+    "text" : "Stop.",
+    "t0" : 107.3,
+    "t1" : 107.73151927437641,
+    "who" : "Sunita"
+  },
+  {
+    "t1" : 111.81560090702948,
+    "text" : "You will not receive further automated reminders from us on any channel.",
+    "who" : "Kairos",
+    "t0" : 108.2
+  },
+  {
+    "who" : "",
+    "t0" : 112.2,
+    "t1" : 114.9185941043084,
+    "text" : "And stop means stop. Everywhere."
+  },
+  {
+    "text" : "In our tests, about twice the money back for every rupee. With zero rule breaches.",
+    "who" : "",
+    "t1" : 121.62897959183674,
+    "t0" : 115.40000000000001
+  }
+]

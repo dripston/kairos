@@ -1,0 +1,41 @@
+{
+ "expand": 0.12,
+ "clip": "../assets/human/H8_1_brown_hands_typing_green.mp4",
+ "in": 1.5,
+ "dur": 9.2,
+ "mode": "green",
+ "ui": [
+  {
+   "img": "captures/inbound_tall/f00002.jpg",
+   "crop": [
+    70,
+    457,
+    855,
+    1425
+   ],
+   "t": 0
+  },
+  {
+   "img": "captures/inbound_tall/f00003.jpg",
+   "crop": [
+    70,
+    457,
+    855,
+    1425
+   ],
+   "t": 0.9
+  },
+  {
+   "img": "captures/inbound_tall/f00004.jpg",
+   "crop": [
+    70,
+    457,
+    855,
+    1425
+   ],
+   "t": 7.6
+  }
+ ],
+ "out": "comp/P17_sunita_otp.mov",
+ "fps": 30
+}

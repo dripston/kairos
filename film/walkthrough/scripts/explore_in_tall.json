@@ -1,0 +1,5 @@
+{"url":"http://127.0.0.1:8773/demo/journey/inbound","width":1440,"height":1500,"scale":1,"steps":[
+ {"wait":1500},{"click":"#resetBtn","name":"reset"},{"wait":1800},{"click":"[data-tab=A]","name":"a"},{"wait":700},
+ {"click":"[data-s=emi]","name":"emi"},{"wait":2400},{"snap":"emi"},{"rect":".phone","name":"phone"},{"rect":"#chat","name":"chat"},
+ {"js":"document.getElementById('chat').innerText"}
+]}

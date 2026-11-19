@@ -427,18 +427,40 @@
   // ---------------------------------------------------------------- simple layers
   function buildVideo(L) {
     var root = el("div", "layer vid", stage); root.style.width = W + "px"; root.style.height = H + "px";
-    var v = el("video", "", root); v.muted = true; v.preload = "auto"; v.playsInline = true; v.src = base + L.src;
-    if (L.filter) v.style.filter = L.filter;
-    el("div", "shade", root);
-    L.root = root; L.v = v; L.lastSeek = -1;
-    return new Promise(function (res) { v.addEventListener("loadeddata", res, { once: true }); v.addEventListener("error", function () { console.error("video failed " + L.src); res(); }, { once: true }); });
+    var v = el("video", "", root); v.muted = true; v.preload = "auto"; v.playsInline = true;
+    v.style.filter = L.filter || (L.graded ? "" : "saturate(.95) contrast(1.06) sepia(.07) brightness(1.01)");
+    if (L.shade !== false) el("div", "shade", root);
+    L.root = root; L.v = v; L.lastSeek = -1; L.loaded = false;
+    return null;
+  }
+  function attachVideo(L) {
+    if (L.loading) return L.loading;
+    L.loading = new Promise(function (res) {
+      L.v.addEventListener("loadeddata", function () { L.loaded = true; res(); }, { once: true });
+      L.v.addEventListener("error", function () { console.error("video failed " + L.src); res(); }, { once: true });
+      L.v.src = base + L.src; L.v.load();
+    });
+    return L.loading;
+  }
+  function detachVideo(L) {
+    if (!L.loading) return;
+    L.v.removeAttribute("src"); L.v.load(); L.loaded = false; L.loading = null; L.lastSeek = -1;
   }
   function updateVideo(L, t) {
     var env = envelope(L, t);
     L.root.style.opacity = E.enter(env.p) * E.enter(env.q);
-    var s = 1.04 + 0.04 * clamp((t - L.t0) / (L.t1 - L.t0), 0, 1); // slow push
+    var life = clamp((t - L.t0) / (L.t1 - L.t0), 0, 1);
+    var s = L.still ? 1 : 1.02 + 0.03 * life, ox = 50, oy = 50; // slow push on every hold
+    if (L.push && t >= L.push.t0) { // camera pushes into a screen in the shot until it fills the frame
+      var pp = E.move(clamp((t - L.push.t0) / (L.push.t1 - L.push.t0), 0, 1)), r = L.push.rect;
+      var zEnd = L.push.z || Math.min(W / r[2], H / r[3]) * 1.02;
+      s = Math.exp(lerp(Math.log(s), Math.log(zEnd), pp));
+      ox = (r[0] + r[2] / 2) / W * 100; oy = (r[1] + r[3] / 2) / H * 100;
+    }
+    L.v.style.transformOrigin = ox + "% " + oy + "%";
     L.v.style.transform = "scale(" + s + ")";
     var want = (L.from || 0) + (t - L.t0) * (L.rate || 1);
+    if (!L.loaded) return attachVideo(L).then(function () { return updateVideo(L, t); });
     if (Math.abs(want - L.lastSeek) < 1e-4) return null;
     L.lastSeek = want;
     return new Promise(function (res) {
@@ -450,6 +472,7 @@
 
   function buildText(L) {
     var root = el("div", "layer", stage); L.root = root; root.style.width = W + "px"; root.style.height = H + "px";
+    if (L.bgCream) { var bgc = el("div", "", root); bgc.style.cssText = "position:absolute;inset:0;background:#FBF8F1"; }
     if (L.kind === "callout" || L.kind === "headline") {
       var c = el("div", "callout" + (L.bare || L.kind === "headline" ? " bare" : "") + (L.dark ? " dark" : ""), root);
       L.parts = [];
@@ -525,9 +548,52 @@
     });
   }
 
+  // ---------------------------------------------------------------- card (one real component, re-laid out large)
+  function buildCard(L) {
+    var root = el("div", "layer", stage); root.style.width = W + "px"; root.style.height = H + "px"; L.root = root;
+    if (L.bg !== false) { var bg = el("div", "", root); bg.style.cssText = "position:absolute;inset:0;background:" + (L.bg || "#FBF8F1"); }
+    L.box = el("div", "card", root); L.box.style.overflow = "hidden";
+    L.im = el("img", "", L.box); L.im.style.cssText = "position:absolute;left:0;top:0;transform-origin:0 0;max-width:none";
+    L.track = resolveTrack(caps[L.cap], L.frames);
+  }
+  function updateCard(L, t) {
+    var env = envelope(L, t), c = caps[L.cap], fi = trackAt(L.track, t), url = frameUrl(c, fi);
+    var r = L.rect, maxw = L.maxw || 1640, maxh = L.maxh || 720;
+    var sc = Math.min(maxw / r[2], maxh / r[3], L.maxScale || 3.2);
+    var w = r[2] * sc, h = r[3] * sc, cx = L.cx || W / 2, cy = L.cy || 450;
+    var b = L.box, life = clamp((t - L.t0) / (L.t1 - L.t0), 0, 1);
+    b.style.left = (cx - w / 2) + "px"; b.style.top = (cy - h / 2) + "px"; b.style.width = w + "px"; b.style.height = h + "px";
+    var vw = c.log.viewport.w, vh = c.log.viewport.h;
+    L.im.style.width = (vw * sc) + "px"; L.im.style.height = (vh * sc) + "px";
+    L.im.style.transform = "translate(" + (-r[0] * sc) + "px," + (-r[1] * sc) + "px)";
+    var p = E.enter(env.p), q = E.enter(env.q);
+    b.style.opacity = p * q;
+    b.style.transform = "translateY(" + ((1 - p) * 18 - 6 * life) + "px) scale(" + (lerp(0.97, 1, p) * (1 + 0.015 * life)) + ")";
+    L.subjectNow = [[cx - w / 2, cy - h / 2, w, h]];
+    if (L.curUrl !== url) {
+      return getImg(url).then(function () { L.im.src = url; L.curUrl = url; FRESH++; return L.im.decode().catch(function () {}); });
+    }
+    return L.im.decode().catch(function () {});
+  }
+
+  // ---------------------------------------------------------------- captions (closed captions, burned in)
+  function buildCaptions(L) {
+    var root = el("div", "layer", stage); root.style.width = W + "px"; root.style.height = H + "px"; L.root = root;
+    L.pill = el("div", "cc", root);
+  }
+  function updateCaptions(L, t) {
+    var cue = null; (FILM.cueList || []).forEach(function (c) { if (t >= c.t0 && t < c.t1) cue = c; });
+    if (!cue) { L.pill.style.opacity = 0; L.cueNow = null; return null; }
+    var a = Math.min(clamp((t - cue.t0) / 0.12, 0, 1), clamp((cue.t1 - t) / 0.12, 0, 1));
+    if (L.cueNow !== cue) { L.pill.innerHTML = (cue.who ? '<b>' + esc(cue.who) + ':</b> ' : "") + cue.lines.map(esc).join("<br>"); L.cueNow = cue; }
+    L.pill.style.opacity = a;
+    return null;
+  }
+
   // ---------------------------------------------------------------- dots (a unit chart of real counts)
   function buildDots(L) {
     var root = el("div", "layer", stage); root.style.width = W + "px"; root.style.height = H + "px"; L.root = root;
+    if (L.bgCream) { var bgc = el("div", "", root); bgc.style.cssText = "position:absolute;inset:0;background:#FBF8F1"; }
     var cv = el("canvas", "", root); cv.width = W; cv.height = H; cv.style.cssText = "position:absolute;left:0;top:0;width:1920px;height:1080px";
     L.cv = cv; L.ctx = cv.getContext("2d");
     var n = L.n, cols = L.cols || 61, gap = L.gap || 30, rows = Math.ceil(n / cols);
@@ -562,6 +628,7 @@
   // L.pulses:[{t, path: [edge ids], speed: px/s}] a bright token running along edges, ring flash on arrival
   function buildDiagram(L) {
     var root = el("div", "layer", stage); root.style.width = W + "px"; root.style.height = H + "px"; L.root = root;
+    if (L.mini) { var pl = el("div", "", root); pl.style.cssText = "position:absolute;left:" + (L.mini.x - 24) + "px;top:" + (L.mini.y - 22) + "px;width:" + ((L.ww || W) * L.mini.s + 48) + "px;height:" + ((L.wh || H) * L.mini.s + 44) + "px;border-radius:22px;background:rgba(251,248,241,.94);box-shadow:0 18px 40px -16px rgba(40,30,10,.45)"; }
     var world = el("div", "dia", root); L.world = world;
     var svg = sv("svg", { width: L.ww || W, height: L.wh || H, viewBox: "0 0 " + (L.ww || W) + " " + (L.wh || H) }, world);
     var defs = sv("defs", {}, svg);
@@ -648,7 +715,9 @@
         push = Math.min(push, 1 - clamp((m - 0.85) / 0.15, 0, 1));
       }
     });
-    L.world.style.transform = "translate(" + (W / 2 - cam.cx * cam.z) + "px," + (H / 2 - cam.cy * cam.z) + "px) scale(" + cam.z + ")";
+    if (L.mini) { cam = { cx: (L.ww || W) / 2, cy: (L.wh || H) / 2, z: L.mini.s }; push = 1; }
+    L.world.style.transform = L.mini ? "translate(" + L.mini.x + "px," + L.mini.y + "px) scale(" + L.mini.s + ")"
+      : "translate(" + (W / 2 - cam.cx * cam.z) + "px," + (H / 2 - cam.cy * cam.z) + "px) scale(" + cam.z + ")";
     L.world.style.filter = push < 1 ? "blur(" + (1 - push) * 2 + "px)" : "";
     var away = 1;
     (L.away || []).forEach(function (a) {
@@ -720,17 +789,21 @@
         caps[k] = { dir: film.captures[k], log: { viewport: { w: 1440, h: 810 }, frames: [], events: [] }, frames: [], byLabel: {}, ev: {} };
       }));
     });
+    if (film.cues) jobs.push(fetch(base + film.cues).then(function (r) { return r.json(); }).then(function (j) { film.cueList = j; }));
     Object.keys(film.terms || {}).forEach(function (k) {
       jobs.push(fetch(base + film.terms[k]).then(function (r) { return r.json(); }).then(function (j) { recs[k] = j; }));
     });
     return Promise.all(jobs).then(function () {
       var vids = [];
+      if (film.cues && !film.layers.some(function (L) { return L.kind === "captions"; })) film.layers.push({ kind: "captions", t0: 0, t1: film.duration, z: 1000 });
       film.layers.forEach(function (L, i) {
         L.z = L.z != null ? L.z : i;
         if (L.kind === "win" || L.kind === "term") buildWin(L);
         else if (L.kind === "video") vids.push(buildVideo(L));
         else if (L.kind === "diagram") buildDiagram(L);
         else if (L.kind === "dots") buildDots(L);
+        else if (L.kind === "card") buildCard(L);
+        else if (L.kind === "captions") buildCaptions(L);
         else buildText(L);
         L.root.style.zIndex = L.z;
         show(L.root, false);
@@ -741,6 +814,7 @@
   }
   function seek(t) {
     var pending = []; FRESH = 0;
+    layers.forEach(function (L) { if (L.kind === "video" && (t < L.t0 - 1.5 || t > L.t1 + 0.5)) detachVideo(L); });
     layers.forEach(function (L) {
       var on = t >= L.t0 && t < L.t1;
       show(L.root, on);
@@ -750,8 +824,18 @@
       else if (L.kind === "video") r = updateVideo(L, t);
       else if (L.kind === "diagram") r = updateDiagram(L, t);
       else if (L.kind === "dots") r = updateDots(L, t);
+      else if (L.kind === "card") r = updateCard(L, t);
+      else if (L.kind === "captions") r = updateCaptions(L, t);
       else r = updateText(L, t);
       if (r) pending.push(r);
+    });
+    // QA: captions vs subjects
+    layers.forEach(function (L) {
+      if (L.kind !== "captions" || !L.cueNow) return;
+      var b = L.pill.getBoundingClientRect();
+      layers.forEach(function (C) { if (C.kind === "card" && t >= C.t0 && t < C.t1 && C.subjectNow) C.subjectNow.forEach(function (r) {
+        if (Math.min(b.right, r[0] + r[2]) - Math.max(b.left, r[0]) > 4 && Math.min(b.bottom, r[1] + r[3]) - Math.max(b.top, r[1]) > 4) QA.push({ t: t, kind: "caption over card", text: L.cueNow.lines.join(" ") });
+      }); });
     });
     // QA: overlay collisions (collected for the renderer's report)
     var subj = [], openWin = false;

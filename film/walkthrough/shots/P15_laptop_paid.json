@@ -1,0 +1,21 @@
+{
+ "clip": "../assets/human/H6_1_pov_hands_typing_blank.mp4",
+ "in": 9.0,
+ "dur": 2.8,
+ "mode": "white",
+ "roi": [
+  430,
+  150,
+  1060,
+  680
+ ],
+ "expand": 0.0,
+ "ui": [
+  {
+   "t": 0,
+   "img": "captures/out_vikram/f00059.jpg"
+  }
+ ],
+ "out": "comp/P15_laptop_paid.mov",
+ "fps": 30
+}

@@ -1,0 +1,137 @@
+{
+"url": "https://dripston.github.io/kairos/",
+"width": 1440,
+"height": 900,
+"scale": 1,
+"steps": [
+{
+"wait": 6000
+},
+{
+"snap": "control"
+},
+{
+"js": "document.body.innerText.slice(0,1500)"
+},
+{
+"click": "button, [role=tab], a",
+"text": "Live activity",
+"name": "tab_Live activity"
+},
+{
+"wait": 3500
+},
+{
+"snap": "cr_live"
+},
+{
+"click": "button, [role=tab], a",
+"text": "Budget & channels",
+"name": "tab_Budget & channels"
+},
+{
+"wait": 3500
+},
+{
+"snap": "cr_budget"
+},
+{
+"click": "a, button, nav *",
+"text": "Smart CRM",
+"name": "nav_Smart CRM"
+},
+{
+"wait": 4500
+},
+{
+"snap": "p_smart"
+},
+{
+"js": "location.href + ' | ' + document.body.innerText.slice(0,300).replace(/\\n/g,' / ')"
+},
+{
+"click": "a, button, nav *",
+"text": "Cohorts",
+"name": "nav_Cohorts"
+},
+{
+"wait": 4500
+},
+{
+"snap": "p_cohorts"
+},
+{
+"js": "location.href + ' | ' + document.body.innerText.slice(0,300).replace(/\\n/g,' / ')"
+},
+{
+"click": "a, button, nav *",
+"text": "Campaigns",
+"name": "nav_Campaigns"
+},
+{
+"wait": 4500
+},
+{
+"snap": "p_campaigns"
+},
+{
+"js": "location.href + ' | ' + document.body.innerText.slice(0,300).replace(/\\n/g,' / ')"
+},
+{
+"click": "a, button, nav *",
+"text": "Learning & Proof",
+"name": "nav_Learning & Proof"
+},
+{
+"wait": 4500
+},
+{
+"snap": "p_learning"
+},
+{
+"js": "location.href + ' | ' + document.body.innerText.slice(0,300).replace(/\\n/g,' / ')"
+},
+{
+"click": "a, button, nav *",
+"text": "Live journey",
+"name": "nav_Live journey"
+},
+{
+"wait": 4500
+},
+{
+"snap": "p_live"
+},
+{
+"js": "location.href + ' | ' + document.body.innerText.slice(0,300).replace(/\\n/g,' / ')"
+},
+{
+"click": "a, button, nav *",
+"text": "Voice bots",
+"name": "nav_Voice bots"
+},
+{
+"wait": 4500
+},
+{
+"snap": "p_voice"
+},
+{
+"js": "location.href + ' | ' + document.body.innerText.slice(0,300).replace(/\\n/g,' / ')"
+},
+{
+"click": "a, button, nav *",
+"text": "WhatsApp console",
+"name": "nav_WhatsApp console"
+},
+{
+"wait": 4500
+},
+{
+"snap": "p_whatsapp"
+},
+{
+"js": "location.href + ' | ' + document.body.innerText.slice(0,300).replace(/\\n/g,' / ')"
+}
+]
+}

@@ -8,3 +8,5 @@ tools/__pycache__/
 music/licensed/*.mp3
 # Voice auditions, not in the film
 audio/voice_samples/
+out/*.mp4
+out/*.mov

@@ -1,0 +1,2176 @@
+{
+"url": "http://127.0.0.1:8773/demo/journey/inbound",
+"width": 1440,
+"height": 1150,
+"scale": 2.5,
+"steps": [
+{
+"wait": 1500
+},
+{
+"js": "(function(){var s=document.getElementById('script');return s?s.hidden:null})()"
+},
+{
+"rect": "#resetBtn",
+"name": "reset_btn"
+},
+{
+"click": "#resetBtn",
+"name": "reset"
+},
+{
+"wait": 1800
+},
+{
+"snap": "empty"
+},
+{
+"rect": ".screen",
+"name": "empty_screen"
+},
+{
+"rect": ".sbar",
+"name": "empty_sbar"
+},
+{
+"js": "'CHAT['+\"empty\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "empty_phone"
+},
+{
+"rect": "#chat",
+"name": "empty_chat"
+},
+{
+"rect": ".card.trace",
+"name": "empty_trace"
+},
+{
+"rect": ".card.agent",
+"name": "empty_agent"
+},
+{
+"rect": "#queue",
+"name": "empty_queue"
+},
+{
+"rect": "#convo",
+"name": "empty_convo"
+},
+{
+"rect": "#audit",
+"name": "empty_audit"
+},
+{
+"rect": "#strip",
+"name": "empty_strip"
+},
+{
+"rect": "#tabs",
+"name": "empty_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "empty_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "empty_checks"
+},
+{
+"rect": "#chips",
+"name": "empty_chips"
+},
+{
+"rect": ".thead",
+"name": "empty_thead"
+},
+{
+"rect": ".headline",
+"name": "empty_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "empty_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "empty_tbody"
+},
+{
+"rect": "[data-tab=A]",
+"name": "tabA_btn"
+},
+{
+"click": "[data-tab=A]",
+"name": "tabA"
+},
+{
+"wait": 700
+},
+{
+"snap": "tabA"
+},
+{
+"rect": ".screen",
+"name": "tabA_screen"
+},
+{
+"rect": ".sbar",
+"name": "tabA_sbar"
+},
+{
+"js": "'CHAT['+\"tabA\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "tabA_phone"
+},
+{
+"rect": "#chat",
+"name": "tabA_chat"
+},
+{
+"rect": ".card.trace",
+"name": "tabA_trace"
+},
+{
+"rect": ".card.agent",
+"name": "tabA_agent"
+},
+{
+"rect": "#queue",
+"name": "tabA_queue"
+},
+{
+"rect": "#convo",
+"name": "tabA_convo"
+},
+{
+"rect": "#audit",
+"name": "tabA_audit"
+},
+{
+"rect": "#strip",
+"name": "tabA_strip"
+},
+{
+"rect": "#tabs",
+"name": "tabA_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "tabA_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "tabA_checks"
+},
+{
+"rect": "#chips",
+"name": "tabA_chips"
+},
+{
+"rect": ".thead",
+"name": "tabA_thead"
+},
+{
+"rect": ".headline",
+"name": "tabA_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "tabA_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "tabA_tbody"
+},
+{
+"rect": "[data-s=emi]",
+"name": "emi_btn"
+},
+{
+"click": "[data-s=emi]",
+"name": "emi"
+},
+{
+"wait": 2400
+},
+{
+"snap": "emi"
+},
+{
+"rect": ".screen",
+"name": "emi_screen"
+},
+{
+"rect": ".sbar",
+"name": "emi_sbar"
+},
+{
+"js": "'CHAT['+\"emi\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "emi_phone"
+},
+{
+"rect": "#chat",
+"name": "emi_chat"
+},
+{
+"rect": ".card.trace",
+"name": "emi_trace"
+},
+{
+"rect": ".card.agent",
+"name": "emi_agent"
+},
+{
+"rect": "#queue",
+"name": "emi_queue"
+},
+{
+"rect": "#convo",
+"name": "emi_convo"
+},
+{
+"rect": "#audit",
+"name": "emi_audit"
+},
+{
+"rect": "#strip",
+"name": "emi_strip"
+},
+{
+"rect": "#tabs",
+"name": "emi_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "emi_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "emi_checks"
+},
+{
+"rect": "#chips",
+"name": "emi_chips"
+},
+{
+"rect": ".thead",
+"name": "emi_thead"
+},
+{
+"rect": ".headline",
+"name": "emi_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "emi_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "emi_tbody"
+},
+{
+"rect": "[data-s=otp]",
+"name": "otp_btn"
+},
+{
+"click": "[data-s=otp]",
+"name": "otp"
+},
+{
+"wait": 2400
+},
+{
+"snap": "otp"
+},
+{
+"rect": ".screen",
+"name": "otp_screen"
+},
+{
+"rect": ".sbar",
+"name": "otp_sbar"
+},
+{
+"js": "'CHAT['+\"otp\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "otp_phone"
+},
+{
+"rect": "#chat",
+"name": "otp_chat"
+},
+{
+"rect": ".card.trace",
+"name": "otp_trace"
+},
+{
+"rect": ".card.agent",
+"name": "otp_agent"
+},
+{
+"rect": "#queue",
+"name": "otp_queue"
+},
+{
+"rect": "#convo",
+"name": "otp_convo"
+},
+{
+"rect": "#audit",
+"name": "otp_audit"
+},
+{
+"rect": "#strip",
+"name": "otp_strip"
+},
+{
+"rect": "#tabs",
+"name": "otp_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "otp_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "otp_checks"
+},
+{
+"rect": "#chips",
+"name": "otp_chips"
+},
+{
+"rect": ".thead",
+"name": "otp_thead"
+},
+{
+"rect": ".headline",
+"name": "otp_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "otp_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "otp_tbody"
+},
+{
+"rect": "[data-s=paylink]",
+"name": "paylink_btn"
+},
+{
+"click": "[data-s=paylink]",
+"name": "paylink"
+},
+{
+"wait": 2400
+},
+{
+"snap": "paylink"
+},
+{
+"rect": ".screen",
+"name": "paylink_screen"
+},
+{
+"rect": ".sbar",
+"name": "paylink_sbar"
+},
+{
+"js": "'CHAT['+\"paylink\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "paylink_phone"
+},
+{
+"rect": "#chat",
+"name": "paylink_chat"
+},
+{
+"rect": ".card.trace",
+"name": "paylink_trace"
+},
+{
+"rect": ".card.agent",
+"name": "paylink_agent"
+},
+{
+"rect": "#queue",
+"name": "paylink_queue"
+},
+{
+"rect": "#convo",
+"name": "paylink_convo"
+},
+{
+"rect": "#audit",
+"name": "paylink_audit"
+},
+{
+"rect": "#strip",
+"name": "paylink_strip"
+},
+{
+"rect": "#tabs",
+"name": "paylink_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "paylink_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "paylink_checks"
+},
+{
+"rect": "#chips",
+"name": "paylink_chips"
+},
+{
+"rect": ".thead",
+"name": "paylink_thead"
+},
+{
+"rect": ".headline",
+"name": "paylink_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "paylink_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "paylink_tbody"
+},
+{
+"click": "#techBtn",
+"name": "tech_on1"
+},
+{
+"wait": 800
+},
+{
+"snap": "paylink_tech"
+},
+{
+"rect": ".screen",
+"name": "paylink_tech_screen"
+},
+{
+"rect": ".sbar",
+"name": "paylink_tech_sbar"
+},
+{
+"js": "'CHAT['+\"paylink_tech\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "paylink_tech_phone"
+},
+{
+"rect": "#chat",
+"name": "paylink_tech_chat"
+},
+{
+"rect": ".card.trace",
+"name": "paylink_tech_trace"
+},
+{
+"rect": ".card.agent",
+"name": "paylink_tech_agent"
+},
+{
+"rect": "#queue",
+"name": "paylink_tech_queue"
+},
+{
+"rect": "#convo",
+"name": "paylink_tech_convo"
+},
+{
+"rect": "#audit",
+"name": "paylink_tech_audit"
+},
+{
+"rect": "#strip",
+"name": "paylink_tech_strip"
+},
+{
+"rect": "#tabs",
+"name": "paylink_tech_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "paylink_tech_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "paylink_tech_checks"
+},
+{
+"rect": "#chips",
+"name": "paylink_tech_chips"
+},
+{
+"rect": ".thead",
+"name": "paylink_tech_thead"
+},
+{
+"rect": ".headline",
+"name": "paylink_tech_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "paylink_tech_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "paylink_tech_tbody"
+},
+{
+"click": "#plainBtn",
+"name": "tech_off1"
+},
+{
+"wait": 600
+},
+{
+"rect": "#claimChip",
+"name": "claimmenu_btn"
+},
+{
+"click": "#claimChip",
+"name": "claimmenu"
+},
+{
+"wait": 900
+},
+{
+"snap": "claimmenu"
+},
+{
+"rect": ".screen",
+"name": "claimmenu_screen"
+},
+{
+"rect": ".sbar",
+"name": "claimmenu_sbar"
+},
+{
+"js": "'CHAT['+\"claimmenu\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "claimmenu_phone"
+},
+{
+"rect": "#chat",
+"name": "claimmenu_chat"
+},
+{
+"rect": ".card.trace",
+"name": "claimmenu_trace"
+},
+{
+"rect": ".card.agent",
+"name": "claimmenu_agent"
+},
+{
+"rect": "#queue",
+"name": "claimmenu_queue"
+},
+{
+"rect": "#convo",
+"name": "claimmenu_convo"
+},
+{
+"rect": "#audit",
+"name": "claimmenu_audit"
+},
+{
+"rect": "#strip",
+"name": "claimmenu_strip"
+},
+{
+"rect": "#tabs",
+"name": "claimmenu_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "claimmenu_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "claimmenu_checks"
+},
+{
+"rect": "#chips",
+"name": "claimmenu_chips"
+},
+{
+"rect": ".thead",
+"name": "claimmenu_thead"
+},
+{
+"rect": ".headline",
+"name": "claimmenu_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "claimmenu_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "claimmenu_tbody"
+},
+{
+"rect": "[data-claim=claim_fake_screenshot]",
+"name": "fake_btn"
+},
+{
+"click": "[data-claim=claim_fake_screenshot]",
+"name": "fake"
+},
+{
+"wait": 2800
+},
+{
+"snap": "fake"
+},
+{
+"rect": ".screen",
+"name": "fake_screen"
+},
+{
+"rect": ".sbar",
+"name": "fake_sbar"
+},
+{
+"js": "'CHAT['+\"fake\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "fake_phone"
+},
+{
+"rect": "#chat",
+"name": "fake_chat"
+},
+{
+"rect": ".card.trace",
+"name": "fake_trace"
+},
+{
+"rect": ".card.agent",
+"name": "fake_agent"
+},
+{
+"rect": "#queue",
+"name": "fake_queue"
+},
+{
+"rect": "#convo",
+"name": "fake_convo"
+},
+{
+"rect": "#audit",
+"name": "fake_audit"
+},
+{
+"rect": "#strip",
+"name": "fake_strip"
+},
+{
+"rect": "#tabs",
+"name": "fake_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "fake_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "fake_checks"
+},
+{
+"rect": "#chips",
+"name": "fake_chips"
+},
+{
+"rect": ".thead",
+"name": "fake_thead"
+},
+{
+"rect": ".headline",
+"name": "fake_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "fake_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "fake_tbody"
+},
+{
+"click": "#techBtn",
+"name": "tech_on2"
+},
+{
+"wait": 800
+},
+{
+"snap": "fake_tech"
+},
+{
+"rect": ".screen",
+"name": "fake_tech_screen"
+},
+{
+"rect": ".sbar",
+"name": "fake_tech_sbar"
+},
+{
+"js": "'CHAT['+\"fake_tech\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "fake_tech_phone"
+},
+{
+"rect": "#chat",
+"name": "fake_tech_chat"
+},
+{
+"rect": ".card.trace",
+"name": "fake_tech_trace"
+},
+{
+"rect": ".card.agent",
+"name": "fake_tech_agent"
+},
+{
+"rect": "#queue",
+"name": "fake_tech_queue"
+},
+{
+"rect": "#convo",
+"name": "fake_tech_convo"
+},
+{
+"rect": "#audit",
+"name": "fake_tech_audit"
+},
+{
+"rect": "#strip",
+"name": "fake_tech_strip"
+},
+{
+"rect": "#tabs",
+"name": "fake_tech_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "fake_tech_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "fake_tech_checks"
+},
+{
+"rect": "#chips",
+"name": "fake_tech_chips"
+},
+{
+"rect": ".thead",
+"name": "fake_tech_thead"
+},
+{
+"rect": ".headline",
+"name": "fake_tech_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "fake_tech_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "fake_tech_tbody"
+},
+{
+"click": "#plainBtn",
+"name": "tech_off2"
+},
+{
+"wait": 600
+},
+{
+"rect": "[data-act=takeover]",
+"name": "takeover_btn"
+},
+{
+"click": "[data-act=takeover]",
+"name": "takeover"
+},
+{
+"wait": 2200
+},
+{
+"snap": "takeover"
+},
+{
+"rect": ".screen",
+"name": "takeover_screen"
+},
+{
+"rect": ".sbar",
+"name": "takeover_sbar"
+},
+{
+"js": "'CHAT['+\"takeover\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "takeover_phone"
+},
+{
+"rect": "#chat",
+"name": "takeover_chat"
+},
+{
+"rect": ".card.trace",
+"name": "takeover_trace"
+},
+{
+"rect": ".card.agent",
+"name": "takeover_agent"
+},
+{
+"rect": "#queue",
+"name": "takeover_queue"
+},
+{
+"rect": "#convo",
+"name": "takeover_convo"
+},
+{
+"rect": "#audit",
+"name": "takeover_audit"
+},
+{
+"rect": "#strip",
+"name": "takeover_strip"
+},
+{
+"rect": "#tabs",
+"name": "takeover_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "takeover_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "takeover_checks"
+},
+{
+"rect": "#chips",
+"name": "takeover_chips"
+},
+{
+"rect": ".thead",
+"name": "takeover_thead"
+},
+{
+"rect": ".headline",
+"name": "takeover_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "takeover_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "takeover_tbody"
+},
+{
+"rect": "[data-act=claim][data-decision=reject]",
+"name": "reject_btn"
+},
+{
+"click": "[data-act=claim][data-decision=reject]",
+"name": "reject"
+},
+{
+"wait": 2200
+},
+{
+"snap": "rejected"
+},
+{
+"rect": ".screen",
+"name": "rejected_screen"
+},
+{
+"rect": ".sbar",
+"name": "rejected_sbar"
+},
+{
+"js": "'CHAT['+\"rejected\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "rejected_phone"
+},
+{
+"rect": "#chat",
+"name": "rejected_chat"
+},
+{
+"rect": ".card.trace",
+"name": "rejected_trace"
+},
+{
+"rect": ".card.agent",
+"name": "rejected_agent"
+},
+{
+"rect": "#queue",
+"name": "rejected_queue"
+},
+{
+"rect": "#convo",
+"name": "rejected_convo"
+},
+{
+"rect": "#audit",
+"name": "rejected_audit"
+},
+{
+"rect": "#strip",
+"name": "rejected_strip"
+},
+{
+"rect": "#tabs",
+"name": "rejected_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "rejected_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "rejected_checks"
+},
+{
+"rect": "#chips",
+"name": "rejected_chips"
+},
+{
+"rect": ".thead",
+"name": "rejected_thead"
+},
+{
+"rect": ".headline",
+"name": "rejected_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "rejected_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "rejected_tbody"
+},
+{
+"rect": "[data-act=handback]",
+"name": "handback_btn"
+},
+{
+"click": "[data-act=handback]",
+"name": "handback"
+},
+{
+"wait": 2200
+},
+{
+"snap": "handback"
+},
+{
+"rect": ".screen",
+"name": "handback_screen"
+},
+{
+"rect": ".sbar",
+"name": "handback_sbar"
+},
+{
+"js": "'CHAT['+\"handback\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "handback_phone"
+},
+{
+"rect": "#chat",
+"name": "handback_chat"
+},
+{
+"rect": ".card.trace",
+"name": "handback_trace"
+},
+{
+"rect": ".card.agent",
+"name": "handback_agent"
+},
+{
+"rect": "#queue",
+"name": "handback_queue"
+},
+{
+"rect": "#convo",
+"name": "handback_convo"
+},
+{
+"rect": "#audit",
+"name": "handback_audit"
+},
+{
+"rect": "#strip",
+"name": "handback_strip"
+},
+{
+"rect": "#tabs",
+"name": "handback_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "handback_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "handback_checks"
+},
+{
+"rect": "#chips",
+"name": "handback_chips"
+},
+{
+"rect": ".thead",
+"name": "handback_thead"
+},
+{
+"rect": ".headline",
+"name": "handback_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "handback_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "handback_tbody"
+},
+{
+"rect": "[data-s=injection]",
+"name": "inject_btn"
+},
+{
+"click": "[data-s=injection]",
+"name": "inject"
+},
+{
+"wait": 2400
+},
+{
+"snap": "injection"
+},
+{
+"rect": ".screen",
+"name": "injection_screen"
+},
+{
+"rect": ".sbar",
+"name": "injection_sbar"
+},
+{
+"js": "'CHAT['+\"injection\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "injection_phone"
+},
+{
+"rect": "#chat",
+"name": "injection_chat"
+},
+{
+"rect": ".card.trace",
+"name": "injection_trace"
+},
+{
+"rect": ".card.agent",
+"name": "injection_agent"
+},
+{
+"rect": "#queue",
+"name": "injection_queue"
+},
+{
+"rect": "#convo",
+"name": "injection_convo"
+},
+{
+"rect": "#audit",
+"name": "injection_audit"
+},
+{
+"rect": "#strip",
+"name": "injection_strip"
+},
+{
+"rect": "#tabs",
+"name": "injection_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "injection_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "injection_checks"
+},
+{
+"rect": "#chips",
+"name": "injection_chips"
+},
+{
+"rect": ".thead",
+"name": "injection_thead"
+},
+{
+"rect": ".headline",
+"name": "injection_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "injection_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "injection_tbody"
+},
+{
+"click": "#techBtn",
+"name": "tech_on3"
+},
+{
+"wait": 800
+},
+{
+"snap": "injection_tech"
+},
+{
+"rect": ".screen",
+"name": "injection_tech_screen"
+},
+{
+"rect": ".sbar",
+"name": "injection_tech_sbar"
+},
+{
+"js": "'CHAT['+\"injection_tech\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "injection_tech_phone"
+},
+{
+"rect": "#chat",
+"name": "injection_tech_chat"
+},
+{
+"rect": ".card.trace",
+"name": "injection_tech_trace"
+},
+{
+"rect": ".card.agent",
+"name": "injection_tech_agent"
+},
+{
+"rect": "#queue",
+"name": "injection_tech_queue"
+},
+{
+"rect": "#convo",
+"name": "injection_tech_convo"
+},
+{
+"rect": "#audit",
+"name": "injection_tech_audit"
+},
+{
+"rect": "#strip",
+"name": "injection_tech_strip"
+},
+{
+"rect": "#tabs",
+"name": "injection_tech_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "injection_tech_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "injection_tech_checks"
+},
+{
+"rect": "#chips",
+"name": "injection_tech_chips"
+},
+{
+"rect": ".thead",
+"name": "injection_tech_thead"
+},
+{
+"rect": ".headline",
+"name": "injection_tech_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "injection_tech_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "injection_tech_tbody"
+},
+{
+"click": "#plainBtn",
+"name": "tech_off3"
+},
+{
+"wait": 600
+},
+{
+"rect": "[data-tab=B]",
+"name": "tabB_btn"
+},
+{
+"click": "[data-tab=B]",
+"name": "tabB"
+},
+{
+"wait": 900
+},
+{
+"snap": "tabB"
+},
+{
+"rect": ".screen",
+"name": "tabB_screen"
+},
+{
+"rect": ".sbar",
+"name": "tabB_sbar"
+},
+{
+"js": "'CHAT['+\"tabB\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "tabB_phone"
+},
+{
+"rect": "#chat",
+"name": "tabB_chat"
+},
+{
+"rect": ".card.trace",
+"name": "tabB_trace"
+},
+{
+"rect": ".card.agent",
+"name": "tabB_agent"
+},
+{
+"rect": "#queue",
+"name": "tabB_queue"
+},
+{
+"rect": "#convo",
+"name": "tabB_convo"
+},
+{
+"rect": "#audit",
+"name": "tabB_audit"
+},
+{
+"rect": "#strip",
+"name": "tabB_strip"
+},
+{
+"rect": "#tabs",
+"name": "tabB_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "tabB_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "tabB_checks"
+},
+{
+"rect": "#chips",
+"name": "tabB_chips"
+},
+{
+"rect": ".thead",
+"name": "tabB_thead"
+},
+{
+"rect": ".headline",
+"name": "tabB_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "tabB_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "tabB_tbody"
+},
+{
+"rect": "[data-s=hardship]",
+"name": "hardship_btn"
+},
+{
+"click": "[data-s=hardship]",
+"name": "hardship"
+},
+{
+"wait": 2600
+},
+{
+"snap": "hardship"
+},
+{
+"rect": ".screen",
+"name": "hardship_screen"
+},
+{
+"rect": ".sbar",
+"name": "hardship_sbar"
+},
+{
+"js": "'CHAT['+\"hardship\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "hardship_phone"
+},
+{
+"rect": "#chat",
+"name": "hardship_chat"
+},
+{
+"rect": ".card.trace",
+"name": "hardship_trace"
+},
+{
+"rect": ".card.agent",
+"name": "hardship_agent"
+},
+{
+"rect": "#queue",
+"name": "hardship_queue"
+},
+{
+"rect": "#convo",
+"name": "hardship_convo"
+},
+{
+"rect": "#audit",
+"name": "hardship_audit"
+},
+{
+"rect": "#strip",
+"name": "hardship_strip"
+},
+{
+"rect": "#tabs",
+"name": "hardship_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "hardship_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "hardship_checks"
+},
+{
+"rect": "#chips",
+"name": "hardship_chips"
+},
+{
+"rect": ".thead",
+"name": "hardship_thead"
+},
+{
+"rect": ".headline",
+"name": "hardship_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "hardship_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "hardship_tbody"
+},
+{
+"rect": "[data-act=takeover]",
+"name": "takeoverB_btn"
+},
+{
+"click": "[data-act=takeover]",
+"name": "takeoverB"
+},
+{
+"wait": 2200
+},
+{
+"snap": "takeoverB"
+},
+{
+"rect": ".screen",
+"name": "takeoverB_screen"
+},
+{
+"rect": ".sbar",
+"name": "takeoverB_sbar"
+},
+{
+"js": "'CHAT['+\"takeoverB\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "takeoverB_phone"
+},
+{
+"rect": "#chat",
+"name": "takeoverB_chat"
+},
+{
+"rect": ".card.trace",
+"name": "takeoverB_trace"
+},
+{
+"rect": ".card.agent",
+"name": "takeoverB_agent"
+},
+{
+"rect": "#queue",
+"name": "takeoverB_queue"
+},
+{
+"rect": "#convo",
+"name": "takeoverB_convo"
+},
+{
+"rect": "#audit",
+"name": "takeoverB_audit"
+},
+{
+"rect": "#strip",
+"name": "takeoverB_strip"
+},
+{
+"rect": "#tabs",
+"name": "takeoverB_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "takeoverB_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "takeoverB_checks"
+},
+{
+"rect": "#chips",
+"name": "takeoverB_chips"
+},
+{
+"rect": ".thead",
+"name": "takeoverB_thead"
+},
+{
+"rect": ".headline",
+"name": "takeoverB_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "takeoverB_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "takeoverB_tbody"
+},
+{
+"rect": "#sugBtn",
+"name": "suggest_btn"
+},
+{
+"click": "#sugBtn",
+"name": "suggest"
+},
+{
+"wait": 900
+},
+{
+"snap": "suggested"
+},
+{
+"rect": ".screen",
+"name": "suggested_screen"
+},
+{
+"rect": ".sbar",
+"name": "suggested_sbar"
+},
+{
+"js": "'CHAT['+\"suggested\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "suggested_phone"
+},
+{
+"rect": "#chat",
+"name": "suggested_chat"
+},
+{
+"rect": ".card.trace",
+"name": "suggested_trace"
+},
+{
+"rect": ".card.agent",
+"name": "suggested_agent"
+},
+{
+"rect": "#queue",
+"name": "suggested_queue"
+},
+{
+"rect": "#convo",
+"name": "suggested_convo"
+},
+{
+"rect": "#audit",
+"name": "suggested_audit"
+},
+{
+"rect": "#strip",
+"name": "suggested_strip"
+},
+{
+"rect": "#tabs",
+"name": "suggested_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "suggested_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "suggested_checks"
+},
+{
+"rect": "#chips",
+"name": "suggested_chips"
+},
+{
+"rect": ".thead",
+"name": "suggested_thead"
+},
+{
+"rect": ".headline",
+"name": "suggested_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "suggested_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "suggested_tbody"
+},
+{
+"rect": "#agentForm button[type=submit]",
+"name": "sendB_btn"
+},
+{
+"click": "#agentForm button[type=submit]",
+"name": "sendB"
+},
+{
+"wait": 2400
+},
+{
+"snap": "agentsent"
+},
+{
+"rect": ".screen",
+"name": "agentsent_screen"
+},
+{
+"rect": ".sbar",
+"name": "agentsent_sbar"
+},
+{
+"js": "'CHAT['+\"agentsent\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "agentsent_phone"
+},
+{
+"rect": "#chat",
+"name": "agentsent_chat"
+},
+{
+"rect": ".card.trace",
+"name": "agentsent_trace"
+},
+{
+"rect": ".card.agent",
+"name": "agentsent_agent"
+},
+{
+"rect": "#queue",
+"name": "agentsent_queue"
+},
+{
+"rect": "#convo",
+"name": "agentsent_convo"
+},
+{
+"rect": "#audit",
+"name": "agentsent_audit"
+},
+{
+"rect": "#strip",
+"name": "agentsent_strip"
+},
+{
+"rect": "#tabs",
+"name": "agentsent_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "agentsent_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "agentsent_checks"
+},
+{
+"rect": "#chips",
+"name": "agentsent_chips"
+},
+{
+"rect": ".thead",
+"name": "agentsent_thead"
+},
+{
+"rect": ".headline",
+"name": "agentsent_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "agentsent_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "agentsent_tbody"
+},
+{
+"rect": "[data-act=hold]",
+"name": "hold_btn"
+},
+{
+"click": "[data-act=hold]",
+"name": "hold"
+},
+{
+"wait": 2200
+},
+{
+"snap": "held"
+},
+{
+"rect": ".screen",
+"name": "held_screen"
+},
+{
+"rect": ".sbar",
+"name": "held_sbar"
+},
+{
+"js": "'CHAT['+\"held\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "held_phone"
+},
+{
+"rect": "#chat",
+"name": "held_chat"
+},
+{
+"rect": ".card.trace",
+"name": "held_trace"
+},
+{
+"rect": ".card.agent",
+"name": "held_agent"
+},
+{
+"rect": "#queue",
+"name": "held_queue"
+},
+{
+"rect": "#convo",
+"name": "held_convo"
+},
+{
+"rect": "#audit",
+"name": "held_audit"
+},
+{
+"rect": "#strip",
+"name": "held_strip"
+},
+{
+"rect": "#tabs",
+"name": "held_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "held_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "held_checks"
+},
+{
+"rect": "#chips",
+"name": "held_chips"
+},
+{
+"rect": ".thead",
+"name": "held_thead"
+},
+{
+"rect": ".headline",
+"name": "held_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "held_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "held_tbody"
+},
+{
+"rect": "[data-act=handback]",
+"name": "handbackB_btn"
+},
+{
+"click": "[data-act=handback]",
+"name": "handbackB"
+},
+{
+"wait": 2200
+},
+{
+"snap": "handbackB"
+},
+{
+"rect": ".screen",
+"name": "handbackB_screen"
+},
+{
+"rect": ".sbar",
+"name": "handbackB_sbar"
+},
+{
+"js": "'CHAT['+\"handbackB\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "handbackB_phone"
+},
+{
+"rect": "#chat",
+"name": "handbackB_chat"
+},
+{
+"rect": ".card.trace",
+"name": "handbackB_trace"
+},
+{
+"rect": ".card.agent",
+"name": "handbackB_agent"
+},
+{
+"rect": "#queue",
+"name": "handbackB_queue"
+},
+{
+"rect": "#convo",
+"name": "handbackB_convo"
+},
+{
+"rect": "#audit",
+"name": "handbackB_audit"
+},
+{
+"rect": "#strip",
+"name": "handbackB_strip"
+},
+{
+"rect": "#tabs",
+"name": "handbackB_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "handbackB_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "handbackB_checks"
+},
+{
+"rect": "#chips",
+"name": "handbackB_chips"
+},
+{
+"rect": ".thead",
+"name": "handbackB_thead"
+},
+{
+"rect": ".headline",
+"name": "handbackB_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "handbackB_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "handbackB_tbody"
+},
+{
+"rect": "[data-tab=A]",
+"name": "tabA2_btn"
+},
+{
+"click": "[data-tab=A]",
+"name": "tabA2"
+},
+{
+"wait": 900
+},
+{
+"snap": "tabA2"
+},
+{
+"rect": ".screen",
+"name": "tabA2_screen"
+},
+{
+"rect": ".sbar",
+"name": "tabA2_sbar"
+},
+{
+"js": "'CHAT['+\"tabA2\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "tabA2_phone"
+},
+{
+"rect": "#chat",
+"name": "tabA2_chat"
+},
+{
+"rect": ".card.trace",
+"name": "tabA2_trace"
+},
+{
+"rect": ".card.agent",
+"name": "tabA2_agent"
+},
+{
+"rect": "#queue",
+"name": "tabA2_queue"
+},
+{
+"rect": "#convo",
+"name": "tabA2_convo"
+},
+{
+"rect": "#audit",
+"name": "tabA2_audit"
+},
+{
+"rect": "#strip",
+"name": "tabA2_strip"
+},
+{
+"rect": "#tabs",
+"name": "tabA2_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "tabA2_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "tabA2_checks"
+},
+{
+"rect": "#chips",
+"name": "tabA2_chips"
+},
+{
+"rect": ".thead",
+"name": "tabA2_thead"
+},
+{
+"rect": ".headline",
+"name": "tabA2_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "tabA2_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "tabA2_tbody"
+},
+{
+"rect": "[data-s=stop]",
+"name": "stop_btn"
+},
+{
+"click": "[data-s=stop]",
+"name": "stop"
+},
+{
+"wait": 2800
+},
+{
+"snap": "stop"
+},
+{
+"rect": ".screen",
+"name": "stop_screen"
+},
+{
+"rect": ".sbar",
+"name": "stop_sbar"
+},
+{
+"js": "'CHAT['+\"stop\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "stop_phone"
+},
+{
+"rect": "#chat",
+"name": "stop_chat"
+},
+{
+"rect": ".card.trace",
+"name": "stop_trace"
+},
+{
+"rect": ".card.agent",
+"name": "stop_agent"
+},
+{
+"rect": "#queue",
+"name": "stop_queue"
+},
+{
+"rect": "#convo",
+"name": "stop_convo"
+},
+{
+"rect": "#audit",
+"name": "stop_audit"
+},
+{
+"rect": "#strip",
+"name": "stop_strip"
+},
+{
+"rect": "#tabs",
+"name": "stop_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "stop_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "stop_checks"
+},
+{
+"rect": "#chips",
+"name": "stop_chips"
+},
+{
+"rect": ".thead",
+"name": "stop_thead"
+},
+{
+"rect": ".headline",
+"name": "stop_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "stop_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "stop_tbody"
+},
+{
+"click": "#techBtn",
+"name": "tech_on4"
+},
+{
+"wait": 900
+},
+{
+"snap": "stop_tech"
+},
+{
+"rect": ".screen",
+"name": "stop_tech_screen"
+},
+{
+"rect": ".sbar",
+"name": "stop_tech_sbar"
+},
+{
+"js": "'CHAT['+\"stop_tech\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+},
+{
+"rect": ".phone",
+"name": "stop_tech_phone"
+},
+{
+"rect": "#chat",
+"name": "stop_tech_chat"
+},
+{
+"rect": ".card.trace",
+"name": "stop_tech_trace"
+},
+{
+"rect": ".card.agent",
+"name": "stop_tech_agent"
+},
+{
+"rect": "#queue",
+"name": "stop_tech_queue"
+},
+{
+"rect": "#convo",
+"name": "stop_tech_convo"
+},
+{
+"rect": "#audit",
+"name": "stop_tech_audit"
+},
+{
+"rect": "#strip",
+"name": "stop_tech_strip"
+},
+{
+"rect": "#tabs",
+"name": "stop_tech_tabs"
+},
+{
+"rect": "#chat > *:last-child",
+"name": "stop_tech_lastmsg"
+},
+{
+"rect": ".checks",
+"name": "stop_tech_checks"
+},
+{
+"rect": "#chips",
+"name": "stop_tech_chips"
+},
+{
+"rect": ".thead",
+"name": "stop_tech_thead"
+},
+{
+"rect": ".headline",
+"name": "stop_tech_headline"
+},
+{
+"rect": "#tbody > *:first-child",
+"name": "stop_tech_tfirst"
+},
+{
+"rect": "#tbody",
+"name": "stop_tech_tbody"
+},
+{
+"click": "#plainBtn",
+"name": "tech_off4"
+},
+{
+"wait": 600
+},
+{
+"snap": "final"
+},
+{
+"rect": ".screen",
+"name": "final_screen"
+},
+{
+"rect": ".sbar",
+"name": "final_sbar"
+},
+{
+"js": "'CHAT['+\"final\"+']: '+document.getElementById('chat').innerText.replace(/\\n/g,' \u23ce ')"
+}
+]
+}

@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H3_2_phone_notification_desk.mp4",
+ "in": 3.0,
+ "dur": 1.9,
+ "mode": "none",
+ "out": "comp/P03_phone_lights.mov",
+ "fps": 30
+}

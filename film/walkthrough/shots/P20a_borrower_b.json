@@ -1,0 +1,35 @@
+{
+ "expand": 0.12,
+ "up": [
+  1,
+  -0.55
+ ],
+ "clip": "../assets/human/H8_5_woman_hands_34_green.mp4",
+ "in": 1.2,
+ "dur": 3.6,
+ "mode": "green",
+ "ui": [
+  {
+   "img": "captures/inbound_tall/f00015.jpg",
+   "crop": [
+    70,
+    457,
+    855,
+    1425
+   ],
+   "t": 0
+  },
+  {
+   "img": "captures/inbound_tall/f00016.jpg",
+   "crop": [
+    70,
+    457,
+    855,
+    1425
+   ],
+   "t": 0.6
+  }
+ ],
+ "out": "comp/P20a_borrower_b.mov",
+ "fps": 30
+}

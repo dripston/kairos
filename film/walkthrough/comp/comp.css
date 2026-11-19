@@ -110,3 +110,11 @@ body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: anti
 .callout.dark .h { color: #F1F5F9; }
 .callout.dark .h em { color: #5EEAD4; font-style: normal; }
 .callout.dark .k { color: #5EEAD4; }
+
+/* ---------- v3: cards and closed captions ---------- */
+.card { position: absolute; border-radius: 22px; background-repeat: no-repeat; background-color: #fff;
+  box-shadow: 0 40px 90px -30px rgba(70, 48, 16, .35), 0 12px 30px -14px rgba(70, 48, 16, .22), 0 0 0 1px rgba(70, 48, 16, .08); }
+.cc { position: absolute; left: 50%; bottom: 48px; transform: translateX(-50%); max-width: 1600px; padding: 14px 30px 16px; border-radius: 18px;
+  background: rgba(17, 17, 17, .74); color: #fff; font: 600 46px/1.22 var(--sans); letter-spacing: -.005em; text-align: center; white-space: nowrap; opacity: 0; }
+.cc b { color: #8CE3D6; font-weight: 700; }
+.vid .shade { background: linear-gradient(180deg, rgba(0,0,0,0) 62%, rgba(0,0,0,.38)); }
