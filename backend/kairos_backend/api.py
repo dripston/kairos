@@ -276,7 +276,7 @@ def campaign_status(campaign_id: str, body: CampaignStatusIn):
 
 @app.put("/borrowers/{borrower_id}/lender")
 def set_lender(borrower_id: str, body: LenderIn):
-    ledger.set_lender(borrower_id, body.lender_id)
+    _call(ledger.set_lender, borrower_id, body.lender_id)
     return {"ok": True}
 
 
@@ -338,7 +338,7 @@ def ev_response(e: BorrowerEventIn):
 
 @app.post("/events/call")
 def ev_call(e: CallIn):
-    return {"canceled": ledger.record_call(e.borrower_id, e.at, e.answered_seconds, e.channel)}
+    return {"canceled": _call(ledger.record_call, e.borrower_id, e.at, e.answered_seconds, e.channel)}
 
 
 @app.post("/events/stop")
@@ -384,5 +384,5 @@ def control_outbound(body: PauseIn):
 
 @app.post("/control/supervisor-clear/{borrower_id}")
 def supervisor_clear(borrower_id: str):
-    ledger.clear_supervisor_hold(borrower_id)
+    _call(ledger.clear_supervisor_hold, borrower_id)
     return {"ok": True}

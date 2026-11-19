@@ -218,6 +218,11 @@ class Ledger:
              decision.rule if decision else None, self.policy.version, json.dumps(detail, default=str)),
         )
 
+    def _require_borrower(self, c, borrower_id: str) -> None:
+        """Borrower-scoped writes need a borrower in the K03 spine: KeyError (404) and nothing written (RT-F02)."""
+        if c.execute("SELECT 1 FROM borrowers WHERE borrower_id=?", (borrower_id,)).fetchone() is None:
+            raise KeyError(f"unknown borrower {borrower_id}")
+
     def _state(self, c, borrower_id: str) -> dict:
         r = c.execute("SELECT * FROM borrower_state WHERE borrower_id=?", (borrower_id,)).fetchone()
         return dict(r) if r else {"lender_id": None, "stopped": 0, "hardship_until": None, "hardship_supervisor": 0,
@@ -343,6 +348,7 @@ class Ledger:
 
     def set_lender(self, borrower_id: str, lender_id: Optional[str]) -> None:
         with self.tx() as c:
+            self._require_borrower(c, borrower_id)
             self._set_state(c, borrower_id, lender_id=lender_id)
 
     def upsert_template(self, id: str, channel: str, lang: str, approved: bool = True) -> None:
@@ -478,6 +484,7 @@ class Ledger:
         """Approval-time check (no reservation)."""
         check_paise(ins.est_cost_paise, "est_cost_paise")
         with self.tx() as c:  # write tx because pacing rows may be initialised
+            self._require_borrower(c, ins.borrower_id)
             pre = self._pre_gate(c, ins)
             if pre:
                 return pre
@@ -494,6 +501,7 @@ class Ledger:
             ins.instruction_id = stable_instruction_id(ins.borrower_id, ins.obligation_id, ins.channel,
                                                        self._loc(ins.at), ins.version)
         with self.tx() as c:
+            self._require_borrower(c, ins.borrower_id)
             prior = c.execute("SELECT * FROM touches WHERE instruction_id=?", (ins.instruction_id,)).fetchone()
             if prior is not None:
                 ok = prior["status"] in LIVE
@@ -654,6 +662,7 @@ class Ledger:
         """Any reply or borrower-behaviour disposition on any channel -> stop for the day (K01 §5).
         Also written to the K03 spine as 'reply_received' against the EMI it relates to."""
         with self.tx() as c:
+            self._require_borrower(c, borrower_id)
             n = self._stop_for_day(c, borrower_id, at, "BORROWER_RESPONSE")
             ob = self._event_obligation(c, borrower_id, channel)
             if ob:
@@ -665,6 +674,7 @@ class Ledger:
 
     def record_call(self, borrower_id: str, at: datetime, answered_seconds: float, channel: str = "ivr") -> int:
         with self.tx() as c:
+            self._require_borrower(c, borrower_id)
             n = 0
             if answered_seconds > self.policy.call_pickup_threshold_s:
                 n = self._stop_for_day(c, borrower_id, at, "CALL_PICKUP")
@@ -676,6 +686,7 @@ class Ledger:
         """STOP on any channel suppresses ALL channels and cancels every queued send (K01 holds.STOP_OPT_OUT).
         The K03 consents table is updated too, so every reader of the spine sees the opt-out."""
         with self.tx() as c:
+            self._require_borrower(c, borrower_id)
             self._set_state(c, borrower_id, stopped=1)
             c.execute("UPDATE consents SET opted_out=1, updated_at=? WHERE borrower_id=?", (self._iso(at), borrower_id))
             record_event(c, f"EV-STOP-{borrower_id}-{self._iso(at)}", borrower_id, "consent_changed", self._iso(at),
@@ -687,6 +698,7 @@ class Ledger:
     def opt_in(self, borrower_id: str, channel: str, consent_version: str, at: datetime) -> None:
         """Re-entry is per channel with the consent version recorded; other channels stay opted out."""
         with self.tx() as c:
+            self._require_borrower(c, borrower_id)
             c.execute("INSERT INTO consents (borrower_id, channel, consented, opted_out, updated_at, source)"
                       " VALUES (?,?,1,0,?,'provided') ON CONFLICT (borrower_id, channel) DO UPDATE SET consented=1,"
                       " opted_out=0, updated_at=excluded.updated_at, source='provided'", (borrower_id, channel, self._iso(at)))
@@ -800,6 +812,7 @@ class Ledger:
         out = handle(self.policy, event)
         at = self._loc(at)
         with self.tx() as c:
+            self._require_borrower(c, borrower_id)
             canceled, ticket = 0, None
             if out.hold == "STOP_FOR_DAY":
                 canceled = self._stop_for_day(c, borrower_id, at, "BORROWER_RESPONSE")
@@ -831,6 +844,7 @@ class Ledger:
 
     def clear_supervisor_hold(self, borrower_id: str, actor: str = "human:supervisor") -> None:
         with self.tx() as c:
+            self._require_borrower(c, borrower_id)
             self._set_state(c, borrower_id, supervisor_hold=0, hardship_supervisor=0)
             self._audit(c, actor, "SUPERVISOR_CLEARED", borrower_id)
 

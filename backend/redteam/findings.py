@@ -22,11 +22,6 @@ class Finding:
 
 
 _F = [
-    Finding("RT-F02", "Unknown borrower ids are not rejected: 500 on some routes, 200 with writes on others",
-            "MEDIUM", "Rehan (K06)", "api.py events/*, /borrowers/{id}/lender, /control/supervisor-clear, /decide; "
-            "ledger._set_state / record_response / record_call / apply_exception",
-            "Add Ledger.require_borrower(id) (KeyError -> 404) at the top of every borrower-scoped mutator, and map "
-            "sqlite3.IntegrityError to 422 in api._call as a backstop. A STOP/opt-in for an unknown id must not 500."),
     Finding("RT-F07", "Instruction-id replay never compares the payload: a reused id for another borrower or an "
             "unknown campaign is answered SEND / reserved=true", "MEDIUM", "Rehan (K06)",
             "ledger.reserve (prior-row short-circuit)",

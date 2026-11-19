@@ -60,7 +60,7 @@ def bad_paise(ctx):
     return chk.result()
 
 
-@attack("RT-API-02", category="api", component="k06.api", finding="RT-F02", requires=("fastapi",),
+@attack("RT-API-02", category="api", component="k06.api", requires=("fastapi",),
         title="Unknown borrower id -> 4xx on every borrower-scoped route (no 500, no silent write)",
         covers=("K06:api",))
 def unknown_borrower(ctx):

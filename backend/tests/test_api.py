@@ -76,3 +76,27 @@ def test_unknown_channel_and_wrong_typed_gate_facts_are_422(client):
     for bad in ({"dpd": "12"}, {"sends_today_channel": "x"}, {"consent": "yes"}, {"channel": "telegram"},
                 {"at": "garbage"}, {"no_such_fact": 1}):
         assert c.post("/gate/evaluate", json={**gate, **bad}).status_code == 422, bad
+
+
+def test_unknown_borrower_is_404_on_every_borrower_scoped_write(client):
+    """RT-F02: an unknown borrower id is a 404 and writes nothing (no stop-for-day row, no ticket, no audit)."""
+    c, api = client
+    nb, t = "NO-SUCH-BORROWER", "2026-11-20T10:00:00"
+    ins = {"borrower_id": nb, "obligation_id": f"{nb}-A-1", "campaign_id": "C1", "channel": "sms",
+           "template_id": None, "at": t, "est_cost_paise": 20}
+    for method, url, body in [
+            ("POST", "/events/response", {"borrower_id": nb, "at": t, "channel": "sms"}),
+            ("POST", "/events/call", {"borrower_id": nb, "at": t, "answered_seconds": 30}),
+            ("POST", "/events/stop", {"borrower_id": nb, "at": t}),
+            ("POST", "/events/opt-in", {"borrower_id": nb, "channel": "sms", "consent_version": "v1", "at": t}),
+            ("POST", "/events/exception", {"borrower_id": nb, "at": t, "event": "DISPUTE", "band": "B1"}),
+            ("POST", "/events/exception", {"borrower_id": nb, "at": t, "event": "ABUSIVE", "band": "B1"}),
+            ("PUT", f"/borrowers/{nb}/lender", {"lender_id": "EXAMPLE"}),
+            ("POST", f"/control/supervisor-clear/{nb}", None),
+            ("POST", "/decide", ins),
+            ("POST", "/preview", ins)]:
+        r = c.request(method, url, json=body)
+        assert r.status_code == 404, (url, r.status_code, r.text)
+    db = api.ledger._conn()
+    for table in ("stop_for_day", "tickets", "borrower_state", "touches", "consents", "events", "audit"):
+        assert db.execute(f"SELECT COUNT(*) FROM {table} WHERE borrower_id=?", (nb,)).fetchone()[0] == 0, table
