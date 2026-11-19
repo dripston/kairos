@@ -1,6 +1,6 @@
 {
- "clip": "/var/folders/2k/27prs8v14p1_82pbz3qsdnzc0000gn/T//wt-film/film/assets/broll/shop_pay.mp4",
- "in": 3.6,
+ "clip": "../assets/human/H9_3_hand_scanning_qr_window.mp4",
+ "in": 0.2,
  "dur": 2.6,
  "mode": "none",
  "out": "comp/P14_upi.mov",

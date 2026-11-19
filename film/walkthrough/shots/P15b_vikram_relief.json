@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H7_6_delhi_man_smiling_laptop.mp4",
+ "in": 6.0,
+ "dur": 2.4,
+ "mode": "none",
+ "out": "comp/P15b_vikram_relief.mov",
+ "fps": 30
+}

@@ -300,89 +300,6 @@
 "snap": "held"
 },
 {
-"click": ".ap.me button",
-"text": "Approve",
-"name": "approve"
-},
-{
-"wait": 1200
-},
-{
-"snap": "approved"
-},
-{
-"rect": "#audit",
-"name": "ok_audit"
-},
-{
-"rect": "div:has(> #audit)",
-"name": "ok_auditcard"
-},
-{
-"rect": "button.stg",
-"text": "Auto-churn",
-"name": "ok_box_autochurn"
-},
-{
-"rect": "button.stg",
-"text": "Learner",
-"name": "ok_box_learner"
-},
-{
-"rect": "button.stg",
-"text": "Aladdin",
-"name": "ok_box_aladdin"
-},
-{
-"rect": "button.stg",
-"text": "Executor",
-"name": "ok_box_executor"
-},
-{
-"rect": "button.stg",
-"text": "Webhooks",
-"name": "ok_box_webhooks"
-},
-{
-"rect": "button.stg",
-"text": "Intent stack",
-"name": "ok_box_intent"
-},
-{
-"rect": "button.stg",
-"text": "Outcome",
-"name": "ok_box_outcome"
-},
-{
-"rect": "button.stg",
-"text": "Payment",
-"name": "ok_box_payment"
-},
-{
-"rect": "#detail",
-"name": "ok_detail"
-},
-{
-"rect": "#tl",
-"name": "ok_tl"
-},
-{
-"rect": "#banner",
-"name": "ok_banner"
-},
-{
-"rect": "#pipe",
-"name": "ok_pipe"
-},
-{
-"rect": "#appr",
-"name": "ok_appr"
-},
-{
-"rect": "#verdict",
-"name": "ok_verdict"
-},
-{
 "rect": "#oCh",
 "name": "och"
 },
@@ -494,6 +411,89 @@
 {
 "rect": "#verdict",
 "name": "bl_verdict"
+},
+{
+"click": ".ap.me button",
+"text": "Approve",
+"name": "approve"
+},
+{
+"wait": 1200
+},
+{
+"snap": "approved"
+},
+{
+"rect": "#audit",
+"name": "ok_audit"
+},
+{
+"rect": "div:has(> #audit)",
+"name": "ok_auditcard"
+},
+{
+"rect": "button.stg",
+"text": "Auto-churn",
+"name": "ok_box_autochurn"
+},
+{
+"rect": "button.stg",
+"text": "Learner",
+"name": "ok_box_learner"
+},
+{
+"rect": "button.stg",
+"text": "Aladdin",
+"name": "ok_box_aladdin"
+},
+{
+"rect": "button.stg",
+"text": "Executor",
+"name": "ok_box_executor"
+},
+{
+"rect": "button.stg",
+"text": "Webhooks",
+"name": "ok_box_webhooks"
+},
+{
+"rect": "button.stg",
+"text": "Intent stack",
+"name": "ok_box_intent"
+},
+{
+"rect": "button.stg",
+"text": "Outcome",
+"name": "ok_box_outcome"
+},
+{
+"rect": "button.stg",
+"text": "Payment",
+"name": "ok_box_payment"
+},
+{
+"rect": "#detail",
+"name": "ok_detail"
+},
+{
+"rect": "#tl",
+"name": "ok_tl"
+},
+{
+"rect": "#banner",
+"name": "ok_banner"
+},
+{
+"rect": "#pipe",
+"name": "ok_pipe"
+},
+{
+"rect": "#appr",
+"name": "ok_appr"
+},
+{
+"rect": "#verdict",
+"name": "ok_verdict"
 },
 {
 "click": "#vTech",

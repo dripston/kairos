@@ -1,6 +1,6 @@
 {
  "out": "audio/product3_mix.wav",
- "duration": 126.56,
+ "duration": 128.28,
  "lufs": -14,
  "ceiling": -1.0,
  "music": {
@@ -8,7 +8,7 @@
   "segments": [
    {
     "src": 0.0,
-    "len": 121.96,
+    "len": 123.68,
     "at": 0.0,
     "fadeIn": 0,
     "fadeOut": 0.025
@@ -26,119 +26,119 @@
  "vo": [
   {
    "file": "audio/vo/p01.wav",
-   "at": 0.6,
+   "at": 0.5,
    "text": "Every month, lenders send the same reminder, at the same time, to everyone.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/vo/p02.wav",
-   "at": 17.6,
+   "at": 17.3,
    "text": "Kairos looks at every borrower, every day, and decides.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/vo/p03.wav",
-   "at": 31.9,
+   "at": 30.5,
    "text": "Before anything goes out, Aladdin, our safety supervisor, checks it against the lender's rules.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/vo/p04.wav",
-   "at": 39.1,
+   "at": 37.65,
    "text": "No reply on SMS. So it learns, and tries WhatsApp.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/vo/p05.wav",
-   "at": 62.0,
+   "at": 63.0,
    "text": "Your team stays in charge.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/vo/p06.wav",
-   "at": 65.0,
+   "at": 66.8,
    "text": "But even they can't break the rules.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/dlg/s_emi.wav",
-   "at": 69.4,
+   "at": 72.4,
    "text": "When is my EMI due?",
    "who": "Sunita",
    "gain": -1.0
   },
   {
    "file": "audio/dlg/k_otp.wav",
-   "at": 71.2,
+   "at": 74.2,
    "text": "To protect your account, I have sent a 6-digit code to your registered WhatsApp number.",
    "who": "Kairos",
    "gain": -1.0
   },
   {
    "file": "audio/dlg/k_ver.wav",
-   "at": 76.6,
+   "at": 79.6,
    "text": "Thank you, you are verified.",
    "who": "Kairos",
    "gain": -1.0
   },
   {
    "file": "audio/vo/p07.wav",
-   "at": 78.5,
+   "at": 81.2,
    "text": "Kairos answers in seconds. But only once it knows it's really them.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/dlg/s_paid.wav",
-   "at": 83.6,
+   "at": 86.3,
    "text": "I already paid, here is the screenshot.",
    "who": "Sunita",
    "gain": -1.0
   },
   {
    "file": "audio/dlg/k_fake.wav",
-   "at": 86.2,
+   "at": 88.8,
    "text": "For your security, I can't help with this request in chat. A specialist from our team will review it.",
    "who": "Kairos",
    "gain": -1.0
   },
   {
    "file": "audio/vo/p08.wav",
-   "at": 91.6,
+   "at": 94.1,
    "text": "A doctored payment screenshot? It checks with the bank.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/dlg/s_stop.wav",
-   "at": 107.3,
+   "at": 110.0,
    "text": "Stop.",
    "who": "Sunita",
    "gain": -1.0
   },
   {
    "file": "audio/dlg/k_stop.wav",
-   "at": 108.2,
+   "at": 110.9,
    "text": "You will not receive further automated reminders from us on any channel.",
    "who": "Kairos",
    "gain": -1.0
   },
   {
    "file": "audio/vo/p09.wav",
-   "at": 112.2,
+   "at": 114.6,
    "text": "And stop means stop. Everywhere.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/vo/p10.wav",
-   "at": 115.4,
+   "at": 117.6,
    "text": "In our tests, about twice the money back for every rupee. With zero rule breaches.",
    "who": "",
    "gain": 0

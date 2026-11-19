@@ -1,7 +1,7 @@
 [
  {
-  "t0": 0.6,
-  "t1": 6.57,
+  "t0": 0.5,
+  "t1": 6.47,
   "who": "",
   "lines": [
    "Every month, lenders send the same",
@@ -9,8 +9,8 @@
   ]
  },
  {
-  "t0": 17.6,
-  "t1": 22.439,
+  "t0": 17.3,
+  "t1": 22.139,
   "who": "",
   "lines": [
    "Kairos looks at every borrower, every day,",
@@ -18,8 +18,8 @@
   ]
  },
  {
-  "t0": 31.9,
-  "t1": 36.001,
+  "t0": 30.5,
+  "t1": 34.601,
   "who": "",
   "lines": [
    "Before anything goes out, Aladdin, our",
@@ -27,16 +27,16 @@
   ]
  },
  {
-  "t0": 36.021,
-  "t1": 38.945,
+  "t0": 34.621,
+  "t1": 37.545,
   "who": "",
   "lines": [
    "checks it against the lender's rules."
   ]
  },
  {
-  "t0": 39.1,
-  "t1": 44.493,
+  "t0": 37.65,
+  "t1": 43.043,
   "who": "",
   "lines": [
    "No reply on SMS. So it learns, and tries",
@@ -44,48 +44,48 @@
   ]
  },
  {
-  "t0": 45.9,
-  "t1": 48.65,
+  "t0": 43.9,
+  "t1": 46.55,
   "who": "Vikram",
   "lines": [
    "I'll pay by the 29th."
   ]
  },
  {
-  "t0": 62,
-  "t1": 64.263,
+  "t0": 63,
+  "t1": 65.263,
   "who": "",
   "lines": [
    "Your team stays in charge."
   ]
  },
  {
-  "t0": 65,
-  "t1": 67.882,
+  "t0": 66.8,
+  "t1": 69.682,
   "who": "",
   "lines": [
    "But even they can't break the rules."
   ]
  },
  {
-  "t0": 69.4,
-  "t1": 71.18,
+  "t0": 72.4,
+  "t1": 74.18,
   "who": "Sunita",
   "lines": [
    "When is my EMI due?"
   ]
  },
  {
-  "t0": 71.2,
-  "t1": 72.629,
+  "t0": 74.2,
+  "t1": 75.629,
   "who": "Kairos",
   "lines": [
    "To protect your account,"
   ]
  },
  {
-  "t0": 72.649,
-  "t1": 76.58,
+  "t0": 75.649,
+  "t1": 79.58,
   "who": "",
   "lines": [
    "I have sent a 6-digit code to your",
@@ -93,16 +93,16 @@
   ]
  },
  {
-  "t0": 76.6,
-  "t1": 78.452,
+  "t0": 79.6,
+  "t1": 81.18,
   "who": "Kairos",
   "lines": [
    "Thank you, you are verified."
   ]
  },
  {
-  "t0": 78.5,
-  "t1": 83.58,
+  "t0": 81.2,
+  "t1": 86.28,
   "who": "",
   "lines": [
    "Kairos answers in seconds. But only once",
@@ -110,8 +110,8 @@
   ]
  },
  {
-  "t0": 83.6,
-  "t1": 86.18,
+  "t0": 86.3,
+  "t1": 88.78,
   "who": "Sunita",
   "lines": [
    "I already paid, here is the",
@@ -119,8 +119,8 @@
   ]
  },
  {
-  "t0": 86.2,
-  "t1": 89.188,
+  "t0": 88.8,
+  "t1": 91.788,
   "who": "Kairos",
   "lines": [
    "For your security, I can't help",
@@ -128,16 +128,16 @@
   ]
  },
  {
-  "t0": 89.208,
-  "t1": 91.58,
+  "t0": 91.808,
+  "t1": 94.08,
   "who": "",
   "lines": [
    "A specialist from our team will review it."
   ]
  },
  {
-  "t0": 91.6,
-  "t1": 95.179,
+  "t0": 94.1,
+  "t1": 97.679,
   "who": "",
   "lines": [
    "A doctored payment screenshot? It checks",
@@ -145,16 +145,16 @@
   ]
  },
  {
-  "t0": 107.3,
-  "t1": 107.982,
+  "t0": 110,
+  "t1": 110.682,
   "who": "Sunita",
   "lines": [
    "Stop."
   ]
  },
  {
-  "t0": 108.2,
-  "t1": 111.388,
+  "t0": 110.9,
+  "t1": 114.088,
   "who": "Kairos",
   "lines": [
    "You will not receive further",
@@ -162,24 +162,24 @@
   ]
  },
  {
-  "t0": 111.408,
-  "t1": 112.066,
+  "t0": 114.108,
+  "t1": 114.58,
   "who": "",
   "lines": [
    "channel."
   ]
  },
  {
-  "t0": 112.2,
-  "t1": 115.169,
+  "t0": 114.6,
+  "t1": 117.569,
   "who": "",
   "lines": [
    "And stop means stop. Everywhere."
   ]
  },
  {
-  "t0": 115.4,
-  "t1": 121.879,
+  "t0": 117.6,
+  "t1": 124.079,
   "who": "",
   "lines": [
    "In our tests, about twice the money back",
