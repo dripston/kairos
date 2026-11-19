@@ -13,15 +13,20 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from .exceptions import ExceptionEvent
 from .executor import Executor, FakeProvider, Supervisor
 from .gate import Facts, evaluate
+from .contracts import RecordingSink
+from .learner import BetaBernoulliLearner
 from .ledger import Instruction, Ledger, PaymentError
+from .outcomes import OutcomeFinalizer
 from .policy import load_policy
+from .voice import registry as voice_registry
+from .voice.ingest import VoiceIngester
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
@@ -30,6 +35,12 @@ ledger = Ledger(policy, os.environ.get("KAIROS_DB", BACKEND_DIR / "kairos.db"))
 supervisor = Supervisor(ledger)
 # Real adapters (K07 WhatsApp, K08 SMS, K17 IVR) replace these; until then every send is SIMULATED.
 executor = Executor(ledger, {ch: FakeProvider(ch) for ch in policy.raw["channels"]})
+# K17/K18 voice engine. Envelopes are SIMULATED unless KAIROS_VOICE_PROVENANCE says otherwise (never overclaim).
+# When the K06 HITL module is merged and api defines `hitl`, handoffs go through it; else ledger supervisor hold.
+voice_sink = RecordingSink()
+voice_ingester = VoiceIngester(ledger, finalizer=OutcomeFinalizer(ledger, BetaBernoulliLearner(ledger)),
+                               sink=voice_sink, supervisor=supervisor, hitl=globals().get("hitl"),
+                               provenance=os.environ.get("KAIROS_VOICE_PROVENANCE", "SIMULATED"))
 
 app = FastAPI(title="Kairos K06 · Supervisor guardrails + executor", version="0.2.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -163,6 +174,16 @@ class CampaignStatusIn(BaseModel):
 
 class LenderIn(BaseModel):
     lender_id: Optional[str]
+
+
+class VoiceSelectIn(BaseModel):
+    borrower_id: str
+    at: Optional[datetime] = None
+    obligation_id: Optional[str] = None
+    touch_id: Optional[str] = None
+    lender_name: Optional[str] = None
+    human_approved: bool = False          # HARDSHIP_TRIAGE needs a person's approval
+    callback_reason: Optional[str] = None
 
 
 # ---------- read ----------
@@ -345,3 +366,42 @@ def control_outbound(body: PauseIn):
 def supervisor_clear(borrower_id: str):
     ledger.clear_supervisor_hold(borrower_id)
     return {"ok": True}
+
+
+# ---------- K17/K18 voice engine ----------
+@app.post("/webhooks/sarvam/call-end")
+def sarvam_call_end(payload: dict, x_kairos_webhook_secret: Optional[str] = Header(default=None)):
+    """Sarvam post-call payload (call / interaction id, app_id, touch_id variable, post-call variables).
+    Idempotent by call id. If SARVAM_WEBHOOK_SECRET is set, the X-Kairos-Webhook-Secret header must match."""
+    secret = os.environ.get("SARVAM_WEBHOOK_SECRET")
+    if secret and x_kairos_webhook_secret != secret:
+        raise HTTPException(401, "bad webhook secret")
+    return _call(voice_ingester.ingest, payload)
+
+
+@app.get("/voice/registry")
+def voice_registry_get():
+    t = voice_ingester.thresholds
+    return {"registry": voice_ingester.registry,
+            "thresholds": {"policy_version": t["policy_version"], "status": t["status"],
+                           "min_confidence_any": t["min_confidence_any"], "rules": t["rules"], "ptp": t["ptp"]}}
+
+
+@app.post("/voice/select")
+def voice_select(body: VoiceSelectIn):
+    """Which bot / voice / language Kairos would use for this borrower now (selection only — the
+    K01 Gate still decides whether a call may happen)."""
+    borrower, obligation, ctx = _call(voice_registry.inputs_from_ledger, ledger, body.borrower_id, body.at,
+                                      body.obligation_id)
+    ctx.update({k: v for k, v in (("touch_id", body.touch_id), ("lender_name", body.lender_name),
+                                  ("callback_reason", body.callback_reason)) if v})
+    ctx["human_approved"] = body.human_approved
+    return voice_registry.select_bot(borrower, obligation, ctx, voice_ingester.registry, voice_ingester.thresholds)
+
+
+@app.get("/voice/calls/{call_id}")
+def voice_call(call_id: str):
+    row = voice_ingester.call(call_id)
+    if row is None:
+        raise HTTPException(404, f"not found: {call_id}")
+    return row
