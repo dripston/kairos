@@ -2,7 +2,7 @@
 name = "kairos-backend"
 version = "0.1.0"
 description = "Kairos K06: Supervisor guardrails, atomic send ledger and executor"
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 dependencies = [
     "fastapi>=0.115",
     "uvicorn>=0.30",

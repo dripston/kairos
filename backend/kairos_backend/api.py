@@ -312,6 +312,10 @@ def get_borrower(borrower_id: str, as_of: Optional[date] = None,
     if role != "policy_owner":
         out["phone"] = mask_number(out.get("phone"))
         out.pop("email", None)
+    if role == "viewer":  # K28: read-only viewers get initials only
+        for k in ("full_name", "name"):
+            if isinstance(out.get(k), str) and out[k].strip():
+                out[k] = " ".join(w[0].upper() + "." for w in out[k].split())
     return out
 
 
@@ -357,6 +361,40 @@ def _rejection(r: dict) -> dict:
         if m:  # captured groups are K03 column names, never file values
             return {"line": r.get("line"), "column": column or m.group(1), "rule": rule}
     return {"line": r.get("line"), "column": None, "rule": "invalid"}
+
+
+class IntakePreviewIn(BaseModel):
+    """K24 portfolio upload preview. The CSV travels in the body (max 2 MB); nothing is stored."""
+    model_config = ConfigDict(extra="forbid")
+    csv_text: str = Field(max_length=2_000_000)
+    upload_date: date
+    start_date: date
+    end_date: date
+    budget_per_case_inr: float = Field(gt=0, le=10_000)
+    budget_all_eligible: StrictBool = True
+
+
+@app.post("/intake/preview")
+def intake_preview(body: IntakePreviewIn):
+    """K24: validate a lender upload against Ojas's intake rules and show what arming would do: accepted,
+    quarantined by reason, eligible and budgeted loans, campaign pool, first/last contact. Read-only: nothing
+    is written to the spine. Only counts, loan ids and reason codes come back, never file values."""
+    import io
+    from spine import intake
+    if body.end_date < body.start_date:
+        raise HTTPException(422, "end_date is before start_date")
+    rows = list(csv.DictReader(io.StringIO(body.csv_text.lstrip("﻿"))))
+    if not rows:
+        raise HTTPException(422, "the CSV has a header but no rows")
+    res = intake.validate(rows, body.upload_date)
+    camp = intake.Campaign(body.start_date, body.end_date, int(round(body.budget_per_case_inr * 100)))
+    out = intake.preview(res, camp)
+    if body.budget_all_eligible and out.get("proposed_budget_set"):
+        camp.budgeted_loan_ids = list(out["proposed_budget_set"])
+        out = intake.preview(res, camp)
+    out.pop("proposed_budget_set", None)
+    out["provenance"] = "SIMULATED"
+    return out
 
 
 @app.post("/spine/import")

@@ -1,0 +1,61 @@
+# CD: publish the demo UI to GitHub Pages on every push to main that passes CI.
+# Pages is static hosting, so this build has no backend: VITE_KAIROS_API=none makes every live panel
+# show its built-in mock straight away, labelled SIMULATED. A visitor can point the page at a running
+# backend with ?api=https://host (remembered in the browser; ?api=none resets).
+name: Deploy frontend to GitHub Pages
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Build for Pages
+        env:
+          VITE_BASE: /${{ github.event.repository.name }}/
+          VITE_KAIROS_API: ${{ vars.KAIROS_PUBLIC_API || 'none' }}
+          VITE_KAIROS_CAMPAIGN: ${{ vars.KAIROS_CAMPAIGN || 'CMP-JOURNEY' }}
+        run: npm run build
+      - name: SPA fallback for deep links (/crm/B-1042 etc.)
+        run: cp dist/index.html dist/404.html && touch dist/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
