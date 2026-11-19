@@ -58,6 +58,7 @@ BRANCHES=(
   frontend/live-api            # frontend wired to the live API
   k09/rl-v2                    # K09 learner v2
   policy/ojas-pack             # Ojas policy pack (K01 v1.1.1, K10, K13, K15, K21, K24, T01) + conformance harness
+  k06/fsm-fixes                # 7 transition fixes found by the FSM conformance tests (merge last)
 )
 
 BASE="origin/main"
