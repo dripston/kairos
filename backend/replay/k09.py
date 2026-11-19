@@ -75,6 +75,7 @@ COST_PAISE = dict(S.COST_PAISE)        # one cost table for ranking AND charging
 TEMPLATE_LANGS = ("en", "hi")          # K01 templates.languages
 BANDS = ("B1", "B2", "B3", "B4")
 BASELINES = ("cn10", "k15")
+POLICIES = ("default", "rl2")          # K09 arm: KairosOptions ranker, or K09 RL v2 (kairos_backend/rl)
 IVR_NOTE = ("CN10 IVR is a one-way voice blast in CN's doc; the K15 DEV simulator models 'ivr' as able to "
             "produce replies, and this replay follows the simulator, so IVR replies count as meaningful.")
 
@@ -224,7 +225,8 @@ class StackRun:
 
     def __init__(self, arm: str, csv_path: str, seed: int, days: int, db_path: str, budget_per_case_paise: int,
                  drift_day: Optional[int] = None, context: bool = True, explore: bool = True,
-                 start: date = START, portfolio=None, loans=None, kairos_opts: Optional[dict] = None):
+                 start: date = START, portfolio=None, loans=None, kairos_opts: Optional[dict] = None,
+                 policy: str = "default", rl2_opts: Optional[dict] = None, warm_start: Optional[dict] = None):
         if arm not in ARMS:
             raise ValueError(f"unknown arm {arm}")
         self.arm, self.seed, self.days, self.start = arm, seed, days, start
@@ -251,6 +253,15 @@ class StackRun:
                            if context else base)
         else:
             self.ranker = CadenceRanker("cn10/creditnirvana-10day" if arm == "cn10" else "fixed-cadence/k15-placeholder")
+        # ---- K09 RL v2 hook (kairos_backend/rl): policy="rl2" replaces the K09 ranker and planner ----
+        self.rl2 = None
+        if policy not in POLICIES:
+            raise ValueError(f"unknown policy {policy} (choose from {POLICIES})")
+        if arm == "kairos" and policy == "rl2":
+            from kairos_backend.rl.policy import RL2Policy
+            self.rl2 = self.ranker = RL2Policy(
+                self.ledger, self, rl2_opts, campaign_id=CAMPAIGN_ID, warm_start=warm_start, costs=COST_PAISE,
+                has_template=lambda ch, lang: template_for(ch, lang) is not None)
         self.fsm = SupervisorFSM(self.ledger, self.executor, self.ranker, self.sink, mode=Mode.SIMULATOR)
         self.finalizer = OutcomeFinalizer(self.ledger, self.ranker if arm == "kairos" else _NullLearner())
         self.simulator = DriftSimulator(self.portfolio, seed, drift_day)
@@ -318,6 +329,8 @@ class StackRun:
             return False
 
         queue = []
+        if self.rl2 is not None:   # K09 RL v2 planner (kairos_backend/rl/policy.py)
+            return self.rl2.plan_queue(self, day, d, plan_at, too_soon)
         if self.arm == "kairos":
             order = []
             for b in self.portfolio:
@@ -476,6 +489,7 @@ class StackRun:
             "meaningful_replies": self.replies,
             "replies_per_1000_inr": round(self.replies / self.spend_paise * 100_000, 2) if self.spend_paise else 0.0,
             "verified_payments": self.payments,
+            "recovered_paise": sum(self.loans[i].emi_paise for i in self.paid),   # verified EMI amounts (spine)
             "opt_outs": self.opt_outs,
             "decisions": dict(sorted(self.decisions.items())),
             "wait_rules": dict(self.wait_rules.most_common(8)),
@@ -568,7 +582,8 @@ def run_comparison(n_borrowers: int, days: int, seed: int, drift_day: Optional[i
                    budget_per_case_paise: Optional[int] = None, workdir: Optional[str] = None,
                    baselines: tuple = ("cn10",), context: bool = True, explore: bool = True,
                    dataset: Optional[str] = None, start: Optional[date] = None,
-                   kairos_opts: Optional[dict] = None) -> dict:
+                   kairos_opts: Optional[dict] = None, policy: str = "default", rl2_opts: Optional[dict] = None,
+                   warm_start: Optional[dict] = None) -> dict:
     """budget_per_case_paise=None → MATCHED SPEND: the shared pool is set to what the FIRST baseline
     spends when unconstrained (a calibration run), so every arm runs on the same money and K09 has
     to allocate it better. Pass a number to fix the pool instead.
@@ -596,7 +611,8 @@ def run_comparison(n_borrowers: int, days: int, seed: int, drift_day: Optional[i
     def stack(arm, name, per_case):
         return StackRun(arm, csv_path, seed, days, os.path.join(workdir, f"{name}.db"), per_case, drift_day,
                         context=context, explore=explore, start=start, portfolio=portfolio, loans=loans,
-                        kairos_opts=kairos_opts if arm == "kairos" else None)
+                        kairos_opts=kairos_opts if arm == "kairos" else None,
+                        **(dict(policy=policy, rl2_opts=rl2_opts, warm_start=warm_start) if arm == "kairos" else {}))
 
     budget_basis = "fixed"
     calibration = None
@@ -643,6 +659,8 @@ def run_comparison(n_borrowers: int, days: int, seed: int, drift_day: Optional[i
                               for day in k.preference],
         "cohort_close": cohort_close(k.ranker),
         "ivr_note": IVR_NOTE,
+        "policy": policy,
+        "rl2": k.rl2.report() if k.rl2 is not None else None,
         "dbs": {arm: os.path.join(workdir, f"{arm}.db") for arm in runs},
     }
     for run in runs.values():
