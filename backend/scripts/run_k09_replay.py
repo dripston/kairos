@@ -11,7 +11,8 @@ Everything is SIMULATED. Run from backend/:
     python3 scripts/run_k09_replay.py --dataset data/synthetic_50k.csv   # a K03 dataset file as-is
     python3 scripts/run_k09_replay.py --check-determinism    # run everything twice and compare
     python3 scripts/run_k09_replay.py --kairos-opts '{"decay": 0.8}'   # override K09 decision options (replay.k09.KairosOptions)
-    python3 scripts/run_k09_replay.py --legacy-k09           # the K09 default before k09/optimize (no decay, no value floor)
+    python3 scripts/run_k09_replay.py --kairos-opts '{"stop_penalty": 0}'   # PR #17 default (no opt-out penalty)
+    python3 scripts/run_k09_replay.py --legacy-k09           # the K09 default before k09/optimize (no decay, floor, STOP penalty)
 
 Baselines: cn10 = CreditNirvana's own "Personal Loan 10-Day Post-Due Digital Collections Strategy"
 (HDFC project), a stand-in until the official fixed-cadence policy file (K02) arrives; k15 = the K15
@@ -57,7 +58,7 @@ def main() -> int:
     p.add_argument("--kairos-opts", default=None,
                    help="JSON of replay.k09.KairosOptions overrides for the K09 arm, e.g. '{\"decay\": 0.8}'")
     p.add_argument("--legacy-k09", action="store_true",
-                   help="K09 as it was before k09/optimize: no evidence decay, no value floor")
+                   help="K09 as it was before k09/optimize: no evidence decay, no value floor, no STOP penalty")
     p.add_argument("--policy", choices=("default", "rl2"), default="default",
                    help="K09 arm: default (KairosOptions ranker) or rl2 (K09 RL v2, kairos_backend/rl)")
     p.add_argument("--rl2-opts", default=None, help="JSON of kairos_backend.rl.policy.RL2Options overrides")
