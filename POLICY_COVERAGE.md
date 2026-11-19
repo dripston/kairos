@@ -22,8 +22,13 @@ own reference logic. They do not test our code, so they are not used here.
   wired into the Supervisor (OPEN_DECISION K21-1).
 - **K24 portfolio intake: 32/32 pass**, using the new `spine/intake.py`. His script prints 32 checks;
   its summary line says 31.
-- **K15 safety / load / replay: 11 pass, 1 not implemented.** The missing case is K15-T11, an explicit
-  SMS-to-WhatsApp switch rule. 4 cases come from full-scale script runs (marked "report").
+- **K15 safety / load / replay: 9 pass, 1 not implemented, 2 not yet measured.**
+  - Not implemented: K15-T11, an explicit SMS-to-WhatsApp switch rule.
+  - Not yet measured: K15-T02 (replies-per-rupee lift) and K15-T03 (cap breaches) need a full
+    `scripts/run_k09_replay.py --check-determinism` run, which had not finished in this session. The
+    team tracker reports +19% to +39% over 4 seeds with 0 breaches, but that number is not re-measured here.
+  - Measured in this session: the 50k benchmark ran 50,000 reserve() decisions in 20.5 s (limit
+    600 s), and the CM-03 eval bars come from `reports/cm03_eval.json`.
 - **T01 outbound templates:** all 300 are imported into our K22 format (`t01_catalog.json`), and
   **our checker flags all 300.** None of the flags are for threats, legal-action or third-party
   wording. Most come from format differences or real rule conflicts between T01 and our K22 checklist
