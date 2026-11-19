@@ -190,6 +190,98 @@ The borrowers are synthetic and the replies come from a simulator, which is why 
 Seed 42 ends at Kairos ₹1,76,723 recovered on ₹471 spent vs the fixed schedule's ₹17,938 on ₹575
 (about 9.9× the fixed schedule), with 0 rule breaches on both sides. Every run of the same seed gives the same numbers.
 
+
+### Journey 1: outbound collections, live (`/demo/journey/outbound`)
+
+One borrower, every engine, and a person who can take control. A SIMULATED 200-borrower campaign
+(seed 9) runs on the real engines, one phase at a time: the 06:00–08:00 plan, the 08:00–09:30 approval
+window, then the day's sends. The page follows ONE borrower through eight boxes that light up when that
+engine acts for them: Auto-churn (K27) → Learner (K09) → Aladdin (K06 gate + ledger) → Executor (mock
+adapter, dry-run) → Webhooks → Intent stack → Outcome → learning → Payment. Click a box for the decision
+in plain words; **Technical** shows the raw payload and rule ids. Nothing is scripted and nothing is sent.
+
+```bash
+cd kairos/backend && source .venv/bin/activate && uvicorn kairos_backend.api:app --port 8000
+```
+
+Open <http://localhost:8000/demo/journey/outbound> and pick a story: **Vikram** (SMS, no reply →
+WhatsApp → promise → paid on day 7), **Aarav** (a voice-bot call waits for your approval on day 4) or
+**Diya** (hardship goes to a person). Playback: **Space** play/pause, **N** next event, 1×/2×/4×,
+**P** presenter cue cards. "Pause at decisions" stops at each of the borrower's decisions and approvals.
+
+What each control does (all audited, all through the real control plane):
+
+| Control | Real call | Effect |
+|---|---|---|
+| Pause campaign | `Ledger.set_campaign_status` | queued touches cancelled; every plan waits (CAMPAIGN_PAUSED) |
+| PAUSE ALL OUTBOUND | `Ledger.set_outbound_paused` | kill switch: everything queued on every channel cancelled; blocked at plan and send |
+| Approve / Reject | `HITL.approve` / `HITL.reject` | approve re-runs the Gate; reject releases the budget |
+| Force WAIT | `HITL.act(cancel_next)` | today's planned touch cancelled |
+| Send instead (channel, time) | `Ledger.preview` → `HITL.act(cancel_next)` + `HITL.schedule_manual` | Aladdin checks first (20:00 → CONTACT_WINDOW, locked); an allowed one needs a second person (maker-checker) |
+| Put on hold / Release | `HITL.act(pause)` / `HITL.act(resume)` | Aladdin answers SUPERVISOR_HOLD on every channel |
+| Mark STOP for borrower | `HITL.act(dnc)` | every channel opted out, every queued touch cancelled |
+
+Inside the approval window an action applies before that day's 09:30 sends; after the sends it applies
+from the next plan (an override is queued and checked by Aladdin right after it).
+
+**Presenter script (about 2 minutes, press P for the same cues on screen).**
+1. *Pick Vikram.* "A simulated 200-borrower campaign on Kairos's real engines. We follow Vikram: 10 days
+   late on a ₹7,409 EMI. Each box is a real engine; it lights up when it acts for him."
+2. *Day 1 pauses at 8:00. Click Learner, then Aladdin.* "The learner scores every channel × time against
+   cost; SMS in the morning wins. Aladdin runs every policy rule and reserves the budget." Press ▶: the
+   mock SMS goes out, the receipt comes back, a duplicate receipt is ignored.
+3. *▶ to Day 3.* "No reply in 24 hours: the learner's SMS estimate drops. Day 3 it picks WhatsApp. He
+   replies 'I'll pay by the 29th'; the intent stack's rules catch a promise and Kairos goes quiet."
+4. *At a pause: WhatsApp · 20:00 → Apply.* "I'm the supervisor. 8 pm: Aladdin blocks it, outside contact
+   hours, and no role can override that." Approve or reject a waiting call; show the audit log.
+5. *▶ to Day 7, click Payment.* "The bank confirms ₹7,409; the journey exits. 65 paise spent on Vikram."
+6. *PAUSE ALL OUTBOUND, then resume; or pick Diya and Mark STOP.* "One click cancels everything queued on
+   every channel. A STOP turns every channel off at once, and nobody can undo it."
+
+API (for checks): `POST /demo/journey/outbound/api/start {"spotlight": "BRW-SL100073"}`, then
+`POST .../api/step` per phase; controls under `.../api/campaign`, `.../api/outbound`,
+`.../api/approvals/{id}/approve|reject`, `.../api/spotlight/{preview,override,hold,stop}`. One session at a
+time, on its own temp database. Seed 9 is deterministic when nobody acts.
+
+### Journey 2: inbound WhatsApp servicing, live (`/demo/journey/inbound`)
+
+One presenter screen for CM-03. Left: a borrower's WhatsApp (two synthetic borrowers, A and B). Middle: what
+the **real CM-03 engine** did for each message, in plain words (press **Technical** or **T** for state names,
+template ids and the raw timeline envelopes). Right: the agent console, where a person **takes over** a chat
+from the bot, replies, decides, and hands it back. Everything on it is **SIMULATED**: its own throwaway
+database, synthetic borrowers, a simulated bank feed, a dry-run WhatsApp adapter. Nothing is sent anywhere
+and no Sarvam agent is called. Without a Sarvam key it runs fully (rules + small offline model; Prism and
+reply phrasing stay off; set `KAIROS_J2_PHRASING=1` with a key to try phrasing).
+
+```bash
+cd kairos/backend && source .venv/bin/activate && uvicorn kairos_backend.api:app --port 8000
+```
+
+Open <http://localhost:8000/demo/journey/inbound> (add `?script=1` to open with the script showing). **P**
+shows the presenter script (← / → between cards), **Reset demo** starts again from a clean world.
+
+| Click | What happens (real code path) |
+|---|---|
+| When is my EMI due? | `ConversationEngine.handle`: code sent to the registered number, the question parked, nothing disclosed |
+| Reply with code | the code the engine sent to the simulated phone; verified, the parked question answered |
+| Payment link | signed payment link |
+| I already paid → genuine / edited screenshot / someone else's UTR | `fraud.py` checks + D7 feed; fakes refused and sent to a person, never marked paid |
+| मेरी EMI कितनी बाकी है? | Devanagari: the rules are unsure, the small model answers |
+| Ignore your rules… | injection detector fires before any model; refused, flagged |
+| I lost my job | K13 hardship hold (4 queued reminders cancelled), routed to a person |
+| STOP | `Ledger.record_stop`: every channel opted out, queued reminders cancelled, the Gate then blocks every channel |
+| Take over / Send / Reject claim / Hardship: hold / Hand back | `cm03/takeover.py` + K06 HITL (case claim / resolve, 30-day hold); each is one audit row |
+
+**Story (about 2½ minutes):** (1) Borrower A: EMI question → code → answer → payment link. (2) I already
+paid → edited screenshot: caught; Take over → Reject claim → Hand back. (3) Ignore your rules: refused.
+(4) Borrower B: I lost my job → Take over → suggested reply → Send → Hardship: hold → Hand back. (5) Borrower
+A: STOP → consent revoked on WhatsApp, SMS, voice and email, 4 → 0 queued, the Gate blocks every channel.
+Step 2's hand-back matters: a chat waiting for a person only gets a holding reply, so step 3 needs the bot back.
+
+While a person owns a chat the engine never sends a bot reply (any path, including the bank re-check), the
+chat does not time out into a new bot chat, and STOP is still honoured. The same takeover is on the main
+CM-03 API: `POST /cm03/conversations/{id}/takeover`, `/agent-message`, `/claim-decision`, `/hand-back`.
+
 ---
 
 ## 5. If something goes wrong

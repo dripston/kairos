@@ -100,6 +100,8 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 # CM-03 inbound WhatsApp servicing agent (SIMULATED, adapter dry-run): /cm03/*
 cm03_engine = ConversationEngine(ledger, phraser="auto")  # phrasing only with a Sarvam key
 app.include_router(cm03_router(cm03_engine))
+from .journey_inbound import router as journey_inbound_router  # noqa: E402  Journey 2: /demo/journey/inbound
+app.include_router(journey_inbound_router)
 
 # K27 auto-churn engine (cohort / risk / journey / layer / lifecycle), additive routes under /churn
 from .churn import api as churn_api  # noqa: E402
@@ -1086,6 +1088,10 @@ def demo_live_approve(approval_id: str, body: Optional[LiveApprovalIn] = None):
 def demo_live_reject(approval_id: str, body: Optional[LiveApprovalIn] = None):
     """Full mode with interactive_approvals: the real HITL.reject as role supervisor (budget released)."""
     return _live_decide(approval_id, False, body)
+
+
+from .journey_outbound import router as _journey_outbound_router  # noqa: E402  Journey 1: /demo/journey/outbound
+app.include_router(_journey_outbound_router)
 
 
 # ---------- live event feed (for the demo UI's streaming panel) ----------
