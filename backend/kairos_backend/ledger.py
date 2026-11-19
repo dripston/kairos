@@ -38,8 +38,12 @@ from .policy import Policy
 
 __all__ = ["Ledger", "Instruction", "ReserveResult", "PaymentError", "stable_instruction_id"]
 
-# statuses that may reach (or already reached) the borrower -> count toward caps and budget
-LIVE = ("RESERVED", "DISPATCHING", "UNCERTAIN", "SENT", "DELIVERED")
+# statuses that may reach (or already reached) the borrower -> count toward caps and budget.
+# PENDING_APPROVAL (K06 HITL, hitl.py): reserved but held until a person approves it. It holds its
+# cap slot and budget exactly like RESERVED, so approvals can never overbook; it is never dispatched.
+LIVE = ("RESERVED", "PENDING_APPROVAL", "DISPATCHING", "UNCERTAIN", "SENT", "DELIVERED")
+# not yet handed to a provider -> canceled (and budget released) by holds, STOP, pauses, payments
+QUEUED = ("RESERVED", "PENDING_APPROVAL")
 # provider status ranks: an older/lower status never overwrites a newer one (E04)
 RANK = {"RESERVED": 0, "DISPATCHING": 1, "UNCERTAIN": 2, "SENT": 3, "DELIVERED": 4}
 
@@ -103,6 +107,7 @@ class Instruction:
     purpose: Optional[str] = None
     instruction_id: Optional[str] = None  # None -> stable id derived from the touch itself
     version: int = 1
+    origin: str = "auto"  # "auto" (Supervisor) | "manual" (HITL manual scheduler) — read by reserve_hook
 
 
 def stable_instruction_id(borrower_id: str, obligation_id: str, channel: str, at: datetime, version: int = 1) -> str:
@@ -129,6 +134,10 @@ class Ledger:
         self.policy = policy
         self.path = str(path)
         self._local = threading.local()
+        # Optional human-in-the-loop hook (hitl.HITL installs it). Called inside reserve()'s write
+        # transaction only after the Gate allowed the touch: (c, ins, decision) -> (status, decision).
+        # It may only make things stricter: hold the touch as PENDING_APPROVAL, or veto it.
+        self.reserve_hook = None
         create_spine_schema(self._spine())   # K03 tables
         self._conn().executescript(K06_SCHEMA)  # K06 tables
 
@@ -462,6 +471,9 @@ class Ledger:
                 loan_id = extra["loan_id"]
                 d = evaluate(self.policy, facts)
                 d.detail.update(extra)
+            status = "RESERVED"
+            if d.allowed and self.reserve_hook is not None:
+                status, d = self.reserve_hook(c, ins, d)  # HITL: PENDING_APPROVAL or a veto, never looser
             self._audit(c, actor, "DECISION", ins.borrower_id, ins.instruction_id, d, at=ins.at,
                         channel=ins.channel, obligation_id=ins.obligation_id, campaign_id=ins.campaign_id,
                         est_cost_paise=ins.est_cost_paise, **d.detail)
@@ -472,9 +484,10 @@ class Ledger:
             c.execute(
                 "INSERT INTO touches (instruction_id, borrower_id, loan_id, obligation_id, campaign_id, channel, template_id,"
                 " scheduled_at, day, status, reason, est_cost_paise, created_at, updated_at)"
-                " VALUES (?,?,?,?,?,?,?,?,?,'RESERVED','ELIGIBLE',?,?,?)",
+                " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (ins.instruction_id, ins.borrower_id, loan_id, ins.obligation_id, ins.campaign_id, ins.channel,
-                 ins.template_id, self._iso(at), at.date().isoformat(), int(ins.est_cost_paise), now, now),
+                 ins.template_id, self._iso(at), at.date().isoformat(), status,
+                 "ELIGIBLE" if status == "RESERVED" else "APPROVAL_REQUIRED", int(ins.est_cost_paise), now, now),
             )
             self._commit_cost(c, ins.campaign_id, at.date().isoformat(), int(ins.est_cost_paise))
             return ReserveResult(d, ins.instruction_id, True)
@@ -577,11 +590,13 @@ class Ledger:
 
     # ---------- cancellations ----------
     def _cancel_queued(self, c, where: str, args: tuple, reason: str) -> int:
-        rows = c.execute(f"SELECT * FROM touches WHERE status='RESERVED' AND {where}", args).fetchall()
+        """Cancel every not-yet-dispatched touch in scope (RESERVED and PENDING_APPROVAL) and release its budget."""
+        q = f"status IN ({','.join('?' * len(QUEUED))}) AND {where}"
+        rows = c.execute(f"SELECT * FROM touches WHERE {q}", (*QUEUED, *args)).fetchall()
         for t in rows:
             self._release(c, t)
-        c.execute(f"UPDATE touches SET status='CANCELED', reason=?, updated_at=? WHERE status='RESERVED' AND {where}",
-                  (reason, self._iso(self.policy.now()), *args))
+        c.execute(f"UPDATE touches SET status='CANCELED', reason=?, updated_at=? WHERE {q}",
+                  (reason, self._iso(self.policy.now()), *QUEUED, *args))
         return len(rows)
 
     # ---------- borrower events ----------

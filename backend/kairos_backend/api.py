@@ -5,6 +5,10 @@ Environment:
   KAIROS_DB          SQLite file shared by the K03 spine and K06 (default: backend/kairos.db)
 
 Money is integer paise (100 paise = ₹1), as in the K03 spine.
+
+Human-in-the-loop routes live under /hitl (see kairos_backend/hitl.py). The caller's role comes from the
+X-Kairos-Role header (viewer | operator | supervisor | policy_owner; default viewer). THAT IS NOT
+AUTHENTICATION — it is a demo switch. Put real auth (SSO + server-side roles) in front before any real use.
 """
 from __future__ import annotations
 
@@ -13,13 +17,14 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from .exceptions import ExceptionEvent
 from .executor import Executor, FakeProvider, Supervisor
 from .gate import Facts, evaluate
+from .hitl import HITL, HitlError
 from .ledger import Instruction, Ledger, PaymentError
 from .policy import load_policy
 
@@ -28,6 +33,7 @@ BACKEND_DIR = Path(__file__).resolve().parents[1]
 policy = load_policy()
 ledger = Ledger(policy, os.environ.get("KAIROS_DB", BACKEND_DIR / "kairos.db"))
 supervisor = Supervisor(ledger)
+hitl = HITL(ledger)  # installs the approval hook: IVR/voicebot, STANDARD at high DPD, manual sends -> PENDING_APPROVAL
 # Real adapters (K07 WhatsApp, K08 SMS, K17 IVR) replace these; until then every send is SIMULATED.
 executor = Executor(ledger, {ch: FakeProvider(ch) for ch in policy.raw["channels"]})
 
@@ -38,6 +44,8 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 def _call(fn, *a, **k):
     try:
         return fn(*a, **k)
+    except HitlError as e:
+        raise HTTPException(e.http, e.as_dict())
     except KeyError as e:
         raise HTTPException(404, f"not found: {e}")
     except PaymentError as e:
@@ -345,3 +353,163 @@ def control_outbound(body: PauseIn):
 def supervisor_clear(borrower_id: str):
     ledger.clear_supervisor_hold(borrower_id)
     return {"ok": True}
+
+
+# ---------- human in the loop (K06 HITL) ----------
+# Role header: demo only, NOT authentication.
+Role = Header("viewer", alias="X-Kairos-Role")
+
+
+class HumanIn(BaseModel):
+    actor: str
+    reason: str = ""
+    now: Optional[datetime] = None  # demo / simulation clock; default = real time
+
+
+class BorrowerActionIn(HumanIn):
+    action: str  # pause | resume | hold | cancel_next | handoff | assign | dnc | record_opt_in (locked ones are refused)
+    until: Optional[datetime] = None
+    days: Optional[float] = None
+    queue: Optional[str] = None
+    summary: Optional[str] = None
+    agent: Optional[str] = None
+    channel: Optional[str] = None
+    consent_version: Optional[str] = None
+
+
+class ManualIn(HumanIn):
+    borrower_ids: list[str]
+    channel: str
+    template_id: str
+    at: datetime
+    est_cost_paise: int = Field(ge=0)
+    campaign_id: Optional[str] = None
+    obligation_id: Optional[str] = None
+    purpose: Optional[str] = None
+    force: bool = False  # always refused: kept so an attempt is visible in the audit
+
+
+class ManualPreviewIn(BaseModel):
+    borrower_id: str
+    channel: str
+    template_id: str
+    at: datetime
+    est_cost_paise: int = Field(0, ge=0)
+    campaign_id: Optional[str] = None
+    obligation_id: Optional[str] = None
+    purpose: Optional[str] = None
+
+
+class RescheduleIn(HumanIn):
+    at: datetime
+
+
+class ResolveIn(HumanIn):
+    resolution_code: str
+    lift_hold: bool = False
+
+
+class TemplateMetaIn(HumanIn):
+    intensity: str  # LOW | STANDARD
+    body: Optional[str] = None
+
+
+@app.get("/hitl/policy")
+def hitl_policy(role: str = Role):
+    """Approval policy, permission table and what this role may do (for the Control Room)."""
+    return {"approval_policy": hitl.ap, "role": role,
+            "permissions": sorted(p for p in hitl.ap["permissions"] if hitl.permitted(p, role))}
+
+
+@app.post("/hitl/tick")
+def hitl_tick(now: Optional[datetime] = None):
+    """Run the HITL clocks: expire approvals past their window, release manual holds (payment re-checked)."""
+    return hitl.tick(now)
+
+
+@app.get("/hitl/approvals")
+def hitl_approvals(status: str = "PENDING", borrower_id: Optional[str] = None, now: Optional[datetime] = None,
+                   role: str = Role):
+    return _call(hitl.list_approvals, role, status, borrower_id, now)
+
+
+@app.post("/hitl/approvals/{instruction_id}/approve")
+def hitl_approve(instruction_id: str, body: HumanIn, role: str = Role):
+    return _call(hitl.approve, instruction_id, body.actor, role, body.reason, body.now)
+
+
+@app.post("/hitl/approvals/{instruction_id}/reject")
+def hitl_reject(instruction_id: str, body: HumanIn, role: str = Role):
+    return _call(hitl.reject, instruction_id, body.actor, role, body.reason, body.now)
+
+
+@app.get("/hitl/borrowers/{borrower_id}")
+def hitl_borrower(borrower_id: str, role: str = Role):
+    return _call(hitl.borrower_controls, borrower_id, role)
+
+
+@app.post("/hitl/borrowers/{borrower_id}/actions")
+def hitl_borrower_action(borrower_id: str, body: BorrowerActionIn, role: str = Role):
+    params = {k: v for k, v in body.model_dump().items()
+              if k in ("until", "days", "queue", "summary", "agent", "channel", "consent_version") and v is not None}
+    return _call(hitl.act, borrower_id, body.action, body.actor, role, body.reason, body.now, **params)
+
+
+@app.post("/hitl/manual/preview")
+def hitl_manual_preview(body: ManualPreviewIn, role: str = Role):
+    """Live template preview + Gate verdict + approval need, without reserving anything."""
+    return _call(hitl.preview_manual, body.borrower_id, body.channel, body.template_id, body.at, role,
+                 body.est_cost_paise, body.campaign_id, body.obligation_id, body.purpose)
+
+
+@app.post("/hitl/manual")
+def hitl_manual(body: ManualIn, role: str = Role):
+    return _call(hitl.schedule_manual, body.borrower_ids, body.channel, body.template_id, body.at, body.actor, role,
+                 body.reason, body.est_cost_paise, body.campaign_id, body.obligation_id, body.purpose, body.force, body.now)
+
+
+@app.delete("/hitl/manual/{instruction_id}")
+def hitl_manual_cancel(instruction_id: str, actor: str, reason: str = "", now: Optional[datetime] = None,
+                       role: str = Role):
+    return _call(hitl.cancel_scheduled, instruction_id, actor, role, reason, now)
+
+
+@app.post("/hitl/manual/{instruction_id}/reschedule")
+def hitl_manual_reschedule(instruction_id: str, body: RescheduleIn, role: str = Role):
+    return _call(hitl.reschedule, instruction_id, body.at, body.actor, role, body.reason, body.now)
+
+
+@app.get("/hitl/cases")
+def hitl_cases(queue: Optional[str] = None, status: str = "OPEN", borrower_id: Optional[str] = None,
+               now: Optional[datetime] = None, role: str = Role):
+    return _call(hitl.list_cases, role, queue, status, borrower_id, now)
+
+
+@app.post("/hitl/cases/{ticket_id}/claim")
+def hitl_case_claim(ticket_id: str, body: HumanIn, role: str = Role):
+    return _call(hitl.claim_case, ticket_id, body.actor, role, body.reason or "claimed", body.now)
+
+
+@app.post("/hitl/cases/{ticket_id}/resolve")
+def hitl_case_resolve(ticket_id: str, body: ResolveIn, role: str = Role):
+    return _call(hitl.resolve_case, ticket_id, body.actor, role, body.reason, body.resolution_code, body.lift_hold, body.now)
+
+
+@app.post("/hitl/cases/{ticket_id}/reopen")
+def hitl_case_reopen(ticket_id: str, body: HumanIn, role: str = Role):
+    return _call(hitl.reopen_case, ticket_id, body.actor, role, body.reason, body.now)
+
+
+@app.put("/hitl/templates/{template_id}")
+def hitl_template(template_id: str, body: TemplateMetaIn, role: str = Role):
+    """Template intensity (drives the STANDARD-at-high-DPD approval rule) and body (for the live preview)."""
+    return _call(hitl.register_template, template_id, body.intensity, body.body, body.actor, role, body.reason, body.now)
+
+
+@app.get("/hitl/audit")
+def hitl_audit(borrower_id: Optional[str] = None, actor: Optional[str] = None, type: Optional[list[str]] = Query(None),
+               instruction_id: Optional[str] = None, since: Optional[datetime] = None, until: Optional[datetime] = None,
+               human_only: bool = False, limit: int = Query(200, ge=1, le=5000), role: str = Role):
+    """Durable audit store, newest first. Filters: borrower_id, actor, type (repeatable), instruction_id,
+    since/until, human_only. Masked for the caller's role."""
+    return _call(hitl.audit, role, borrower_id, actor, type, instruction_id, since, until, human_only, limit)
