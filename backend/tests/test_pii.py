@@ -17,6 +17,16 @@ def test_scrub_masks_indian_phones_emails_and_the_borrowers_name():
     assert scrub(None) == "" and scrub("PTP for Rs.4,500 on 2026-11-25") == "PTP for Rs.4,500 on 2026-11-25"
 
 
+def test_scrub_is_linear_on_long_adversarial_text():
+    """Borrower replies are unbounded (RT-INJ-01 sends 200k characters): no pattern may retry from every position."""
+    import time
+
+    for text in ("A" * 200_000, " " * 200_000, "1" * 200_000, "0 " * 100_000, "a." * 100_000):
+        t0 = time.perf_counter()
+        scrub(text + " x@y.in +91 0123456789", name="Synthetic Asha Verma", phone="+910123456789", name_as="B1")
+        assert time.perf_counter() - t0 < 2, text[:4]
+
+
 def test_ticket_fields_are_scrubbed_at_rest(policy, tmp_path):
     lg = Ledger(policy, tmp_path / "pii.db")
     with lg._spine() as conn:
@@ -29,3 +39,4 @@ def test_ticket_fields_are_scrubbed_at_rest(policy, tmp_path):
     assert (t["summary_line_1"], t["summary_line_2"]) == ("B1 disputes the EMI", "Reach on [phone] / [email]")
     assert json.loads(t["evidence_ids"]) == ["chat:[phone]", "msg-42"]
     lg.close()
+
