@@ -1,0 +1,74 @@
+{
+  "policy_id": "kairos-voice-dispositions",
+  "policy_version": "0.1.0-draft",
+  "status": "DRAFT",
+  "owner": "Ojas (Product) — proposed by Yuval (K17/K18), not signed off",
+  "approved_on": null,
+  "depends_on": { "kairos-outreach-policy": "1.1.0", "kairos-exceptions-policy": "1.0.0" },
+  "principle": "Safety first, fail closed. A low-confidence safety signal (STOP, hardship, abuse) is never ignored: it goes to a person. A low-confidence commercial signal (PTP, paid, callback) never creates a hold or a payment.",
+
+  "min_confidence_any": 0.6,
+  "below_min_any": "UNCLEAR: human review queue, no automated action",
+
+  "rules": {
+    "STOP_REQUESTED":     { "accept_at": 0.5, "accept": "RECORD_STOP_ALL_CHANNELS",     "below": "SUPERVISOR_HOLD_AND_REVIEW" },
+    "HARDSHIP":           { "accept_at": 0.5, "accept": "HARDSHIP_HOLD_AND_HANDOFF",    "below": "REVIEW" },
+    "ABUSIVE":            { "accept_at": 0.6, "accept": "K13_HOLD_AND_HANDOFF",         "below": "REVIEW" },
+    "DISPUTE":            { "accept_at": 0.6, "accept": "K13_HOLD_AND_HANDOFF",         "below": "REVIEW" },
+    "WRONG_PERSON":       { "accept_at": 0.8, "accept": "STOP_VOICE_MARK_UNVERIFIED",   "below": "REVIEW" },
+    "THIRD_PARTY":        { "accept_at": 0.8, "accept": "STOP_VOICE_MARK_UNVERIFIED",   "below": "REVIEW" },
+    "PTP":                { "accept_at": 0.8, "accept": "PTP_HOLD",                     "below": "DOWNGRADE_NEEDS_TIME_NO_DATE" },
+    "PARTIAL_PTP":        { "accept_at": 0.8, "accept": "PTP_HOLD",                     "below": "DOWNGRADE_NEEDS_TIME_NO_DATE" },
+    "ALREADY_PAID":       { "accept_at": 0.6, "accept": "PAYMENT_CLAIM_PENDING",        "below": "REVIEW" },
+    "CALLBACK_REQUESTED": { "accept_at": 0.7, "accept": "SCHEDULE_CALLBACK",            "below": "REVIEW" },
+    "HUMAN_REQUESTED":    { "accept_at": 0.6, "accept": "K13_CALLBACK_REQUEST",         "below": "REVIEW" },
+    "PAY_NOW_LINK":       { "accept_at": 0.6, "accept": "RECORD_INTENT",                "below": "REVIEW" },
+    "NEEDS_TIME_NO_DATE": { "accept_at": 0.6, "accept": "RECORD_INTENT",                "below": "REVIEW" },
+    "REFUSED_TO_PAY":     { "accept_at": 0.6, "accept": "RECORD_INTENT",                "below": "REVIEW" },
+    "LANGUAGE_BARRIER":   { "accept_at": 0.6, "accept": "RECORD_LANGUAGE",              "below": "REVIEW" },
+    "NO_RESPONSE":        { "accept_at": 0.0, "accept": "NONE",                         "below": "NONE" }
+  },
+  "below_actions": {
+    "REVIEW": "human review ticket; no hold, no automated outreach change",
+    "SUPERVISOR_HOLD_AND_REVIEW": "supervisor hold (all channels pause) + review ticket / HITL handoff",
+    "DOWNGRADE_NEEDS_TIME_NO_DATE": "treated as NEEDS_TIME_NO_DATE: no hold, K01 stop-for-day only",
+    "NONE": "nothing"
+  },
+
+  "ptp": {
+    "max_ptp_days_by_band": { "PRE_DUE": 7, "B1": 7, "B2": 5, "B3": 3, "B4": 3 },
+    "max_ptp_days_by_use_case": { "PTP_FOLLOW_UP": 3 },
+    "date_must_be_on_or_after_call_date": true,
+    "hold": "K01 PTP hold through the promise date (ledger PTP_HOLD, inclusive); start_day(promise + 1) checks verified payment",
+    "follow_up_use_case": "PTP_FOLLOW_UP",
+    "follow_up_due_days_after_promise": 1
+  },
+
+  "payment_claim": {
+    "pause_hours": 48,
+    "mechanism": "ledger stop_for_day rows (trigger PAYMENT_CLAIM_PENDING) for every local day the pause touches; expires on its own",
+    "never": "a voice claim never marks an EMI paid; only Ledger.record_payment_verified (D7/LMS) does"
+  },
+
+  "callback": {
+    "must_be_inside_contact_window": true,
+    "must_be_in_future": true,
+    "channel": "voicebot",
+    "on_refused": "WAIT with the gate's reason (caps, quiet day, stop-for-day, holds are never bypassed)"
+  },
+
+  "wrong_person": {
+    "voice_channels": ["voicebot", "ivr"],
+    "effect": "voice consent withdrawn for the number on file (consented=0) + contact UNVERIFIED + re-verification ticket; no loan details ever"
+  },
+
+  "meaningful_reply": {
+    "dispositions": ["PTP", "PARTIAL_PTP", "PAY_NOW_LINK", "ALREADY_PAID", "NEEDS_TIME_NO_DATE",
+                     "CALLBACK_REQUESTED", "HARDSHIP", "DISPUTE", "HUMAN_REQUESTED"],
+    "min_confidence": 0.6,
+    "never_reward": ["NO_RESPONSE", "UNCLEAR"]
+  },
+
+  "review_queue": "COLLECTIONS_SUPERVISOR",
+  "handoff_queue": "COLLECTIONS_SUPERVISOR"
+}
