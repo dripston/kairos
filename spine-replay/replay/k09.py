@@ -203,11 +203,20 @@ class StackRun:
         plan_at = datetime.combine(d, dtime(8, 0))
         t0 = time.perf_counter()
 
+        # K15 placeholder rule the K01 gate can't express (K01 gaps are per channel): no contact
+        # within MIN_DAYS_BETWEEN_CONTACTS days on ANY channel. Applied identically to both arms.
+        def too_soon(b):
+            last = self.log.last_day(b.index)
+            if last is not None and day - last < S.MIN_DAYS_BETWEEN_CONTACTS:
+                self.wait_rules["K15_MIN_DAYS_BETWEEN_CONTACTS"] += 1
+                return True
+            return False
+
         # who to plan, in which order
         if self.arm == "kairos":
             order = []
             for b in self.portfolio:
-                if b.paid or b.opted_out or not b.consents:
+                if b.paid or b.opted_out or not b.consents or too_soon(b):
                     continue
                 band = dpd_band(b.dpd)
                 r = self.ranker.rank(band, self.candidates(b, d), Mode.SIMULATOR, rng=self._rng(day, b.index),
@@ -225,6 +234,8 @@ class StackRun:
                 elif "sms" in b.consents and (day + b.index) % 3 == 0:
                     self.ranker.due[b.borrower_id] = "sms"
                 else:
+                    continue
+                if too_soon(b):
                     continue
                 planned.append(b)
 
@@ -438,7 +449,8 @@ def run_comparison(n_borrowers: int, days: int, seed: int, drift_day: Optional[i
         "matched": {"seed": seed, "borrowers": n_borrowers, "days": days, "start": START.isoformat(),
                     "budget_per_case_inr": budget_per_case_inr, "budget_basis": budget_basis,
                     "budget_pool_inr": round(budget_per_case_inr * n_borrowers, 2),
-                    "caps": f"K01 v{k.policy.version} + lender override {LENDER_ID} (1/day, 3 per 7 days)",
+                    "caps": f"K01 v{k.policy.version} + lender override {LENDER_ID} (1/day, 3 per 7 days)"
+                            f" + K15 {S.MIN_DAYS_BETWEEN_CONTACTS}-day cross-channel gap (replay pre-filter)",
                     "costs_inr": COST_INR, "drift_day": None if drift_day is None else drift_day + 1},
         "baseline": runs["baseline"].report(),
         "kairos": k.report(),

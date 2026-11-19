@@ -1,5 +1,5 @@
 {
-  "_comment": "K15 replay contact rules (PLACEHOLDER until K01 lender caps are agreed), expressed as a K01 lender override so the backend gate enforces them identically for both policies. Lender caps can only tighten K01. Not expressible here: K15's 2-day cross-channel gap (K01 gaps are per channel).",
+  "_comment": "K15 replay contact rules (PLACEHOLDER until K01 lender caps are agreed), expressed as a K01 lender override so the backend gate enforces them identically for both policies. Lender caps can only tighten K01. K15's 2-day cross-channel gap is not expressible here (K01 gaps are per channel); replay/k09.py applies it as a pre-filter to both arms.",
   "lender_id": "REPLAY-K15",
   "effective_from": "2026-11-01",
   "all_channels_per_day_by_band": { "PRE_DUE": 1, "B1": 1, "B2": 1, "B3": 1, "B4": 1 },
