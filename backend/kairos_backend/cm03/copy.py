@@ -206,6 +206,16 @@ COPY: Dict[str, Dict[str, str]] = {
         "hi": "यह बताने के लिए धन्यवाद। मैंने इसे दर्ज कर लिया है (टिकट {ticket_ref}), हमारी टीम का सदस्य इसकी समीक्षा कर आपसे "
               "संपर्क करेगा। चैट पर मैं इस पर कोई वादा नहीं कर सकती।",
     },
+    "BROKEN_PTP_PUSH": {  # K13 broken_ptp >= threshold: no new date is solicited; pay now
+        "en": "I see that two earlier payment dates were missed, so I would request you to pay now if you can. "
+              "You can pay here: {link}",
+        "hi": "मैं देख रही हूँ कि पिछली दो भुगतान तिथियाँ चूक गई थीं, इसलिए आपसे अनुरोध है कि हो सके तो अभी भुगतान करें। "
+              "भुगतान लिंक: {link}",
+    },
+    "END_CONVERSATION": {  # K13 ABUSIVE / LEGAL_THREAT / FRAUD_CLAIM: no argument, routed to a senior team member
+        "en": "I have noted your message and passed it to a senior member of our team, who will follow up with you.",
+        "hi": "मैंने आपका संदेश दर्ज कर लिया है और हमारी टीम के एक वरिष्ठ सदस्य को भेज दिया है, वे आपसे संपर्क करेंगे।",
+    },
     "CLARIFY": {
         "en": "Sorry, I did not get that. Reply 1 Balance & due date, 2 Payment link, 3 I have already paid, 4 I need more "
               "time, 5 Statement / NOC, 6 Talk to a person.",
@@ -235,6 +245,11 @@ PRE_VERIFY_SAFE = frozenset({
     "GREET_VERIFY", "ASK_LOAN_ID", "UNREGISTERED", "OTP_PROMPT", "OTP_RESENT", "OTP_WRONG", "OTP_EXPIRED", "OTP_LOCKED",
     "OTP_LIMIT", "WRONG_NUMBER", "STOP_ACK", "FRAUD_REFUSE", "HANDOFF_HOLD", "LANG_SET", "PRE_VERIFY_NEED",
     "UNKNOWN_HANDOFF", "GOODBYE",
+    # K10 allowed_before_verification (no account field in any of these)
+    "HARDSHIP", "CALLBACK", "END_CONVERSATION",
+    # K10 scripts used in identity_mode="k10" before verification
+    "ACK", "ASK_NAME", "NAME_RETRY", "NAME_FAILED", "STOP_CONFIRMED", "HARDSHIP_ACK", "CALLBACK_CREATED",
+    "WRONG_PERSON", "INJECTION_SAFE", "PAY_NOT_MATCHED",
 })
 
 

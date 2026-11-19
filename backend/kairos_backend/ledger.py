@@ -408,6 +408,29 @@ class Ledger:
             self._audit(c, "system", "ENROLLED", reason=f"campaign {campaign_id}", added=added)
             return added
 
+    def unenroll(self, campaign_id: str, loan_ids: list[str], reason: str = "REMOVED_BY_LENDER") -> int:
+        """K24 budget_scope: take loans out of the budgeted set (e.g. REMOVED_BY_LENDER on re-upload).
+        The pool recomputes on the remaining cases; spend already committed stays counted; queued
+        touches for those loans are canceled and their budget released. History is kept.
+        Returns how many loans left the set."""
+        with self.tx() as c:
+            if c.execute("SELECT 1 FROM campaigns WHERE id=?", (campaign_id,)).fetchone() is None:
+                raise KeyError(f"unknown campaign {campaign_id}")
+            removed, overdue_total = 0, 0
+            for loan_id in loan_ids:
+                e = c.execute("SELECT overdue_at_start_paise FROM enrollments WHERE campaign_id=? AND loan_id=?",
+                              (campaign_id, loan_id)).fetchone()
+                if e is None:
+                    continue
+                c.execute("DELETE FROM enrollments WHERE campaign_id=? AND loan_id=?", (campaign_id, loan_id))
+                self._cancel_queued(c, "campaign_id=? AND loan_id=?", (campaign_id, loan_id), reason)
+                removed += 1
+                overdue_total += e["overdue_at_start_paise"]
+            c.execute("UPDATE campaigns SET allocated_cases = MAX(0, allocated_cases - ?), overdue_at_start_paise ="
+                      " MAX(0, overdue_at_start_paise - ?) WHERE id=?", (removed, overdue_total, campaign_id))
+            self._audit(c, "system", "UNENROLLED", reason=f"campaign {campaign_id}: {reason}", removed=removed)
+            return removed
+
     def set_campaign_status(self, campaign_id: str, status: str, actor: str = "human") -> int:
         """PAUSED / STOPPED cancel queued work for the campaign; returns how many touches were canceled."""
         with self.tx() as c:
