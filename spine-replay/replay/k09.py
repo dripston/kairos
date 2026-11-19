@@ -37,6 +37,7 @@ if _BACKEND not in sys.path:
 
 from kairos_backend.contracts import ArmScore, Candidate, Mode, Ranking, RecordingSink  # noqa: E402
 from kairos_backend.executor import Executor, FakeProvider  # noqa: E402
+from kairos_backend.borrower_context import BorrowerContextModel, ContextualLearner  # noqa: E402
 from kairos_backend.learner import BetaBernoulliLearner  # noqa: E402
 from kairos_backend.ledger import Ledger  # noqa: E402
 from kairos_backend.outcomes import OutcomeFinalizer  # noqa: E402
@@ -125,8 +126,10 @@ class StackRun:
     """One arm of the campaign on a fresh ledger DB."""
 
     def __init__(self, arm: str, portfolio, seed: int, days: int, db_path: str,
-                 budget_per_case_inr: float, drift_day: Optional[int] = None):
+                 budget_per_case_inr: float, drift_day: Optional[int] = None, context: bool = True,
+                 explore: bool = True):
         self.arm, self.seed, self.days = arm, seed, days
+        self.explore = explore   # seeded Thompson sampling on arm choice (SIMULATOR); False = posterior mean
         self.portfolio = copy.deepcopy(portfolio)
         self.policy = load_policy(lender_files=[LENDER_FILE])
         self.ledger = Ledger(self.policy, db_path)
@@ -134,7 +137,8 @@ class StackRun:
         self.providers = {ch: FakeProvider(ch, cost_inr=COST_INR[ch]) for ch in S.CHANNELS}
         self.executor = Executor(self.ledger, self.providers)
         if arm == "kairos":
-            self.ranker = BetaBernoulliLearner(self.ledger)
+            base = BetaBernoulliLearner(self.ledger)
+            self.ranker = ContextualLearner(base, BorrowerContextModel(self.ledger)) if context else base
         else:
             self.ranker = FixedCadenceRanker()
         self.fsm = SupervisorFSM(self.ledger, self.executor, self.ranker, self.sink, mode=Mode.SIMULATOR)
@@ -193,8 +197,8 @@ class StackRun:
                 out.append(Candidate(ch, slot, datetime.combine(d, t), tpl, COST_INR[ch]))
         return out
 
-    def _rng(self, day: int, index: int) -> random.Random:
-        return random.Random(f"{self.seed}:{day}:{index}")
+    def _rng(self, day: int, index: int) -> Optional[random.Random]:
+        return random.Random(f"{self.seed}:{day}:{index}") if self.explore else None
 
     def run_day(self, day: int):
         d = START + timedelta(days=day)
@@ -222,7 +226,11 @@ class StackRun:
                 r = self.ranker.rank(band, self.candidates(b, d), Mode.SIMULATOR, rng=self._rng(day, b.index),
                                      borrower_id=b.borrower_id, persist=False, at=plan_at)
                 if r.action == "SEND":
-                    order.append((-r.chosen.replies_per_inr, -b.dpd, b.index))
+                    # allocate the budget by expected value (posterior mean, borrower-adjusted), not by
+                    # the Thompson draw: exploration picks the arm, it shouldn't randomise who is funded
+                    c = r.chosen
+                    value = c.posterior_mean / c.est_cost_inr if c.est_cost_inr > 0 else 0.0
+                    order.append((-value, -b.dpd, b.index))
             order.sort()
             planned = [self.portfolio[i] for _, _, i in order]
         else:
