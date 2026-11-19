@@ -9,7 +9,7 @@ cd backend
 python -m venv .venv
 .venv/Scripts/activate            # Windows  (macOS/Linux: source .venv/bin/activate)
 pip install -e ".[dev]"
-pytest                            # K01 + K13 cases, K06 ledger/executor/API/SupervisorFSM/HITL, K03 spine + K15 replay, K09, K17/K18 voice, K26 reports, K07/K08 channels, red-team (open findings = strict xfail)
+pytest                            # K01 + K13 cases, K06 ledger/executor/API/SupervisorFSM/HITL, K03 spine + K15 replay, K09, K17/K18 voice, K26 reports, K07/K08 channels, K22 templates + compliance checklist, red-team (open findings = strict xfail)
 python scripts/run_redteam.py     # guardrail red-team: PASS/FAIL per attack -> reports/redteam_report.json (see redteam/README.md)
 uvicorn kairos_backend.api:app --reload    # http://127.0.0.1:8000/docs
 python scripts/bench_ledger.py 50000       # 50k decisions on K03's synthetic dataset
@@ -33,6 +33,7 @@ Environment: `KAIROS_POLICY_DIR` (default `../policy`), `KAIROS_DB` (default `ba
 | `replay/k09.py`, `replay/cn10.py` | K09 | Rehan | K09 replay on the full stack; CN10 cohort-cadence baseline. |
 | `redteam/` | — | — | Guardrail red-team suite: 49 adversarial attacks on K01/K13/K06/K03 guardrails, PASS/FAIL report, open findings. [`redteam/README.md`](redteam/README.md) |
 | `kairos_backend/channels/` | K07/K08 | Rehan | SIMULATED sms/whatsapp/ivr/voicebot providers, callback normalizer, phone-demo adapters (see [Channels](#channels)). |
+| `kairos_backend/templates.py`, `template_compliance.py` | K22 | Yuval | Approved-template selector over `policy/K22-template-catalog/catalog.json` (`sync_to_ledger` feeds the Gate's `TEMPLATE_APPROVED` check) and the 14-rule collections-compliance checklist (see [K22 template selector](#k22-template-selector)). |
 
 ## How K06 uses the spine
 
@@ -136,6 +137,21 @@ Through the full stack, pass `ledger=ledger` so the recipient comes from the spi
 
 The mocks fix the contract the real adapters must meet: implement `send(touch) -> ProviderResult` (`ACCEPTED` with `provider_ref` and actual `cost_paise`, `REJECTED` with a reason, or raise / `UNKNOWN` on timeout) and `status(instruction_id, provider_ref)` that really asks the provider (the Executor calls it before any retry). Translate each provider webhook into the normalized event dict (`channel, instruction_id, provider_ref, status, at|occurred_at, dtmf, duration_s, text, intent, provenance="LIVE", event_id`) and call `apply_callback` — dedupe, ordering, STOP and reply attribution are already handled and tested there. Carry the `instruction_id` through the provider (WhatsApp `biz_opaque_callback_data`, SMS gateway custom ref / DLT `msg_id` mapping) so callbacks need no lookup. For WhatsApp, `WhatsAppCloudTestProvider` already builds the production request shape; swapping the test number for a real one is an env change plus webhook signature verification (`X-Hub-Signature-256`) on an HTTPS endpoint. For SMS in India, a DLT-registered sender/template with a gateway (e.g. K08's choice) replaces the Messages app adapter; keep `read_status` UNKNOWN. Open items: wire `apply_callback` into an API webhook route, map voicebot `PROMISE_TO_PAY` into K13's PTP flow, and replace the demo IVR menu with K17's.
 
+## K22 template selector
+
+```python
+from kairos_backend.templates import TemplateCatalog
+cat = TemplateCatalog.load()                     # policy/K22-template-catalog/catalog.json (KAIROS_POLICY_DIR aware)
+cat.sync_to_ledger(ledger)                       # once at startup: Gate checks the same catalog
+c = cat.select("whatsapp", "hi", None, "STANDARD", policy.band_for(dpd), intent="NEEDS_TIME")
+c.decision, c.template_id, c.reason, c.catalog_version   # ("SEND", "WA_ASKDATE_HI_01", "DE_ESCALATED", "0.2.0-placeholder")
+cat.select("sms", "en", "REMINDER", "STANDARD", "B2", tier=4).template_id   # "SMS_FINAL_EN_01" (T4 is B2+ only)
+cat.tier_ladder("whatsapp", "hi", "B2")         # {1: "WA_REMIND_HI_SOFT_02", 2: "WA_LATEFEE_HI_01", 3: "WA_PAYLINK_HI_01", 4: "WA_FINAL_HI_01"}
+cat.select_for_channels(["whatsapp", "ivr"], "hi", "REMINDER", {"whatsapp": "LOW", "ivr": "WAIT"}, "B2")  # WAIT is per channel
+```
+
+Approved only. The language must be a K01 language and match exactly (no fallback). Intensity `WAIT` → WAIT. `LOW` never escalates, `STANDARD` may de-escalate to `LOW`. The band must be listed on the template. REMINDER templates carry a CN tone tier (T1/T2 LOW, T3/T4 STANDARD). Without `tier` the least intense fitting tier wins. At PRE_DUE a REMINDER is served by `PRE_DUE_REMINDER`. `PAYMENT_RECEIVED` needs a verified payment. Ties go to (tier, lowest id). Every template carries an `approval` block from the compliance checklist; `approved` must agree with it. Unknown channel/purpose/intensity/band ids raise `ValueError`, while a genuine "nothing fits" returns WAIT with a reason. **The catalog is a synthetic PLACEHOLDER until the official D13 file arrives.** See [`policy/K22-template-catalog/README.md`](../policy/K22-template-catalog/README.md) for the swap steps. Tests: `pytest tests/test_templates.py tests/test_template_compliance.py`.
+
 ## Guarantees and how they're tested
 
 | K06 "done when" | Mechanism | Test |
@@ -191,6 +207,9 @@ Errors: 403 role not permitted / maker-checker, 409 locked by guardrails or wron
 - **Any hold cancels the borrower's queued touches** so their budget returns to the pool.
 - **A case = a loan** (K01 "accounts"): pool and cure rate count enrolled loans.
 - `budget_per_case` and collection targets are K01 REQUIRED_INPUTs — supplied per campaign, never defaulted.
+- **K22: an unsupported language is a WAIT, not a fallback.** K01 says "no suitable template → WAIT". A Marathi speaker gets WAIT, not an English or Hindi template.
+- **K22: K13 routed-stop intents** (`ABUSIVE`, `LEGAL_THREAT`, `FRAUD_CLAIM`) and `STOP` map to no template (WAIT `INTENT_NOT_AUTOMATED`) instead of the default REMINDER. `PAYMENT_VERIFIED` maps to `PAYMENT_RECEIVED`. A borrower's unverified `PAID` claim maps to no template (WAIT `PAYMENT_NOT_VERIFIED`): no reminder and no receipt until D7/LMS confirms.
+- **K22: `sync_to_ledger` withdraws ledger templates that are not in the catalog** (`withdraw_missing=True`), so placeholder ids stop passing the Gate after the D13 swap.
 
 ## K09 on the spine
 
