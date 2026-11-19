@@ -22,10 +22,14 @@ from tests.test_ledger import at, ins
 
 PHONE = "+910000000001"
 OTHER = "+910000000002"
+# Throwaway credentials generated per test run, so no literal credential lives in the repo.
+import secrets as _secrets
+TEST_USER = "user-" + _secrets.token_hex(3)
+TEST_PASSWORD = _secrets.token_urlsafe(12)
 BASE = "http://192.0.2.10:8080"          # TEST-NET-1 documentation address
 ENV = {"KAIROS_DEMO_ANDROID_SMS": "1", "KAIROS_DEMO_ALLOWLIST": PHONE, "SMSGATE_MODE": "local",
-       "SMSGATE_URL": BASE, "SMSGATE_USER": "sms", "SMSGATE_PASSWORD": "pw-test-1234567"}
-AUTH = "Basic " + base64.b64encode(b"sms:pw-test-1234567").decode()
+       "SMSGATE_URL": BASE, "SMSGATE_USER": TEST_USER, "SMSGATE_PASSWORD": TEST_PASSWORD}
+AUTH = "Basic " + base64.b64encode(f"{TEST_USER}:{TEST_PASSWORD}".encode()).decode()
 
 
 @pytest.fixture(autouse=True)
@@ -108,7 +112,7 @@ def test_refuses_without_config_from_env(drop, err):
 def test_refuses_bad_mode_url_and_sim():
     gw = FakeGateway()
     for bad, err in [({"SMSGATE_MODE": "lan"}, "BAD_SMSGATE_MODE"), ({"SMSGATE_URL": "ftp://x"}, "BAD_SMSGATE_URL"),
-                     ({"SMSGATE_URL": "http://u:p@192.0.2.10:8080"}, "BAD_SMSGATE_URL"),
+                     ({"SMSGATE_URL": "http://" + TEST_USER + ":" + TEST_PASSWORD + "@192.0.2.10:8080"}, "BAD_SMSGATE_URL"),
                      ({"SMSGATE_MODE": "cloud", "SMSGATE_URL": "http://example.test"}, "BAD_SMSGATE_URL"),
                      ({"SMSGATE_SIM": "4"}, "BAD_SMSGATE_SIM")]:
         assert AndroidSmsGatewayProvider(env=env(**bad), transport=gw, dry_run=False).send(touch()).error.startswith(err)
@@ -123,7 +127,7 @@ def test_dry_run_is_default_and_preview_is_masked():
     assert (r.status, r.error) == ("REJECTED", "DRY_RUN") and gw.calls == [] and p.sent == {}
     (pv,) = p.dry_runs
     dumped = json.dumps(pv.request)
-    assert "0000000001" not in dumped and "pw-test-1234567" not in dumped and AUTH not in dumped
+    assert "0000000001" not in dumped and TEST_PASSWORD not in dumped and AUTH not in dumped
     assert pv.request["json"]["phoneNumbers"] == ["+********0001"]
     assert pv.request["url"] == f"{BASE}/messages" and pv.recipient_masked == "+********0001"
 
@@ -287,7 +291,7 @@ def test_logs_mask_numbers_and_never_show_the_password(caplog):
     AndroidSmsGatewayProvider(env=env()).ingest_webhook(hook("sms:received", "x", sender=OTHER, message="hi"))
     text = caplog.text
     assert "+********0001" in text and "+********0002" in text
-    assert "0000000001" not in text and "0000000002" not in text and "pw-test-1234567" not in text
+    assert "0000000001" not in text and "0000000002" not in text and TEST_PASSWORD not in text
 
 
 # ---------------------------------------------------------------- selection
@@ -325,7 +329,7 @@ def test_cli_dry_run_prints_masked_request_and_sends_nothing(cli_env, capsys):
     out = capsys.readouterr().out
     assert rc == 0 and "DRY RUN" in out and "demo-android-sms (local mode)" in out
     assert '"url": "http://192.0.2.10:8080/messages"' in out and "+********0001" in out
-    assert "0000000001" not in out and "pw-test-1234567" not in out
+    assert "0000000001" not in out and TEST_PASSWORD not in out
 
 
 def test_cli_live_send_and_status(cli_env, capsys):
