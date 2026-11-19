@@ -637,12 +637,36 @@ class LiveManager:
         self.current: Optional[LiveCampaign] = None
         self._lock = threading.Lock()
 
-    def start(self, **kw) -> LiveCampaign:
+    def start(self, mode: str = "race", **kw) -> LiveCampaign:
+        """mode "race" (default): K09 vs CN10, this module. mode "full": one campaign through every component
+        (replay/live_full.py), with optional interactive_approvals / approval_wait_s."""
         with self._lock:
             if self.current is not None and self.current.running:
                 raise Busy("a live run is already in progress; stop it first")
-            self.current = self.factory(**kw).start()
+            if mode == "full":
+                from replay.live_full import FullCampaign
+                self.current = FullCampaign(**kw).start()
+            elif mode == "race":
+                kw.pop("interactive_approvals", None)
+                kw.pop("approval_wait_s", None)
+                self.current = self.factory(**kw).start()
+            else:
+                raise ValueError(f"unknown mode {mode!r} (race | full)")
             return self.current
+
+    def borrower(self, borrower_id: str) -> dict:
+        """One borrower's released events across components (full mode). KeyError if unknown / not full mode."""
+        cur = self.current
+        if cur is None or not hasattr(cur, "borrower"):
+            raise KeyError(borrower_id)
+        return cur.borrower(borrower_id)
+
+    def decide_approval(self, approval_id: str, approve: bool, reason: Optional[str] = None) -> dict:
+        """Interactive approvals (full mode): the run's worker calls the real HITL approve / reject."""
+        cur = self.current
+        if cur is None or not hasattr(cur, "submit_approval"):
+            raise KeyError(approval_id)
+        return cur.submit_approval(approval_id, approve, reason)
 
     def stop(self, timeout: float = 10.0) -> dict:
         with self._lock:

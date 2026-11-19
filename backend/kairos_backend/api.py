@@ -23,7 +23,7 @@ import threading
 from datetime import date, datetime
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated, Literal, Optional
 
 from fastapi import FastAPI, Header, HTTPException, Query, Response
 from fastapi.concurrency import run_in_threadpool
@@ -861,6 +861,14 @@ class LiveStartIn(BaseModel):
     borrowers: int = Field(300, ge=10, le=2000)
     days: int = Field(14, ge=1, le=30)
     speed: float = Field(1.0, ge=0.25, le=64)
+    mode: Literal["race", "full"] = "race"
+    interactive_approvals: bool = False                     # full mode: approvals wait for a real click
+    approval_wait_s: float = Field(45.0, ge=5, le=600)      # full mode, interactive: how long a day waits
+
+
+class LiveApprovalIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    reason: Optional[str] = Field(None, max_length=200)
 
 
 class LiveControlIn(BaseModel):
@@ -882,10 +890,14 @@ def demo_live_start(body: LiveStartIn):
     if not lifecycle.accepting:
         raise HTTPException(503, "shutting down")
     try:
-        run = live_runs.start(seed=body.seed, borrowers=body.borrowers, days=body.days, speed=body.speed)
+        extra = ({"interactive_approvals": body.interactive_approvals, "approval_wait_s": body.approval_wait_s}
+                 if body.mode == "full" else {})
+        run = live_runs.start(mode=body.mode, seed=body.seed, borrowers=body.borrowers, days=body.days,
+                              speed=body.speed, **extra)
     except _live.Busy as e:
         raise HTTPException(409, str(e))
-    return {"started": True, "seed": run.seed, "borrowers": run.n, "days": run.days, "speed": run.speed,
+    return {"started": True, "mode": body.mode, "seed": run.seed, "borrowers": run.n, "days": run.days,
+            "speed": run.speed, "interactive_approvals": bool(getattr(run, "interactive", False)),
             "provenance": _live.PROVENANCE}
 
 
@@ -905,6 +917,38 @@ def demo_live_control(body: LiveControlIn):
 def demo_live_stop():
     """Stop the running campaign: the worker stops between steps, closes its SQLite files, removes its temp dir."""
     return live_runs.stop()
+
+
+@app.get("/demo/live/borrower/{borrower_id}")
+def demo_live_borrower(borrower_id: str):
+    """Full mode: one borrower's released events across every component (oldest first) plus a card. SIMULATED."""
+    try:
+        return live_runs.borrower(borrower_id)
+    except KeyError:
+        raise HTTPException(404, "no such borrower in the current full-mode run")
+
+
+def _live_decide(approval_id: str, approve: bool, body: Optional[LiveApprovalIn]):
+    from replay.live_full import NotPending
+    try:
+        out = live_runs.decide_approval(approval_id, approve, body.reason if body else None)
+    except KeyError:
+        raise HTTPException(404, "no such approval in the current full-mode run")
+    except NotPending as e:
+        raise HTTPException(409, str(e))
+    return {**out, "provenance": _live.PROVENANCE}
+
+
+@app.post("/demo/live/approvals/{approval_id}/approve")
+def demo_live_approve(approval_id: str, body: Optional[LiveApprovalIn] = None):
+    """Full mode with interactive_approvals: the real HITL.approve as role supervisor (the Gate runs again)."""
+    return _live_decide(approval_id, True, body)
+
+
+@app.post("/demo/live/approvals/{approval_id}/reject")
+def demo_live_reject(approval_id: str, body: Optional[LiveApprovalIn] = None):
+    """Full mode with interactive_approvals: the real HITL.reject as role supervisor (budget released)."""
+    return _live_decide(approval_id, False, body)
 
 
 # ---------- live event feed (for the demo UI's streaming panel) ----------
