@@ -119,17 +119,181 @@ DEV simulator lets IVR produce replies and the replay follows the simulator (fla
 
 ### Multi-seed result (CM-02 check, SIMULATED)
 
-1,500 borrowers × 14 days, WhatsApp drift from day 7, budget matched to CN10's spend, K15 caps on both arms, K09 ranking by posterior mean (the default; `--explore` adds Thompson draws):
+1,500 borrowers × 14 days, WhatsApp drift from day 7, budget pool matched to CN10's unconstrained
+spend, K15 caps on every arm, K09 ranking by posterior mean (`--explore` adds Thompson draws; on the
+tune seeds it gave +8.1%, +10.6%, −12.4%, +2.9%, so exploration stays in SANDBOX/SIMULATOR learning runs).
 
-| Seed | CN10 replies / ₹1,000 | K09 replies / ₹1,000 | Change | Verified payments CN10 → K09 | Cap breaches |
-|---|---|---|---|---|---|
-| 7 | 56.18 | 78.30 | +39.4% | 35 → 60 | 0 / 0 |
-| 42 | 58.79 | 74.54 | +26.8% | 53 → 62 | 0 / 0 |
-| 99 | 65.27 | 77.85 | +19.3% | 45 → 62 | 0 / 0 |
-| 2026 | 64.87 | 87.91 | +35.5% | 53 → 69 | 0 / 0 |
+> **Current replay default = the PR #17 configuration below + `stop_penalty=25`** (opt-out risk priced
+> into the value; see *Opt-out (STOP) risk* at the end of this section, which has its own tune / held-out /
+> final table). The tables directly below are the PR #17 step (`--kairos-opts '{"stop_penalty": 0}'`).
 
-Mean +30.2%, minimum +19.3%. With `--explore` (Thompson) the same seeds give +8.1%, +10.6%, −12.4%, +2.9%, so exploration is left to SANDBOX/SIMULATOR learning runs and the comparison uses the production ranking. Reproduce one seed:
+**PR #17 configuration (k09/optimize, step 1):** posterior mean + borrower context, plus two Kairos-side options
+(`replay.k09.KairosOptions`), both built only from the ledger:
+
+* `decay=0.7` discounts arm evidence by 0.7 per day since the touch was executed, so the band ×
+  channel × slot posterior follows the E17 WhatsApp drift in a few days instead of staying anchored to
+  week 1.
+* `value_floor_rel=0.5` is a marginal-value spending rule. After 200 finalized touches, a candidate
+  whose borrower-adjusted expected replies per rupee is below 0.5 × the campaign's realized replies
+  per rupee so far WAITs. K01 pacing carries the unspent money forward. It spends 90–95% of the pool
+  (93–100% of what CN10 itself spends) instead of about 100%.
+
+`--legacy-k09` runs the default from before k09/optimize. `--kairos-opts '{...}'` overrides single options.
+
+**Protocol.** Options were tuned on seeds 7, 42, 99 and 2026 and validated on held-out seeds 11, 123
+and 555. The final configuration was then run once on unseen seeds 31337, 8080 and 4242, next to the
+previous default. The baseline, budget matching, caps and simulator are unchanged: the CN10 columns
+are identical in both runs. Change = K09 replies/₹1,000 vs CN10 replies/₹1,000.
+
+| Set | Seed | CN10 replies/₹1k | Previous default | **New default** | Replies CN10 / prev / new | Verified payments CN10 / prev / new | Spend ₹ CN10 / prev / new | K01 breaches / K15 violations |
+|---|---|---|---|---|---|---|---|---|
+| tune | 7 | 56.18 | 78.30 (+39.4%) | **89.21 (+58.8%)** | 163 / 236 / 242 | 35 / 60 / 59 | 2,901 / 3,014 / 2,713 | 0 / 0 |
+| tune | 42 | 58.79 | 74.54 (+26.8%) | **86.50 (+47.1%)** | 169 / 228 / 242 | 53 / 62 / 62 | 2,875 / 3,059 / 2,798 | 0 / 0 |
+| tune | 99 | 65.27 | 77.85 (+19.3%) | **88.03 (+34.9%)** | 191 / 237 / 249 | 45 / 62 / 65 | 2,926 / 3,044 / 2,829 | 0 / 0 |
+| tune | 2026 | 64.87 | 87.91 (+35.5%) | **92.72 (+42.9%)** | 186 / 265 / 265 | 53 / 69 / 69 | 2,867 / 3,014 / 2,858 | 0 / 0 |
+| held-out | 11 | 55.17 | 66.06 (+19.7%) | **82.12 (+48.8%)** | 163 / 207 / 231 | 39 / 48 / 56 | 2,954 / 3,134 / 2,813 | 0 / 0 |
+| held-out | 123 | 67.38 | 89.24 (+32.4%) | **97.18 (+44.2%)** | 197 / 269 / 276 | 61 / 72 / 76 | 2,924 / 3,014 / 2,840 | 0 / 0 |
+| held-out | 555 | 66.42 | 76.95 (+15.9%) | **86.67 (+30.5%)** | 192 / 232 / 245 | 48 / 65 / 72 | 2,891 / 3,015 / 2,827 | 0 / 0 |
+| final | 31337 | 60.93 | 75.67 (+24.2%) | **90.10 (+47.9%)** | 178 / 227 / 245 | 50 / 52 / 57 | 2,921 / 3,000 / 2,719 | 0 / 0 |
+| final | 8080 | 60.95 | 89.69 (+47.2%) | **98.23 (+61.2%)** | 179 / 273 / 276 | 41 / 67 / 65 | 2,937 / 3,044 / 2,810 | 0 / 0 |
+| final | 4242 | 61.95 | 86.18 (+39.1%) | **96.67 (+56.0%)** | 182 / 265 / 282 | 43 / 76 / 81 | 2,938 / 3,075 / 2,917 | 0 / 0 |
+
+Mean / minimum change vs CN10, previous → new default: tune +30.2% / +19.3% → +45.9% / +34.9%;
+held-out +22.7% / +15.9% → +41.2% / +30.5%; final +36.8% / +24.2% → +55.0% / +47.9%. On every
+seed the new default gets at least as many replies as the previous one and more than CN10. Verified
+payments are higher than CN10 on every seed, but on seeds 7 and 8080 they are slightly lower than
+the previous default (60 → 59 and 67 → 65). The new default spends 5–10% less than the previous
+default. The ratio still rises when spend is held fixed: `decay` alone uses the whole pool and
+reaches +36.1% / +25.3% on the tune seeds. STOP opt-outs are higher than CN10 for both K09 defaults
+(e.g. final seeds CN10 10 / 18 / 18, previous 22 / 25 / 23, new 22 / 30 / 27). The replies/₹ bar
+does not count this cost.
+
+**What was tried.** Each option was run alone on the tune seeds, change vs CN10 in replies/₹. Spend is
+about the same as the previous default unless a spend figure is given:
+
+| Option (alone unless noted) | 7 | 42 | 99 | 2026 | Mean / min | Note |
+|---|---|---|---|---|---|---|
+| previous default | +39.4 | +26.8 | +19.3 | +35.5 | +30.2 / +19.3 | |
+| `decay` 0.9 | +44.1 | +31.8 | +22.3 | +37.6 | +34.0 / +22.3 | |
+| `decay` 0.8 | +42.3 | +32.9 | +22.8 | +37.6 | +33.9 / +22.8 | |
+| `decay` 0.7 | +44.1 | +39.6 | +25.3 | +35.5 | +36.1 / +25.3 | held-out +29.1 / +15.9 |
+| `decay` 0.6 | +46.5 | +37.2 | +31.1 | +45.1 | +40.0 / +31.1 | combined with the floor it did worse than 0.7 (below) |
+| `recency: gap` (finer fatigue feature) | +41.7 | +28.4 | +22.8 | +38.1 | +32.8 / +22.8 | adds nothing on top of decay 0.7 (+36.9 / +25.3) |
+| `affinity_strength` 10 (borrower × channel) | +40.5 | +27.9 | +19.8 | – | – | within noise; stopped after 3 seeds |
+| `hier_strength` 50 (slots pooled across bands) | +34.6 | +20.7 | +18.8 | – | – | worse on all 3; stopped |
+| `payment_lambda` 0.1 (demo propensity rule) | – | +38.4 | +0.2 | – | – | unstable; stopped |
+| `min_reply_prob` 0.02 (lets email in) | – | +29.6 | +8.7 | – | – | unstable; stopped |
+| `min_replies_per_inr` 0.15 (absolute floor) | – | +84.8 | +66.5 | – | – | spends 65% of CN10, payments 51 / 53 (below previous default); rejected |
+| `value_floor_rel` 0.5 | +70.8 | +53.1 | +33.6 | +51.2 | +52.2 / +33.6 | spends 83–94% of CN10; 42: replies 216 vs 228 |
+| `value_floor_rel` 0.75 / 1.0 | – | +58.5 / +66.2 | +37.2 / +46.1 | +61.2 / – | – | spend falls further (74–91% of CN10) |
+| **decay 0.7 + value_floor_rel 0.5** | +58.8 | +47.1 | +34.9 | +42.9 | **+45.9 / +34.9** | chosen; held-out +41.2 / +30.5 |
+| decay 0.7 + value_floor_rel 0.75 | +56.2 | +48.3 | +33.7 | +43.7 | +45.5 / +33.7 | held-out +41.1 / +30.5 |
+| decay 0.6 + value_floor_rel 0.5 | +53.4 | +40.5 | +34.0 | +46.5 | +43.6 / +34.0 | held-out +40.5 / +25.1 |
+
+Selection rule, set on the tune seeds: best tune mean and minimum replies/₹, with verified payments
+and replies at or above CN10 on every tune seed. The held-out seeds only validated candidates. The
+two floor levels with decay 0.7 tied there, and 0.5 was kept for its better tune mean. Absolute floors raise replies/₹ mainly by
+not spending: about a third of the pool goes unspent and payments fall. So they stay behind a flag.
+
+Reproduce one seed (current default, the PR #17 step, then the default from before k09/optimize):
 
 ```bash
 python3 scripts/run_k09_replay.py --borrowers 1500 --days 14 --seed 42 --baseline both
+python3 scripts/run_k09_replay.py --borrowers 1500 --days 14 --seed 42 --kairos-opts '{"stop_penalty": 0}'
+python3 scripts/run_k09_replay.py --borrowers 1500 --days 14 --seed 42 --legacy-k09
 ```
+
+#### Opt-out (STOP) risk (k09/optimize, step 2: the current default)
+
+The PR #17 configuration drew more STOPs than CN10: 89 vs 61 on the tune seeds. Every STOP was charged
+to the touch whose 24 h reply window held it.
+
+**Where the STOPs come from.** Totals over the 4 tune seeds, per touch:
+
+| | CN10 STOPs / touches | K09 (PR #17) STOPs / touches | STOPs per 100 replies, CN10 / K09 |
+|---|---|---|---|
+| WhatsApp | 37 / 13,662 (2.7‰) | 69 / 22,420 (3.1‰) | 7.8 / 8.6 |
+| SMS | 22 / 9,065 (2.4‰) | 19 / 8,425 (2.3‰) | 11.2 / 9.9 |
+| IVR | 2 / 2,559 (0.8‰) | 1 / 82 | 5.4 / – |
+| borrower's 1st touch | 9 / 5,825 | 15 / 5,840 | 3.2 / 4.1 |
+| 2nd touch | 21 / 5,646 | 27 / 5,723 | 10.7 / 11.2 |
+| 3rd+ touch | 31 / 13,815 | 47 / 19,364 | 13.5 / 12.0 |
+| days 1–6 (before drift) | 35 / 12,709 | 63 / 16,604 | – |
+| days 8–13 | 26 / 12,577 | 26 / 14,323 | – |
+
+Two patterns stand out:
+
+* Per reply, CN10 and K09 draw about the same STOPs (8.6 vs 8.9 per 100 replies). K09's excess comes
+  from sending about 22% more touches, mostly cheap WhatsApp in week 1.
+* A borrower's 2nd and later touches draw about 3× more STOPs per reply than the first.
+
+So STOPs cannot be cut for free. The lever is fewer repeat touches to people who have not replied.
+
+**What was added.** `kairos_backend/stop_risk.py` (`StopRiskModel`) learns P(STOP | touch) per channel ×
+contact number (n0, n1, n2, n3+) from the ledger. Its inputs are the spine `events` STOP records
+(`record_stop`) and `touch_outcomes`. It uses hierarchical Beta shrinkage (pooled → channel → segment)
+and counts only touches whose reply window has closed. `ContextualLearner(stop_penalty=μ)` values each
+arm at (p_reply − μ·P(STOP)) per rupee, and the budget order and the relative value floor both use that
+value. `stop_max` is a hard WAIT above a risk cap.
+
+**Frontier on the tune seeds** (sums over 7 / 42 / 99 / 2026; CN10: 61 STOPs, 709 replies, 186
+payments). Change is the replies/₹ change vs CN10:
+
+| K09 configuration | STOPs | Replies | Payments | Spend vs CN10 | Change mean / min |
+|---|---|---|---|---|---|
+| PR #17 (μ = 0) | 89 | 998 | 255 | 94–100% | +45.9% / +34.9% |
+| μ = 10 | 86 | 978 | 252 | 83–99% | +53.4% / +29.2% |
+| μ = 15 | 75 | 896 | 218 | 67–79% | +73.1% / +42.2% |
+| μ = 20 | 64 | 845 | 207 | 50–83% | +81.3% / +38.2% |
+| **μ = 25 (chosen)** | **61** | **795** | **193** | **49–68%** | **+93.9% / +58.8%** |
+| μ = 30 | 53 | 732 | 180 | 49–62% | +95.5% / +74.7% |
+| μ = 40 | 44 | 602 | 145 | 33–46% | +110.8% / +74.7% |
+| μ = 20, shrinkage 500 / 5000 | 66 / 65 | 850 / 816 | 211 / 202 | 49–83% | +84.5% / +42.1%, +83.2% / +49.4% |
+| control: absolute floor 0.15 replies/₹, no STOP model | 78 | 970 | 245 | 79–90% | +65.0% / +40.4% |
+| control: absolute floor 0.25 replies/₹, no STOP model | 74 | 877 | 223 | 57–68% | +90.6% / +75.0% |
+| `stop_max` 0.004 (seeds 42, 99 only) | 39 (CN10 31) | 488 | 129 | 95–100% | +39.5% / +36.0% |
+| `stop_max` 0.003 (seeds 42, 99 only) | 13 (CN10 31) | 180 | 54 | 17–27% | – (replies far below CN10) |
+
+The controls cut spend without pricing STOPs. At similar replies, μ = 20–25 draws fewer STOPs than a
+blunt cut (7.7 vs 8.4 STOPs per 100 replies), so the risk model adds something beyond spending less.
+Most of the STOP reduction, though, comes from contacting less.
+
+The selection rule, set on the tune seeds, was: the smallest μ whose tune STOPs are ≤ CN10's, with
+replies ≥ CN10 on every tune seed. That gives μ = 25. The default rule (held-out mean STOPs must fall,
+and every held-out and final seed must stay ≥ +20% replies/₹) passed, so `stop_penalty=25` is now the
+replay default.
+
+**Result** (PR #17 step vs current default, per seed). Breaches and K15 violations were 0 / 0 for every arm on every seed:
+
+| Set | Seed | CN10 replies/₹1k | PR #17 | **Current (μ = 25)** | STOPs CN10 / #17 / now | Replies CN10 / #17 / now | Payments CN10 / #17 / now | Spend ₹ CN10 / #17 / now |
+|---|---|---|---|---|---|---|---|---|
+| tune | 7 | 56.18 | 89.21 (+58.8%) | **110.32 (+96.4%)** | 11 / 23 / 14 | 163 / 242 / 219 | 35 / 59 / 46 | 2,901 / 2,713 / 1,985 |
+| tune | 42 | 58.79 | 86.50 (+47.1%) | **116.02 (+97.3%)** | 15 / 21 / 12 | 169 / 242 / 180 | 53 / 62 / 46 | 2,875 / 2,798 / 1,552 |
+| tune | 99 | 65.27 | 88.03 (+34.9%) | **103.68 (+58.8%)** | 16 / 18 / 14 | 191 / 249 / 194 | 45 / 65 / 50 | 2,926 / 2,829 / 1,871 |
+| tune | 2026 | 64.87 | 92.72 (+42.9%) | **144.86 (+123.3%)** | 19 / 27 / 21 | 186 / 265 / 202 | 53 / 69 / 51 | 2,867 / 2,858 / 1,394 |
+| held-out | 11 | 55.17 | 82.12 (+48.8%) | **95.64 (+73.4%)** | 16 / 28 / 18 | 163 / 231 / 180 | 39 / 56 / 39 | 2,954 / 2,813 / 1,882 |
+| held-out | 123 | 67.38 | 97.18 (+44.2%) | **141.99 (+110.7%)** | 23 / 30 / 22 | 197 / 276 / 203 | 61 / 76 / 56 | 2,924 / 2,840 / 1,430 |
+| held-out | 555 | 66.42 | 86.67 (+30.5%) | **101.31 (+52.5%)** | 15 / 19 / 13 | 192 / 245 / 202 | 48 / 72 / 62 | 2,891 / 2,827 / 1,994 |
+| final | 2718 | 66.56 | 80.16 (+20.4%) | **109.86 (+65.1%)** | 11 / 14 / 12 | 194 / 231 / 207 | 58 / 63 / 52 | 2,915 / 2,882 / 1,884 |
+| final | 1618 | 53.76 | 76.16 (+41.7%) | **109.10 (+102.9%)** | 11 / 19 / 12 | 156 / 214 / 172 | 43 / 61 / 54 | 2,902 / 2,810 / 1,577 |
+| final | 9001 | 59.15 | 82.45 (+39.4%) | **101.43 (+71.5%)** | 9 / 25 / 16 | 176 / 238 / 202 | 48 / 56 / 50 | 2,976 / 2,887 / 1,992 |
+
+**STOPs**, CN10 / PR #17 / now:
+
+* tune: 61 / 89 / 61 (parity)
+* held-out: 54 / 77 / 53 (parity)
+* final (unseen): 31 / 58 / 40. That is 31% below PR #17 but still 29% above CN10, so parity was not
+  reached on the final seeds.
+
+**Replies/₹ change vs CN10**, mean / min, PR #17 → now: held-out +41.2 / +30.5 → +78.9 / +52.5;
+final +33.8 / +20.4 → +79.8 / +65.1.
+
+**The cost:**
+
+* Spend falls to 49–69% of CN10's, because the penalty mostly withholds repeat touches.
+* Replies fall 15–22% vs PR #17, but stay above CN10 on every seed.
+* Verified payments fall 13–24% vs PR #17. They are below CN10 on 42, 2026, 123 and 2718 (e.g. 46
+  vs 53) and equal on 11.
+
+If payments matter more than opt-outs, `{"stop_penalty": 20}` or `{"stop_penalty": 0}` (PR #17) are
+the points to use. The trade-off is set by μ, and the frontier above is the menu.
