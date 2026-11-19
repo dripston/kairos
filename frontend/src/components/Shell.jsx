@@ -1,15 +1,25 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   Gauge, Megaphone, Database, TrendingUp, Search, FlaskConical, ChevronRight, RotateCcw,
-  CircleCheck, TriangleAlert, Info, CircleX, X, ShieldCheck, Pause, Play, Sun,
+  CircleCheck, TriangleAlert, Info, CircleX, X, ShieldCheck, Pause, Play, Sun, AudioLines, MessagesSquare, ExternalLink, Route,
 } from 'lucide-react'
 import { useKairos, useDerived, fmtClock } from '../lib/store'
 import { CAMPAIGN_DAYS, CHANNEL_META, HERO_ID } from '../lib/mock'
 import { Button, Chip, Dot, cx, inr, Segmented } from './ui'
+import { ApiStatusPill } from './live'
+import { useApi, useApiStatus, useHealthPoll } from '../api/hooks'
+import { CM03_CONSOLE_URL, getCapBreaches, getRoutes } from '../api/kairos'
+import { ROLE_ACTOR, ROLE_LABEL } from '../api/config'
 
 const NAV = [
-  { group: 'Overview', items: [{ to: '/learning', label: 'Learning & Proof', icon: TrendingUp }] },
-  { group: 'Operations', items: [{ to: '/control', label: 'Control Room', icon: Gauge }] },
+  { group: 'Overview', items: [
+    { to: '/journey', label: 'Live journey', icon: Route },
+    { to: '/learning', label: 'Learning & Proof', icon: TrendingUp },
+  ] },
+  { group: 'Operations', items: [
+    { to: '/control', label: 'Control Room', icon: Gauge },
+    { to: '/voice', label: 'Voice bots', icon: AudioLines },
+  ] },
   { group: 'Business', items: [
     { to: '/campaigns', label: 'Campaign Management', icon: Megaphone },
     { to: '/crm', label: 'Smart CRM', icon: Database },
@@ -25,8 +35,16 @@ function Logo() {
   )
 }
 
+// CM-03 WhatsApp servicing console (cm03/whatsapp-servicing): shown only when the running backend serves it.
+function useCm03Link() {
+  const status = useApiStatus()
+  const res = useApi((o) => getRoutes(o), { deps: [status.state === 'online'], enabled: status.state === 'online' })
+  return res.source === 'live' && res.data?.has('/cm03/console')
+}
+
 function Sidebar() {
   const { state, dispatch } = useKairos()
+  const cm03 = useCm03Link()
   return (
     <aside className="flex w-[248px] shrink-0 flex-col border-r border-line bg-bg">
       <div className="flex items-center justify-between px-5 pt-5 pb-4">
@@ -47,6 +65,15 @@ function Sidebar() {
             ))}
           </div>
         ))}
+        {cm03 && (
+          <div className="mb-4">
+            <div className="px-2.5 pb-1.5 text-[12.5px] text-muted">CM-03</div>
+            <a href={CM03_CONSOLE_URL} target="_blank" rel="noreferrer"
+              className="mb-0.5 flex items-center gap-3 rounded-lg border border-transparent px-2.5 py-2 text-[14.5px] text-fg/85 hover:bg-raised">
+              <MessagesSquare size={16} strokeWidth={1.8} /> WhatsApp console <ExternalLink size={12} className="ml-auto text-faint" />
+            </a>
+          </div>
+        )}
         <div className="mx-2.5 mt-2 rounded-lg border border-line bg-surface p-3 text-[12px] text-muted">
           <div className="mb-1 flex items-center gap-1.5 font-semibold text-fg"><ShieldCheck size={13} className="text-ok" /> Hard guardrails</div>
           Consent, STOP and contact caps can't be overridden by anyone.
@@ -55,12 +82,12 @@ function Sidebar() {
       <div className="border-t border-line p-3">
         <div className="mb-2 px-1 text-[11.5px] text-muted">Acting as</div>
         <Segmented size="sm" value={state.role} onChange={(role) => dispatch({ type: 'SET_ROLE', role })}
-          options={[{ value: 'operator', label: 'Operator' }, { value: 'policy', label: 'Policy owner' }]} />
+          options={[{ value: 'operator', label: 'Operator' }, { value: 'supervisor', label: 'Supervisor' }, { value: 'policy', label: 'Policy' }]} />
         <div className="mt-3 flex items-center gap-2.5 px-1">
-          <div className="grid h-8 w-8 place-items-center rounded-full bg-info/20 text-[11px] font-bold text-info">{state.role === 'operator' ? 'OP' : 'PO'}</div>
+          <div className="grid h-8 w-8 place-items-center rounded-full bg-info/20 text-[11px] font-bold text-info">{{ operator: 'OP', supervisor: 'SV', policy: 'PO' }[state.role]}</div>
           <div className="min-w-0 flex-1 leading-tight">
-            <div className="truncate text-[13px] font-semibold">{state.role === 'operator' ? 'ops.desk' : 'policy.owner'}</div>
-            <div className="text-[11.5px] text-muted">{state.role === 'operator' ? 'Campaign operator' : 'Policy owner'}</div>
+            <div className="truncate text-[13px] font-semibold">{ROLE_ACTOR[state.role]}</div>
+            <div className="text-[11.5px] text-muted">{state.role === 'operator' ? 'Campaign operator' : ROLE_LABEL[state.role]} · X-Kairos-Role</div>
           </div>
           <Sun size={15} className="text-muted" />
         </div>
@@ -74,6 +101,9 @@ const ENV_TONE = { LIVE_SANDBOX: 'ok', REPLAY: 'info', SIMULATED: 'warn', OFFICI
 function StatusBar() {
   const { state, dispatch } = useKairos()
   const d = useDerived()
+  const status = useApiStatus()
+  const breaches = useApi((o) => getCapBreaches(o), { fallback: () => ({ count: d.capBreaches, rows: [] }), deps: [status.state], poll: 20000 })
+  const nBreach = breaches.data?.count ?? 0
   const spentPct = d.spend / d.budgetTotal
   return (
     <div className="sticky top-0 z-30 flex h-12 shrink-0 items-center gap-3 border-b border-line bg-bg/90 px-8 backdrop-blur">
@@ -90,8 +120,10 @@ function StatusBar() {
         <span className="text-[12px] text-muted">+ {inr(d.reserved, 2)} reserved</span>
       </div>
       <div className="mx-1 h-5 w-px bg-line" />
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-ok/25 bg-ok/10 px-2.5 py-0.5 text-[12px] font-semibold text-ok">
-        <ShieldCheck size={12} /> Cap breaches: 0
+      <ApiStatusPill />
+      <span title={breaches.source === 'live' ? 'GET /cap-breaches — independent recount of every live touch (SIMULATED sends)' : 'API offline — mock value (SIMULATED)'}
+        className={cx('inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[12px] font-semibold', nBreach ? 'border-bad/30 bg-bad/10 text-bad' : 'border-ok/25 bg-ok/10 text-ok')}>
+        <ShieldCheck size={12} /> Cap breaches: {nBreach}
       </span>
       <Button size="sm" variant="ghost" icon={FlaskConical} onClick={() => dispatch({ type: 'TOGGLE_SIM' })}>Simulation <span className="text-faint">⇧S</span></Button>
     </div>
@@ -193,6 +225,7 @@ function Toasts() {
 }
 
 export default function Shell() {
+  useHealthPoll()
   return (
     <div className="flex h-full">
       <Sidebar />
