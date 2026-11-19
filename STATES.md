@@ -72,8 +72,8 @@ happens next.
 
 | Machine | Version | States | Transitions | Declared from | Conformance |
 |---|---|---|---|---|---|
-| [`k06.touch`](#k06touch-v1) | 1 | 9 | 48 | this branch | tests/fsm/test_conformance_touch.py |
-| [`k06.touch+hitl`](#k06touchhitl-v1) | 1 | 10 | 59 | this branch | tests/fsm/test_conformance_touch.py |
+| [`k06.touch`](#k06touch-v1) | 1 | 9 | 49 | this branch | tests/fsm/test_conformance_touch.py |
+| [`k06.touch+hitl`](#k06touchhitl-v1) | 1 | 10 | 60 | this branch | tests/fsm/test_conformance_touch.py |
 | [`k01.gate`](#k01gate-v110) | 1.1.0 | 24 | 41 | this branch | tests/fsm/test_conformance_gate.py |
 | [`k06.supervisor.plan`](#k06supervisorplan-v1) | 1 | 7 | 15 | this branch | tests/fsm/test_conformance_supervisor.py |
 | [`k06.supervisor.dispatch`](#k06supervisordispatch-v1) | 1 | 5 | 6 | this branch | tests/fsm/test_conformance_supervisor.py |
@@ -128,7 +128,7 @@ stateDiagram-v2
     RESERVED --> CANCELED : BEGIN_DISPATCH [!gate_send] / CANCEL_QUEUED
     DISPATCHING --> SENT : PROVIDER_ACCEPTED
     DISPATCHING --> DELIVERED : PROVIDER_DELIVERED
-    DISPATCHING --> UNCERTAIN : PROVIDER_UNKNOWN
+    DISPATCHING --> UNCERTAIN : PROVIDER_UNKNOWN / SHUTDOWN_GRACE_EXPIRED
     DISPATCHING --> FAILED : PROVIDER_REJECTED
     UNCERTAIN --> SENT : PROVIDER_ACCEPTED
     UNCERTAIN --> DELIVERED : PROVIDER_DELIVERED
@@ -140,7 +140,7 @@ stateDiagram-v2
     CANCELED --> [*]
 ```
 
-States: `PROPOSED`, `REFUSED`, `RESERVED`, `DISPATCHING`, `UNCERTAIN`, `SENT`, `DELIVERED`, `FAILED`, `CANCELED`. Initial: `PROPOSED`. Final: `CANCELED`, `DELIVERED`, `FAILED`, `REFUSED`. Fingerprint `e2d7eabc7c57`.
+States: `PROPOSED`, `REFUSED`, `RESERVED`, `DISPATCHING`, `UNCERTAIN`, `SENT`, `DELIVERED`, `FAILED`, `CANCELED`. Initial: `PROPOSED`. Final: `CANCELED`, `DELIVERED`, `FAILED`, `REFUSED`. Fingerprint `9bb377a8d396`.
 
 Transitions (self-loops are events that are accepted and change nothing):
 
@@ -173,6 +173,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 | DISPATCHING | PROVIDER_ACCEPTED | — | SENT | K03 touch_sent event | provider ACCEPTED |
 | DISPATCHING | PROVIDER_DELIVERED | — | DELIVERED | K03 touch_sent event | provider DELIVERED / READ (reach only) |
 | DISPATCHING | PROVIDER_UNKNOWN | — | UNCERTAIN | keep cap slot + cost | no provider answer: never resend blindly |
+| DISPATCHING | SHUTDOWN_GRACE_EXPIRED | — | UNCERTAIN | keep cap slot + cost; DISPATCH_UNCERTAIN audit | graceful shutdown: still in flight at the deadline (Ledger.mark_inflight_uncertain); never re-sent |
 | DISPATCHING | PROVIDER_REJECTED | — | FAILED | release cost | provider REJECTED / NO_ADAPTER |
 | UNCERTAIN | PROVIDER_ACCEPTED | — | SENT | K03 touch_sent event | resolve_uncertain: provider has it |
 | UNCERTAIN | PROVIDER_DELIVERED | — | DELIVERED | K03 touch_sent event | resolve_uncertain: provider delivered it |
@@ -217,7 +218,7 @@ stateDiagram-v2
     PENDING_APPROVAL --> RESERVED : APPROVE [!expired & gate_send]
     DISPATCHING --> SENT : PROVIDER_ACCEPTED
     DISPATCHING --> DELIVERED : PROVIDER_DELIVERED
-    DISPATCHING --> UNCERTAIN : PROVIDER_UNKNOWN
+    DISPATCHING --> UNCERTAIN : PROVIDER_UNKNOWN / SHUTDOWN_GRACE_EXPIRED
     DISPATCHING --> FAILED : PROVIDER_REJECTED
     UNCERTAIN --> SENT : PROVIDER_ACCEPTED
     UNCERTAIN --> DELIVERED : PROVIDER_DELIVERED
@@ -229,7 +230,7 @@ stateDiagram-v2
     CANCELED --> [*]
 ```
 
-States: `PROPOSED`, `REFUSED`, `RESERVED`, `PENDING_APPROVAL`, `DISPATCHING`, `UNCERTAIN`, `SENT`, `DELIVERED`, `FAILED`, `CANCELED`. Initial: `PROPOSED`. Final: `CANCELED`, `DELIVERED`, `FAILED`, `REFUSED`. Fingerprint `954e8ee1263c`.
+States: `PROPOSED`, `REFUSED`, `RESERVED`, `PENDING_APPROVAL`, `DISPATCHING`, `UNCERTAIN`, `SENT`, `DELIVERED`, `FAILED`, `CANCELED`. Initial: `PROPOSED`. Final: `CANCELED`, `DELIVERED`, `FAILED`, `REFUSED`. Fingerprint `c2fa4a70ab4f`.
 
 Transitions (self-loops are events that are accepted and change nothing):
 
@@ -273,6 +274,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 | DISPATCHING | PROVIDER_ACCEPTED | — | SENT | K03 touch_sent event | provider ACCEPTED |
 | DISPATCHING | PROVIDER_DELIVERED | — | DELIVERED | K03 touch_sent event | provider DELIVERED / READ (reach only) |
 | DISPATCHING | PROVIDER_UNKNOWN | — | UNCERTAIN | keep cap slot + cost | no provider answer: never resend blindly |
+| DISPATCHING | SHUTDOWN_GRACE_EXPIRED | — | UNCERTAIN | keep cap slot + cost; DISPATCH_UNCERTAIN audit | graceful shutdown: still in flight at the deadline (Ledger.mark_inflight_uncertain); never re-sent |
 | DISPATCHING | PROVIDER_REJECTED | — | FAILED | release cost | provider REJECTED / NO_ADAPTER |
 | UNCERTAIN | PROVIDER_ACCEPTED | — | SENT | K03 touch_sent event | resolve_uncertain: provider has it |
 | UNCERTAIN | PROVIDER_DELIVERED | — | DELIVERED | K03 touch_sent event | resolve_uncertain: provider delivered it |

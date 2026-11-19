@@ -253,6 +253,27 @@ class Harness:
         self.lg.start_day(self.day)
         self.check(before, {k: r["status"] for k, r in before.items()}, "start_day changes no touch")
 
+    def op_shutdown(self):
+        """Graceful shutdown with a send in flight: begin_dispatch ran, the provider never answered before the
+        grace deadline, so Lifecycle.shutdown -> Ledger.mark_inflight_uncertain (never re-sent)."""
+        for _ in range(40):
+            before = self.rows()
+            # only channels with an adapter can have a send in flight (no adapter -> FAILED, never DISPATCHING)
+            for iid in sorted(k for k, r in before.items() if r["status"] == "RESERVED" and r["channel"] in self.providers):
+                row = before[iid]
+                ins = self.lg.instruction_of(row)
+                ins.at = self.lg.policy.local(datetime.fromisoformat(row["scheduled_at"]))
+                if not self.lg.preview(ins, exclude=iid).allowed:
+                    continue
+                exp = {k: r["status"] for k, r in before.items()}
+                exp[iid] = self.run(row["status"], [("BEGIN_DISPATCH", {"gate_send": True}),
+                                                    ("SHUTDOWN_GRACE_EXPIRED", {})])
+                self.lg.begin_dispatch(iid, ins.at)
+                self.lg.mark_inflight_uncertain()
+                self.check(before, exp, f"shutdown with {iid} in flight")
+                return
+            self.op_reserve()
+
     OPS = (("op_reserve", 30), ("op_replay", 4), ("op_dispatch", 22), ("op_resolve", 6), ("op_callback", 12), ("op_stop", 2),
            ("op_opt_in", 2), ("op_reply", 4), ("op_call", 3), ("op_payment", 4), ("op_exception", 5), ("op_pause", 2),
            ("op_campaign", 2), ("op_new_day", 2))
@@ -266,6 +287,7 @@ def run_seed(policy, path, seed) -> Harness:
     h = Harness(policy, path, random.Random(seed))
     for _ in range(STEPS):
         h.step()
+    h.op_shutdown()  # the process stops with a send in flight (after the random walk: its sequence is unchanged)
     assert h.lg.cap_breaches() == []
     return h
 
