@@ -429,9 +429,9 @@ body.presenter .exitp { display: inline-flex; }
   .map { min-height: 24rem; } .mcols { padding-bottom: 2.25rem; } .node { padding: .65rem .8rem; gap: .45rem; }
 }
 @media (max-width: 1100px) {
-  .race { grid-template-columns: 1fr; }
+  .race { grid-template-columns: minmax(0, 1fr); } .race > * { min-width: 0; } .same { white-space: normal; }
   .mid { flex-direction: row; flex-wrap: wrap; justify-content: center; }
-  .v-story { grid-template-columns: 1fr; grid-template-rows: none; }
+  .v-story { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; }
   .c-flow, .c-money, .c-feed, .c-learn { grid-column: auto; grid-row: auto; }
   .c-feed { min-height: 22rem; }
   .v-board .low, .parts { grid-template-columns: 1fr; }
@@ -445,11 +445,13 @@ body.presenter .exitp { display: inline-flex; }
   .e2e-low ul { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
-  .top { gap: .75rem; }
+  .top { gap: .75rem; } .vsep { display: none; }
   .controls { margin-left: 0; }
   .big { font-size: 2.4rem; }
   .stats { grid-template-columns: repeat(3, auto); }
   .flow { min-height: 22rem; }
+  .stl span, .stl i { display: none; } .stl b { font-size: .95rem; }
+  .who { flex-wrap: wrap; } .arm-main { gap: .75rem; }
   .mcols { grid-template-columns: 1fr; }
   .sc.runs { font-size: 2.6rem; }
   .sc { font-size: 1.7rem; }
