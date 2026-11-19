@@ -201,7 +201,8 @@ if __name__ == "__main__":
 
 
 class KairosOptionsReplay(unittest.TestCase):
-    OPTS = {"decay": 0.7, "payment_lambda": 0.1, "value_floor_rel": 0.5, "recency": "gap", "affinity_strength": 10}
+    OPTS = {"decay": 0.7, "payment_lambda": 0.1, "value_floor_rel": 0.5, "recency": "gap", "affinity_strength": 10,
+            "stop_penalty": 20, "stop_max": 0.05}
 
     def test_options_are_deterministic_safe_and_recorded(self):
         kw = dict(drift_day=1, budget_per_case_paise=None, kairos_opts=self.OPTS)
