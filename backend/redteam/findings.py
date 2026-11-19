@@ -36,10 +36,6 @@ _F = [
             "MEDIUM", "Rehan (K06)", "gate._Ctx (today/hhmm from f.at); api.py POST /gate/evaluate",
             "In gate._Ctx use local = policy.local(f.at) for today/hhmm/quiet-day (the Ledger already does this), "
             "so 14:00Z (19:30 IST) is CONTACT_WINDOW, not SEND."),
-    Finding("RT-F06", "Bank-reference reuse check is exact-match: ' utr-1' / 'UTR-1<ZWSP>' pass as new references",
-            "HIGH", "Varun (K03)", "spine/ledger.apply_payment; payments.reference UNIQUE",
-            "Normalise references before the duplicate check and storage (NFKC, strip whitespace and zero-width/"
-            "format characters, upper-case); keep the raw value in a separate column for audit."),
     Finding("RT-F07", "Instruction-id replay never compares the payload: a reused id for another borrower or an "
             "unknown campaign is answered SEND / reserved=true", "MEDIUM", "Rehan (K06)",
             "ledger.reserve (prior-row short-circuit)",

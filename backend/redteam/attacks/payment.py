@@ -84,7 +84,7 @@ def reference_reuse_exact(ctx):
     return chk.result()
 
 
-@attack("RT-PAY-04", category="payment", component="k03.spine", finding="RT-F06",
+@attack("RT-PAY-04", category="payment", component="k03.spine",
         title="Cosmetic variants of a used bank reference (space, case, zero-width, full-width) are rejected",
         covers=("K03:apply_payment", "CM-03:edited-screenshot"))
 def reference_reuse_variants(ctx):
