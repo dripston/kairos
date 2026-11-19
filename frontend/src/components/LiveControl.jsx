@@ -10,6 +10,7 @@ import { ApiError, OfflineError } from '../api/client'
 import { mockApprovals, mockCampaign, mockDecisions } from '../api/mocks'
 import { dayOf, fmtTs, paiseInr } from '../lib/format'
 import { MockNote, RefreshButton, SourceBadge } from './live'
+import { ExplainButton } from './Explain'
 import { Bar, Button, Card, CardHead, ChannelTag, Chip, Empty, Input, ReasonDialog, Segmented, StatusChip, Td, Th, cx } from './ui'
 
 const ACTIONS = ['SEND', 'WAIT', 'CANCEL', 'HANDOFF']
@@ -52,7 +53,7 @@ export function LiveDecisions({ className }) {
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead><tr><Th>Time</Th><Th>Borrower</Th><Th>Action</Th><Th>Channel</Th><Th>Reason · rule</Th><Th>Policy</Th></tr></thead>
+          <thead><tr><Th>Time</Th><Th>Borrower</Th><Th>Action</Th><Th>Channel</Th><Th>Reason · rule</Th><Th>Policy</Th><Th className="w-10" /></tr></thead>
           <tbody>
             {shown.map((r) => (
               <tr key={r.id}>
@@ -62,6 +63,8 @@ export function LiveDecisions({ className }) {
                 <Td className="whitespace-nowrap"><ChannelTag ch={knownCh(r.detail?.channel)} muted /></Td>
                 <Td className="text-[12.5px]"><div className="line-clamp-2" title={r.reason}>{r.reason}</div><div className="font-mono text-[11px] text-faint">{r.rule}</div></Td>
                 <Td className="font-mono text-[12px] text-muted">v{r.policy_version}</Td>
+                <Td className="pr-3"><ExplainButton iconOnly borrowerId={r.borrower_id} instructionId={res.source === 'live' ? r.instruction_id : undefined}
+                  fallback={`Aladdin decided ${r.decision}${r.detail?.channel ? ` on ${r.detail.channel}` : ''} because ${String(r.reason || '').replace(/\.$/, '').toLowerCase()} (rule ${r.rule}, policy v${r.policy_version}).`} /></Td>
               </tr>
             ))}
           </tbody>

@@ -65,3 +65,18 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
+
+  api-image:
+    name: API Docker image builds and serves /health
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f deploy/backend.Dockerfile -t kairos-api .
+      - name: Smoke test
+        run: |
+          docker run -d --name api -p 7860:7860 kairos-api
+          for i in $(seq 1 30); do curl -fs http://127.0.0.1:7860/health && break; sleep 2; done
+          curl -fs http://127.0.0.1:7860/health | grep -q '"ok":true'
+          curl -fs http://127.0.0.1:7860/campaigns/CMP-JOURNEY | grep -q CMP-JOURNEY
+          docker logs api | tail -20

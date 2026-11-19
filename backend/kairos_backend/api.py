@@ -294,7 +294,75 @@ class GateFactsIn(BaseModel):
 # ---------- read ----------
 @app.get("/health")
 def health():
+    """Liveness: fast, no I/O. Used by the UI header and by hosts' health checks."""
     return {"ok": True, "policy_version": policy.version, "env": "SIMULATED"}
+
+
+_STARTED_AT = datetime.now().astimezone()
+
+
+def _git_version() -> Optional[str]:
+    v = os.environ.get("KAIROS_VERSION") or os.environ.get("RENDER_GIT_COMMIT")
+    if v:
+        return v[:12]
+    head = BACKEND_DIR.parent / ".git" / "HEAD"
+    try:
+        ref = head.read_text(encoding="utf-8").strip()
+        if ref.startswith("ref: "):
+            ref = (BACKEND_DIR.parent / ".git" / ref[5:]).read_text(encoding="utf-8").strip()
+        return ref[:12]
+    except OSError:
+        return None
+
+
+@app.get("/health/details")
+def health_details(probe: bool = False):
+    """Readiness: database, policy, models, background loop, uptime and version. Never returns the key.
+    probe=true sends one tiny live request to each model (costs a few tokens) instead of only reporting config."""
+    import time as _time
+    from .sarvam.client import CONVERSATIONS, DEEPSEEK, PRISM, shared_client, shared_key_source
+    from .sarvam.config import models_switched_off
+
+    checks = {}
+    t0 = _time.perf_counter()
+    try:
+        c = ledger._conn()
+        c.execute("SELECT 1").fetchone()
+        counts = {t: c.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]
+                  for t in ("borrowers", "loans", "campaigns", "touches", "audit")}
+        checks["database"] = {"ok": True, "latency_ms": round((_time.perf_counter() - t0) * 1000, 1), "rows": counts}
+    except Exception as e:  # noqa: BLE001 - health must report, not raise
+        checks["database"] = {"ok": False, "error": type(e).__name__}
+
+    checks["policy"] = {"ok": True, "version": policy.version}
+    checks["lifecycle"] = {"ok": lifecycle.accepting, "accepting": lifecycle.accepting,
+                           "tick_interval_s": _tick_s or None}
+
+    client = None if models_switched_off() else shared_client()
+    models = {"ok": True, "configured": client is not None, "key_source": shared_key_source() if client else None,
+              "switched_off": models_switched_off()}
+    if client is not None:
+        st = client.breaker.state
+        models["circuit"] = st() if callable(st) else st
+        models["stats"] = client.stats.as_dict()
+        if probe:
+            live = {}
+            r = client.systemone("Borrower says: I will pay tomorrow.",
+                                 {"intent": {"type": "choice", "instructions": "Borrower intent?",
+                                             "criteria": {"ptp": "promises to pay", "other": "anything else"}}})
+            live[PRISM] = {"ok": r.ok, "latency_ms": r.latency_ms, "error": r.error}
+            for m in (CONVERSATIONS, DEEPSEEK):
+                r = client.chat(m, [{"role": "user", "content": "Reply with the single word OK."}], max_tokens=200,
+                                reasoning_effort="low" if m == DEEPSEEK else None)
+                live[m] = {"ok": r.ok, "latency_ms": r.latency_ms, "error": r.error}
+            models["live"] = live
+            models["ok"] = all(v["ok"] for v in live.values())
+    checks["models"] = models
+
+    ok = checks["database"]["ok"] and checks["lifecycle"]["ok"] and models["ok"]
+    now = datetime.now().astimezone()
+    return {"ok": ok, "env": "SIMULATED", "version": _git_version(), "started_at": _STARTED_AT.isoformat(timespec="seconds"),
+            "uptime_s": int((now - _STARTED_AT).total_seconds()), "checks": checks}
 
 
 @app.get("/policy")
@@ -780,6 +848,9 @@ def ai_explain(borrower_id: Optional[str] = None, instruction_id: Optional[str] 
         raise HTTPException(422, "borrower_id or instruction_id is required")
     from .sarvam.narrate import shared_narrator
     rows = _call(hitl.audit, role, borrower_id, None, None, instruction_id, None, None, False, 12)
+    if not rows:  # nothing recorded: say so without spending a model call
+        return {"kind": "explain_decision", "text": "No decision is recorded for this borrower yet.", "ai_generated": False,
+                "label": "Deterministic: no recorded facts to explain.", "outcome": "NO_FACTS", "model": None}
     return shared_narrator().explain_decision(rows).as_dict()
 
 

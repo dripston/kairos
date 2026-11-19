@@ -84,6 +84,19 @@ export const removeDemoRecipient = (hint) => request('/demo/recipients', { metho
 
 // ---------- discovery ----------
 /** Paths the running backend serves (from FastAPI's OpenAPI document). */
+/** Readiness details; probe=true makes one tiny live call per model. */
+export function getHealthDetails(probe = false, o) {
+  return request(`/health/details${probe ? '?probe=true' : ''}`, { signal: o?.signal, timeout: probe ? 30000 : 5000 })
+}
+
+/** "Explain this decision" (deepseek, AI-generated label; deterministic when nothing is recorded). */
+export function explainDecision({ borrowerId, instructionId }, role, o) {
+  const q = new URLSearchParams()
+  if (borrowerId) q.set('borrower_id', borrowerId)
+  if (instructionId) q.set('instruction_id', instructionId)
+  return request(`/ai/explain?${q}`, { role, signal: o?.signal, timeout: 30000 })
+}
+
 /** K24 upload preview: validate a lender CSV against the intake rules (nothing is stored). */
 export function previewIntake(body, o) {
   return request('/intake/preview', { method: 'POST', body, signal: o?.signal, timeout: 15000 })

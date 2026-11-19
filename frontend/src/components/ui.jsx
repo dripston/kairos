@@ -38,7 +38,7 @@ export function PageHeader({ title, sub, right, chip }) {
 }
 
 const TONES = {
-  neutral: 'bg-white/[0.06] text-muted border-white/[0.06]',
+  neutral: 'bg-fg/[0.06] text-muted border-fg/[0.08]',
   ok: 'bg-ok/10 text-ok border-ok/20',
   warn: 'bg-warn/10 text-warn border-warn/25',
   bad: 'bg-bad/10 text-bad border-bad/25',
@@ -77,7 +77,7 @@ export function StatusChip({ s, children }) {
 
 export function Button({ variant = 'outline', size = 'md', className, children, icon: Icon, ...p }) {
   const v = {
-    primary: 'bg-fg text-bg hover:bg-white/85 border-fg',
+    primary: 'bg-fg text-bg hover:bg-fg/85 border-fg',
     outline: 'border-line bg-transparent text-fg hover:bg-raised',
     ghost: 'border-transparent bg-transparent text-muted hover:text-fg hover:bg-raised',
     danger: 'border-bad/40 bg-bad/10 text-bad hover:bg-bad/20',
@@ -134,10 +134,10 @@ export function Toggle({ on, onChange, disabled }) {
 export function Ring({ value, tone = 'ok', size = 34 }) {
   const r = (size - 6) / 2
   const c = 2 * Math.PI * r
-  const color = { ok: '#22c55e', warn: '#f59e0b', bad: '#ef4444', info: '#3b82f6', orange: '#f97316', fg: '#fafafa' }[tone]
+  const color = { ok: 'var(--color-ok)', warn: 'var(--color-warn)', bad: 'var(--color-bad)', info: 'var(--color-info)', orange: 'var(--color-orange)', fg: 'var(--color-fg)' }[tone]
   return (
     <svg width={size} height={size} className="-rotate-90">
-      <circle cx={size / 2} cy={size / 2} r={r} stroke="#262626" strokeWidth="4" fill="none" />
+      <circle cx={size / 2} cy={size / 2} r={r} stroke="var(--color-line)" strokeWidth="4" fill="none" />
       <circle cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth="4" fill="none" strokeLinecap="round"
         strokeDasharray={c} strokeDashoffset={c * (1 - Math.max(0, Math.min(1, value)))} />
     </svg>

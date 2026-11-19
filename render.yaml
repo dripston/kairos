@@ -6,13 +6,20 @@ services:
     runtime: python
     plan: free
     rootDir: backend
-    buildCommand: pip install -r requirements.txt
+    # Build also seeds the demo database from the SIMULATED journey (40 synthetic borrowers, campaign
+    # CMP-JOURNEY) so the Control Room's live panels have data. Restarts reset the disk; the build re-seeds.
+    buildCommand: >-
+      pip install -r requirements.txt &&
+      mkdir -p data &&
+      python -c "from replay.journey import run; run(seed=42, quick=True, echo=False, db_path='data/kairos_demo.db', cohort_size=40)"
     startCommand: uvicorn kairos_backend.api:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     autoDeploy: true
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      - key: KAIROS_DB
+        value: data/kairos_demo.db
       # Optional: Sarvam models (prism, sarvam-105b-conversations, deepseek). Leave empty to run without models.
       - key: SARVAM_API_KEY
         sync: false
