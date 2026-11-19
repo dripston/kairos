@@ -6,7 +6,7 @@ import json, os, subprocess, sys
 H = "../assets/human/"; B = os.path.expandvars("$TMPDIR/wt-film/film/assets/broll/")
 IN_T = "captures/inbound_tall/f%05d.jpg"          # inbound page at a phone-shaped viewport (1440×1150 @2.5)
 IN_SCREEN = [70, 457, 855, 1425]                  # its WhatsApp screen below the status bar, in px
-OV = "captures/out_vikram/f%05d.jpg"; AA = "captures/out_aarav/f%05d.jpg"; DL = "captures/deployed_light/f%05d.jpg"
+OV = "captures/out_vikram/f%05d.jpg"; AA = "captures/out_aarav/f%05d.jpg"; DL = "captures/deployed_voice/f%05d.jpg"
 def ph(scene): return "captures/phone_%s/f00001.jpg" % scene
 LAPTOP_ROI = [430, 150, 1060, 680]                # H6_1 POV: screen region
 TOP_ROI = [430, 40, 1100, 520]                    # H6_4 top-down

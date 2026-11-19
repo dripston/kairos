@@ -628,6 +628,7 @@
   // L.pulses:[{t, path: [edge ids], speed: px/s}] a bright token running along edges, ring flash on arrival
   function buildDiagram(L) {
     var root = el("div", "layer", stage); root.style.width = W + "px"; root.style.height = H + "px"; L.root = root;
+    if (L.bgCream) { var bgc = el("div", "", root); bgc.style.cssText = "position:absolute;inset:0;background:#FBF8F1"; }
     if (L.mini) { var pl = el("div", "", root); pl.style.cssText = "position:absolute;left:" + (L.mini.x - 24) + "px;top:" + (L.mini.y - 22) + "px;width:" + ((L.ww || W) * L.mini.s + 48) + "px;height:" + ((L.wh || H) * L.mini.s + 44) + "px;border-radius:22px;background:rgba(251,248,241,.94);box-shadow:0 18px 40px -16px rgba(40,30,10,.45)"; }
     var world = el("div", "dia", root); L.world = world;
     var svg = sv("svg", { width: L.ww || W, height: L.wh || H, viewBox: "0 0 " + (L.ww || W) + " " + (L.wh || H) }, world);

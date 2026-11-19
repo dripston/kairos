@@ -34,6 +34,14 @@
   .wa .bar div { flex: 1; height: 42px; border-radius: 21px; background: #fff; font-size: 16px; color: #8696a0; padding: 11px 16px; }
   .wa .bar span { width: 42px; height: 42px; border-radius: 50%; background: #00a884; display: block; }
   .sim { align-self: center; font-size: 11.5px; color: #54656f; background: #fdf4c5; border-radius: 7px; padding: 5px 9px; margin-bottom: 4px; text-align: center; max-width: 92%; }
+  /* voice call */
+  .call { background: linear-gradient(180deg, #1f2a33, #0f1418); color: #fff; align-items: center; }
+  .call .who { margin-top: 150px; font-size: 30px; font-weight: 600; }
+  .call .sub { margin-top: 8px; font-size: 17px; opacity: .75; }
+  .call .tm { margin-top: 14px; font-size: 18px; opacity: .85; font-variant-numeric: tabular-nums; }
+  .call .ava { margin-top: 60px; width: 130px; height: 130px; border-radius: 50%; background: #0F766E; font: 700 60px/130px sans-serif; text-align: center; }
+  .call .sim2 { margin-top: 26px; font-size: 13px; background: rgba(255,255,255,.12); padding: 6px 12px; border-radius: 8px; }
+  .call .end { margin-top: auto; margin-bottom: 70px; width: 76px; height: 76px; border-radius: 50%; background: #e5484d; }
 </style>
 </head>
 <body>
@@ -72,6 +80,10 @@ If you've already paid, please disregard this message.
     <div class="m out">मैं 29 तारीख तक भुगतान कर दूंगा<i>11:00 am ✓✓</i></div>
   </div>
   <div class="bar"><div>Message</div><span></span></div>
+</div>
+<div class="scene call" id="call">
+  <div class="who">Kairos Demo Finance</div><div class="sub">Voice assistant · Hindi</div><div class="tm">00:14</div>
+  <div class="ava">K</div><div class="sim2">SIMULATED call · synthetic borrower</div><div class="end"></div>
 </div>
 <script>
   var s = new URLSearchParams(location.search).get("scene") || "sms3";

@@ -1,0 +1,40 @@
+{
+"url": "https://dripston.github.io/kairos/?theme=light",
+"width": 1440,
+"height": 900,
+"scale": 2.5,
+"steps": [
+{
+"wait": 7000
+},
+{
+"waitFor": "document.body.innerText.indexOf('API live')>=0",
+"timeout": 40000
+},
+{
+"snap": "control"
+},
+{
+"click": "a, button, nav *",
+"text": "Voice bots",
+"name": "nav_voice"
+},
+{
+"wait": 6000
+},
+{
+"snap": "voice"
+},
+{
+"click": "a, button, nav *",
+"text": "Learning & Proof",
+"name": "nav_learn"
+},
+{
+"wait": 6000
+},
+{
+"snap": "learning"
+}
+]
+}
