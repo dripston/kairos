@@ -436,8 +436,17 @@
   function attachVideo(L) {
     if (L.loading) return L.loading;
     L.loading = new Promise(function (res) {
-      L.v.addEventListener("loadeddata", function () { L.loaded = true; res(); }, { once: true });
-      L.v.addEventListener("error", function () { console.error("video failed " + L.src); res(); }, { once: true });
+      var settled = false; function ok() { if (!settled) { settled = true; L.loaded = true; res(); } }
+      L.v.addEventListener("loadeddata", ok, { once: true });
+      L.v.addEventListener("error", function () { console.error("video failed " + L.src); ok(); }, { once: true });
+      // WebKit sometimes never fires loadeddata (decoder pressure): reload up to 3 times, then go on (qa_frames catches a black frame)
+      setTimeout(function () {
+        if (settled) return;
+        L.tries = (L.tries || 0) + 1; console.error("video load timeout " + L.src + " try " + L.tries);
+        if (L.tries >= 3) { ok(); return; }
+        settled = true; L.loading = null; L.v.removeAttribute("src"); L.v.load();
+        attachVideo(L).then(res);
+      }, 6000);
       L.v.src = base + L.src; L.v.load();
     });
     return L.loading;
@@ -555,6 +564,10 @@
     L.box = el("div", "card", root); L.box.style.overflow = "hidden";
     L.im = el("img", "", L.box); L.im.style.cssText = "position:absolute;left:0;top:0;transform-origin:0 0;max-width:none";
     L.track = resolveTrack(caps[L.cap], L.frames);
+    if (L.cursor) { // a cursor that clicks a real control on the card (capture CSS px)
+      L.cur = el("div", "cursor", root, '<svg viewBox="0 0 32 32" width="44" height="44"><path d="M6 3 L6 26 L12 20.5 L16.2 29.4 L20.3 27.5 L16.2 18.8 L24 18.8 Z" fill="#111" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>');
+      L.rip = el("div", "ripple", root);
+    }
   }
   function updateCard(L, t) {
     var env = envelope(L, t), c = caps[L.cap], fi = trackAt(L.track, t), url = frameUrl(c, fi);
@@ -570,6 +583,20 @@
     b.style.opacity = p * q;
     b.style.transform = "translateY(" + ((1 - p) * 18 - 6 * life) + "px) scale(" + (lerp(0.97, 1, p) * (1 + 0.015 * life)) + ")";
     L.subjectNow = [[cx - w / 2, cy - h / 2, w, h]];
+    if (L.cur) {
+      var cs = cursorAt(L, t);
+      if (cs && cs.vis > 0) {
+        var spx = cx - w / 2 + (cs.pos[0] - r[0]) * sc, spy = cy - h / 2 + (cs.pos[1] - r[1]) * sc;
+        var press = cs.click != null ? t - cs.click : 99, psc = press >= 0 && press < 0.2 ? 0.92 + 0.08 * E.enter(press / 0.2) : 1;
+        L.cur.style.display = ""; L.cur.style.opacity = cs.vis * p * q;
+        L.cur.style.transform = "translate(" + (spx - 6) + "px," + (spy - 4) + "px) scale(" + psc + ")";
+        if (press >= 0 && press < 0.32) {
+          var rp = E.enter(press / 0.32);
+          L.rip.style.display = ""; L.rip.style.opacity = 0.55 * (1 - rp);
+          L.rip.style.transform = "translate(" + spx + "px," + spy + "px) scale(" + lerp(0.42, 1, rp) + ")";
+        } else L.rip.style.display = "none";
+      } else { L.cur.style.display = "none"; L.rip.style.display = "none"; }
+    }
     if (L.curUrl !== url) {
       return getImg(url).then(function () { L.im.src = url; L.curUrl = url; FRESH++; return L.im.decode().catch(function () {}); });
     }
@@ -868,6 +895,14 @@
         var dc = diaCamAt(L, t); out.push({ kind: "diagram", zoom: +dc.z.toFixed(2), title_px: Math.round(48 * dc.z), sub_px: Math.round(36 * dc.z) });
       } else if (L.kind === "callout" || L.kind === "headline") {
         out.push({ kind: L.kind, text: (L.text || L.html || "").replace(/<[^>]+>/g, ""), px: L.size || (L.kind === "headline" ? 96 : (L.mono ? 50 : 72)) });
+      } else if (L.kind === "card") {
+        var cr = L.rect, csc = Math.min((L.maxw || 1640) / cr[2], (L.maxh || 720) / cr[3], L.maxScale || 3.2), cfi = trackAt(L.track, t), cfr = caps[L.cap].log.frames[cfi] || {};
+        out.push({ kind: "card", src: L.cap, label: cfr.label || "", url: caps[L.cap].log.url || "", zoom: +csc.toFixed(2), text13px: Math.round(13 * csc), text16px: Math.round(16 * csc) });
+      } else if (L.kind === "video") {
+        out.push({ kind: "video", src: L.src, push: !!(L.push && t >= L.push.t0) });
+      } else if (L.kind === "captions") {
+        var cue = null; (FILM.cueList || []).forEach(function (c) { if (t >= c.t0 && t < c.t1) cue = c; });
+        out.push({ kind: "captions", text: cue ? (cue.who ? cue.who + ": " : "") + cue.lines.join(" ") : "" });
       } else out.push({ kind: L.kind, text: L.text || (L.words ? L.words.map(function (w) { return w.html; }).join(" / ") : "") });
     });
     return out;

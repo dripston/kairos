@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H13_5_code_on_face_close.mp4",
+ "in": 2.6,
+ "dur": 2.0,
+ "mode": "none",
+ "out": "comp/T11_engineer_face.mov",
+ "fps": 30
+}

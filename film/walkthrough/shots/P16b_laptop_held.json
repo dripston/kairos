@@ -1,20 +1,20 @@
 {
- "clip": "../assets/human/H6_4_topdown_hands_trackpad_blank.mp4",
- "in": 1.0,
+ "clip": "../assets/human/H6_3_ots_woman_typing_blank.mp4",
+ "in": 9.0,
  "dur": 2.8,
  "mode": "white",
  "roi": [
-  430,
-  40,
-  1100,
-  520
+  280,
+  10,
+  1160,
+  850
  ],
  "expand": 0.0,
  "landscape": true,
  "ui": [
   {
    "t": 0,
-   "img": "captures/out_aarav/f00023.jpg"
+   "img": "captures/out_aarav/f00021.jpg"
   }
  ],
  "out": "comp/P16b_laptop_held.mov",

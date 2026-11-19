@@ -1,104 +1,104 @@
 [
   {
-    "who" : "",
+    "text" : "Every month, lenders send the same reminder, at the same time, to everyone.",
     "t1" : 6.1196145124716557,
     "t0" : 0.40000000000000002,
-    "text" : "Every month, lenders send the same reminder, at the same time, to everyone."
+    "who" : ""
   },
   {
-    "t0" : 21.100000000000001,
-    "t1" : 25.688866213151929,
+    "t1" : 22.788866213151927,
+    "text" : "Kairos looks at every borrower, every day, and decides.",
     "who" : "",
-    "text" : "Kairos looks at every borrower, every day, and decides."
+    "t0" : 18.199999999999999
   },
   {
-    "t0" : 32.899999999999999,
-    "t1" : 39.695306122448976,
+    "t1" : 29.795306122448981,
     "text" : "Before anything goes out, Aladdin, our safety supervisor, checks it against the lender's rules.",
-    "who" : ""
-  },
-  {
-    "t1" : 44.993492063492063,
-    "t0" : 39.850000000000001,
     "who" : "",
-    "text" : "No reply on SMS. So it learns, and tries WhatsApp."
+    "t0" : 23
   },
   {
-    "t1" : 65.213469387755111,
-    "text" : "Your team stays in charge.",
+    "text" : "No reply on SMS. So it learns, and tries WhatsApp.",
     "who" : "",
-    "t0" : 63.200000000000003
+    "t1" : 38.643492063492062,
+    "t0" : 33.5
   },
   {
+    "t1" : 61.4134693877551,
+    "t0" : 59.399999999999999,
     "who" : "",
-    "t0" : 67,
-    "t1" : 69.631700680272104,
-    "text" : "But even they can't break the rules."
+    "text" : "Your team stays in charge."
   },
   {
-    "t0" : 72.599999999999994,
-    "t1" : 74.144603174603162,
+    "t1" : 64.53170068027211,
+    "text" : "But even they can't break the rules.",
+    "who" : "",
+    "t0" : 61.899999999999999
+  },
+  {
     "text" : "When is my EMI due?",
-    "who" : "Sunita"
+    "t1" : 68.444603174603174,
+    "who" : "Sunita",
+    "t0" : 66.900000000000006
   },
   {
-    "who" : "Kairos",
+    "t0" : 68.599999999999994,
     "text" : "To protect your account, I have sent a 6-digit code to your registered WhatsApp number.",
-    "t0" : 74.400000000000006,
-    "t1" : 79.593990929705228
-  },
-  {
-    "t0" : 79.799999999999997,
-    "text" : "Thank you, you are verified.",
-    "t1" : 81.402040816326533,
-    "who" : "Kairos"
-  },
-  {
-    "t0" : 81.400000000000006,
-    "text" : "Kairos answers in seconds. But only once it knows it's really them.",
-    "who" : "",
-    "t1" : 86.466371882086179
-  },
-  {
-    "who" : "Sunita",
-    "t0" : 86.5,
-    "text" : "I already paid, here is the screenshot.",
-    "t1" : 88.894240362811786
-  },
-  {
     "who" : "Kairos",
-    "t1" : 94.186394557823135,
-    "text" : "For your security, I can't help with this request in chat. A specialist from our team will review it.",
-    "t0" : 89
+    "t1" : 73.793990929705217
   },
   {
-    "t1" : 97.629024943310654,
-    "text" : "A doctored payment screenshot? It checks with the bank.",
-    "who" : "",
-    "t0" : 94.299999999999997
-  },
-  {
-    "t1" : 111.03151927437641,
-    "who" : "Sunita",
-    "t0" : 110.59999999999999,
-    "text" : "Stop."
-  },
-  {
-    "t0" : 111.5,
-    "t1" : 115.11560090702947,
-    "text" : "You will not receive further automated reminders from us on any channel.",
+    "t0" : 74,
+    "text" : "Thank you, you are verified.",
+    "t1" : 75.602040816326536,
     "who" : "Kairos"
   },
   {
-    "t0" : 115.15000000000001,
-    "t1" : 117.8685941043084,
-    "text" : "And stop means stop. Everywhere.",
+    "text" : "Kairos answers in seconds. But only once it knows it's really them.",
+    "t0" : 75.799999999999997,
+    "t1" : 80.86637188208617,
     "who" : ""
   },
   {
+    "text" : "I already paid, here is the screenshot.",
+    "t0" : 81.099999999999994,
+    "who" : "Sunita",
+    "t1" : 83.49424036281178
+  },
+  {
+    "text" : "For your security, I can't help with this request in chat. A specialist from our team will review it.",
+    "t1" : 88.78639455782313,
+    "who" : "Kairos",
+    "t0" : 83.599999999999994
+  },
+  {
+    "t1" : 92.329024943310657,
+    "t0" : 89,
     "who" : "",
+    "text" : "A doctored payment screenshot? It checks with the bank."
+  },
+  {
+    "text" : "Stop.",
+    "t0" : 102,
+    "who" : "Sunita",
+    "t1" : 102.43151927437641
+  },
+  {
+    "who" : "Kairos",
+    "text" : "You will not receive further automated reminders from us on any channel.",
+    "t0" : 102.90000000000001,
+    "t1" : 106.51560090702948
+  },
+  {
+    "t0" : 106.7,
+    "t1" : 109.4185941043084,
+    "who" : "",
+    "text" : "And stop means stop. Everywhere."
+  },
+  {
     "text" : "In our tests, about twice the money back for every rupee. With zero rule breaches.",
-    "t0" : 118,
-    "t1" : 124.22897959183673
+    "t0" : 109.59999999999999,
+    "who" : "",
+    "t1" : 115.82897959183673
   }
 ]

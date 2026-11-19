@@ -25,52 +25,56 @@ silent = []       # captions for on-screen text that nobody speaks (Vikram's typ
 def caption(off, dur, text, who): silent.append((len(seq) - 1, off, dur, text, who))
 
 # ---------------------------------------------------------------- the film
-clip("M1_flyover", 1.9);                       say(0.4, "p01")
-clip("M2_rider", 1.2)
-clip("M3_bazaar", 1.0)
-clip("M4_annoyed", 1.2)
-clip("M5_shopkeeper", 1.2)
-clip("M6_breakfast", 1.1)
-clip("M7_decline", 1.5)
-clip("V1_vikram_reads", 2.4)
-clip("P02_vikram_sms", 3.4)
-clip("P04_asha_frustrated", 2.6)
-other("hook", 3.4)                             # unit chart 1,262 → 23 on cream
-other("logo", 3.0);                            say(0.2, "p02")
-clip("P06_asha_typing", 1.8)
-clip("P07_laptop_dashboard", 3.8, push=[1.8, 3.8, [560, 255, 780, 500]])
-card("ov", "v02", [349, 335, 658, 163], 3.2)
-card("ov", "v03", [349, 335, 658, 245], 3.6); say(0.2, "p03")
-card("ov", "v10", [349, 335, 658, 263], 3.3)
-card("ov", "v11", [349, 335, 658, 163], 2.6); say(0.25, "p04")
-clip("V2_vikram_smiles", 1.9)
-clip("P12_vikram_whatsapp", 3.6);              caption(1.7, 2.2, "I'll pay by the 29th.", "Vikram")
-card("ov", "v17", [349, 335, 658, 127], 2.6)
+# Rhythm: human → screen → human. Never more than 2 cream cards back to back; Vikram, Asha and Sunita have faces.
+OTS_PUSH = [380, 80, 900, 506]                 # H6_3 over-the-shoulder laptop: push toward the screen
+clip("M1_flyover", 1.6);                       say(0.4, "p01")
+clip("M2_rider", 1.0)
+clip("M3_bazaar", 0.9)
+clip("M4_annoyed", 1.0)
+clip("M5_shopkeeper", 1.0)
+clip("M6_breakfast", 0.9)
+clip("M7_decline", 0.8)
+clip("V1_vikram_reads", 2.8)                   # Vikram, serious, reading his phone
+clip("P02_vikram_sms", 3.0)                    # the same reminder, again
+clip("P04_asha_frustrated", 2.0)
+other("hook", 3.0)                             # unit chart 1,262 → 23 on cream
+other("logo", 2.6);                            say(0.2, "p02")
+clip("P06_asha_typing", 1.6)
+clip("P07_laptop_dashboard", 3.0, push=[1.2, 3.0, OTS_PUSH]); say(0.8, "p03")
+card("ov", "v02", [349, 335, 658, 163], 2.4)
+card("ov", "v03", [349, 335, 658, 245], 4.0)
+clip("V1b_vikram_no_reply", 1.6)               # Vikram does not reply
+card("ov", "v10", [349, 335, 658, 263], 3.0); say(0.3, "p04")
+card("ov", "v11", [349, 335, 658, 163], 2.4)
+clip("V2_vikram_smiles", 2.0)
+clip("P12_vikram_whatsapp", 3.2);              caption(1.6, 2.0, "I'll pay by the 29th.", "Vikram")
+card("ov", "v17", [349, 335, 658, 127], 2.4)
+clip("V2b_vikram_before_pay", 1.4)
 clip("V3_vikram_pays", 2.0)
-clip("P15_laptop_paid", 2.2, push=[0.7, 2.2, [560, 255, 780, 500]])
-card("ov", "v41", [13, 219, 640, 301], 3.2)
-clip("V4_vikram_relief", 1.8)
-clip("P16a_asha_close", 1.5)
-clip("P16b_laptop_held", 2.2, push=[1.0, 2.2, [530, 115, 885, 365]])
-card("aarav", "blocked", [1044, 428, 368, 73], 1.8, maxScale=2.6); say(0.0, "p05")
-card("aarav", "approved", [349, 335, 658, 95], 1.6)
-card("aarav", "blocked", [349, 335, 658, 189], 3.6); say(0.4, "p06")
-clip("P17a_sunita", 2.0)
-clip("P17_sunita_otp", 8.8);                   say(0.4, "s_emi"); say(2.2, "k_otp"); say(7.6, "k_ver")
-card("in", "emi", [414, 200, 523, 212], 4.2, maxScale=2.6); say(0.4, "p07")
+clip("P15_laptop_paid", 2.2, push=[0.5, 2.2, OTS_PUSH])
+card("ov", "v41", [13, 219, 640, 301], 2.8)
+clip("V4_vikram_relief", 1.4)
+clip("P16a_asha_close", 1.2)
+clip("P16b_laptop_held", 2.0, push=[0.6, 2.0, OTS_PUSH])
+card("aarav", "blocked", [1044, 398, 368, 104], 2.4, maxScale=3.2, after=(1.25, "approved"),
+     cursor=[{"t": 0.35, "at": [1360, 520]}, {"t": 1.1, "at": [1301, 477], "click": True, "move": 0.6}]); say(0.2, "p05")
+card("aarav", "blocked", [349, 335, 658, 189], 3.2); say(0.3, "p06")
+clip("P17a_sunita", 1.8)
+clip("P17_sunita_otp", 8.6);                   say(0.3, "s_emi"); say(2.0, "k_otp"); say(7.4, "k_ver")
+card("in", "emi", [414, 200, 523, 212], 4.6, maxScale=2.6); say(0.6, "p07")
 clip("P19_sunita_fake", 4.6);                  say(1.3, "s_paid"); say(3.8, "k_fake")
-card("in", "fake", [414, 200, 523, 235], 6.8, maxScale=2.6); say(4.5, "p08")
-clip("B1_borrower_b", 1.8)
-clip("P20a_borrower_b", 2.2)
-clip("P20b_asha_side", 1.2)
-clip("P20c_laptop_console", 3.2, push=[1.7, 3.2, [560, 255, 780, 500]])
-card("in", "takeoverB", [972, 357, 448, 313], 2.4, maxScale=2.2)
-clip("P20d_borrower_b_reply", 2.4)
+card("in", "fake", [414, 200, 523, 235], 6.0, maxScale=2.6); say(4.6, "p08")
+clip("B1_borrower_b", 1.4)
+clip("P20a_borrower_b", 1.8)
+clip("P20b_asha_side", 1.0)
+clip("P20c_laptop_console", 2.6, push=[1.0, 2.6, OTS_PUSH])
+card("in", "takeoverB", [972, 357, 448, 313], 2.2, maxScale=2.2)
+clip("P20d_borrower_b_reply", 1.8)
 clip("P21_sunita_stop", 4.2);                  say(0.8, "s_stop"); say(1.7, "k_stop")
-card("in", "stop", [414, 200, 523, 181], 3.4, maxScale=2.6); say(1.15, "p09")
-clip("P22_team", 2.8);                         say(0.6, "p10")
+card("in", "stop", [414, 200, 523, 181], 3.2, maxScale=2.6); say(1.3, "p09")
+clip("P22_team", 2.6);                         say(1.0, "p10")
 other("proof", 4.4)
-HARD_STOP = 125.39                             # AtlasAudio bar 73 downbeat (the outro's last phrase)
+HARD_STOP = 116.82                             # AtlasAudio bar 68 downbeat: the end of the outro's first 4-bar phrase (runtime ≈ 2:01)
 
 # ---------------------------------------------------------------- layout
 t, starts = 0.0, []
@@ -91,10 +95,14 @@ for i, (kind, dur, p) in enumerate(seq):
         if "push" in p: a, b, r = p["push"]; L["push"] = {"t0": round(t0 + a, 3), "t1": round(t0 + b, 3), "rect": r}
         layers.append(L)
     elif kind == "card":
-        layers.append({"kind": "card", "cap": p["cap"], "frames": [{"at": 0, "label": p["label"]}], "rect": p["rect"], "t0": round(t0 - 0.05, 3), "t1": round(t1, 3),
-                       "maxw": 1640, "maxh": 680, "cy": 440, "maxScale": p.get("maxScale", 2.6), "enter": {"dur": 0.4}, "exit": {"dur": 0.0}})
+        fr = [{"at": 0, "label": p["label"]}]
+        if p.get("after"): fr.append({"at": round(t0 + p["after"][0], 3), "label": p["after"][1]})
+        C = {"kind": "card", "cap": p["cap"], "frames": fr, "rect": p["rect"], "t0": round(t0 - 0.05, 3), "t1": round(t1, 3),
+             "maxw": 1640, "maxh": 680, "cy": 440, "maxScale": p.get("maxScale", 2.6), "enter": {"dur": 0.25}, "exit": {"dur": 0.0}}
+        if p.get("cursor"): C["cursor"] = [dict(k, t=round(t0 + k["t"], 3)) for k in p["cursor"]]
+        layers.append(C)
     elif kind == "hook":
-        layers.append({"kind": "dots", "t0": t0, "t1": t1, "n": 1262, "hi": 23, "tHi": t0 + 1.6, "cols": 61, "gap": 30, "fill": 0.8, "enter": {"dur": 0.2}, "exit": {"dur": 0.0}, "bgCream": True})
+        layers.append({"kind": "dots", "t0": t0, "t1": t1, "n": 1262, "hi": 23, "tHi": t0 + 1.6, "cols": 61, "gap": 30, "fill": 0.8, "enter": {"dur": 0.0}, "exit": {"dur": 0.0}, "bgCream": True})
         layers.append({"kind": "words", "t0": t0, "t1": t1, "y": 380, "size": 150, "words": [{"t": t0, "html": "1,262 messages."}, {"t": t0 + 1.6, "html": "<em>23</em> replies."}]})
         layers.append({"kind": "tag", "t0": t0 + 0.2, "t1": t1, "pos": "t", "text": "Fixed schedule · SIMULATED run, seed 42"})
     elif kind == "logo":

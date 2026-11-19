@@ -1,74 +1,74 @@
 [
   {
     "text" : "This is what happens inside Kairos, for one borrower, on one day.",
-    "t0" : 0.5,
     "t1" : 5.2898412698412702,
+    "t0" : 0.5,
     "who" : ""
   },
   {
-    "t1" : 17.128458049886621,
     "who" : "",
-    "t0" : 11.6,
-    "text" : "Each day, every borrower is re-sorted. Every move names its rule."
+    "t0" : 10.199999999999999,
+    "text" : "Each day, every borrower is re-sorted. Every move names its rule.",
+    "t1" : 15.728458049886621
   },
   {
-    "t0" : 19.600000000000001,
-    "who" : "",
+    "t1" : 26.328775510204082,
     "text" : "A Bayesian learner tracks reply chances. On day seven, WhatsApp replies drop. Kairos isn't told.",
-    "t1" : 27.72877551020408
+    "who" : "",
+    "t0" : 18.199999999999999
   },
   {
     "text" : "By the end of day fourteen, that segment has moved to SMS. Learned from replies alone.",
-    "t0" : 27.899999999999999,
-    "who" : "",
-    "t1" : 34.172834467120182
-  },
-  {
-    "t1" : 41.943356009070293,
-    "t0" : 34.399999999999999,
-    "text" : "Models only suggest. Aladdin reserves the budget and limits, then checks every rule again at send time.",
+    "t0" : 26.5,
+    "t1" : 32.772834467120184,
     "who" : ""
   },
   {
-    "t1" : 49.475260770975062,
     "who" : "",
-    "t0" : 42.200000000000003,
+    "t0" : 33,
+    "t1" : 40.543356009070294,
+    "text" : "Models only suggest. Aladdin reserves the budget and limits, then checks every rule again at send time."
+  },
+  {
+    "t0" : 40.799999999999997,
+    "t1" : 48.075260770975056,
+    "who" : "",
     "text" : "Messages go out through each channel. Delivery and replies come back as webhooks, and duplicates are ignored."
   },
   {
-    "t1" : 54.414784580498868,
     "text" : "Your EMI was due last week. Could you pay by Friday?",
-    "who" : "Kairos",
-    "t0" : 50.5
+    "t0" : 48.5,
+    "t1" : 52.414784580498868,
+    "who" : "Kairos"
   },
   {
-    "t0" : 54.5,
-    "t1" : 56.278594104308389,
+    "t0" : 52.5,
     "text" : "Yes, I'll pay on Friday.",
-    "who" : "Sunita"
+    "who" : "Sunita",
+    "t1" : 54.278594104308389
   },
   {
-    "t1" : 66.172290249433104,
-    "t0" : 56.399999999999999,
     "text" : "Voice calls run on Sarvam agents. Every call comes back with a disposition and a confidence. Below a hand-set threshold, a person reviews it.",
+    "who" : "",
+    "t0" : 54.399999999999999,
+    "t1" : 64.172290249433104
+  },
+  {
+    "text" : "Replies climb a ladder: rules first, then a small model. Still unsure? A person decides.",
+    "t1" : 71.171428571428578,
+    "t0" : 64.400000000000006,
     "who" : ""
   },
   {
+    "t0" : 71.400000000000006,
+    "t1" : 78.859659863945581,
     "who" : "",
-    "t0" : 66.400000000000006,
-    "text" : "Replies climb a ladder: rules first, then a small model. Still unsure? A person decides.",
-    "t1" : 73.171428571428578
-  },
-  {
-    "t1" : 80.859659863945581,
-    "who" : "",
-    "t0" : 73.400000000000006,
     "text" : "People can step in at any moment. Every action still passes Aladdin, and lands in the audit log."
   },
   {
-    "t0" : 81.799999999999997,
+    "t1" : 85.198163265306121,
     "who" : "",
-    "t1" : 87.798163265306115,
+    "t0" : 79.200000000000003,
     "text" : "Same data in, same decisions out. And we attack it, load it, and test it."
   }
 ]

@@ -1,5 +1,9 @@
 {
  "expand": 0.2,
+ "keyLo": 0.04,
+ "keyHi": 0.13,
+ "uiGain": 1.0,
+ "uiContrast": 1.12,
  "up": [
   1,
   -0.55

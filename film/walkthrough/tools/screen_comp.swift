@@ -28,12 +28,14 @@ let debug = (spec["debug"] as? Bool) ?? false
 let ctx = CIContext(options: [.workingColorSpace: CGColorSpace(name: CGColorSpace.sRGB)!, .cacheIntermediates: false])
 
 // ---------- chroma key cube (premultiplied RGBA), with green despill
+let keyLo = Float((spec["keyLo"] as? Double) ?? 0.10), keyHi = Float((spec["keyHi"] as? Double) ?? 0.26)   // pale screens: lower both
+let uiContrast = (spec["uiContrast"] as? Double) ?? 1.0
 func keyCube() -> CIFilter {
     let n = 64; var data = [Float](repeating: 0, count: n * n * n * 4)
     for b in 0..<n { for g in 0..<n { for r in 0..<n {
         let R = Float(r) / Float(n - 1), G = Float(g) / Float(n - 1), B = Float(b) / Float(n - 1)
         let green = G - max(R, B)
-        let lo: Float = 0.10, hi: Float = 0.26
+        let lo: Float = keyLo, hi: Float = keyHi
         var a: Float = 1
         if green > lo { a = green >= hi ? 0 : 1 - (green - lo) / (hi - lo) }
         let G2 = green > 0 ? max(R, B) + green * 0.15 : G   // despill
@@ -192,7 +194,8 @@ for i in 0..<nFrames {
         if let q = q, let ui = uiAt(t) {
             // UI → quad (CI space is bottom-left origin)
             let f = CIFilter.perspectiveTransform()
-            f.inputImage = ui.applyingFilter("CIColorMatrix", parameters: ["inputRVector": CIVector(x: uiGain, y: 0, z: 0, w: 0), "inputGVector": CIVector(x: 0, y: uiGain, z: 0, w: 0), "inputBVector": CIVector(x: 0, y: 0, z: uiGain, w: 0)])
+            let uiC = uiContrast == 1.0 ? ui : ui.applyingFilter("CIColorControls", parameters: ["inputContrast": uiContrast, "inputSaturation": 1.0, "inputBrightness": 0.0])
+            f.inputImage = uiC.applyingFilter("CIColorMatrix", parameters: ["inputRVector": CIVector(x: uiGain, y: 0, z: 0, w: 0), "inputGVector": CIVector(x: 0, y: uiGain, z: 0, w: 0), "inputBVector": CIVector(x: 0, y: 0, z: uiGain, w: 0)])
             func ci(_ p: CGPoint) -> CGPoint { CGPoint(x: p.x, y: CGFloat(OH) - p.y) }
             f.topLeft = ci(q[0]); f.topRight = ci(q[1]); f.bottomRight = ci(q[2]); f.bottomLeft = ci(q[3])
             let warped = f.outputImage!

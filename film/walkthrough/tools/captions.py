@@ -3,48 +3,66 @@
 
     python3 tools/captions.py audio/product_cues_raw.json audio/product_cues.json out/kairos_product   (writes .srt and .vtt)
 
-Each spoken line becomes one or more caption cues: at most 2 lines of at most 42 characters, split at phrase
-boundaries, timed in proportion to their length inside the line's spoken interval. The speaker tag (Sunita:,
-Kairos:, Asha:) is on the first cue of a line; the narrator has none. The burned-in captions use the same file,
+Each spoken line becomes one or more caption cues: at most 2 lines of about 42 characters (44 max), made of whole
+sentences or explicit complete phrases (OVERRIDES), timed in proportion to their length inside the line's spoken
+interval. Dialogue cues carry the speaker tag (Sunita:, Kairos:, Vikram:); the narrator has none. The burned-in captions use the same file,
 so the sidecars match the picture exactly.
 """
 import json, re, sys
 
-MAXC, MAXL = 42, 2
+MAXC, MAXL = 44, 2   # "about 42" characters per line; never more than 2 lines
+# Lines whose sentences are too long for one cue get explicit, complete-phrase splits (never mid-clause).
+OVERRIDES = {
+    "Before anything goes out, Aladdin, our safety supervisor, checks it against the lender's rules.":
+        ["Before anything goes out,", "Aladdin, our safety supervisor, checks it against the lender's rules."],
+    "To protect your account, I have sent a 6-digit code to your registered WhatsApp number.":
+        ["To protect your account,", "I have sent a 6-digit code to your registered WhatsApp number."],
+}
 
-def wrap(words, width):
-    lines, cur = [], ""
-    for w in words:
-        if not cur: cur = w
-        elif len(cur) + 1 + len(w) <= width: cur += " " + w
-        else: lines.append(cur); cur = w
-    if cur: lines.append(cur)
-    return lines
+CONJ = {"and", "but", "then", "so", "or", "with", "to", "from", "for", "when", "because", "until", "in", "on", "at"}
+
+def lines_for(text, tag):
+    """Best 1- or 2-line layout of tag+text: break after a sentence end, then a clause mark, then before a
+    conjunction/preposition, balancing the two lines. Returns (lines, penalty) or None if it cannot fit."""
+    words = (tag + text).split()
+    if len(" ".join(words)) <= MAXC: return [" ".join(words)], 0
+    best = None
+    for i in range(1, len(words)):
+        l1, l2 = " ".join(words[:i]), " ".join(words[i:])
+        if len(l1) > MAXC or len(l2) > MAXC or (tag and i * 1 <= len(tag.split())): continue
+        pen = 0 if re.search(r"[.?!]$", words[i - 1]) else 4 if re.search(r"[,;:]$", words[i - 1]) else 10 if words[i].lower() in CONJ else 25
+        sc = pen + abs(len(l1) - len(l2)) * 0.5
+        if best is None or sc < best[1]: best = ([l1, l2], sc, pen)
+    return (best[0], best[2]) if best else None
+
+def fits(text, tag): return lines_for(text, tag) is not None
 
 def split_line(text, who):
+    """Cues of whole sentences (or explicit complete phrases): cleanly broken cues first, then the fewest, then the most even."""
     tag = (who + ": ") if who else ""
-    # phrase chunks: split after sentence or clause punctuation, then pack chunks into cues of <= 2 lines
-    parts = re.split(r"(?<=[.?!:;])\s+|(?<=,)\s+", text.strip())
-    cues, cur = [], ""
-    for ptxt in parts:
-        trial = (cur + " " + ptxt).strip()
-        first = not cues
-        lines = wrap(((tag if first else "") + trial).split(), MAXC)
-        if len(lines) <= MAXL: cur = trial
-        else:
-            if cur: cues.append(cur)
-            cur = ptxt
-            while len(wrap(((tag if not cues else "") + cur).split(), MAXC)) > MAXL:  # a single long phrase: hard-split by words
-                words = cur.split(); take = []
-                while words and len(wrap(((tag if not cues else "") + " ".join(take + [words[0]])).split(), MAXC)) <= MAXL: take.append(words.pop(0))
-                cues.append(" ".join(take)); cur = " ".join(words)
-    if cur: cues.append(cur)
+    text = text.strip()
+    if text in OVERRIDES: cues = OVERRIDES[text]
+    else:
+        sents = re.split(r"(?<=[.?!])\s+", text); n = len(sents); best = None
+        for mask in range(1 << (n - 1)):                       # every way to group consecutive sentences
+            groups, cur = [], [sents[0]]
+            for i in range(1, n):
+                if mask >> (i - 1) & 1: groups.append(" ".join(cur)); cur = [sents[i]]
+                else: cur.append(sents[i])
+            groups.append(" ".join(cur))
+            lay = [lines_for(g, tag) for g in groups]
+            if all(lay):
+                key = (sum(1 for l in lay if l[1] >= 25), len(groups), max(len(g) for g in groups))
+                if best is None or key < best[0]: best = (key, groups)
+        if best is None: raise SystemExit("caption needs an explicit split in OVERRIDES: " + text)
+        cues = best[1]
     out = []
-    for i, c in enumerate(cues):
-        lines = wrap(((tag if i == 0 else "") + c).split(), MAXC)
-        if i == 0 and tag:  # the engine renders the tag itself, bold: strip it from the first line
-            lines[0] = lines[0][len(tag):]
-        out.append({"text": c, "lines": lines, "who": who if i == 0 else ""})
+    for c in cues:
+        lay = lines_for(c, tag)
+        if not lay: raise SystemExit("caption cue too long: " + c)
+        lines = lay[0]
+        if tag: lines[0] = lines[0][len(tag):]                 # the engine renders the speaker tag itself, bold
+        out.append({"text": c, "lines": lines, "who": who})     # dialogue: the tag is on every cue of the line
     return out
 
 def ts(t, sep):

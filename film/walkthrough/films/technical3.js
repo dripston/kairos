@@ -23,7 +23,7 @@ window.FILM = {
    "kind": "video",
    "src": "comp/T01_engineer.mov",
    "t0": 0.0,
-   "t1": 3.4,
+   "t1": 3.0,
    "from": 0.0,
    "graded": true,
    "enter": {
@@ -35,8 +35,8 @@ window.FILM = {
   },
   {
    "kind": "headline",
-   "t0": 3.4,
-   "t1": 6.199999999999999,
+   "t0": 3.0,
+   "t1": 5.2,
    "pos": "c",
    "text": "How Kairos works.",
    "sub": "One decision per borrower, per day. Every step checked.",
@@ -49,8 +49,8 @@ window.FILM = {
   },
   {
    "kind": "diagram",
-   "t0": 6.199999999999999,
-   "t1": 11.0,
+   "t0": 5.2,
+   "t1": 9.600000000000001,
    "ww": 2460,
    "wh": 1010,
    "nodes": [
@@ -63,7 +63,7 @@ window.FILM = {
      "title": "K03 · Record",
      "sub": "one per borrower",
      "color": "#2563EB",
-     "t": 6.6,
+     "t": 5.6000000000000005,
      "cap": null
     },
     {
@@ -75,7 +75,7 @@ window.FILM = {
      "title": "K27 · Churn",
      "sub": "re-sorts daily",
      "color": "#0F766E",
-     "t": 6.9799999999999995,
+     "t": 5.98,
      "cap": null
     },
     {
@@ -87,7 +87,7 @@ window.FILM = {
      "title": "K09 · Learner",
      "sub": "channel × hour",
      "color": "#0F766E",
-     "t": 7.359999999999999,
+     "t": 6.36,
      "cap": null
     },
     {
@@ -99,7 +99,7 @@ window.FILM = {
      "title": "K06 · Aladdin",
      "sub": "checks twice",
      "color": "#C2410C",
-     "t": 7.74,
+     "t": 6.74,
      "cap": "≈ safety shield · Alshiekh et al. 2018"
     },
     {
@@ -111,7 +111,7 @@ window.FILM = {
      "title": "Executor",
      "sub": "sends on time",
      "color": "#7C3AED",
-     "t": 8.12,
+     "t": 7.120000000000001,
      "cap": null
     },
     {
@@ -123,7 +123,7 @@ window.FILM = {
      "title": "Channels",
      "sub": "SMS · WA · voice",
      "color": "#7C3AED",
-     "t": 8.5,
+     "t": 7.5,
      "cap": null
     },
     {
@@ -135,7 +135,7 @@ window.FILM = {
      "title": "Webhooks",
      "sub": "receipts back",
      "color": "#7C3AED",
-     "t": 8.879999999999999,
+     "t": 7.880000000000001,
      "cap": null
     },
     {
@@ -147,7 +147,7 @@ window.FILM = {
      "title": "Intent ladder",
      "sub": "rules → model",
      "color": "#BE185D",
-     "t": 9.26,
+     "t": 8.260000000000002,
      "cap": "≈ reject option · Chow 1970"
     },
     {
@@ -159,7 +159,7 @@ window.FILM = {
      "title": "People",
      "sub": "can step in",
      "color": "#15803D",
-     "t": 9.64,
+     "t": 8.64,
      "cap": null
     },
     {
@@ -171,7 +171,7 @@ window.FILM = {
      "title": "Outcomes",
      "sub": "what happened",
      "color": "#2563EB",
-     "t": 10.02,
+     "t": 9.02,
      "cap": null
     }
    ],
@@ -180,61 +180,61 @@ window.FILM = {
      "id": "e1",
      "from": "rec",
      "to": "churn",
-     "t": 7.079999999999999
+     "t": 6.08
     },
     {
      "id": "e2",
      "from": "churn",
      "to": "learn",
-     "t": 7.459999999999999
+     "t": 6.46
     },
     {
      "id": "e3",
      "from": "learn",
      "to": "ald",
-     "t": 7.84
+     "t": 6.84
     },
     {
      "id": "e4",
      "from": "ald",
      "to": "exec",
-     "t": 8.219999999999999
+     "t": 7.220000000000001
     },
     {
      "id": "e5",
      "from": "exec",
      "to": "chan",
-     "t": 8.6
+     "t": 7.6
     },
     {
      "id": "e6",
      "from": "chan",
      "to": "hook",
-     "t": 8.979999999999999
+     "t": 7.98
     },
     {
      "id": "e7",
      "from": "hook",
      "to": "intent",
-     "t": 9.36
+     "t": 8.360000000000001
     },
     {
      "id": "e8",
      "from": "people",
      "to": "ald",
-     "t": 9.74
+     "t": 8.74
     },
     {
      "id": "e9",
      "from": "intent",
      "to": "out",
-     "t": 10.12
+     "t": 9.12
     },
     {
      "id": "e10",
      "from": "out",
      "to": "learn",
-     "t": 10.12
+     "t": 9.12
     }
    ],
    "enter": {
@@ -263,8 +263,8 @@ window.FILM = {
   {
    "kind": "video",
    "src": "comp/T03_street.mov",
-   "t0": 11.0,
-   "t1": 13.0,
+   "t0": 9.6,
+   "t1": 11.6,
    "from": 0.0,
    "graded": true,
    "enter": {
@@ -289,8 +289,8 @@ window.FILM = {
     582,
     321
    ],
-   "t0": 12.95,
-   "t1": 16.0,
+   "t0": 11.55,
+   "t1": 14.6,
    "maxw": 1500,
    "maxh": 680,
    "cx": 900,
@@ -318,8 +318,8 @@ window.FILM = {
     582,
     200
    ],
-   "t0": 15.95,
-   "t1": 19.4,
+   "t0": 14.55,
+   "t1": 18.0,
    "maxw": 1500,
    "maxh": 640,
    "cx": 900,
@@ -335,8 +335,8 @@ window.FILM = {
   {
    "kind": "video",
    "src": "comp/V1_vikram_reads.mov",
-   "t0": 19.4,
-   "t1": 21.4,
+   "t0": 18.0,
+   "t1": 20.0,
    "from": 0.0,
    "graded": true,
    "enter": {
@@ -361,8 +361,8 @@ window.FILM = {
     606,
     225
    ],
-   "t0": 21.35,
-   "t1": 27.4,
+   "t0": 19.95,
+   "t1": 26.0,
    "maxw": 1500,
    "maxh": 640,
    "cx": 900,
@@ -377,8 +377,8 @@ window.FILM = {
   },
   {
    "kind": "tag",
-   "t0": 21.6,
-   "t1": 27.4,
+   "t0": 20.2,
+   "t1": 26.0,
    "pos": "t",
    "text": "Engine Room · SIMULATED · seed 42 · 300 synthetic borrowers · 14 days",
    "exit": {
@@ -400,8 +400,8 @@ window.FILM = {
     606,
     237
    ],
-   "t0": 27.35,
-   "t1": 33.4,
+   "t0": 25.95,
+   "t1": 32.0,
    "maxw": 1500,
    "maxh": 640,
    "cx": 900,
@@ -416,8 +416,8 @@ window.FILM = {
   },
   {
    "kind": "tag",
-   "t0": 27.6,
-   "t1": 33.4,
+   "t0": 26.2,
+   "t1": 32.0,
    "pos": "t",
    "text": "Engine Room · SIMULATED · seed 42 · 300 synthetic borrowers · 14 days",
    "exit": {
@@ -427,8 +427,8 @@ window.FILM = {
   {
    "kind": "video",
    "src": "comp/P16a_asha_close.mov",
-   "t0": 33.4,
-   "t1": 35.2,
+   "t0": 32.0,
+   "t1": 33.8,
    "from": 0.0,
    "graded": true,
    "enter": {
@@ -441,8 +441,8 @@ window.FILM = {
   {
    "kind": "video",
    "src": "comp/P16b_laptop_held.mov",
-   "t0": 35.2,
-   "t1": 37.6,
+   "t0": 33.8,
+   "t1": 36.2,
    "from": 0.0,
    "graded": true,
    "enter": {
@@ -452,13 +452,13 @@ window.FILM = {
     "dur": 0
    },
    "push": {
-    "t0": 36.2,
-    "t1": 37.6,
+    "t0": 34.6,
+    "t1": 36.2,
     "rect": [
-     530,
-     115,
-     885,
-     365
+     380,
+     80,
+     900,
+     506
     ]
    }
   },
@@ -477,8 +477,8 @@ window.FILM = {
     658,
     187
    ],
-   "t0": 37.55,
-   "t1": 42.0,
+   "t0": 36.15,
+   "t1": 40.6,
    "maxw": 1500,
    "maxh": 640,
    "cx": 900,
@@ -494,8 +494,8 @@ window.FILM = {
   {
    "kind": "video",
    "src": "comp/P03_phone_lights.mov",
-   "t0": 42.0,
-   "t1": 43.8,
+   "t0": 40.6,
+   "t1": 42.4,
    "from": 0.0,
    "graded": true,
    "enter": {
@@ -510,7 +510,7 @@ window.FILM = {
    "cap": "sys",
    "frames": [
     {
-     "at": 43.8,
+     "at": 42.4,
      "label": "trace",
      "play": 5,
      "from": 10
@@ -522,8 +522,8 @@ window.FILM = {
     322,
     296
    ],
-   "t0": 43.75,
-   "t1": 50.2,
+   "t0": 42.35,
+   "t1": 48.2,
    "maxw": 1500,
    "maxh": 640,
    "cx": 900,
@@ -539,8 +539,8 @@ window.FILM = {
   {
    "kind": "video",
    "src": "comp/T07_sunita_call.mov",
-   "t0": 50.2,
-   "t1": 55.4,
+   "t0": 48.2,
+   "t1": 53.4,
    "from": 0.0,
    "graded": true,
    "enter": {
@@ -565,8 +565,8 @@ window.FILM = {
     700,
     150
    ],
-   "t0": 55.35,
-   "t1": 61.4,
+   "t0": 53.35,
+   "t1": 59.4,
    "maxw": 1500,
    "maxh": 640,
    "cx": 900,
@@ -582,8 +582,8 @@ window.FILM = {
   {
    "kind": "video",
    "src": "comp/T07b_person_reviews.mov",
-   "t0": 61.4,
-   "t1": 65.8,
+   "t0": 59.4,
+   "t1": 63.8,
    "from": 0.0,
    "graded": true,
    "enter": {
@@ -596,8 +596,8 @@ window.FILM = {
   {
    "kind": "video",
    "src": "comp/P12_vikram_whatsapp.mov",
-   "t0": 65.8,
-   "t1": 68.2,
+   "t0": 63.8,
+   "t1": 66.2,
    "from": 1.2,
    "graded": true,
    "enter": {
@@ -622,8 +622,8 @@ window.FILM = {
     658,
     218
    ],
-   "t0": 68.15,
-   "t1": 73.2,
+   "t0": 66.15,
+   "t1": 71.2,
    "maxw": 1500,
    "maxh": 640,
    "cx": 900,
@@ -639,8 +639,8 @@ window.FILM = {
   {
    "kind": "video",
    "src": "comp/P20b_asha_side.mov",
-   "t0": 73.2,
-   "t1": 74.6,
+   "t0": 71.2,
+   "t1": 72.6,
    "from": 0.0,
    "graded": true,
    "enter": {
@@ -653,8 +653,8 @@ window.FILM = {
   {
    "kind": "video",
    "src": "comp/P20c_laptop_console.mov",
-   "t0": 74.6,
-   "t1": 77.6,
+   "t0": 72.6,
+   "t1": 75.6,
    "from": 0.0,
    "graded": true,
    "enter": {
@@ -664,13 +664,13 @@ window.FILM = {
     "dur": 0
    },
    "push": {
-    "t0": 76.0,
-    "t1": 77.6,
+    "t0": 73.8,
+    "t1": 75.6,
     "rect": [
-     560,
-     255,
-     780,
-     500
+     380,
+     80,
+     900,
+     506
     ]
    }
   },
@@ -689,8 +689,8 @@ window.FILM = {
     448,
     313
    ],
-   "t0": 77.55,
-   "t1": 81.4,
+   "t0": 75.55,
+   "t1": 78.8,
    "maxw": 1500,
    "maxh": 640,
    "cx": 900,
@@ -706,8 +706,8 @@ window.FILM = {
   {
    "kind": "video",
    "src": "comp/T10_engineer.mov",
-   "t0": 81.4,
-   "t1": 84.0,
+   "t0": 78.8,
+   "t1": 81.4,
    "from": 0.0,
    "graded": true,
    "enter": {
@@ -719,8 +719,8 @@ window.FILM = {
   },
   {
    "kind": "term",
-   "t0": 84.0,
-   "t1": 100.5,
+   "t0": 81.39999999999999,
+   "t1": 97.89999999999999,
    "title": "kairos/backend — zsh",
    "prompt": "%",
    "rows": 15,
@@ -747,7 +747,7 @@ window.FILM = {
    "runs": [
     {
      "rec": "determinism",
-     "at": 84.3,
+     "at": 81.69999999999999,
      "cadence": 0.004,
      "fit": 1.0,
      "keep": "^Matched|Verified payment \\(unique\\)|K01 cap breaches|K15 safety|Deterministic replay",
@@ -756,7 +756,7 @@ window.FILM = {
     },
     {
      "rec": "redteam",
-     "at": 87.8,
+     "at": 85.19999999999999,
      "cadence": 0.012,
      "fit": 1.0,
      "clear": true,
@@ -766,7 +766,7 @@ window.FILM = {
     },
     {
      "rec": "bench",
-     "at": 91.4,
+     "at": 88.8,
      "cadence": 0.012,
      "fit": 0.5,
      "clear": true,
@@ -775,7 +775,7 @@ window.FILM = {
     },
     {
      "rec": "pytest",
-     "at": 94.6,
+     "at": 91.99999999999999,
      "cadence": 0.05,
      "fit": 0.7,
      "clear": true,
@@ -784,7 +784,7 @@ window.FILM = {
     },
     {
      "rec": "ope",
-     "at": 97.2,
+     "at": 94.6,
      "cadence": 0.012,
      "fit": 0.4,
      "clear": true,
@@ -797,8 +797,8 @@ window.FILM = {
   },
   {
    "kind": "callout",
-   "t0": 85.6,
-   "t1": 87.6,
+   "t0": 82.99999999999999,
+   "t1": 84.99999999999999,
    "dark": true,
    "x": 260,
    "y": 560,
@@ -809,8 +809,8 @@ window.FILM = {
   },
   {
    "kind": "callout",
-   "t0": 89.2,
-   "t1": 91.2,
+   "t0": 86.6,
+   "t1": 88.6,
    "dark": true,
    "x": 260,
    "y": 560,
@@ -821,8 +821,8 @@ window.FILM = {
   },
   {
    "kind": "callout",
-   "t0": 92.3,
-   "t1": 94.39999999999999,
+   "t0": 89.69999999999999,
+   "t1": 91.79999999999998,
    "dark": true,
    "x": 260,
    "y": 560,
@@ -833,8 +833,8 @@ window.FILM = {
   },
   {
    "kind": "callout",
-   "t0": 95.6,
-   "t1": 97.1,
+   "t0": 92.99999999999999,
+   "t1": 94.49999999999999,
    "dark": true,
    "x": 260,
    "y": 560,
@@ -845,8 +845,8 @@ window.FILM = {
   },
   {
    "kind": "callout",
-   "t0": 98.1,
-   "t1": 100.39999999999999,
+   "t0": 95.49999999999999,
+   "t1": 97.79999999999998,
    "dark": true,
    "x": 260,
    "y": 560,
@@ -856,9 +856,23 @@ window.FILM = {
    "html": "From logs: <em>18.2</em>. Truth: <em>18.4</em>."
   },
   {
+   "kind": "video",
+   "src": "comp/T11_engineer_face.mov",
+   "t0": 97.9,
+   "t1": 99.5,
+   "from": 0.0,
+   "graded": true,
+   "enter": {
+    "dur": 0
+   },
+   "exit": {
+    "dur": 0
+   }
+  },
+  {
    "kind": "callout",
-   "t0": 100.5,
-   "t1": 105.3,
+   "t0": 99.49999999999999,
+   "t1": 103.89999999999999,
    "pos": "c",
    "bare": true,
    "bgCream": true,
@@ -872,8 +886,22 @@ window.FILM = {
    }
   },
   {
+   "kind": "video",
+   "src": "comp/T12_team_claps.mov",
+   "t0": 103.9,
+   "t1": 105.5,
+   "from": 0.0,
+   "graded": true,
+   "enter": {
+    "dur": 0
+   },
+   "exit": {
+    "dur": 0
+   }
+  },
+  {
    "kind": "diagram",
-   "t0": 105.3,
+   "t0": 105.49999999999999,
    "t1": 108.02,
    "ww": 2460,
    "wh": 1010,
@@ -887,7 +915,7 @@ window.FILM = {
      "title": "K03 · Record",
      "sub": "one per borrower",
      "color": "#2563EB",
-     "t": 104.3,
+     "t": 104.49999999999999,
      "cap": null
     },
     {
@@ -899,7 +927,7 @@ window.FILM = {
      "title": "K27 · Churn",
      "sub": "re-sorts daily",
      "color": "#0F766E",
-     "t": 104.3,
+     "t": 104.49999999999999,
      "cap": null
     },
     {
@@ -911,7 +939,7 @@ window.FILM = {
      "title": "K09 · Learner",
      "sub": "channel × hour",
      "color": "#0F766E",
-     "t": 104.3,
+     "t": 104.49999999999999,
      "cap": null
     },
     {
@@ -923,7 +951,7 @@ window.FILM = {
      "title": "K06 · Aladdin",
      "sub": "checks twice",
      "color": "#C2410C",
-     "t": 104.3,
+     "t": 104.49999999999999,
      "cap": "≈ safety shield · Alshiekh et al. 2018"
     },
     {
@@ -935,7 +963,7 @@ window.FILM = {
      "title": "Executor",
      "sub": "sends on time",
      "color": "#7C3AED",
-     "t": 104.3,
+     "t": 104.49999999999999,
      "cap": null
     },
     {
@@ -947,7 +975,7 @@ window.FILM = {
      "title": "Channels",
      "sub": "SMS · WA · voice",
      "color": "#7C3AED",
-     "t": 104.3,
+     "t": 104.49999999999999,
      "cap": null
     },
     {
@@ -959,7 +987,7 @@ window.FILM = {
      "title": "Webhooks",
      "sub": "receipts back",
      "color": "#7C3AED",
-     "t": 104.3,
+     "t": 104.49999999999999,
      "cap": null
     },
     {
@@ -971,7 +999,7 @@ window.FILM = {
      "title": "Intent ladder",
      "sub": "rules → model",
      "color": "#BE185D",
-     "t": 104.3,
+     "t": 104.49999999999999,
      "cap": "≈ reject option · Chow 1970"
     },
     {
@@ -983,7 +1011,7 @@ window.FILM = {
      "title": "People",
      "sub": "can step in",
      "color": "#15803D",
-     "t": 104.3,
+     "t": 104.49999999999999,
      "cap": null
     },
     {
@@ -995,7 +1023,7 @@ window.FILM = {
      "title": "Outcomes",
      "sub": "what happened",
      "color": "#2563EB",
-     "t": 104.3,
+     "t": 104.49999999999999,
      "cap": null
     }
    ],
@@ -1004,61 +1032,61 @@ window.FILM = {
      "id": "e1",
      "from": "rec",
      "to": "churn",
-     "t": 104.39999999999999
+     "t": 104.59999999999998
     },
     {
      "id": "e2",
      "from": "churn",
      "to": "learn",
-     "t": 104.39999999999999
+     "t": 104.59999999999998
     },
     {
      "id": "e3",
      "from": "learn",
      "to": "ald",
-     "t": 104.39999999999999
+     "t": 104.59999999999998
     },
     {
      "id": "e4",
      "from": "ald",
      "to": "exec",
-     "t": 104.39999999999999
+     "t": 104.59999999999998
     },
     {
      "id": "e5",
      "from": "exec",
      "to": "chan",
-     "t": 104.39999999999999
+     "t": 104.59999999999998
     },
     {
      "id": "e6",
      "from": "chan",
      "to": "hook",
-     "t": 104.39999999999999
+     "t": 104.59999999999998
     },
     {
      "id": "e7",
      "from": "hook",
      "to": "intent",
-     "t": 104.39999999999999
+     "t": 104.59999999999998
     },
     {
      "id": "e8",
      "from": "people",
      "to": "ald",
-     "t": 104.39999999999999
+     "t": 104.59999999999998
     },
     {
      "id": "e9",
      "from": "intent",
      "to": "out",
-     "t": 104.39999999999999
+     "t": 104.59999999999998
     },
     {
      "id": "e10",
      "from": "out",
      "to": "learn",
-     "t": 104.39999999999999
+     "t": 104.59999999999998
     }
    ],
    "enter": {
@@ -1085,7 +1113,7 @@ window.FILM = {
    "bgCream": true,
    "pulses": [
     {
-     "t": 105.7,
+     "t": 105.89999999999999,
      "path": [
       "e1",
       "e2",
@@ -1104,8 +1132,8 @@ window.FILM = {
   },
   {
    "kind": "diagram",
-   "t0": 13.0,
-   "t1": 81.4,
+   "t0": 11.600000000000001,
+   "t1": 78.8,
    "ww": 2460,
    "wh": 1010,
    "nodes": [
@@ -1118,7 +1146,7 @@ window.FILM = {
      "title": "K03 · Record",
      "sub": "one per borrower",
      "color": "#2563EB",
-     "t": 12.0,
+     "t": 10.600000000000001,
      "cap": null
     },
     {
@@ -1130,7 +1158,7 @@ window.FILM = {
      "title": "K27 · Churn",
      "sub": "re-sorts daily",
      "color": "#0F766E",
-     "t": 12.0,
+     "t": 10.600000000000001,
      "cap": null
     },
     {
@@ -1142,7 +1170,7 @@ window.FILM = {
      "title": "K09 · Learner",
      "sub": "channel × hour",
      "color": "#0F766E",
-     "t": 12.0,
+     "t": 10.600000000000001,
      "cap": null
     },
     {
@@ -1154,7 +1182,7 @@ window.FILM = {
      "title": "K06 · Aladdin",
      "sub": "checks twice",
      "color": "#C2410C",
-     "t": 12.0,
+     "t": 10.600000000000001,
      "cap": "≈ safety shield · Alshiekh et al. 2018"
     },
     {
@@ -1166,7 +1194,7 @@ window.FILM = {
      "title": "Executor",
      "sub": "sends on time",
      "color": "#7C3AED",
-     "t": 12.0,
+     "t": 10.600000000000001,
      "cap": null
     },
     {
@@ -1178,7 +1206,7 @@ window.FILM = {
      "title": "Channels",
      "sub": "SMS · WA · voice",
      "color": "#7C3AED",
-     "t": 12.0,
+     "t": 10.600000000000001,
      "cap": null
     },
     {
@@ -1190,7 +1218,7 @@ window.FILM = {
      "title": "Webhooks",
      "sub": "receipts back",
      "color": "#7C3AED",
-     "t": 12.0,
+     "t": 10.600000000000001,
      "cap": null
     },
     {
@@ -1202,7 +1230,7 @@ window.FILM = {
      "title": "Intent ladder",
      "sub": "rules → model",
      "color": "#BE185D",
-     "t": 12.0,
+     "t": 10.600000000000001,
      "cap": "≈ reject option · Chow 1970"
     },
     {
@@ -1214,7 +1242,7 @@ window.FILM = {
      "title": "People",
      "sub": "can step in",
      "color": "#15803D",
-     "t": 12.0,
+     "t": 10.600000000000001,
      "cap": null
     },
     {
@@ -1226,7 +1254,7 @@ window.FILM = {
      "title": "Outcomes",
      "sub": "what happened",
      "color": "#2563EB",
-     "t": 12.0,
+     "t": 10.600000000000001,
      "cap": null
     }
    ],
@@ -1235,61 +1263,61 @@ window.FILM = {
      "id": "e1",
      "from": "rec",
      "to": "churn",
-     "t": 12.1
+     "t": 10.700000000000001
     },
     {
      "id": "e2",
      "from": "churn",
      "to": "learn",
-     "t": 12.1
+     "t": 10.700000000000001
     },
     {
      "id": "e3",
      "from": "learn",
      "to": "ald",
-     "t": 12.1
+     "t": 10.700000000000001
     },
     {
      "id": "e4",
      "from": "ald",
      "to": "exec",
-     "t": 12.1
+     "t": 10.700000000000001
     },
     {
      "id": "e5",
      "from": "exec",
      "to": "chan",
-     "t": 12.1
+     "t": 10.700000000000001
     },
     {
      "id": "e6",
      "from": "chan",
      "to": "hook",
-     "t": 12.1
+     "t": 10.700000000000001
     },
     {
      "id": "e7",
      "from": "hook",
      "to": "intent",
-     "t": 12.1
+     "t": 10.700000000000001
     },
     {
      "id": "e8",
      "from": "people",
      "to": "ald",
-     "t": 12.1
+     "t": 10.700000000000001
     },
     {
      "id": "e9",
      "from": "intent",
      "to": "out",
-     "t": 12.1
+     "t": 10.700000000000001
     },
     {
      "id": "e10",
      "from": "out",
      "to": "learn",
-     "t": 12.1
+     "t": 10.700000000000001
     }
    ],
    "enter": {
@@ -1307,55 +1335,55 @@ window.FILM = {
    ],
    "focus": [
     {
-     "t": 13.0,
+     "t": 11.6,
      "nodes": [
       "churn"
      ]
     },
     {
-     "t": 16.0,
+     "t": 14.6,
      "nodes": [
       "churn"
      ]
     },
     {
-     "t": 21.4,
+     "t": 20.0,
      "nodes": [
       "learn"
      ]
     },
     {
-     "t": 27.4,
+     "t": 26.0,
      "nodes": [
       "learn"
      ]
     },
     {
-     "t": 37.6,
+     "t": 36.2,
      "nodes": [
       "ald"
      ]
     },
     {
-     "t": 43.8,
+     "t": 42.4,
      "nodes": [
       "hook"
      ]
     },
     {
-     "t": 55.4,
+     "t": 53.4,
      "nodes": [
       "chan"
      ]
     },
     {
-     "t": 68.2,
+     "t": 66.2,
      "nodes": [
       "intent"
      ]
     },
     {
-     "t": 77.6,
+     "t": 75.6,
      "nodes": [
       "people"
      ]
@@ -1370,36 +1398,36 @@ window.FILM = {
    "z": 900,
    "away": [
     [
-     16.0,
-     16.0
+     14.600000000000001,
+     14.600000000000001
     ],
     [
-     19.4,
-     21.4
+     18.0,
+     20.0
     ],
     [
-     27.4,
-     27.4
+     26.0,
+     26.0
     ],
     [
-     33.4,
-     37.599999999999994
+     32.0,
+     36.199999999999996
     ],
     [
-     41.99999999999999,
-     43.79999999999999
+     40.599999999999994,
+     42.39999999999999
     ],
     [
-     50.19999999999999,
-     55.39999999999999
+     48.19999999999999,
+     53.39999999999999
     ],
     [
-     61.39999999999999,
-     68.2
+     59.39999999999999,
+     66.19999999999999
     ],
     [
-     73.2,
-     77.60000000000001
+     71.19999999999999,
+     75.6
     ]
    ]
   },

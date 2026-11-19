@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H7_3_man_smiles_texting_close.mp4",
+ "in": 4.8,
+ "dur": 1.8,
+ "mode": "none",
+ "out": "comp/V2b_vikram_before_pay.mov",
+ "fps": 30
+}

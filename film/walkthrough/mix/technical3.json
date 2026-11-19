@@ -33,77 +33,77 @@
   },
   {
    "file": "audio/vo/t02b.wav",
-   "at": 11.6,
+   "at": 10.2,
    "text": "Each day, every borrower is re-sorted. Every move names its rule.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/vo/t03b.wav",
-   "at": 19.6,
+   "at": 18.2,
    "text": "A Bayesian learner tracks reply chances. On day seven, WhatsApp replies drop. Kairos isn't told.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/vo/t03c.wav",
-   "at": 27.9,
+   "at": 26.5,
    "text": "By the end of day fourteen, that segment has moved to SMS. Learned from replies alone.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/vo/t04.wav",
-   "at": 34.4,
+   "at": 33.0,
    "text": "Models only suggest. Aladdin reserves the budget and limits, then checks every rule again at send time.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/vo/t05.wav",
-   "at": 42.2,
+   "at": 40.8,
    "text": "Messages go out through each channel. Delivery and replies come back as webhooks, and duplicates are ignored.",
    "who": "",
    "gain": 0
   },
   {
    "file": "../audio/dialogue/vc_a2.wav",
-   "at": 50.5,
+   "at": 48.5,
    "text": "Your EMI was due last week. Could you pay by Friday?",
    "who": "Kairos",
    "gain": -1.0
   },
   {
    "file": "../audio/dialogue/vc_b2.wav",
-   "at": 54.5,
+   "at": 52.5,
    "text": "Yes, I'll pay on Friday.",
    "who": "Sunita",
    "gain": -1.0
   },
   {
    "file": "audio/vo/tv_voice.wav",
-   "at": 56.4,
+   "at": 54.4,
    "text": "Voice calls run on Sarvam agents. Every call comes back with a disposition and a confidence. Below a hand-set threshold, a person reviews it.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/vo/tv_intent.wav",
-   "at": 66.4,
+   "at": 64.4,
    "text": "Replies climb a ladder: rules first, then a small model. Still unsure? A person decides.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/vo/t07.wav",
-   "at": 73.4,
+   "at": 71.4,
    "text": "People can step in at any moment. Every action still passes Aladdin, and lands in the audit log.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/vo/tv_proof.wav",
-   "at": 81.8,
+   "at": 79.2,
    "text": "Same data in, same decisions out. And we attack it, load it, and test it.",
    "who": "",
    "gain": 0

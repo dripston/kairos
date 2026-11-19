@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H11_2_team_meeting_presenter_woman.mp4",
+ "in": 13.0,
+ "dur": 2.0,
+ "mode": "none",
+ "out": "comp/T12_team_claps.mov",
+ "fps": 30
+}
