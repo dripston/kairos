@@ -10,6 +10,7 @@ The Ledger computes Facts atomically; tests feed Ojas's test_cases.csv directly.
 """
 from __future__ import annotations
 
+import math
 from dataclasses import asdict, dataclass, field
 from datetime import date, datetime
 from typing import Callable, Optional
@@ -98,8 +99,11 @@ def _consent(c: _Ctx) -> Hit:
 
 
 def _dpd_valid(c: _Ctx) -> Hit:
-    if c.f.dpd is None or c.f.dpd_age_hours > c.p.stale_after_hours:
-        return WAIT, "DPD_INVALID", {"dpd_age_hours": c.f.dpd_age_hours}
+    age = c.f.dpd_age_hours
+    # `not age <= limit` (rather than `age > limit`) also holds a NaN age. A non-finite age (no sync stamp, or one
+    # later than the decision: ledger._dpd_age_hours) is reported as null + stale, never as inf: inf is not JSON.
+    if c.f.dpd is None or not age <= c.p.stale_after_hours:
+        return WAIT, "DPD_INVALID", ({"dpd_age_hours": age} if math.isfinite(age) else {"dpd_age_hours": None, "stale": True})
     return None
 
 

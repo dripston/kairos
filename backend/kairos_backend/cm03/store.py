@@ -11,6 +11,8 @@ import re
 import unicodedata
 from typing import Any, Optional
 
+from ..safejson import finite
+
 CM03_SCHEMA = """
 CREATE TABLE IF NOT EXISTS cm03_conversations (
   conversation_id TEXT PRIMARY KEY, sender TEXT NOT NULL, sender_masked TEXT NOT NULL, borrower_id TEXT,
@@ -86,7 +88,7 @@ def scrub(text: Optional[str]) -> str:
 
 
 def dumps(obj: Any) -> str:
-    return json.dumps(obj, default=str, ensure_ascii=False, sort_keys=True)
+    return json.dumps(finite(obj), default=str, ensure_ascii=False, sort_keys=True, allow_nan=False)
 
 
 def init_schema(conn) -> None:

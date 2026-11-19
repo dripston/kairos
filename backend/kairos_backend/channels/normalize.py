@@ -40,6 +40,7 @@ from datetime import datetime, timedelta
 from typing import Iterable, List, Optional
 
 from ..ledger import QUEUED, RANK, Ledger
+from ..safejson import dumps as safe_dumps
 from .mock import IVR_MENU
 
 DELIVERY_STATUSES = ("ACCEPTED", "SENT", "DELIVERED", "READ", "CLICKED", "FAILED", "UNKNOWN")
@@ -158,7 +159,7 @@ def apply_callback(ledger: Ledger, event: dict) -> dict:
             # touch is really dispatched must still apply (FSM-F1)
             c.execute("DELETE FROM channel_events WHERE dedupe_key=?", (key,))
         else:
-            c.execute("UPDATE channel_events SET envelope=? WHERE dedupe_key=?", (json.dumps(env, default=str), key))
+            c.execute("UPDATE channel_events SET envelope=? WHERE dedupe_key=?", (safe_dumps(env, default=str), key))
     return env
 
 
