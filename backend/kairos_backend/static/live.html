@@ -77,7 +77,8 @@ main { flex: 1; padding: 14px 18px 18px; display: flex; flex-direction: column; 
 .col { display: flex; flex-direction: column; gap: 14px; min-height: 0; min-width: 0; }
 
 /* river */
-.river { position: relative; height: 330px; border-radius: 10px; background: linear-gradient(180deg, #0d1628, #0b1322); overflow: hidden; }
+.riverpanel { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.river { flex: 1; min-height: 240px; position: relative; height: 330px; border-radius: 10px; background: linear-gradient(180deg, #0d1628, #0b1322); overflow: hidden; }
 .stage { position: absolute; top: 0; bottom: 0; width: 0; }
 .stage .cap { position: absolute; top: 8px; transform: translateX(-50%); text-align: center; white-space: nowrap; font-size: 13px; color: var(--muted); font-weight: 700; }
 .stage .cap b { display: block; font-size: 20px; color: var(--ink); font-variant-numeric: tabular-nums; }
@@ -88,6 +89,8 @@ main { flex: 1; padding: 14px 18px 18px; display: flex; flex-direction: column; 
   background: repeating-linear-gradient(180deg, #3b4a6b 0 10px, #26324b 10px 20px); }
 .gate .shield { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 34px; height: 34px; border-radius: 50%;
   background: var(--panel2); border: 2px solid var(--muted); display: grid; place-items: center; transition: border-color .2s, box-shadow .2s; }
+.gatelbl { position: absolute; top: calc(50% + 24px); left: 50%; transform: translateX(-50%); text-align: center; white-space: nowrap;
+  font-size: 12px; font-weight: 800; color: var(--ink); background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; line-height: 1.2; }
 .gate.hit .shield { border-color: var(--block); box-shadow: 0 0 0 6px rgba(248,113,113,.18); }
 .lane { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700;
   padding: 3px 8px 3px 6px; border-radius: 8px; background: #16213a; border: 1px solid var(--line); white-space: nowrap; }
@@ -121,7 +124,7 @@ main { flex: 1; padding: 14px 18px 18px; display: flex; flex-direction: column; 
 .ticker li.decision .kind { background: var(--kairos); color: var(--kairos-ink); }
 .ticker li.handoff .kind { background: var(--warn); color: #241a00; }
 .ticker li .arm { font-size: 11px; font-weight: 700; color: var(--fixed); margin-right: 4px; }
-@keyframes slide { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+@keyframes slide { from { transform: translateY(-10px); filter: brightness(1.6); } to { transform: none; filter: none; } }
 
 /* learning */
 .bars { display: flex; flex-direction: column; gap: 7px; }
@@ -150,8 +153,8 @@ body.scoreboard .board { display: flex; } body.scoreboard .story, body.scoreboar
 .team.kairos .band { background: var(--kairos); color: var(--kairos-ink); }
 .team.fixed .band { background: repeating-linear-gradient(135deg, var(--fixed) 0 18px, #e3971c 18px 36px); color: var(--fixed-ink); }
 .team .band small { font-weight: 700; font-size: 14px; opacity: .85; letter-spacing: 0; }
-.score { display: grid; grid-template-columns: 1.4fr 1fr 1fr; }
-.score > div { padding: 12px 20px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); min-width: 0; }
+.score { display: grid; grid-template-columns: 1.7fr 1fr 1fr; }
+.score > div { padding: 12px 20px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); min-width: 0; overflow: hidden; }
 .score .lab { font-size: 13px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 .score .val { font-size: 34px; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1.15; white-space: nowrap; }
 .score .sub { font-size: 13px; color: var(--muted); }
@@ -206,22 +209,33 @@ body.presenter #worm { height: 300px !important; }
 .exitp:hover, .exitp:focus { opacity: 1; }
 body.presenter .exitp { display: block; }
 
-/* 1280x720 and other smaller screens */
-@media (max-width: 1400px) {
-  :root { --big: 34px; --fs: 14px; }
-  .river { height: 260px; }
-  .chart svg { height: 115px; }
+/* 1280x720 and other smaller screens: compact, and grow (page scrolls) rather than squeeze */
+@media (max-width: 1400px), (max-height: 820px) {
+  :root { --big: 30px; --fs: 13.5px; }
+  header { padding: 6px 12px; gap: 10px; }
+  header h1 { font-size: 16px; } header .clock { font-size: 14px; padding: 3px 8px; }
+  .daybar, .controls label { display: none; } #status { min-width: 0; font-size: 12px; }
+  .controls { gap: 5px; } .controls button, .controls select { padding: 4px 8px; font-size: 13px; }
+  main { gap: 10px; padding: 10px 12px 12px; }
+  .panel { padding: 8px 12px; } .panel h2 { margin-bottom: 5px; font-size: 13px; }
+  .side { padding: 8px 14px; } .nums { gap: 18px; } .mini { margin-top: 3px; gap: 12px; }
+  .mid { min-width: 140px; gap: 6px; } .breach { padding: 7px 10px; }
+  .story, .col { min-height: auto; }
+  .riverpanel { flex: none; } .river { flex: none; height: 225px; min-height: 0; }
+  .chart svg { height: 92px; }
+  .ticker li { padding: 5px 8px; font-size: 13px; }
   .score .val { font-size: 26px; } .score .runs .val { font-size: 46px; }
-  .score > div { padding: 9px 14px; }
-  .comm li { font-size: 16px; }
-  body.presenter { --fs: 16px; --big: 44px; }
-  body.presenter .score .val { font-size: 34px; } body.presenter .score .runs .val { font-size: 60px; }
-  body.presenter .comm li { font-size: 19px; } body.presenter .river { height: 300px; }
-  body.presenter #worm { height: 220px !important; }
-}
-@media (max-height: 760px) {
-  .river { height: 230px; } .chart svg { height: 100px; } main { gap: 10px; padding-top: 10px; }
-  .panel { padding: 9px 12px; } .comm li { padding: 7px 12px; }
+  .score > div { padding: 8px 14px; }
+  .team .band { font-size: 18px; padding: 7px 16px; }
+  .comm li { font-size: 15px; padding: 7px 12px; }
+  #worm { height: 170px !important; }
+  body.presenter { --fs: 15px; --big: 40px; }
+  body.presenter .score .val { font-size: 34px; } body.presenter .score .runs .val { font-size: 64px; }
+  body.presenter .team .band { font-size: 22px; padding: 9px 18px; } body.presenter .team .band small { font-size: 14px; }
+  body.presenter .comm li { font-size: 18px; padding: 8px 14px; } body.presenter .comm li .who { font-size: 12px; }
+  body.presenter .river { height: 260px; }
+  body.presenter #worm { height: 210px !important; }
+  body.presenter header h1 { font-size: 19px; } body.presenter header .clock { font-size: 17px; }
 }
 @media (max-width: 1000px) {
   .story, .boardlow, .bug { grid-template-columns: 1fr; }
@@ -299,7 +313,7 @@ body.presenter .exitp { display: block; }
   <!-- STORY VIEW -->
   <section class="story">
     <div class="col">
-      <div class="panel">
+      <div class="panel riverpanel">
         <h2>The decision river <span class="note muted">each dot is a borrower (a sample moves; the counts are everyone)</span>
           <span class="spacer"></span>
           <span role="group" aria-label="River for"><button id="riverK" aria-pressed="true">Kairos</button> <button id="riverF" aria-pressed="false">Fixed schedule</button></span></h2>
@@ -431,7 +445,9 @@ body.presenter .exitp { display: block; }
     else if (e.key === " " && e.target.tagName !== "BUTTON") { e.preventDefault(); $("pauseBtn").click(); }
   });
 
+  var gen = 0;   // bumps on every Start: responses from an earlier poll are dropped
   function resetView() {
+    gen++; clearTimeout(pollTimer);
     cursor = 0; last = null; prevBars = {}; tickQ = []; commQ = [];
     $("ticker").innerHTML = ""; $("comm").innerHTML = ""; $("callout").classList.remove("on"); clearDots();
     needsCount = 0; $("needs").classList.remove("on"); $("bars").innerHTML = ""; $("bars").dataset.key = "";
@@ -441,7 +457,9 @@ body.presenter .exitp { display: block; }
   var pollTimer = null;
   function poll() {
     clearTimeout(pollTimer);
+    var g = gen;
     api("/demo/live/state?cursor=" + cursor + "&limit=3000").then(function (st) {
+      if (g !== gen) return;
       var catchup = st.events.length > 500;
       cursor = st.cursor; status = st.status; last = st;
       if (st.status !== "idle") $("idle").classList.remove("on");
@@ -451,7 +469,7 @@ body.presenter .exitp { display: block; }
       render(st);
       var more = st.events.length >= 3000, live = st.status === "running" || st.status === "preparing";
       pollTimer = setTimeout(poll, more ? 30 : live ? 400 : 2500);
-    }).catch(function () { $("status").textContent = "reconnecting…"; pollTimer = setTimeout(poll, 1500); });
+    }).catch(function () { if (g !== gen) return; $("status").textContent = "reconnecting…"; pollTimer = setTimeout(poll, 1500); });
   }
 
   // ---------------- counters ----------------
@@ -480,17 +498,17 @@ body.presenter .exitp { display: block; }
   // ---------------- the decision river ----------------
   var river = $("river"), cols = {}, laneEls = {}, dots = {}, ndots = 0, MAXDOTS = 70;
   var X = { due: .045, decide: .155, gate: .265, channel: .41, reached: .565, replied: .69, promised: .81, paid: .935 };
-  var STAGES = [["due", "Due"], ["decide", "Decide"], ["gate", "Checked by Aladdin"], ["channel", "Channel"], ["reached", "Reached"],
+  var STAGES = [["due", "Due"], ["decide", "Decide"], ["gate", "Blocked"], ["channel", "Channel"], ["reached", "Reached"],
     ["replied", "Replied"], ["promised", "Promised"], ["paid", "Paid"]];
   function buildRiver() {
     STAGES.forEach(function (s) {
       var d = document.createElement("div"); d.className = "stage " + s[0];
-      d.innerHTML = '<div class="cap"><b id="cnt-' + s[0] + '">0</b>' + s[1] + (s[0] === "gate" ? " (blocked)" : "") + "</div>" +
+      d.innerHTML = '<div class="cap"><b id="cnt-' + s[0] + '">0</b>' + s[1] + "</div>" +
         (s[0] === "gate" || s[0] === "channel" ? "" : '<div class="rail"></div>');
       river.appendChild(d); cols[s[0]] = d;
     });
     var g = document.createElement("div"); g.className = "gate"; g.id = "gate"; g.title = "Aladdin, the supervisor: checks every decision against the lender's rules, and again just before sending";
-    g.innerHTML = '<div class="shield"><svg width="20" height="20" aria-hidden="true"><use href="#i-shield"/></svg></div>';
+    g.innerHTML = '<div class="shield"><svg width="20" height="20" aria-hidden="true"><use href="#i-shield"/></svg></div><div class="gatelbl">Checked by<br>Aladdin</div>';
     river.appendChild(g);
     LANES.forEach(function (ch) {
       var l = document.createElement("div"); l.className = "lane";
@@ -585,7 +603,7 @@ body.presenter .exitp { display: block; }
   }
 
   // ---------------- tickers ----------------
-  var PRIO = { paid: 9, "switch": 9, world: 9, stop: 8, handoff: 8, learner: 6, promise: 5, reply: 4, blocked: 3, decision: 2, wait: 1 };
+  var PRIO = { paid: 9, "switch": 9, world: 9, stop: 8, handoff: 8, learner: 6, decision: 5, promise: 4, reply: 4, wait: 4, blocked: 3 };
   function onEvent(e, catchup) {
     if (e.kind === "day_end") { if (e.arm === "kairos") commQ.push({ p: 7, e: e }); return; }
     if (e.kind === "switch") { var co = $("callout"); co.textContent = e.text; co.classList.add("on"); }
@@ -597,31 +615,45 @@ body.presenter .exitp { display: block; }
       if (!sampled) tickQ.push({ p: p, e: e });
       if (!sampled || e.kind === "paid") commQ.push({ p: p, e: e });
     }
-    if (catchup) { tickQ = tickQ.slice(-8); commQ = commQ.slice(-6); }
-    if (tickQ.length > 40) { tickQ.sort(function (a, b) { return b.p - a.p; }); tickQ = tickQ.slice(0, 25); }
-    if (commQ.length > 30) { commQ.sort(function (a, b) { return b.p - a.p; }); commQ = commQ.slice(0, 20); }
+    tickQ = trim(tickQ, catchup ? 6 : 12, e.day); commQ = trim(commQ, catchup ? 4 : 8, e.day);
   }
-  function pop(q) { if (!q.length) return null; var bi = 0; for (var i = 1; i < q.length; i++) if (q[i].p > q[bi].p) bi = i;
-    if (q[bi].p < 7) bi = 0; return q.splice(bi, 1)[0].e; }
+  // Keep the feeds current: drop items from earlier days (except the big ones), keep the best recent few.
+  function trim(q, max, day) {
+    q = q.filter(function (x) { return x.e.day >= day - (x.p >= 8 ? 1 : 0); });
+    if (q.length <= max) return q;
+    q.sort(function (a, b) { return (b.p - a.p) || (b.e.seq - a.e.seq); });
+    return q.slice(0, max).sort(function (a, b) { return a.e.seq - b.e.seq; });
+  }
+  var lastKind = { t: "", c: "" };
+  function pop(q, which) {
+    if (!q.length) return null; var bi = -1;
+    for (var i = 0; i < q.length; i++) {
+      var x = q[i], b = bi < 0 ? null : q[bi];
+      var score = x.p * 10 - (x.e.kind === lastKind[which] && x.p < 8 ? 15 : 0);
+      var bs = b ? b.p * 10 - (b.e.kind === lastKind[which] && b.p < 8 ? 15 : 0) : -1e9;
+      if (score > bs || (score === bs && x.e.seq > b.e.seq)) bi = i;
+    }
+    var e = q.splice(bi, 1)[0].e; lastKind[which] = e.kind; return e; }
+  function every(fn, msAt) { (function loop() { fn(); setTimeout(loop, msAt()); })(); }
   function pushLi(list, li, max) { list.insertBefore(li, list.firstChild); while (list.children.length > max) list.lastChild.remove(); }
-  setInterval(function () {
-    var e = pop(tickQ); if (!e) return;
+  every(function () {
+    var e = pop(tickQ, "t"); if (!e) return;
     var li = document.createElement("li"); li.className = e.kind;
     var k = document.createElement("span"); k.className = "kind"; k.textContent = KIND_LABEL[e.kind] || e.kind.toUpperCase();
     var t = document.createElement("span");
     if (e.arm === "cn10") { var a = document.createElement("span"); a.className = "arm"; a.textContent = "Fixed schedule:"; t.appendChild(a); }
     var pre = /^Day \d/.test(e.text) ? "" : "Day " + e.day + ", " + hh(e.time) + ": ";
     t.appendChild(document.createTextNode(pre + e.text));
-    li.appendChild(k); li.appendChild(t); pushLi($("ticker"), li, document.body.classList.contains("presenter") ? 7 : 9);
-  }, 1100);
-  setInterval(function () {
+    li.appendChild(k); li.appendChild(t); pushLi($("ticker"), li, window.innerHeight < 820 ? 4 : document.body.classList.contains("presenter") ? 7 : 9);
+  }, function () { return speed >= 4 ? 800 : speed >= 2 ? 1000 : 1300; });
+  every(function () {
     var e, c;
-    while ((e = pop(commQ)) && !(c = commentary(e))) { }
+    while ((e = pop(commQ, "c")) && !(c = commentary(e))) { }
     if (!e || !c) return;
     var li = document.createElement("li"); li.className = c.cls;
     var w = document.createElement("span"); w.className = "who"; w.textContent = "DAY " + e.day + " · " + hh(e.time) + (e.arm === "cn10" ? " · FIXED SCHEDULE" : " · KAIROS");
-    li.appendChild(w); li.appendChild(document.createTextNode(c.text)); pushLi($("comm"), li, 6);
-  }, 1500);
+    li.appendChild(w); li.appendChild(document.createTextNode(c.text)); pushLi($("comm"), li, window.innerHeight < 820 ? 4 : 6);
+  }, function () { return speed >= 4 ? 1300 : 1700; });
 
   // Cricket commentary: fixed templates over real events, kind and plain. No LLM.
   function commentary(e) {
@@ -730,6 +762,14 @@ body.presenter .exitp { display: block; }
           (t[0] === "kairos" ? "saved by resting vs fixed" : "spent on messages") + "</div></div>" +
         '<div class="wide"><div class="lab">Partnerships · ' + (x.recovered_paise ? "₹ recovered by channel" : "replies by channel") + "</div>" + parts + "</div>" +
         "</div>";
+    });
+    fitAll(".score .val");
+  }
+  // Shrink a big number until it fits its cell (projector sizes vary).
+  function fitAll(sel) {
+    document.querySelectorAll(sel).forEach(function (el) {
+      el.style.fontSize = ""; var size = parseFloat(getComputedStyle(el).fontSize), n = 0;
+      while (el.scrollWidth > el.clientWidth + 1 && size > 14 && n++ < 40) { size -= 3; el.style.fontSize = size + "px"; }
     });
   }
 
