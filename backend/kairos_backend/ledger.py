@@ -340,13 +340,23 @@ class Ledger:
         return None
 
     # ---------- the atomic core ----------
-    def preview(self, ins: Instruction) -> Decision:
-        """Approval-time check (no reservation). Used by the Supervisor."""
+    def preview(self, ins: Instruction, exclude: Optional[str] = None) -> Decision:
+        """Approval-time check (no reservation). Used by the Supervisor.
+
+        `exclude` (optional) leaves one existing reservation out of the counts and the budget, as
+        begin_dispatch does for its own touch — so a re-plan is not blocked by its own earlier
+        reservation of the identical (stable-id) touch."""
         with self.tx() as c:  # write tx because pacing rows may be initialised
             pre = self._pre_gate(c, ins)
             if pre:
                 return pre
-            facts, extra = self.facts_for(c, ins)
+            facts, extra = self.facts_for(c, ins, exclude=exclude)
+            if exclude:
+                own = c.execute("SELECT * FROM touches WHERE instruction_id=?", (exclude,)).fetchone()
+                if (own is not None and own["status"] in LIVE and own["campaign_id"] == ins.campaign_id
+                        and own["day"] == self._loc(ins.at).date().isoformat()):
+                    cost = own["actual_cost_inr"] if own["reconciled"] else own["est_cost_inr"]
+                    facts.budget_remaining_inr = round(facts.budget_remaining_inr + (cost or 0), 4)
             d = evaluate(self.policy, facts)
             d.detail.update(extra)
             return d
