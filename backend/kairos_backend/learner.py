@@ -31,6 +31,12 @@ Options (all off by default, so the default model_version / config hash is uncha
 Exploration: seeded Thompson sampling only when mode.allows_exploration (SANDBOX / SIMULATOR) AND
 a random.Random is supplied. PRODUCTION always uses the posterior mean and never touches the rng.
 
+Propensity logging (for off-policy evaluation, scripts/ope_k09.py): a greedy ranking records
+propensity 1.0 (kind "greedy"). A Thompson ranking with propensity_draws > 0 records P(chosen arm)
+estimated from propensity_draws posterior draws on a SEPARATE rng seeded from the posterior table
+(the decision's own rng stream, and therefore every replay hash, is untouched). Off by default
+(propensity_draws=0, kind "thompson_unlogged"), so default runs cost nothing extra.
+
 SIMULATOR_PRIORS are SYNTHETIC (hand-set for the simulator), not learned from real outcomes.
 """
 from __future__ import annotations
@@ -76,6 +82,13 @@ SIMULATOR_PRIORS: dict[tuple[str, str], tuple[float, float]] = {
 DEFAULT_PRIOR: tuple[float, float] = (0.05, 2.0)
 
 _CH_ORDER = {c: i for i, c in enumerate(CHANNELS)}
+WAIT_ACTION = "WAIT"
+
+
+def arm_key(s: Any) -> str:
+    """Action id used in propensity logs: "channel|slot"."""
+    return f"{s.channel}|{s.slot}"
+
 _SLOT_ORDER = {s: i for i, s in enumerate(SLOTS)}
 
 
@@ -92,8 +105,11 @@ class BetaBernoulliLearner:
     def __init__(self, ledger: Ledger, priors: Optional[dict[tuple[str, str], tuple[float, float]]] = None, *,
                  min_segment_obs: int = 30, min_reply_prob: float = DEFAULT_MIN_REPLY_PROB,
                  default_prior: tuple[float, float] = DEFAULT_PRIOR, decay: Optional[float] = None,
-                 hier_strength: Optional[float] = None, min_replies_per_inr: float = 0.0):
+                 hier_strength: Optional[float] = None, min_replies_per_inr: float = 0.0,
+                 propensity_draws: int = 0):
         self.ledger = ledger
+        self.propensity_draws = max(0, int(propensity_draws))   # not part of config_hash: logging only
+        self._prop_cache: dict = {}
         self.synthetic_priors = priors is None or priors is SIMULATOR_PRIORS
         raw = SIMULATOR_PRIORS if priors is None else priors
         self.priors: dict[tuple[str, str], tuple[float, float]] = {
@@ -126,6 +142,10 @@ class BetaBernoulliLearner:
         # executed_at (decision-time clock of the touch) is what `decay` discounts by; older DBs lack it
         if "executed_at" not in {r[1] for r in conn.execute("PRAGMA table_info(learner_updates)")}:
             conn.execute("ALTER TABLE learner_updates ADD COLUMN executed_at TEXT")
+        have = {r[1] for r in conn.execute("PRAGMA table_info(decision_scores)")}
+        for col, typ in (("propensity", "REAL"), ("propensity_kind", "TEXT"), ("arm_probs_json", "TEXT")):
+            if col not in have:
+                conn.execute(f"ALTER TABLE decision_scores ADD COLUMN {col} {typ}")
 
     # ---------- helpers ----------
     def _now_iso(self) -> str:
@@ -277,9 +297,53 @@ class BetaBernoulliLearner:
             ranking = Ranking("SEND", best, scores, model_version, mode,
                               f"SEND {best.channel} {best.slot}: best replies per INR "
                               f"({best.replies_per_inr:.4f}; {best.reason})")
+        if not explore:
+            ranking.propensity, ranking.propensity_kind = 1.0, "greedy"
+        elif self.propensity_draws > 0 and scores:
+            probs = self.thompson_propensities(scores, self.propensity_draws)
+            key = arm_key(ranking.chosen) if ranking.chosen is not None else WAIT_ACTION
+            ranking.propensity, ranking.propensity_kind, ranking.arm_probs = probs[key], "thompson_mc", probs
+        else:
+            ranking.propensity_kind = "thompson_unlogged"
         if persist:
             ranking.decision_id = self._persist(ranking, band, borrower_id, at, candidates)
         return ranking
+
+    def thompson_propensities(self, scores: Sequence[ArmScore], draws: int) -> dict[str, float]:
+        """P(each arm, or WAIT, is chosen) under this learner's Thompson rule, by Monte Carlo over `draws`
+        posterior draws: the same qualification (known arm, positive cost, reply floor, value floor) and
+        the same tie-break (canonical order) as rank(). Duplicate candidates of one arm draw independently,
+        as in rank(). Smoothed (count + 0.5) / (draws + 0.5 K) over the K possible actions, so every
+        probability is in (0, 1] and they sum to 1. Seeded from the posterior table: deterministic, and
+        cached (identical tables within a day share one estimate)."""
+        cand = [(arm_key(s), s.alpha, s.beta, int(s.est_cost_paise)) for s in scores
+                if s.channel in _CH_ORDER and s.slot in _SLOT_ORDER and s.est_cost_paise > 0]
+        material = json.dumps([[k, round(a, 9), round(b, 9), c] for k, a, b, c in cand]
+                              + [self.min_reply_prob, self.min_replies_per_inr, int(draws)])
+        hit = self._prop_cache.get(material)
+        if hit is not None:
+            return dict(hit)
+        r = random.Random(int(hashlib.sha1(material.encode()).hexdigest()[:16], 16))
+        wins: dict[str, int] = {}
+        for _ in range(int(draws)):
+            best, best_v = WAIT_ACTION, None
+            for k, a, b, c in cand:
+                p = r.betavariate(a, b)
+                if p < self.min_reply_prob:
+                    continue
+                v = replies_per_rupee(p, c)
+                if v < self.min_replies_per_inr:
+                    continue
+                if best_v is None or v > best_v:
+                    best, best_v = k, v
+            wins[best] = wins.get(best, 0) + 1
+        actions = list(dict.fromkeys([k for k, _, _, _ in cand] + [WAIT_ACTION]))
+        z = draws + 0.5 * len(actions)
+        probs = {k: (wins.get(k, 0) + 0.5) / z for k in actions}
+        if len(self._prop_cache) > 4096:
+            self._prop_cache.clear()
+        self._prop_cache[material] = probs
+        return dict(probs)
 
     def _persist(self, ranking: Ranking, band: str, borrower_id: Optional[str], at: Optional[datetime],
                  candidates: Sequence[Candidate]) -> str:
@@ -292,10 +356,12 @@ class BetaBernoulliLearner:
         with self.ledger.tx() as c:
             c.execute(
                 "INSERT OR IGNORE INTO decision_scores (decision_id, at, borrower_id, band, mode, model_version,"
-                " action, chosen_channel, chosen_slot, reason, scores_json) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                " action, chosen_channel, chosen_slot, reason, scores_json, propensity, propensity_kind, arm_probs_json)"
+                " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (decision_id, at_iso, borrower_id, band, ranking.mode.value, ranking.model_version, ranking.action,
                  chosen.channel if chosen else None, chosen.slot if chosen else None, ranking.reason,
-                 json.dumps([asdict(s) for s in ranking.scores])))
+                 json.dumps([asdict(s) for s in ranking.scores]), ranking.propensity, ranking.propensity_kind,
+                 json.dumps(ranking.arm_probs, sort_keys=True) if ranking.arm_probs is not None else None))
         return decision_id
 
     def apply_outcome(self, outcome: Outcome) -> bool:
