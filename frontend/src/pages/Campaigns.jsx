@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Plus, Play, Pause, Square, Database, FileSpreadsheet, Users, Check, RefreshCw, Upload, Lock, ArrowUpRight } from 'lucide-react'
+import { previewIntake } from '../api/kairos'
 import { useKairos } from '../lib/store'
 import { BANDS, CHANNEL_META, SERIES, TEMPLATES, sumTo } from '../lib/mock'
 import {
@@ -75,6 +76,19 @@ export default function Campaigns() {
   )
 }
 
+const REASON_LABEL = { INVALID_MOBILE: 'bad mobile', MISSING_FIELD: 'missing field', INVALID_AMOUNT: 'bad amount', DUPLICATE_LOAN_ID: 'duplicate loan id', INVALID_DATE: 'bad date', INVALID_DPD: 'bad DPD' }
+function IntakeResult({ name, r }) {
+  const reasons = Object.entries(r.quarantined_by_reason || {})
+  return (
+    <div className="mt-3 space-y-1.5 text-left text-[13px]">
+      <div className="flex items-center justify-between"><span><b>{name}</b> · K24 intake check · policy v{r.policy_version}</span><span className="rounded-full border border-warn/40 px-2 py-0.5 text-[11px] font-semibold text-warn">SIMULATED · API</span></div>
+      <div>{r.rows_received} rows → <span className="text-ok"><b>{r.accepted}</b> accepted</span> · <span className="text-warn"><b>{r.quarantined}</b> quarantined</span>{reasons.length > 0 && <span className="text-muted"> ({reasons.map(([k, v]) => `${v} ${REASON_LABEL[k] || k.toLowerCase()}`).join(', ')})</span>}</div>
+      <div>{r.customers} customers ({r.customers_with_2plus_loans} with 2+ loans) · <b>{r.budgeted_loans}</b> of {r.eligible_loans} eligible loans budgeted · pool ₹{Number(r.campaign_pool_inr).toLocaleString('en-IN')} at ₹10/case</div>
+      <div className="text-muted">First contact {r.first_contact || '—'} · last contact {r.last_contact || '—'} · {r.contact_days} contact days · {r.can_arm ? 'ready to arm' : `cannot arm: ${r.arm_blocked_reason}`}</div>
+    </div>
+  )
+}
+
 const STEPS = [
   ['Basics', 'Name and purpose'],
   ['Audience', 'Cohorts from Smart CRM, or a CSV'],
@@ -135,7 +149,19 @@ function NewCampaign({ onClose }) {
     const rows = Math.max(0, lines.length - 1)
     const ids = new Set(pool.flatMap((b) => [b.id, ...b.loans.map((l) => l.id)]))
     const dupes = lines.slice(1).filter((l) => l.split(',').some((c) => ids.has(c.trim().replace(/"/g, '')))).length
-    set({ csv: { name: file.name, rows, dupes, added: Math.max(0, rows - dupes) } })
+    const local = { name: file.name, rows, dupes, added: Math.max(0, rows - dupes) }
+    set({ csv: { ...local, checking: true } })
+    // K24: the backend validates the file against Ojas's intake rules; offline -> the local row count above
+    const iso = (d) => d.toISOString().slice(0, 10)
+    const today = new Date()
+    try {
+      const r = await previewIntake({ csv_text: text, upload_date: iso(today), start_date: iso(today),
+        end_date: iso(new Date(today.getTime() + 29 * 864e5)), budget_per_case_inr: 10, budget_all_eligible: true })
+      const quarantined = Object.values(r.quarantined_by_reason || {}).reduce((a, b) => a + b, 0)
+      set({ csv: { ...local, added: r.budgeted_loans, intake: { ...r, quarantined } } })
+    } catch {
+      set({ csv: local })
+    }
   }
 
   const create = () => {
@@ -213,7 +239,8 @@ function NewCampaign({ onClose }) {
                 <div className="mt-2 text-[13.5px]">Add accounts from a CSV — rows are merged into Smart CRM and de-duplicated by loan ID.</div>
                 <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={(e) => onCsv(e.target.files?.[0])} />
                 <Button size="sm" className="mt-3" onClick={() => fileRef.current?.click()}>Choose CSV</Button>
-                {f.csv && <div className="mt-3 text-[13px]"><b>{f.csv.name}</b> · {f.csv.rows} rows · <span className="text-warn">{f.csv.dupes} duplicates skipped</span> · <span className="text-ok">{f.csv.added} new merged</span></div>}
+                {f.csv && !f.csv.intake && <div className="mt-3 text-[13px]"><b>{f.csv.name}</b> · {f.csv.rows} rows · {f.csv.checking ? <span className="text-muted">checking with the intake rules…</span> : <><span className="text-warn">{f.csv.dupes} duplicates skipped</span> · <span className="text-ok">{f.csv.added} new merged</span> <span className="text-muted">· offline count, not validated</span></>}</div>}
+                {f.csv?.intake && <IntakeResult name={f.csv.name} r={f.csv.intake} />}
               </div>
             )}
           </>}

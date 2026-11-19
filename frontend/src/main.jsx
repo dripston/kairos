@@ -7,7 +7,7 @@ import { KairosProvider } from './lib/store'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || undefined}>
       <KairosProvider>
         <App />
       </KairosProvider>

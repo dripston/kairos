@@ -84,6 +84,11 @@ export const removeDemoRecipient = (hint) => request('/demo/recipients', { metho
 
 // ---------- discovery ----------
 /** Paths the running backend serves (from FastAPI's OpenAPI document). */
+/** K24 upload preview: validate a lender CSV against the intake rules (nothing is stored). */
+export function previewIntake(body, o) {
+  return request('/intake/preview', { method: 'POST', body, signal: o?.signal, timeout: 15000 })
+}
+
 export async function getRoutes(o) {
   const doc = await request('/openapi.json', o)
   return new Set(Object.keys(doc?.paths || {}))
@@ -109,7 +114,7 @@ export const getEventsSince = ({ cursor = 0, limit = 200, borrowerId } = {}, o) 
 export const runJourney = (seed, o) => request('/demo/journey/run', { ...o, method: 'POST', body: { seed: Number(seed) || 42 }, timeout: 60000 })
 /** A saved journey report (reports/journey/*.json copied to frontend/public/journey/journey.json). */
 export async function getJourneyFile(o) {
-  const res = await fetch('/journey/journey.json', { signal: o?.signal, headers: { Accept: 'application/json' } })
+  const res = await fetch(`${import.meta.env.BASE_URL}journey/journey.json`, { signal: o?.signal, headers: { Accept: 'application/json' } })
   if (!res.ok || !(res.headers.get('content-type') || '').includes('json')) throw new Error('no saved journey')
   return res.json()
 }

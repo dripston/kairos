@@ -1,3 +1,4 @@
+import { DEFAULT_CAMPAIGN } from '../api/config'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ResponsiveContainer, BarChart, Bar as RBar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
@@ -123,7 +124,7 @@ export default function ControlRoom() {
         </div>
         <div className="grid grid-cols-3 gap-5">
           <ApprovalsQueue className="col-span-2" />
-          <BudgetCaps campId={scope.type === 'campaign' && scope.id !== 'ALL' ? scope.id : 'C-01'} />
+          <BudgetCaps campId={scope.type === 'campaign' && scope.id !== 'ALL' ? scope.id : DEFAULT_CAMPAIGN} />
         </div>
         <div className="grid grid-cols-3 gap-5">
           <Cm03Console className="col-span-2" />

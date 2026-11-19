@@ -2,7 +2,7 @@
 // - OfflineError: network failure or timeout -> panels fall back to mock data (labelled SIMULATED · offline mock).
 // - ApiError: the backend answered with an error status (403 role, 404 route/record missing, 409 refused, 422 invalid).
 // Never log request bodies or URLs: demo-recipient calls carry phone numbers.
-import { API_BASE, TIMEOUT_MS } from './config'
+import { API_BASE, STATIC_DEMO, TIMEOUT_MS } from './config'
 
 export class OfflineError extends Error {
   constructor(message = 'Kairos API unreachable') {
@@ -60,6 +60,10 @@ function errorText(body, status) {
  */
 export async function request(path, opt = {}) {
   const { method = 'GET', body, role, timeout = TIMEOUT_MS, raw = false } = opt
+  if (STATIC_DEMO) {
+    setApiStatus({ state: 'offline' })
+    throw new OfflineError('Static demo build — no backend configured')
+  }
   const ctl = new AbortController()
   const timer = setTimeout(() => ctl.abort(), timeout)
   const outer = opt.signal
