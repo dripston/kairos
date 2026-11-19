@@ -95,3 +95,10 @@ def test_demo_journey_endpoint_returns_the_player_shape(tmp_path, monkeypatch):
     assert [e["status"].split(" ")[0] for e in pay["borrower"]["emis"]] == ["Paid", "Due"]
     # the API's own database is untouched by a journey run
     assert api.ledger._conn().execute("SELECT COUNT(*) FROM touches").fetchone()[0] == 0
+
+
+def test_auto_churn_moves_the_broken_promise_cohort(journey):
+    ac = journey[0]["auto_churn"]
+    if ac == "pending":  # k27/auto-churn not merged
+        return
+    assert ac["ptp_status"] == "BROKEN" and ac["cohort"][1] == "BROKEN_PTP" and ac["channels"]

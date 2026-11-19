@@ -206,9 +206,16 @@ class Journey:
         nxt = (f"{plan['detail'].get('decision')} · {plan['title']}" if plan else "WAIT · nothing planned")
         open_loans = [ln for ln in st["loans"] if not ln["cured"]]
         cohort, tier = (risk.split(" - ", 1) + [None])[:2] if risk else (None, None)
+        layer = open_loans[0]["band"] if open_loans else "cured"
+        if self.churn is not None:  # K27 state: cohort / risk tier / layer as the engine sees them now
+            try:
+                cs = self.churn.state(bid)
+                cohort, tier, layer = cs.cohort, cs.risk_tier, f"{cs.layer} · {layer}"
+            except KeyError:
+                pass
         return {"borrower_id": bid, "name": f"Borrower {role} (synthetic)", "phone": "masked",
                 "language": st.get("language"), "cohort": cohort, "risk_tier": tier,
-                "layer": (open_loans[0]["band"] if open_loans else "cured"), "next_action": nxt,
+                "layer": layer, "next_action": nxt,
                 "holds": holds, "emis": emis}
 
     _PLAYER_TYPES = {"plan": "supervisor.decision", "dispatch": "touch.dispatched", "voice": "voice.call",
@@ -283,6 +290,11 @@ class Journey:
         for tid in VOICE_TEMPLATES.values():                 # voice gate templates (registry, not catalog)
             lg.upsert_template(tid, "voicebot", "en")
         self.facts["templates_synced"] = synced.get("upserted")
+        self.churn = None
+        if module_available("kairos_backend.churn"):  # k27/auto-churn: cohorts move on live events
+            from kairos_backend.churn import ChurnEngine
+            self.churn = ChurnEngine(":memory:")
+            self.churn.enroll_from_spine(lg, CAMPAIGN, D0, loan_ids=[a1_loan, b_loan, c_loan, d_loan])
         self.estimates_before = self._estimates()
 
     def _estimates(self) -> dict:
@@ -486,6 +498,9 @@ class Journey:
         r = self.webhook(1, "sv-call-A-predue", "PRE_DUE_REMINDER", vres.instruction_id, "PTP", 0.9,
                          _at(D0, 9, 34), ptp_date=ptp_date, ptp_amount_type="FULL", language_used="en",
                          call_summary="Borrower agreed to pay in full by the promised date.")
+        self.churn_event(1, {"event_id": "sv-call-A-predue", "borrower_id": A, "kind": "call", "channel": "voicebot",
+                             "occurred_at": _at(D0, 9, 34), "status": "ANSWERED", "disposition": "PTP",
+                             "confidence": 0.9, "ptp_date": ptp_date, "touch_id": vres.instruction_id})
         st = lg._state(lg._conn(), A)
         self.facts["steps"]["1"]["ptp_hold_until"] = st["ptp_date"]
         self.ev(1, _at(D0, 9, 35), "guardrail", f"PTP hold on A through {st['ptp_date']} (K13; every channel waits)",
@@ -636,31 +651,45 @@ class Journey:
                                                                         self.ledger._obligation(self.ledger._conn(), a1), d4)}
         self.a_wa = res
 
+    def churn_event(self, step, event: dict) -> Optional[dict]:
+        """Feed one normalized live event to the K27 engine (when merged) and show any cohort move."""
+        if self.churn is None:
+            return None
+        bid = event["borrower_id"]
+        before = self.churn.state(bid)
+        b = (before.cohort, before.risk_tier, before.layer)
+        r = self.churn.process(event)
+        st = self.churn.state(bid)
+        if (st.cohort, st.risk_tier, st.layer) != b:
+            self.ev(step, event["occurred_at"], "churn", f"auto-churn on {event['kind']}: cohort {b[0]} -> {st.cohort}, "
+                                                        f"risk {b[1]} -> {st.risk_tier}, layer {b[2]} -> {st.layer}",
+                    borrower=bid, rule=st.cohort_rule or None, detail={"journey": st.journey_id})
+        return r
+
     def churn_step(self, A, d: date):
-        """k27/auto-churn: cohort moves on live events (broken PTP -> 'broken PTP' cohort -> PTP follow-up bot)."""
-        names = [n for n in ("kairos_backend.auto_churn", "kairos_backend.churn", "kairos_backend.k27")
-                 if module_available(n)]
-        if not names:
+        """k27/auto-churn: the daily tick turns the unpaid promise into BROKEN, the borrower moves cohort and
+        journey, and today's allowed channels come from the new journey step."""
+        if self.churn is None:
             self.ev("2", _at(d, 0, 6), "pending", "k27/auto-churn not merged: the broken-PTP cohort move is shown "
                                                   "by select_bot below (PTP_FOLLOW_UP), not by the churn engine",
                     borrower=A, rule="PENDING_K27")
             self.facts["auto_churn"] = "pending"
             return
-        mod = importlib.import_module(names[0])
-        fn = next((getattr(mod, f) for f in ("on_event", "apply_event", "reassign", "assign") if hasattr(mod, f)), None)
-        if fn is None:
-            self.ev("2", _at(d, 0, 6), "pending", f"{names[0]} is merged but exposes no on_event/assign: wire it here",
-                    borrower=A, rule="PENDING_K27")
-            self.facts["auto_churn"] = "needs-wiring"
-            return
-        try:
-            r = fn(self.ledger, A, "BROKEN_PTP", _at(d, 0, 6))
-            self.ev("2", _at(d, 0, 6), "churn", f"auto-churn: {r}", borrower=A, rule="BROKEN_PTP")
-            self.facts["auto_churn"] = "ok"
-        except Exception as e:  # an API mismatch must not hide the rest of the story
-            self.ev("2", _at(d, 0, 6), "pending", f"auto-churn call failed ({type(e).__name__}): adapt churn_step",
-                    borrower=A, rule="PENDING_K27")
-            self.facts["auto_churn"] = "error"
+        st0 = self.churn.state(A)
+        b = (st0.cohort, st0.risk_tier, st0.layer, st0.journey_id)
+        for k in range((d - D0).days + 1):  # the engine ticks every day; it never rewinds
+            self.churn.tick(D0 + timedelta(days=k))
+        st = self.churn.state(A)
+        allowed = self.churn.allowed_channels(A, d)
+        self.ev("2", _at(d, 0, 6), "churn", f"auto-churn tick: PTP {st.flags.get('ptp_status')} -> cohort {b[0]} -> "
+                                            f"{st.cohort}, risk {b[1]} -> {st.risk_tier}, layer {b[2]} -> {st.layer}; "
+                                            f"today's channels {allowed.get('channels')}",
+                borrower=A, rule=st.cohort_rule or "K27", detail={"journey": [b[3], st.journey_id],
+                                                                  "step": {k: allowed.get(k) for k in
+                                                                           ("purpose", "tier", "intensity", "reason")}})
+        self.facts["auto_churn"] = {"cohort": [b[0], st.cohort], "risk": [b[1], st.risk_tier],
+                                    "layer": [b[2], st.layer], "ptp_status": st.flags.get("ptp_status"),
+                                    "channels": allowed.get("channels")}
 
     def step3_cm03(self, A):
         d4 = D0 + timedelta(days=4)
