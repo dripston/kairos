@@ -1,0 +1,5907 @@
+{
+ "01df676c51d7d1ad8d4fd83395a5d40962c5057429e7d9b4781d7fa52412b753": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "SIMULATED daily ops report for campaign CMP-JOURNEY on 2026-11-25. No segments were reported for the day. Totals show 0 attempts, 0 reach, 0 responders, 0 meaningful replies, 0 verified payments and 0 cap breaches, with spend committed of 0.0 INR and verified 0.0 INR. Replies per 1000 INR is null.",
+     "function_call": null,
+     "reasoning_content": "The facts show zero activity. Write one paragraph, max four sentences, plain English, mention SIMULATED.",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109844,
+  "id": "20261119_64d9f096-261c-488a-84ba-d00bf52b10a6",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 110,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 22,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 261,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 0
+   },
+   "total_tokens": 371
+  }
+ },
+ "0210ab27c450ca42bb8f4087a00cb47312e60ac666e19b7268a39ea870748460": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Kairos Demo Finance से बात करने के लिए शुक्रिया। आपका दिन अच्छा रहे।",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109823,
+  "ec_transfer_params": null,
+  "id": "20261119_b4a044e5-debe-4bac-b86c-f7d536b12b62",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 17,
+   "completion_tokens_details": null,
+   "prompt_tokens": 222,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 128,
+    "created_cache_tokens": 64,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 239
+  }
+ },
+ "02670642f5a2324e457f19d371a5778817969dba5c774821efde6eebf9cca1a0": {
+  "answers": {
+   "abusive": {
+    "noul": 0.027009379118680954,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.05764106661081314,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.2189633846282959,
+     "1": 0.19417588412761688,
+     "2": 0.12090092152357101,
+     "3": 0.18453483283519745,
+     "4": 0.28142493963241577
+    },
+    "score": 2.1152819842100143,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.024302497506141663,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "UNKNOWN",
+    "confidence": 0.6318162232637405,
+    "probabilities": {
+     "ABUSIVE": 0.029090680181980133,
+     "ALREADY_PAID": 0.010888072662055492,
+     "BALANCE_QUERY": 0.006711939349770546,
+     "CALLBACK": 0.008530576713383198,
+     "DISPUTE": 0.011008435860276222,
+     "GREETING": 0.1597965508699417,
+     "HARDSHIP": 0.009809424169361591,
+     "HUMAN": 0.007647051475942135,
+     "LANGUAGE_CHANGE": 0.005522944964468479,
+     "LINK_REQUEST": 0.010304688476026058,
+     "NEEDS_TIME": 0.022839635610580444,
+     "PAY_NOW": 0.01579655148088932,
+     "PTP": 0.006443787831813097,
+     "STATEMENT_REQUEST": 0.007819799706339836,
+     "STOP": 0.01477813720703125,
+     "UNKNOWN": 0.6534740924835205,
+     "WRONG_NUMBER": 0.019537564367055893
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.02591264247894287,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.02244667336344719,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 600,
+   "output_tokens": 0
+  }
+ },
+ "0a0b771512e2c56e169fdf8ddbd6d7e8bc9e6c92c1186ce7bdcc3641371482c0": {
+  "answers": {
+   "abusive": {
+    "noul": 0.03467702120542526,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.658717418089509,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.028247719630599022,
+     "1": 0.032269012182950974,
+     "2": 0.09367673844099045,
+     "3": 0.2854137718677521,
+     "4": 0.5603926777839661
+    },
+    "score": 3.3174345158040524,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "HARDSHIP",
+    "confidence": 0.8298941930135091,
+    "probabilities": {
+     "ABUSIVE": 0.01652827486395836,
+     "ALREADY_PAID": 0.0032135534565895796,
+     "CALLBACK_REQUESTED": 0.016392895951867104,
+     "DISPUTE": 0.0052798534743487835,
+     "HARDSHIP": 0.8405258059501648,
+     "HUMAN_REQUESTED": 0.027991408482193947,
+     "LANGUAGE_BARRIER": 0.0038852861616760492,
+     "NEEDS_TIME_NO_DATE": 0.008149941451847553,
+     "NO_RESPONSE": 0.008184586651623249,
+     "PARTIAL_PTP": 0.004164743237197399,
+     "PAY_NOW_LINK": 0.0036889135371893644,
+     "PTP": 0.0041237035766243935,
+     "REFUSED_TO_PAY": 0.013409741222858429,
+     "STOP_REQUESTED": 0.03527555614709854,
+     "THIRD_PARTY": 0.005853367503732443,
+     "WRONG_PERSON": 0.0033323506359010935
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.8573748469352722,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.9763588905334473,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.07193323224782944,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 588,
+   "output_tokens": 0
+  }
+ },
+ "0ae89f617af1c94cad8f14d3f11ffba9cb9ba0232f09c8217d98f257f2123166": {
+  "answers": {
+   "abusive": {
+    "noul": 0.021112022921442986,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.1527344073568072,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.11523692309856415,
+     "1": 0.2940545976161957,
+     "2": 0.25416287779808044,
+     "3": 0.1928648203611374,
+     "4": 0.14368079602718353
+    },
+    "score": 1.9556979984045029,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.05255509540438652,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "UNKNOWN",
+    "confidence": 0.460564574226737,
+    "probabilities": {
+     "ABUSIVE": 0.004004717338830233,
+     "ALREADY_PAID": 0.013507016934454441,
+     "BALANCE_QUERY": 0.15061335265636444,
+     "CALLBACK": 0.01744314283132553,
+     "DISPUTE": 0.007534784264862537,
+     "GREETING": 0.06515618413686752,
+     "HARDSHIP": 0.009798238053917885,
+     "HUMAN": 0.029897205531597137,
+     "LANGUAGE_CHANGE": 0.005379405338317156,
+     "LINK_REQUEST": 0.08884959667921066,
+     "NEEDS_TIME": 0.050759173929691315,
+     "PAY_NOW": 0.022502604871988297,
+     "PTP": 0.007770465221256018,
+     "STATEMENT_REQUEST": 0.019514689221978188,
+     "STOP": 0.005212745629251003,
+     "UNKNOWN": 0.4922960698604584,
+     "WRONG_NUMBER": 0.00976063497364521
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.027486097067594528,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.024595556780695915,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 604,
+   "output_tokens": 0
+  }
+ },
+ "0bb3c00719e607265b9609c9557c6340c12f076723f0e8f27b7d46d53af63246": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Channel evidence: WhatsApp wa_emi_due_hi_v3 was sent 19 Nov 09:00 with no delivery receipt yet and 1 reply [T-1042-0002, evt-653b4789ec060779], while SMS sms_dpd_nudge_v2 was sent 18 Nov 10:00, delivered, read UNKNOWN, with no reply [T-1042-0001, evt-92d7e15ccf45851a]. Borrower intent: needs time on 19 Nov 09:14, with supervisor WAIT until 21 Nov 09:14 [evt-4c1cf2ca4b878914, evt-d203ebfd0657d268].",
+     "function_call": null,
+     "reasoning_content": "We need answer two sentences, plain English, only facts. Need include channel evidence then borrower intent. Keep ids square brackets. No markdown/lists. Need mention WhatsApp sent 19 Nov 09:00 no delivery receipt yet 1 reply [ids], SMS sent 18 Nov 10:00 delivered read unknown no reply [ids]. Then intent needs time 19 Nov 09:14 supervisor WAIT until 21 Nov 09:14 [ids]. Two sentences. Ensure exact ids. Could combine. No advice. \"Channel evidence: ...\" sentence. \"Borrower intent: ...\" second. Keep source ids in square brackets. Need include all? likely yes. Use only facts. Avoid \"supervisor WAIT\" maybe fact. Two sentences.",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109884,
+  "id": "20261119_24541c8c-dbef-43f6-84c2-8a6823cfa95e",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 313,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 157,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 382,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 256
+   },
+   "total_tokens": 695
+  }
+ },
+ "124f756be2ceeab28447072da5c80b6f573ae8bd8e450c6b232915306a7d7c71": {
+  "answers": {
+   "abusive": {
+    "noul": 0.02418392337858677,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.21623771389325475,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.11046227812767029,
+     "1": 0.25453847646713257,
+     "2": 0.29623326659202576,
+     "3": 0.21248024702072144,
+     "4": 0.12628573179244995
+    },
+    "score": 1.9895886778831482,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.036324866116046906,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "UNKNOWN",
+    "confidence": 0.5685472749173641,
+    "probabilities": {
+     "ABUSIVE": 0.007738638669252396,
+     "ALREADY_PAID": 0.07420040667057037,
+     "BALANCE_QUERY": 0.014557406306266785,
+     "CALLBACK": 0.015177317894995213,
+     "DISPUTE": 0.012293593026697636,
+     "GREETING": 0.038443006575107574,
+     "HARDSHIP": 0.012768984772264957,
+     "HUMAN": 0.012758955359458923,
+     "LANGUAGE_CHANGE": 0.007573111914098263,
+     "LINK_REQUEST": 0.03367903456091881,
+     "NEEDS_TIME": 0.08096828311681747,
+     "PAY_NOW": 0.040658771991729736,
+     "PTP": 0.013671975582838058,
+     "STATEMENT_REQUEST": 0.01316517312079668,
+     "STOP": 0.010932397097349167,
+     "UNKNOWN": 0.5939268469810486,
+     "WRONG_NUMBER": 0.017486056312918663
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.026703108102083206,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.025086313486099243,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 604,
+   "output_tokens": 0
+  }
+ },
+ "13f395cdd69e559792cd9e61fa0138ac2ce9d6af63a8e3799243a116a1dd1480": {
+  "answers": {
+   "abusive": {
+    "noul": 0.05912424996495247,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.23810652146736788,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.10077915340662003,
+     "1": 0.19255411624908447,
+     "2": 0.3262735605239868,
+     "3": 0.2406267523765564,
+     "4": 0.13976649940013885
+    },
+    "score": 2.1260474920272827,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "HARDSHIP",
+    "confidence": 0.9229320526123047,
+    "probabilities": {
+     "ABUSIVE": 0.0033273883163928986,
+     "ALREADY_PAID": 0.002458624541759491,
+     "CALLBACK_REQUESTED": 0.010025186464190483,
+     "DISPUTE": 0.002929249545559287,
+     "HARDSHIP": 0.9277487993240356,
+     "HUMAN_REQUESTED": 0.0034180227667093277,
+     "LANGUAGE_BARRIER": 0.002617546822875738,
+     "NEEDS_TIME_NO_DATE": 0.0030579057056456804,
+     "NO_RESPONSE": 0.0025940777268260717,
+     "PARTIAL_PTP": 0.0025784799363464117,
+     "PAY_NOW_LINK": 0.0024998632725328207,
+     "PTP": 0.0027062364388257265,
+     "REFUSED_TO_PAY": 0.0038187792524695396,
+     "STOP_REQUESTED": 0.0049520195461809635,
+     "THIRD_PARTY": 0.02186642959713936,
+     "WRONG_PERSON": 0.003401413094252348
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.9771358966827393,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.0491318553686142,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.18516893684864044,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 587,
+   "output_tokens": 0
+  }
+ },
+ "14c8e919165d3a168f34057342bd72998a0e364e9b3e9db0aec7b24a73f86a8e": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Channel evidence: WhatsApp wa_emi_due_hi_v3 was sent 19 Nov 09:00 with no delivery receipt yet and 2 replies [T-1042-0002, evt-4582c9f2d3d35db9], while SMS sms_dpd_nudge_v2 was sent 18 Nov 10:00, delivered, read UNKNOWN, with no reply [T-1042-0001, evt-92d7e15ccf45851a]. Borrower intent: says Loan A ([account]) is paid with verification pending [evt-a7fb1984fede32f2, CLM-5DC96422] and needs time as of 19 Nov 09:14, with supervisor WAIT until 21 Nov 09:14 [evt-4c1cf2ca4b878914, evt-d203ebfd0657d268].",
+     "function_call": null,
+     "reasoning_content": "We need answer two sentences, plain English, only facts, keep ids square brackets. Need channel evidence then borrower intent. Need include source ids. Need no markdown/lists. Need mention WhatsApp sent 19 Nov 09:00 no delivery receipt yet 2 replies [T-1042-0002, evt-4582c9f2d3d35db9]; SMS sent 18 Nov 10:00 delivered read UNKNOWN no reply [T-1042-0001, evt-92d7e15ccf45851a]. Borrower intent: says Loan A ([account]) is paid verification pending [evt-a7fb1984fede32f2, CLM-5DC96422]; needs time 19 Nov 09:14 supervisor WAIT until 21 Nov 09:14 [evt-4c1cf2ca4b878914, evt-d203ebfd0657d268]. Need exactly two sentences. \"Channel evidence: ...\" sentence. \"Borrower intent: ...\" sentence. Keep [account]? JSON has \"([account])\" placeholder. Use exactly? It says keep every id exactly as written. [account] is not id? It appears literal. We can say Loan A ([account]) is paid. Need no advice. Good.\n\nNeed ensure sentence 1 includes both channel facts. Sentence 2 includes intent. Keep source ids in square brackets. No markdown. Final only.",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109886,
+  "id": "20261119_f620b4cc-c6b0-4c7c-aed0-abc46883192f",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 502,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 310,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 448,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 384
+   },
+   "total_tokens": 950
+  }
+ },
+ "14de6db35ec8bd5853ab8086937f2e45692c9f85a7e80a52505e238264abb338": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Borrower E-10050 raised a dispute on WhatsApp and ticket TKT-b119a8b701 was created at 2026-11-20T11:00:00+05:30. The case is a DISPUTE routed to COLLECTIONS_SUPERVISOR with exception reason CREATE_TICKET and note \"acknowledge, no commitment\". Pending is supervisor acknowledgement, with no commitment recorded.",
+     "function_call": null,
+     "reasoning_content": "We need answer three sentences max, plain English, only facts. Need mention what happened, what borrower said, what pending. Facts: WhatsApp borrower raised dispute, ticket created, routed to collections supervisor, exception dispute, acknowledge no commitment. Borrower said? Only \"raised dispute\" no specifics. Need not invent. Pending: supervisor acknowledgement? \"K13 routed exception: acknowledge, no commitment\" pending maybe acknowledgement. Need include ids exactly. Three sentences. No markdown. Could say: Borrower E-10050 raised a dispute on WhatsApp and ticket TKT-b119a8b701 was created at 2026-11-20T11:00:00+05:30. The case is a DISPUTE routed to COLLECTIONS_SUPERVISOR with exception reason CREATE_TICKET and note \"acknowledge, no commitment\". Pending is supervisor acknowledgement, with no commitment recorded. Need ensure \"what borrower said\" - only raised dispute. Good. Keep ids exact. Three sentences.",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109867,
+  "id": "20261119_44e6f4f5-4c4a-4ade-84cf-dd25b48206ff",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 293,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 207,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 313,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 256
+   },
+   "total_tokens": 606
+  }
+ },
+ "1518df9bfbba566e6bdb0b967f748aff690dd49b0c86d0e371ae54ab94e6c0e0": {
+  "answers": {
+   "abusive": {
+    "noul": 0.024312086403369904,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.17449268911566063,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.14729519188404083,
+     "1": 0.14464916288852692,
+     "2": 0.2145586460828781,
+     "3": 0.28352925181388855,
+     "4": 0.2099676877260208
+    },
+    "score": 2.264224961400032,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "CALLBACK_REQUESTED",
+    "confidence": 0.9020651499430339,
+    "probabilities": {
+     "ABUSIVE": 0.005629861727356911,
+     "ALREADY_PAID": 0.006211088504642248,
+     "CALLBACK_REQUESTED": 0.9081860780715942,
+     "DISPUTE": 0.006001627072691917,
+     "HARDSHIP": 0.005779298022389412,
+     "HUMAN_REQUESTED": 0.005451780278235674,
+     "LANGUAGE_BARRIER": 0.005490914452821016,
+     "NEEDS_TIME_NO_DATE": 0.011553885415196419,
+     "NO_RESPONSE": 0.004792129620909691,
+     "PARTIAL_PTP": 0.005902486387640238,
+     "PAY_NOW_LINK": 0.006084801163524389,
+     "PTP": 0.0058687529526650906,
+     "REFUSED_TO_PAY": 0.005404156632721424,
+     "STOP_REQUESTED": 0.00581596652045846,
+     "THIRD_PARTY": 0.005729184951633215,
+     "WRONG_PERSON": 0.006098080892115831
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.030857808887958527,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.025503991171717644,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.02463393285870552,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 589,
+   "output_tokens": 0
+  }
+ },
+ "1897bf5f81432502aadd8ceeea1665b6abbb42c0105434ceeb323d7da8c09633": {
+  "answers": {
+   "abusive": {
+    "noul": 0.02385963872075081,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.24322868032114853,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.14425574243068695,
+     "1": 0.3330281674861908,
+     "2": 0.24200721085071564,
+     "3": 0.16890956461429596,
+     "4": 0.11179925501346588
+    },
+    "score": 1.7709683030843735,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.054425615817308426,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "UNKNOWN",
+    "confidence": 0.5084152482450008,
+    "probabilities": {
+     "ABUSIVE": 0.0047583142295479774,
+     "ALREADY_PAID": 0.006035391241312027,
+     "BALANCE_QUERY": 0.011812575161457062,
+     "CALLBACK": 0.028199084103107452,
+     "DISPUTE": 0.006594179663807154,
+     "GREETING": 0.014232497662305832,
+     "HARDSHIP": 0.009775800630450249,
+     "HUMAN": 0.008034608326852322,
+     "LANGUAGE_CHANGE": 0.004369273781776428,
+     "LINK_REQUEST": 0.017070887610316277,
+     "NEEDS_TIME": 0.3045201897621155,
+     "PAY_NOW": 0.012725945562124252,
+     "PTP": 0.009731819853186607,
+     "STATEMENT_REQUEST": 0.010444622486829758,
+     "STOP": 0.006666160188615322,
+     "UNKNOWN": 0.5373319983482361,
+     "WRONG_NUMBER": 0.007696682587265968
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.026654276996850967,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.030655954033136368,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 602,
+   "output_tokens": 0
+  }
+ },
+ "1a02ead07ba9897063a8a1378d213ffed3cccc96b73dde527f87195151a0b0d0": {
+  "answers": {
+   "abusive": {
+    "noul": 0.05800703540444374,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.4257812494678157,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.03863745555281639,
+     "1": 0.07809031754732132,
+     "2": 0.22894306480884552,
+     "3": 0.351458877325058,
+     "4": 0.3028701841831207
+    },
+    "score": 2.801833815872669,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "STOP_REQUESTED",
+    "confidence": 0.9227610905965169,
+    "probabilities": {
+     "ABUSIVE": 0.005057708825916052,
+     "ALREADY_PAID": 0.004449056461453438,
+     "CALLBACK_REQUESTED": 0.005211752373725176,
+     "DISPUTE": 0.004566950257867575,
+     "HARDSHIP": 0.0046859923750162125,
+     "HUMAN_REQUESTED": 0.004506328143179417,
+     "LANGUAGE_BARRIER": 0.004560395609587431,
+     "NEEDS_TIME_NO_DATE": 0.004519592970609665,
+     "NO_RESPONSE": 0.004007621668279171,
+     "PARTIAL_PTP": 0.005046415142714977,
+     "PAY_NOW_LINK": 0.005099146626889706,
+     "PTP": 0.005015010014176369,
+     "REFUSED_TO_PAY": 0.0062799579463899136,
+     "STOP_REQUESTED": 0.9275885224342346,
+     "THIRD_PARTY": 0.004593954887241125,
+     "WRONG_PERSON": 0.004811549559235573
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.03165242448449135,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.025621723383665085,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.980111300945282,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 584,
+   "output_tokens": 0
+  }
+ },
+ "1df9a1bc931994aad4f5a30a9331e2c63f6ea556177912d45a6603e0733b90f5": {
+  "answers": {
+   "abusive": {
+    "noul": 0.02089763805270195,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.46500625062201706,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.01859406568109989,
+     "1": 0.09467732906341553,
+     "2": 0.2696097791194916,
+     "3": 0.3828742504119873,
+     "4": 0.23424461483955383
+    },
+    "score": 2.719498097896576,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.19636467099189758,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "NEEDS_TIME",
+    "confidence": 0.8625130541622639,
+    "probabilities": {
+     "ABUSIVE": 0.0036562124732881784,
+     "ALREADY_PAID": 0.004460484720766544,
+     "BALANCE_QUERY": 0.003373327199369669,
+     "CALLBACK": 0.004516266752034426,
+     "DISPUTE": 0.004956404212862253,
+     "GREETING": 0.00461652921512723,
+     "HARDSHIP": 0.046193674206733704,
+     "HUMAN": 0.0043209088034927845,
+     "LANGUAGE_CHANGE": 0.004013205412775278,
+     "LINK_REQUEST": 0.0041422732174396515,
+     "NEEDS_TIME": 0.8706005215644836,
+     "PAY_NOW": 0.005496377591043711,
+     "PTP": 0.005628265906125307,
+     "STATEMENT_REQUEST": 0.003215881297364831,
+     "STOP": 0.0036791579332202673,
+     "UNKNOWN": 0.02269234135746956,
+     "WRONG_NUMBER": 0.004438250325620174
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.025166859850287437,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.020179202780127525,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 608,
+   "output_tokens": 0
+  }
+ },
+ "1e5645e823da6c13937ac563de44c22403c4be79962bcf08d16d151e7fea5587": {
+  "answers": {
+   "abusive": {
+    "noul": 0.029147915542125702,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.28641823253461296,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.23878231644630432,
+     "1": 0.29680460691452026,
+     "2": 0.2431465983390808,
+     "3": 0.14671385288238525,
+     "4": 0.07455261796712875
+    },
+    "score": 1.5214498341083527,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.03569522500038147,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "UNKNOWN",
+    "confidence": 0.7063313648104668,
+    "probabilities": {
+     "ABUSIVE": 0.024087052792310715,
+     "ALREADY_PAID": 0.028286367654800415,
+     "BALANCE_QUERY": 0.0061395191587507725,
+     "CALLBACK": 0.008674639277160168,
+     "DISPUTE": 0.05744381621479988,
+     "GREETING": 0.021839341148734093,
+     "HARDSHIP": 0.011162958107888699,
+     "HUMAN": 0.007314872462302446,
+     "LANGUAGE_CHANGE": 0.004854054655879736,
+     "LINK_REQUEST": 0.009270175360143185,
+     "NEEDS_TIME": 0.02037857100367546,
+     "PAY_NOW": 0.02404702454805374,
+     "PTP": 0.008036145009100437,
+     "STATEMENT_REQUEST": 0.00897900015115738,
+     "STOP": 0.015299919061362743,
+     "UNKNOWN": 0.7236059904098511,
+     "WRONG_NUMBER": 0.0205805953592062
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.025895025581121445,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.031989242881536484,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 604,
+   "output_tokens": 0
+  }
+ },
+ "1eae9f035e27eb2b95e0d809a3ea981ea2c0d3e1cfa2637b2d761aed78716227": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Agent:cm03 flagged borrower E-10091 as FRAUD_SUSPECT under policy 1.1.1 at 2026-11-20T11:00:00+05:30. The summary says the message carries a PHISHING_LINK that is not one of ours. No borrower statement is recorded, and ticket TKT-51dfbb371b is pending in COLLECTIONS_SUPERVISOR.",
+     "function_call": null,
+     "reasoning_content": "We need answer three sentences max, plain English, only facts. Need mention what happened, borrower said, pending. Facts: audit actor agent cm03 borrower E-10091 policy 1.1.1 reason FRAUD_SUSPECT ts. queue supervisor. summary line fraud suspect phishing link, message carries link not ours. No borrower statement given. Need say borrower said? We cannot invent. Could say no borrower statement is recorded. Pending? queue COLLECTIONS_SUPERVISOR, ticket. Need mention pending supervisor review? Is that fact? Queue is collections supervisor, so pending with collections supervisor. Need keep ids exact. Three sentences. No advice. No markdown. Need maybe \"Agent cm03 flagged E-10091 as FRAUD_SUSPECT under policy 1.1.1 at 2026-11-20T11:00:00+05:30.\" \"The summary says the message carries a phishing link that is not one of ours.\" \"No borrower statement is recorded, and ticket TKT-51dfbb371b is pending in COLLECTIONS_SUPERVISOR.\" That's three. Does \"phishing link\" from summary_line_1 PHISHING_LINK and line2. Good. Keep exact ids. \"agent:cm03\" exact? Use agent:cm03. Borrower E-10091. Ticket exact. Policy exact. Good. Final only.",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109880,
+  "id": "20261119_04e05be4-e3c1-4306-9b86-dc31c66d2026",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 385,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 296,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 325,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 0
+   },
+   "total_tokens": 710
+  }
+ },
+ "226945d37933b744c1e648a81aa9f788b00003265c016921d2ec2830fc63bbe9": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "WhatsApp wa_emi_due_hi_v3 was sent 19 Nov 09:00 with no delivery receipt yet and no reply [T-1042-0002], while SMS sms_dpd_nudge_v2 was sent 18 Nov 10:00, delivered with read status UNKNOWN, and no reply [T-1042-0001, evt-92d7e15ccf45851a]. There is no borrower reply yet [T-1042-0001, T-1042-0002, evt-92d7e15ccf45851a].",
+     "function_call": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109883,
+  "id": "20261119_50243daa-25f0-4846-b6c5-05889340035f",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 129,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 0,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 287,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 256
+   },
+   "total_tokens": 416
+  }
+ },
+ "23470348605ed30e66e7cb06c2423db417428b57df0a676ad916cb48b86d9df4": {
+  "answers": {
+   "abusive": {
+    "noul": 0.024060988798737526,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.15027943040643432,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.2569238841533661,
+     "1": 0.27084240317344666,
+     "2": 0.15860171616077423,
+     "3": 0.16681279242038727,
+     "4": 0.14681920409202576
+    },
+    "score": 1.67576102912426,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.039893750101327896,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "UNKNOWN",
+    "confidence": 0.6471611931920052,
+    "probabilities": {
+     "ABUSIVE": 0.008162211626768112,
+     "ALREADY_PAID": 0.012249471619725227,
+     "BALANCE_QUERY": 0.012544266879558563,
+     "CALLBACK": 0.08708377182483673,
+     "DISPUTE": 0.012969746254384518,
+     "GREETING": 0.010372700169682503,
+     "HARDSHIP": 0.016612621024250984,
+     "HUMAN": 0.020020462572574615,
+     "LANGUAGE_CHANGE": 0.0056734164245426655,
+     "LINK_REQUEST": 0.013298300094902515,
+     "NEEDS_TIME": 0.032004084438085556,
+     "PAY_NOW": 0.013074659742414951,
+     "PTP": 0.007027415093034506,
+     "STATEMENT_REQUEST": 0.008518821559846401,
+     "STOP": 0.031194090843200684,
+     "UNKNOWN": 0.6679164171218872,
+     "WRONG_NUMBER": 0.04127756133675575
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.02672671712934971,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.03560984134674072,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 605,
+   "output_tokens": 0
+  }
+ },
+ "265e8d6f5fb452d867d115dc7d0993717fc59d09c7605dad29feb6d524bc4957": {
+  "answers": {
+   "abusive": {
+    "noul": 0.0247552078217268,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.44816683152956627,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.028756538406014442,
+     "1": 0.09615682810544968,
+     "2": 0.3201192021369934,
+     "3": 0.38110342621803284,
+     "4": 0.1738639622926712
+    },
+    "score": 2.57516136020422,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "PAY_NOW_LINK",
+    "confidence": 0.9202854792277019,
+    "probabilities": {
+     "ABUSIVE": 0.005195278208702803,
+     "ALREADY_PAID": 0.004993848968297243,
+     "CALLBACK_REQUESTED": 0.004526193253695965,
+     "DISPUTE": 0.0053922999650239944,
+     "HARDSHIP": 0.005068815313279629,
+     "HUMAN_REQUESTED": 0.004985245876014233,
+     "LANGUAGE_BARRIER": 0.005139502696692944,
+     "NEEDS_TIME_NO_DATE": 0.004326698835939169,
+     "NO_RESPONSE": 0.005103992763906717,
+     "PARTIAL_PTP": 0.004588534589856863,
+     "PAY_NOW_LINK": 0.9252676367759705,
+     "PTP": 0.004579616244882345,
+     "REFUSED_TO_PAY": 0.005482818000018597,
+     "STOP_REQUESTED": 0.004929158836603165,
+     "THIRD_PARTY": 0.005108862649649382,
+     "WRONG_PERSON": 0.00531156687065959
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.03318656235933304,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.025266913697123528,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.01976863108575344,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 588,
+   "output_tokens": 0
+  }
+ },
+ "28f115d5993b99f49b8c876af1b0ea048d1b75322c84269db651c7ce7e42c2df": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "क्षमा कीजिए, मुझे ठीक से समझ नहीं आया। 1 बकाया और due date, 2 payment link, 3 मैंने payment कर दिया है, 4 मुझे और समय चाहिए, 5 statement / NOC, 6 किसी व्यक्ति से बात करें।",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109826,
+  "ec_transfer_params": null,
+  "id": "20261119_a086bccd-a244-4e66-889f-4f1f485f8bbe",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 53,
+   "completion_tokens_details": null,
+   "prompt_tokens": 273,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 128,
+    "created_cache_tokens": 128,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 326
+  }
+ },
+ "372ca667103a48e64799991d245947dd3e4c0388de920f182d7b2b74e1e64625": {
+  "answers": {
+   "abusive": {
+    "noul": 0.031282827258110046,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.4152783229947091,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.03314322978258133,
+     "1": 0.11691901832818985,
+     "2": 0.3638838231563568,
+     "3": 0.3645952045917511,
+     "4": 0.12145879864692688
+    },
+    "score": 2.4243074730038643,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "ALREADY_PAID",
+    "confidence": 0.9103159586588542,
+    "probabilities": {
+     "ABUSIVE": 0.00512313935905695,
+     "ALREADY_PAID": 0.9159212112426758,
+     "CALLBACK_REQUESTED": 0.005240331403911114,
+     "DISPUTE": 0.007128623779863119,
+     "HARDSHIP": 0.006045347545295954,
+     "HUMAN_REQUESTED": 0.005254463292658329,
+     "LANGUAGE_BARRIER": 0.005494062323123217,
+     "NEEDS_TIME_NO_DATE": 0.00444725900888443,
+     "NO_RESPONSE": 0.005573602858930826,
+     "PARTIAL_PTP": 0.005817580968141556,
+     "PAY_NOW_LINK": 0.0049441964365541935,
+     "PTP": 0.00571712851524353,
+     "REFUSED_TO_PAY": 0.007321961689740419,
+     "STOP_REQUESTED": 0.004908958449959755,
+     "THIRD_PARTY": 0.0053926189430058,
+     "WRONG_PERSON": 0.005669598001986742
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.034038662910461426,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.025675203651189804,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.03051898069679737,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 588,
+   "output_tokens": 0
+  }
+ },
+ "37863ad74d26461deff928821264f833aaa6b2b619911cb8823490d37f1aaf29": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "For campaign CMP-JOURNEY on 2026-11-26, this daily ops report is SIMULATED. No segments were listed, and totals show 0 attempts, 0 cap breaches, 0 reach, 0 responders, 0 meaningful replies, 0 verified payments, with spend committed of 0.0 INR and verified of 0.0 INR. Replies per 1000 INR is null.",
+     "function_call": null,
+     "reasoning_content": "The user wants a short plain-English note for loan-collections operators, using only facts in the JSON. One paragraph, max four sentences, no markdown, no lists. Say SIMULATED since provenance says so.\n\nFacts: campaign CMP-JOURNEY, day 2026-11-26, simulated, segments empty, totals all zero, replies_per_1000_inr null.\n\nWrite one paragraph.",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109846,
+  "id": "20261119_771ca93f-34f8-4128-9a67-d6d38e60a210",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 174,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 99,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 261,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 256
+   },
+   "total_tokens": 435
+  }
+ },
+ "38fc808057c528bef4adf49557d78f97d0885021ff51cc22d68b2179eb2d39af": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "A HARDSHIP hand-off for borrower E-10081 was logged by agent:cm03 on ticket TKT-2c9ab7595d, with conversation WA-777f50572015. No borrower statement is recorded in the facts. An exception HOLD_2_DAYS is logged and the case is in COLLECTIONS_SUPERVISOR.",
+     "function_call": null,
+     "reasoning_content": "We need answer three sentences max, plain English, only facts. Need mention what happened, borrower said, pending. Facts: audit handoff hardship by agent cm03, exception hold 2 days, queue supervisor, ticket id, borrower E-10081, conversation WA... summary. Borrower said? No statement in JSON. Need not invent. Could say no borrower statement is recorded. Pending: supervisor queue / hold 2 days? Need careful. Three sentences. Keep ids exact. No markdown. \"A HARDSHIP hand-off for borrower E-10081 was logged by agent:cm03 on ticket TKT-2c9ab7595d, with conversation WA-777f50572015.\" \"No borrower statement is recorded in the facts.\" \"An exception HOLD_2_DAYS is logged and the case is in COLLECTIONS_SUPERVISOR.\" That's three. Does \"what is pending\" maybe hold 2 days pending. Good. Ensure no advice.",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109861,
+  "id": "20261119_5113ca8a-850a-49f8-adfa-e5dbe3dde9fb",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 280,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 206,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 394,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 0
+   },
+   "total_tokens": 674
+  }
+ },
+ "3952dc40a6d72f3b83916ce1f5159b51650837a5392681a0228906d8f799d1dd": {
+  "answers": {
+   "abusive": {
+    "noul": 0.031030649319291115,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.3976130868707385,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.05106286704540253,
+     "1": 0.10628946125507355,
+     "2": 0.25451645255088806,
+     "3": 0.36507344245910645,
+     "4": 0.22305770218372345
+    },
+    "score": 2.602773502469063,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "PTP",
+    "confidence": 0.8859464645385742,
+    "probabilities": {
+     "ABUSIVE": 0.004901731386780739,
+     "ALREADY_PAID": 0.005750588607043028,
+     "CALLBACK_REQUESTED": 0.006773160770535469,
+     "DISPUTE": 0.005025251302868128,
+     "HARDSHIP": 0.006144162267446518,
+     "HUMAN_REQUESTED": 0.0049335467629134655,
+     "LANGUAGE_BARRIER": 0.0049528563395142555,
+     "NEEDS_TIME_NO_DATE": 0.005424252711236477,
+     "NO_RESPONSE": 0.005705967079848051,
+     "PARTIAL_PTP": 0.029046908020973206,
+     "PAY_NOW_LINK": 0.0056814891286194324,
+     "PTP": 0.8930748105049133,
+     "REFUSED_TO_PAY": 0.0060609630309045315,
+     "STOP_REQUESTED": 0.005396472290158272,
+     "THIRD_PARTY": 0.005439025349915028,
+     "WRONG_PERSON": 0.005688776262104511
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.0546504445374012,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.026793478056788445,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.023328857496380806,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 586,
+   "output_tokens": 0
+  }
+ },
+ "3ce77850d85bf3d3815f7d343d40f201c3c9c5077f19b19898cc7848a81f3e97": {
+  "answers": {
+   "abusive": {
+    "noul": 0.04902895167469978,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.31532620141903567,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.09597303718328476,
+     "1": 0.18408338725566864,
+     "2": 0.3696015477180481,
+     "3": 0.2551049590110779,
+     "4": 0.09523706883192062
+    },
+    "score": 2.069549635052681,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "DISPUTE",
+    "confidence": 0.9270634969075521,
+    "probabilities": {
+     "ABUSIVE": 0.003911600913852453,
+     "ALREADY_PAID": 0.003741334890946746,
+     "CALLBACK_REQUESTED": 0.003856944153085351,
+     "DISPUTE": 0.9316220283508301,
+     "HARDSHIP": 0.00393185717985034,
+     "HUMAN_REQUESTED": 0.003730813506990671,
+     "LANGUAGE_BARRIER": 0.0039147320203483105,
+     "NEEDS_TIME_NO_DATE": 0.003619337221607566,
+     "NO_RESPONSE": 0.003816600190475583,
+     "PARTIAL_PTP": 0.004038217011839151,
+     "PAY_NOW_LINK": 0.003747713053599,
+     "PTP": 0.00417982367798686,
+     "REFUSED_TO_PAY": 0.006807141937315464,
+     "STOP_REQUESTED": 0.004563665948808193,
+     "THIRD_PARTY": 0.004047844558954239,
+     "WRONG_PERSON": 0.01047048345208168
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.03358764573931694,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.0291949100792408,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.11705860495567322,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 583,
+   "output_tokens": 0
+  }
+ },
+ "3fe20ac81200cfdb2f47852fd82337993614fb5e9d07752ae3087d65ed66856f": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Borrower E-10056 raised a dispute on WhatsApp, creating ticket TKT-c6a84239f5. The case was routed as a K13 exception to COLLECTIONS_SUPERVISOR with the note to acknowledge and make no commitment. The borrower’s specific statement is not included, and the ticket is pending in that queue.",
+     "function_call": null,
+     "reasoning_content": "We need answer plain English three sentences max. Use facts only. Need mention what happened, borrower said, pending. Facts: WhatsApp borrower raised dispute, ticket TKT-c6a84239f5, queue COLLECTIONS_SUPERVISOR, exception dispute CREATE_TICKET, policy 1.1.1, K13 routed exception acknowledge no commitment. Borrower said? Only \"raised dispute\" no specifics. Pending: supervisor queue? Need not invent. Three sentences. Keep ids exact. No markdown. Could say: \"Borrower E-10056 raised a dispute on WhatsApp, creating ticket TKT-c6a84239f5.\" \"The case was routed as a K13 exception to COLLECTIONS_SUPERVISOR with the note to acknowledge and make no commitment.\" \"What remains pending is supervisor handling in that queue.\" Is \"supervisor handling\" inferred? Queue is COLLECTIONS_SUPERVISOR, pending is in queue. Fine. Need mention borrower said? \"The borrower's dispute is recorded, but no further statement is included.\" That's fact? It says no further statement included. Could be okay. Three sentences. Ensure no advice. Final. ",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109872,
+  "id": "20261119_2da1a96b-e39f-4492-8d82-fab332f42fb1",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 316,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 243,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 314,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 0
+   },
+   "total_tokens": 630
+  }
+ },
+ "40c20234fa61c289428a6b3a4ee4cc5a3f2d877f94547597c71a1f90a3e47b11": {
+  "answers": {
+   "abusive": {
+    "noul": 0.05241110920906067,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.7358655948191881,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.6946840882301331,
+     "1": 0.18800875544548035,
+     "2": 0.047433894127607346,
+     "3": 0.034100767225027084,
+     "4": 0.03577249124646187
+    },
+    "score": 0.5282688103616238,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.09440014511346817,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "UNKNOWN",
+    "confidence": 0.6934857740998268,
+    "probabilities": {
+     "ABUSIVE": 0.007086575962603092,
+     "ALREADY_PAID": 0.01969749480485916,
+     "BALANCE_QUERY": 0.03231120854616165,
+     "CALLBACK": 0.018994705751538277,
+     "DISPUTE": 0.012218003161251545,
+     "GREETING": 0.0210002139210701,
+     "HARDSHIP": 0.01246069185435772,
+     "HUMAN": 0.015039468184113503,
+     "LANGUAGE_CHANGE": 0.006300213746726513,
+     "LINK_REQUEST": 0.025013737380504608,
+     "NEEDS_TIME": 0.031761039048433304,
+     "PAY_NOW": 0.016639046370983124,
+     "PTP": 0.008761274628341198,
+     "STATEMENT_REQUEST": 0.01722048595547676,
+     "STOP": 0.019050000235438347,
+     "UNKNOWN": 0.7115160226821899,
+     "WRONG_NUMBER": 0.02492981031537056
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.053076837211847305,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.08837058395147324,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 600,
+   "output_tokens": 0
+  }
+ },
+ "448664f028d86a9a78d7404761d53f9896f6206bc0c594c34c333735f32cf58b": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "For CMP-JOURNEY on 2026-11-23, this daily ops report is SIMULATED. The PRE_DUE segments recorded 2 SMS attempts with INR 0.5 committed and 0 meaningful replies, 2 WhatsApp attempts with INR 0.8 committed and 0 meaningful replies, and 1 voicebot attempt with INR 12.0 committed and 1 meaningful reply. Totals were 5 attempts, 5 reach, 1 responder, 1 meaningful reply, 0 cap breaches, INR 13.3 committed spend, 75.19 replies per 1000 INR, and 0 verified payments or INR 0.0 verified.",
+     "function_call": null,
+     "reasoning_content": "We need answer one paragraph max four sentences, plain English, only facts. Mention SIMULATED. Include ids exactly. Need daily ops report. Facts: campaign CMP-JOURNEY day 2026-11-23 simulated. Segments pre_due sms 2 attempts spend 0.5 replies 0; whatsapp 2 attempts 0.8 0 replies; voicebot 1 attempt 12.0 1 meaningful reply. Totals attempts 5 cap breaches 0 meaningful replies 1 reach 5 responders 1 spend 13.3 verified 0 payments 0 replies per 1000 INR 75.19. Need no advice. One paragraph at most four sentences. Could say: \"For CMP-JOURNEY on 2026-11-23, this daily ops report is SIMULATED. The PRE_DUE segments recorded 2 SMS attempts with INR 0.5 committed and 0 meaningful replies, 2 WhatsApp attempts with INR 0.8 committed and 0 meaningful replies, and 1 voicebot attempt with INR 12.0 committed and 1 meaningful reply. Totals were 5 attempts, 5 reach, 1 responder, 1 meaningful reply, 0 cap breaches, INR 13.3 committed spend, 75.19 replies per 1000 INR, and 0 verified payments or INR 0.0 verified.\" That's 3 sentences. Good. Ensure no markdown.",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109838,
+  "id": "20261119_52aadd86-928b-4e01-9c39-8f8a9735b6e9",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 444,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 303,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 427,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 384
+   },
+   "total_tokens": 871
+  }
+ },
+ "4adf7f4a5cec7229695d0e82a8d0abfdd064647c29d26f9e97f26b21dc9ea9a5": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "For CMP-JOURNEY on 2026-11-24, this daily ops report is SIMULATED. The B1 voicebot segment recorded 2 attempts, 0 cap breaches, 2 meaningful replies, and INR 24.0 committed spend. Totals were 2 attempts, 2 reach, 2 responders, 2 meaningful replies, 0 cap breaches, INR 24.0 committed spend, 0 verified payments, and INR 0.0 verified, with 83.33 replies per INR 1000. All figures are as given in the simulated data.",
+     "function_call": null,
+     "reasoning_content": "We need answer one paragraph max four sentences, plain English, only facts. Mention SIMULATED. Include ids exactly. Need daily ops report. Facts: campaign CMP-JOURNEY, day 2026-11-24, simulated. Segment B1 voicebot attempts 2, cap breaches 0, meaningful replies 2, spend 24 INR. Totals attempts 2, cap breaches 0, meaningful replies 2, reach 2, replies per 1000 INR 83.33, responders 2, spend 24, verified 0, verified payments 0. Need no advice. One paragraph. Ensure no markdown/list. Could say: \"For CMP-JOURNEY on 2026-11-24, this daily ops report is SIMULATED. The B1 voicebot segment recorded 2 attempts, 0 cap breaches, 2 meaningful replies, and INR 24.0 committed spend. Totals were 2 attempts, 2 reach, 2 responders, 2 meaningful replies, 0 cap breaches, INR 24.0 committed spend, 0 verified payments, and INR 0.0 verified, with 83.33 replies per INR 1000. All figures are as given in the simulated data.\" That's four sentences. Good. Need \"replies_per_1000_inr\": 83.33 maybe \"83.33 replies per INR 1,000\". Fine. No advice.",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109842,
+  "id": "20261119_e5779e1b-68f0-40ad-b59a-6172846b5718",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 424,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 302,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 318,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 256
+   },
+   "total_tokens": 742
+  }
+ },
+ "4dc70a4d981dff8631a32583f0a09983e3031c118e4bbca3c09bbf30bd0869dc": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Thanks for reaching out. I have noted your request for a call back. A member of our team will call you during working hours (8 AM to 7 PM, Monday to Saturday).",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109827,
+  "ec_transfer_params": null,
+  "id": "20261119_86f62b86-4bc5-4850-8f92-d5cae5bd5730",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 39,
+   "completion_tokens_details": null,
+   "prompt_tokens": 237,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 96,
+    "created_cache_tokens": 128,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 276
+  }
+ },
+ "4e6baa93f5b2d5a24285e2fd9533022e36a11175ccf0589ccc6e3702f7f0e929": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Apna registered WhatsApp number par aaya 6-digit code yahan reply kijiye. Naya code chahiye toh RESEND likh kar bhej dijiye.",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109825,
+  "ec_transfer_params": null,
+  "id": "20261119_bf9de8fe-295c-462b-ab65-99d56d77e69b",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 36,
+   "completion_tokens_details": null,
+   "prompt_tokens": 237,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 96,
+    "created_cache_tokens": 128,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 273
+  }
+ },
+ "4fe0ca884e24fa6478e057cefa2cf63ffde6c2a1eb268b891c20bf3e91f3c5b1": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Ticket TKT-324c86cef5 for borrower E-10104 was raised as FRAUD_SUSPECT by agent:cm03 at 2026-11-20T11:00:00+05:30 under policy 1.1.1, with summary CM-03 fraud suspect: OTP_SOCIAL_ENGINEERING. The summary says the message asks for, or to redirect, a one-time code; no borrower statement is recorded. The ticket is pending in the COLLECTIONS_SUPERVISOR queue.",
+     "function_call": null,
+     "reasoning_content": "We need answer as short plain English note for loan-collections operators. Use only facts. Three sentences max: what happened, what borrower said, what pending. Need include ids exactly. Facts: audit actor agent:cm03, borrower E-10104, policy 1.1.1, reason FRAUD_SUSPECT, ts, type. queue COLLECTIONS_SUPERVISOR, summary line 1 \"CM-03 fraud suspect: OTP_SOCIAL_ENGINEERING\", line2 \"message asks for, or to redirect, a one-time code\", ticket TKT-324c86cef5. Borrower said? There is no borrower statement. Need say no borrower statement recorded? Is that using only facts? It's absence. We can say \"No borrower statement is recorded.\" That's okay? Need what borrower said. Since none, state none recorded. Pending: ticket in COLLECTIONS_SUPERVISOR queue. Need mention fraud suspect. Three sentences. No markdown. Keep ids exact. Sentence 1: \"Ticket TKT-324c86cef5 for borrower E-10104 was raised as FRAUD_SUSPECT by agent:cm03 at 2026-11-20T11:00:00+05:30 under policy 1.1.1, with summary CM-03 fraud suspect: OTP_SOCIAL_ENGINEERING.\" Sentence 2: \"The summary says the message asks for, or to redirect, a one-time code; no borrower statement is recorded.\" Sentence 3: \"The ticket is pending in the COLLECTIONS_SUPERVISOR queue.\" That's three. Need no advice. Good. Ensure \"what borrower said\" no statement. Fine.",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109874,
+  "id": "20261119_ea5ca3f8-cf34-47ff-a051-cb820259b5ad",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 478,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 364,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 332,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 256
+   },
+   "total_tokens": 810
+  }
+ },
+ "50299f627583820775eb4cecbd2111a6b48bc23310df8450433b17bf0a38bd23": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Ticket TKT-6b5ef65e8d for borrower E-10094 is a HARDSHIP case created at 2026-11-20T11:00:00+05:30, with a CM-03 WhatsApp hand-off for conversation WA-250b58d51564 under policy 1.1.1. The record does not include a borrower statement; the hand-off reason is HARDSHIP. Pending is the COLLECTIONS_SUPERVISOR queue and an EXCEPTION_HARDSHIP hold of HOLD_2_DAYS.",
+     "function_call": null,
+     "reasoning_content": "We need answer as short plain English note, only facts JSON. Three sentences max: what happened, what borrower said, what pending. Need mention ids exactly. Borrower said? JSON doesn't include borrower statement, only reason HARDSHIP, handoff. Need not invent. We can say no borrower statement is recorded? Is that fact? It's absence. Need be careful. \"What borrower said\" pending? We only know handoff reason HARDSHIP. Could say \"The record does not include a borrower statement.\" That's factual about JSON. Pending: queue COLLECTIONS_SUPERVISOR, exception HOLD_2_DAYS. Need include ticket id, borrower id, policy version maybe. Three sentences. No markdown. Keep ids exact. Sentence1: \"Ticket TKT-6b5ef65e8d for borrower E-10094 is a HARDSHIP case created at 2026-11-20T11:00:00+05:30, with a CM-03 WhatsApp hand-off (conversation WA-250b58d51564) under policy 1.1.1.\" Sentence2: \"The record does not include a borrower statement; the hand-off reason is HARDSHIP.\" Sentence3: \"Pending is supervisor review in queue COLLECTIONS_SUPERVISOR, with an EXCEPTION_HARDSHIP hold of HOLD_2_DAYS.\" That's three. Does \"supervisor review\" invent? Queue is COLLECTIONS_SUPERVISOR, pending queue. \"supervisor review\" maybe implied but not explicit. Better \"Pending is the COLLECTIONS_SUPERVISOR queue and an EXCEPTION_HARDSHIP hold of HOLD_2_DAYS.\" Good. Need mention actor? Not necessary. Ensure no advice. Final. ",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109863,
+  "id": "20261119_f079b1e6-9290-4594-beb4-4deb301c09b9",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 495,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 374,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 396,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 0
+   },
+   "total_tokens": 891
+  }
+ },
+ "512eb5524d45fe47356567c91ffa46c53343104bf147cff09e19b85afc417152": {
+  "answers": {
+   "abusive": {
+    "noul": 0.03218163549900055,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.11157099157571793,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.19686220586299896,
+     "1": 0.14734740555286407,
+     "2": 0.14643627405166626,
+     "3": 0.25449442863464355,
+     "4": 0.25485971570014954
+    },
+    "score": 2.2231421023607254,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "LANGUAGE_BARRIER",
+    "confidence": 0.9263984680175781,
+    "probabilities": {
+     "ABUSIVE": 0.004742525517940521,
+     "ALREADY_PAID": 0.00490893330425024,
+     "CALLBACK_REQUESTED": 0.0048170071095228195,
+     "DISPUTE": 0.004654701799154282,
+     "HARDSHIP": 0.004663748200982809,
+     "HUMAN_REQUESTED": 0.00439892103895545,
+     "LANGUAGE_BARRIER": 0.9309985637664795,
+     "NEEDS_TIME_NO_DATE": 0.003996388055384159,
+     "NO_RESPONSE": 0.005420082248747349,
+     "PARTIAL_PTP": 0.004822468385100365,
+     "PAY_NOW_LINK": 0.004607515875250101,
+     "PTP": 0.004767466336488724,
+     "REFUSED_TO_PAY": 0.004397998098284006,
+     "STOP_REQUESTED": 0.004253816790878773,
+     "THIRD_PARTY": 0.004122806712985039,
+     "WRONG_PERSON": 0.004426992032676935
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.034834686666727066,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.026089724153280258,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.06003453955054283,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 584,
+   "output_tokens": 0
+  }
+ },
+ "52978f1d275b2675f0639075ddf26b24371ba612730dd0f1e985959e4144d251": {
+  "answers": {
+   "abusive": {
+    "noul": 0.025885887444019318,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.5249658413231373,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.034193214029073715,
+     "1": 0.07193503528833389,
+     "2": 0.12280424684286118,
+     "3": 0.35188186168670654,
+     "4": 0.419185608625412
+    },
+    "score": 3.049931548535824,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "CALLBACK_REQUESTED",
+    "confidence": 0.8875762939453125,
+    "probabilities": {
+     "ABUSIVE": 0.006614541634917259,
+     "ALREADY_PAID": 0.0071173240430653095,
+     "CALLBACK_REQUESTED": 0.8946027755737305,
+     "DISPUTE": 0.00677229231223464,
+     "HARDSHIP": 0.006657843478024006,
+     "HUMAN_REQUESTED": 0.005478034261614084,
+     "LANGUAGE_BARRIER": 0.0064803725108504295,
+     "NEEDS_TIME_NO_DATE": 0.015904154628515244,
+     "NO_RESPONSE": 0.005931442603468895,
+     "PARTIAL_PTP": 0.006600137334316969,
+     "PAY_NOW_LINK": 0.006340646650642157,
+     "PTP": 0.006460058968514204,
+     "REFUSED_TO_PAY": 0.005969054065644741,
+     "STOP_REQUESTED": 0.0056907376274466515,
+     "THIRD_PARTY": 0.00680340314283967,
+     "WRONG_PERSON": 0.006577064748853445
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.03233179450035095,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.025115249678492546,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.02416403405368328,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 584,
+   "output_tokens": 0
+  }
+ },
+ "536eae80ff6bd1162b2d7e4cc185755375155b8922c017cdbbde20d015513c82": {
+  "answers": {
+   "abusive": {
+    "noul": 0.06017612665891647,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.4767349151273569,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.03182533010840416,
+     "1": 0.13661465048789978,
+     "2": 0.4739268720149994,
+     "3": 0.28761351108551025,
+     "4": 0.07001964002847672
+    },
+    "score": 2.227387487888336,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "DISPUTE",
+    "confidence": 0.8329853693644206,
+    "probabilities": {
+     "ABUSIVE": 0.009703222662210464,
+     "ALREADY_PAID": 0.004987403284758329,
+     "CALLBACK_REQUESTED": 0.0074715144000947475,
+     "DISPUTE": 0.8434237837791443,
+     "HARDSHIP": 0.006112395785748959,
+     "HUMAN_REQUESTED": 0.010559863410890102,
+     "LANGUAGE_BARRIER": 0.004568290896713734,
+     "NEEDS_TIME_NO_DATE": 0.004926290363073349,
+     "NO_RESPONSE": 0.005631668958812952,
+     "PARTIAL_PTP": 0.0043392181396484375,
+     "PAY_NOW_LINK": 0.004245334770530462,
+     "PTP": 0.004224817734211683,
+     "REFUSED_TO_PAY": 0.07595231384038925,
+     "STOP_REQUESTED": 0.0048683034256100655,
+     "THIRD_PARTY": 0.004542364273220301,
+     "WRONG_PERSON": 0.004443068988621235
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.04142635315656662,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.025218293070793152,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.0472976453602314,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 587,
+   "output_tokens": 0
+  }
+ },
+ "54d2450ba9868df075cd90d1e38d8eceecb15af6aa4e00b7edbbd37559b323d3": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Kairos Demo Finance se contact karne ke liye shukriya. Aapka din achha rahe.",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109828,
+  "ec_transfer_params": null,
+  "id": "20261119_532d8c3a-e3f9-4c30-bccd-210d0dfda85d",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 21,
+   "completion_tokens_details": null,
+   "prompt_tokens": 226,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 128,
+    "created_cache_tokens": 96,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 247
+  }
+ },
+ "555a2c40fa01e145f431cac015df7cea2009e0580bfc227aa62373b42885555b": {
+  "answers": {
+   "abusive": {
+    "noul": 0.03190147876739502,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.4572426316638788,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.05860409513115883,
+     "1": 0.1683596521615982,
+     "2": 0.4806046485900879,
+     "3": 0.21912215650081635,
+     "4": 0.07330942153930664
+    },
+    "score": 2.0801731050014496,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "ALREADY_PAID",
+    "confidence": 0.9243391036987305,
+    "probabilities": {
+     "ABUSIVE": 0.0046753413043916225,
+     "ALREADY_PAID": 0.9290679097175598,
+     "CALLBACK_REQUESTED": 0.004533830564469099,
+     "DISPUTE": 0.005155043676495552,
+     "HARDSHIP": 0.005288960877805948,
+     "HUMAN_REQUESTED": 0.004508554935455322,
+     "LANGUAGE_BARRIER": 0.0047623831778764725,
+     "NEEDS_TIME_NO_DATE": 0.0036591982934623957,
+     "NO_RESPONSE": 0.004531150218099356,
+     "PARTIAL_PTP": 0.005181146319955587,
+     "PAY_NOW_LINK": 0.004235039930790663,
+     "PTP": 0.005105949938297272,
+     "REFUSED_TO_PAY": 0.00482163717970252,
+     "STOP_REQUESTED": 0.004248267505317926,
+     "THIRD_PARTY": 0.005054468289017677,
+     "WRONG_PERSON": 0.005171086173504591
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.03520167991518974,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.026563575491309166,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.03355275094509125,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 583,
+   "output_tokens": 0
+  }
+ },
+ "5766688c65453c57ae83f6b91d3b659ddf214c4fd422f42e9b48fea8fde3bdcc": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Shukriya. Maine aapki call back ki request note kar li hai. Hamari team ka ek member aapko working hours (8 AM se 7 PM, Monday se Saturday) ke beech call karega.",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109825,
+  "ec_transfer_params": null,
+  "id": "20261119_c0e036f6-b6dc-45c6-b27e-89eee08ffac5",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 45,
+   "completion_tokens_details": null,
+   "prompt_tokens": 249,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 96,
+    "created_cache_tokens": 128,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 294
+  }
+ },
+ "59b98eebdc9e957b0b047a97890cdc69c113f1c3e085bbad7ea8e182324d517f": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "The latest decision on BRW-[account] was WAIT, made by human:ops.journey at 2026-11-25T11:30:00+05:30 under instruction MAN-e235a2fd01e245d0, policy version 1.1.1. It was recorded with reason HARDSHIP_HOLD, and the rule cited for it is HARDSHIP_HOLD. No other ground for the decision is given in the facts.",
+     "function_call": null,
+     "reasoning_content": "The latest decision is WAIT with reason HARDSHIP_HOLD, rule HARDSHIP_HOLD, by human:ops.journey at 2026-11-25T11:30:00+05:30. Explain citing rule. Note trail has later timestamps (Nov 27) but \"latest_decision\" is the Nov 25 one — I should just explain the latest decision as given, not invent. Keep to facts.",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109854,
+  "id": "20261119_7bd125ae-8278-4dc4-9633-fa13dc9830e5",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 192,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 95,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 765,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 0
+   },
+   "total_tokens": 957
+  }
+ },
+ "5a5279dae0e2d2f9d8af61e2563e4063bf9295a21cd3d28f655494551a16e553": {
+  "answers": {
+   "abusive": {
+    "noul": 0.031580597162246704,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.42514751106500626,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.038169167935848236,
+     "1": 0.08963397890329361,
+     "2": 0.26241981983184814,
+     "3": 0.36117878556251526,
+     "4": 0.24859820306301117
+    },
+    "score": 2.6924027875065804,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "ALREADY_PAID",
+    "confidence": 0.9231354395548502,
+    "probabilities": {
+     "ABUSIVE": 0.004736048635095358,
+     "ALREADY_PAID": 0.9279394745826721,
+     "CALLBACK_REQUESTED": 0.004530190024524927,
+     "DISPUTE": 0.004777866415679455,
+     "HARDSHIP": 0.005222836509346962,
+     "HUMAN_REQUESTED": 0.004461971577256918,
+     "LANGUAGE_BARRIER": 0.0051466613076627254,
+     "NEEDS_TIME_NO_DATE": 0.003744593821465969,
+     "NO_RESPONSE": 0.004644844215363264,
+     "PARTIAL_PTP": 0.005150559823960066,
+     "PAY_NOW_LINK": 0.004592857789248228,
+     "PTP": 0.005232368130236864,
+     "REFUSED_TO_PAY": 0.004969105124473572,
+     "STOP_REQUESTED": 0.004356666002422571,
+     "THIRD_PARTY": 0.005268208682537079,
+     "WRONG_PERSON": 0.005225765984505415
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.03118794411420822,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.02604410983622074,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.06291413307189941,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 584,
+   "output_tokens": 0
+  }
+ },
+ "5b3b6f213d81d25089ee2075f5e9974f0e746b4aef10135e38c7afa9afec4c44": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Is there anything else I can help with?",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109822,
+  "ec_transfer_params": null,
+  "id": "20261119_d50f6ed2-c8b2-4d1d-9636-43367dc5dff1",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 10,
+   "completion_tokens_details": null,
+   "prompt_tokens": 204,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 0,
+    "created_cache_tokens": 192,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 214
+  }
+ },
+ "5d83e0c13fafb5ab77155f0cb0c1cc61df39f8184b6ad567aef9ea93b895542b": {
+  "answers": {
+   "abusive": {
+    "noul": 0.025389710441231728,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.14723820984363567,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.0942160114645958,
+     "1": 0.2105061262845993,
+     "2": 0.25659069418907166,
+     "3": 0.25299838185310364,
+     "4": 0.1856888085603714
+    },
+    "score": 2.225437894463539,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.04145529866218567,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "UNKNOWN",
+    "confidence": 0.5041663162410259,
+    "probabilities": {
+     "ABUSIVE": 0.007865263149142265,
+     "ALREADY_PAID": 0.018431276082992554,
+     "BALANCE_QUERY": 0.011404147371649742,
+     "CALLBACK": 0.018625503405928612,
+     "DISPUTE": 0.013209877535700798,
+     "GREETING": 0.012133910320699215,
+     "HARDSHIP": 0.010516095906496048,
+     "HUMAN": 0.011602840386331081,
+     "LANGUAGE_CHANGE": 0.01165074110031128,
+     "LINK_REQUEST": 0.20393714308738708,
+     "NEEDS_TIME": 0.018259122967720032,
+     "PAY_NOW": 0.01926400698721409,
+     "PTP": 0.009841645136475563,
+     "STATEMENT_REQUEST": 0.06894496828317642,
+     "STOP": 0.01504408661276102,
+     "UNKNOWN": 0.5333330035209656,
+     "WRONG_NUMBER": 0.015936342999339104
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.027140410616993904,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.02101111225783825,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 603,
+   "output_tokens": 0
+  }
+ },
+ "5dfddaac18fffc32b4c81bbcac3160b02a728838bc8b39544cfc0d988ec7f9da": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Thanks. A team member at [lender name] has your request and will get back to you.",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109829,
+  "ec_transfer_params": null,
+  "id": "20261119_8be7d0f0-5552-4cdd-be92-3dffb29b3a5d",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 22,
+   "completion_tokens_details": null,
+   "prompt_tokens": 213,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 96,
+    "created_cache_tokens": 96,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 235
+  }
+ },
+ "639831153e28fd074507a4cc7c66e257a53c67837de59208572a655596d098d5": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Maaf kijiye, mujhe samajh nahi aaya. Kripya 1 Balance & due date, 2 Payment link, 3 I have already paid, 4 I need more time, 5 Statement / NOC, 6 Talk to a person par reply karein.",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109822,
+  "ec_transfer_params": null,
+  "id": "20261119_788b2fc7-1704-4d01-8f11-62f6708acb35",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 59,
+   "completion_tokens_details": null,
+   "prompt_tokens": 276,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 0,
+    "created_cache_tokens": 256,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 335
+  }
+ },
+ "67f3f317c2d8dc2e2ecf2420f040dfdbf9e353945d3a430aa0bd75093a12b92e": {
+  "answers": {
+   "abusive": {
+    "noul": 0.029176754876971245,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.4823157601058483,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.019264448434114456,
+     "1": 0.07849829643964767,
+     "2": 0.32639822363853455,
+     "3": 0.3922692537307739,
+     "4": 0.1835697740316391
+    },
+    "score": 2.642381601035595,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "PTP",
+    "confidence": 0.9023310343424479,
+    "probabilities": {
+     "ABUSIVE": 0.005933010950684547,
+     "ALREADY_PAID": 0.006249952130019665,
+     "CALLBACK_REQUESTED": 0.006205172277987003,
+     "DISPUTE": 0.006414429750293493,
+     "HARDSHIP": 0.006252754013985395,
+     "HUMAN_REQUESTED": 0.006191871594637632,
+     "LANGUAGE_BARRIER": 0.006377087906002998,
+     "NEEDS_TIME_NO_DATE": 0.005094528663903475,
+     "NO_RESPONSE": 0.006166132166981697,
+     "PARTIAL_PTP": 0.006136811338365078,
+     "PAY_NOW_LINK": 0.0050844429060816765,
+     "PTP": 0.9084353446960449,
+     "REFUSED_TO_PAY": 0.006565679330378771,
+     "STOP_REQUESTED": 0.005865086335688829,
+     "THIRD_PARTY": 0.006627329625189304,
+     "WRONG_PERSON": 0.006400472950190306
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.038592949509620667,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.02560706064105034,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.023235473781824112,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 588,
+   "output_tokens": 0
+  }
+ },
+ "6f444d9f2b57d6d6503575d0c09e82ee2aeda7374b8b29c44746b08e74ad7073": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "धन्यवाद। हमारी टीम का एक सदस्य आपके अनुरोध पर आपसे संपर्क करेगा।",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109825,
+  "ec_transfer_params": null,
+  "id": "20261119_7e1e420b-aba6-4be2-bb9a-6b1d5e0bd8a0",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 16,
+   "completion_tokens_details": null,
+   "prompt_tokens": 216,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 128,
+    "created_cache_tokens": 64,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 232
+  }
+ },
+ "74d4d7a9c6339f0d062601c8a3a1c704a8e41e726862dc13f4d8b9e6f9165a66": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Sorry, I didn't quite catch that. Just reply with 1 Balance & due date, 2 Payment link, 3 I have already paid, 4 I need more time, 5 Statement / NOC, or 6 Talk to a person.",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109824,
+  "ec_transfer_params": null,
+  "id": "20261119_bb328749-5cbd-48ca-86d8-cbe21a7c021d",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 54,
+   "completion_tokens_details": null,
+   "prompt_tokens": 264,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 96,
+    "created_cache_tokens": 160,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 318
+  }
+ },
+ "78121a149ae888359eed0f25e559ad1e404414bab1684a4d31ac560e8a17324c": {
+  "answers": {
+   "abusive": {
+    "noul": 0.020968077704310417,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.2723400624735015,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.09670980274677277,
+     "1": 0.33140313625335693,
+     "2": 0.2962598502635956,
+     "3": 0.20112735033035278,
+     "4": 0.07449985295534134
+    },
+    "score": 1.8253042995929718,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.05741395056247711,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "UNKNOWN",
+    "confidence": 0.5564391613006592,
+    "probabilities": {
+     "ABUSIVE": 0.004364915657788515,
+     "ALREADY_PAID": 0.005099289119243622,
+     "BALANCE_QUERY": 0.0057912711054086685,
+     "CALLBACK": 0.011329591274261475,
+     "DISPUTE": 0.005914105102419853,
+     "GREETING": 0.01348793413490057,
+     "HARDSHIP": 0.012188214808702469,
+     "HUMAN": 0.00525201391428709,
+     "LANGUAGE_CHANGE": 0.003737556980922818,
+     "LINK_REQUEST": 0.010660882107913494,
+     "NEEDS_TIME": 0.3079339861869812,
+     "PAY_NOW": 0.007909934036433697,
+     "PTP": 0.007019370794296265,
+     "STATEMENT_REQUEST": 0.005995380226522684,
+     "STOP": 0.004980898462235928,
+     "UNKNOWN": 0.5825309753417969,
+     "WRONG_NUMBER": 0.005803788546472788
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.02622070163488388,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.025060854852199554,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 606,
+   "output_tokens": 0
+  }
+ },
+ "7ca75015d1d5b17258a283b94d376a73072d9eb55690dfce625ebcde641228da": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "नमस्ते, मैं Kairos Demo Finance की वर्चुअल असिस्टेंट काइरा हूँ। आपके खाते की सुरक्षा के लिए हमने आपके रजिस्टर्ड WhatsApp नंबर पर 6 अंकों का कोड भेजा है, आगे बढ़ने के लिए कृपया वह कोड यहाँ लिखें।",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109822,
+  "ec_transfer_params": null,
+  "id": "20261119_7ae4069e-5dae-4183-ad93-66df80d13b6a",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 47,
+   "completion_tokens_details": null,
+   "prompt_tokens": 255,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 0,
+    "created_cache_tokens": 224,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 302
+  }
+ },
+ "7d0fa9232ac5cf4c8d0a0386940754990632854cf73d4a05e097a4d11fc69ef8": {
+  "answers": {
+   "abusive": {
+    "noul": 0.02153175324201584,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.3117651449782508,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.27123305201530457,
+     "1": 0.3304608464241028,
+     "2": 0.18439562618732452,
+     "3": 0.13383135199546814,
+     "4": 0.08007913827896118
+    },
+    "score": 1.421062707901001,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.02961953729391098,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "UNKNOWN",
+    "confidence": 0.8041227273643017,
+    "probabilities": {
+     "ABUSIVE": 0.006363010499626398,
+     "ALREADY_PAID": 0.00693803746253252,
+     "BALANCE_QUERY": 0.019919341430068016,
+     "CALLBACK": 0.007240112870931625,
+     "DISPUTE": 0.016280904412269592,
+     "GREETING": 0.009568787179887295,
+     "HARDSHIP": 0.007286939769983292,
+     "HUMAN": 0.009685422293841839,
+     "LANGUAGE_CHANGE": 0.00565791130065918,
+     "LINK_REQUEST": 0.010159609839320183,
+     "NEEDS_TIME": 0.007780555170029402,
+     "PAY_NOW": 0.006678612437099218,
+     "PTP": 0.005355045199394226,
+     "STATEMENT_REQUEST": 0.01622200943529606,
+     "STOP": 0.007854033261537552,
+     "UNKNOWN": 0.8156449198722839,
+     "WRONG_NUMBER": 0.04136466607451439
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.02715129218995571,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.021085156127810478,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 603,
+   "output_tokens": 0
+  }
+ },
+ "810bf2f700d2786b2b5595c4f27a321cf311016963d201d181ab3a95469259c8": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Channel evidence: WhatsApp wa_emi_due_hi_v3 was sent 19 Nov 09:00 with no delivery receipt yet and 2 replies [T-1042-0002, evt-4582c9f2d3d35db9], while SMS sms_dpd_nudge_v2 was sent 18 Nov 10:00, delivered, read UNKNOWN, and has no reply [T-1042-0001, evt-92d7e15ccf45851a]. Borrower intent: says Loan A ([account]) is paid and ledger verified [evt-a7fb1984fede32f2, CLM-5DC96422, evt-d7-whk-1]; needs time (19 Nov 09:14) and supervisor WAIT until 21 Nov 09:14 [evt-4c1cf2ca4b878914, evt-d203ebfd0657d268].",
+     "function_call": null,
+     "reasoning_content": "We need answer two sentences, plain English, only facts. Need channel evidence then borrower intent. Keep source ids square brackets. Need include ids exactly. Need no markdown/lists. Two sentences. Need mention channel evidence: WhatsApp wa_emi_due_hi_v3 sent 19 Nov 09:00 no delivery receipt yet 2 replies [T-1042-0002, evt-4582c9f2d3d35db9]; SMS sms_dpd_nudge_v2 sent 18 Nov 10:00 delivered read UNKNOWN no reply [T-1042-0001, evt-92d7e15ccf45851a]. Borrower intent: says Loan A ([account]) is paid → ledger verified [evt-a7fb1984fede32f2, CLM-5DC96422, evt-d7-whk-1]; needs time (19 Nov 09:14) → supervisor WAIT until 21 Nov 09:14 [evt-4c1cf2ca4b878914, evt-d203ebfd0657d268]. Need maybe \"Loan A ([account])\" exactly? JSON has \"[account]\" placeholder. Use exactly? \"Loan A ([account])\" maybe weird. Keep id exactly as written. Need include all source ids? \"Keep source ids in square brackets.\" Could include all relevant. Two sentences. Need not mention advice. \"supervisor WAIT\" is fact? It says supervisor WAIT until... It's an outcome? We can state. Need no recommendation. Sentence 1 channel evidence. Sentence 2 borrower intent. Ensure two sentences only. Use semicolons. No markdown. Need include source ids in square brackets. Could be long but okay.\n\nNeed be careful \"no delivery receipt yet, 2 replies\" contradictory? Use as given. \"read UNKNOWN\" exact. \"no reply\". Sentence 1: \"Channel evidence: WhatsApp wa_emi_due_hi_v3 was sent 19 Nov 09:00 with no delivery receipt yet and 2 replies [T-1042-0002, evt-4582c9f2d3d35db9], while SMS sms_dpd_nudge_v2 was sent 18 Nov 10:00, delivered, read UNKNOWN, and has no reply [T-1042-0001, evt-92d7e15ccf45851a].\" Good.\n\nSentence 2: \"Borrower intent: says Loan A ([account]) is paid and ledger verified [evt-a7fb1984fede32f2, CLM-5DC96422, evt-d7-whk-1]; needs time (19 Nov 09:14) and supervisor WAIT until 21 Nov 09:14 [evt-4c1cf2ca4b878914, evt-d203ebfd0657d268].\" This is one sentence with semicolon. Good. Need include all source ids? We included all except maybe source_ids list includes all. Yes.\n\nNeed no markdown. Final only.",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109889,
+  "id": "20261119_5ffd3d42-40b5-479d-89b2-1eec0dfa7f2d",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 860,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 658,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 469,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 384
+   },
+   "total_tokens": 1329
+  }
+ },
+ "820e438604a68702729b18fa77e47c4292d71bfc8579f53f39a9a6c1cb94a8e5": {
+  "answers": {
+   "abusive": {
+    "noul": 0.9784787893295288,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.6059020962566137,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.017818430438637733,
+     "1": 0.042902979999780655,
+     "2": 0.1387135237455368,
+     "3": 0.31078609824180603,
+     "4": 0.48977890610694885
+    },
+    "score": 3.2118039466440678,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "ABUSIVE",
+    "confidence": 0.923802375793457,
+    "probabilities": {
+     "ABUSIVE": 0.928564727306366,
+     "ALREADY_PAID": 0.0049121323972940445,
+     "CALLBACK_REQUESTED": 0.004400931764394045,
+     "DISPUTE": 0.004728562664240599,
+     "HARDSHIP": 0.004925149492919445,
+     "HUMAN_REQUESTED": 0.0041652764193713665,
+     "LANGUAGE_BARRIER": 0.004521786700934172,
+     "NEEDS_TIME_NO_DATE": 0.004559929948300123,
+     "NO_RESPONSE": 0.003978542517870665,
+     "PARTIAL_PTP": 0.004961089696735144,
+     "PAY_NOW_LINK": 0.005138163920491934,
+     "PTP": 0.005053909029811621,
+     "REFUSED_TO_PAY": 0.0050121694803237915,
+     "STOP_REQUESTED": 0.00473468191921711,
+     "THIRD_PARTY": 0.005245289299637079,
+     "WRONG_PERSON": 0.005097711458802223
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.03708365559577942,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.029086126014590263,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.0641036406159401,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 583,
+   "output_tokens": 0
+  }
+ },
+ "8479844f3a3c70e97071d3b2301f118ad51d88c1be1fe5037eb809a8d9b1ed8a": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "क्या मैं और कुछ मदद कर सकती हूँ?",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109822,
+  "ec_transfer_params": null,
+  "id": "20261119_f5b95503-1689-45b4-94ce-45c4e60dafd2",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 10,
+   "completion_tokens_details": null,
+   "prompt_tokens": 209,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 96,
+    "created_cache_tokens": 96,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 219
+  }
+ },
+ "84fa85655e2f7b40438af3eaee4b5c2f3316648980ac005b1f7bdf218a7303ab": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "आपका verification हो गया है, धन्यवाद।",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109824,
+  "ec_transfer_params": null,
+  "id": "20261119_e0a323d6-dcc0-40cd-8c66-ea8dde233ea9",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 9,
+   "completion_tokens_details": null,
+   "prompt_tokens": 210,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 128,
+    "created_cache_tokens": 64,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 219
+  }
+ },
+ "8659e5650c809b363a782ba8734596d9718967d1ab5a2eacd1dcc6b5a126606b": {
+  "answers": {
+   "abusive": {
+    "noul": 0.027571778744459152,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.5091465261897872,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.01613806001842022,
+     "1": 0.06549510359764099,
+     "2": 0.27780988812446594,
+     "3": 0.41057637333869934,
+     "4": 0.22998058795928955
+    },
+    "score": 2.772766351699829,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "PTP",
+    "confidence": 0.8562732696533203,
+    "probabilities": {
+     "ABUSIVE": 0.005716480314731598,
+     "ALREADY_PAID": 0.006988165434449911,
+     "CALLBACK_REQUESTED": 0.00841450970619917,
+     "DISPUTE": 0.006586119998246431,
+     "HARDSHIP": 0.006111751776188612,
+     "HUMAN_REQUESTED": 0.006039983127266169,
+     "LANGUAGE_BARRIER": 0.00562918558716774,
+     "NEEDS_TIME_NO_DATE": 0.005591987632215023,
+     "NO_RESPONSE": 0.00646654749289155,
+     "PARTIAL_PTP": 0.04620307683944702,
+     "PAY_NOW_LINK": 0.005990385543555021,
+     "PTP": 0.8652561902999878,
+     "REFUSED_TO_PAY": 0.006798387970775366,
+     "STOP_REQUESTED": 0.006002921611070633,
+     "THIRD_PARTY": 0.006218734662979841,
+     "WRONG_PERSON": 0.00598559994250536
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.04167809337377548,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.02629375457763672,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.02200162783265114,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 585,
+   "output_tokens": 0
+  }
+ },
+ "88fc8d31db24f376c42404912d08cb9528d651e5f91f1ef7e28c782985265b2f": {
+  "answers": {
+   "abusive": {
+    "noul": 0.051943063735961914,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.4531083612569742,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.028293143957853317,
+     "1": 0.09807851165533066,
+     "2": 0.3493885099887848,
+     "3": 0.3890164792537689,
+     "4": 0.13522332906723022
+    },
+    "score": 2.504798285663128,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "STOP_REQUESTED",
+    "confidence": 0.9363391876220704,
+    "probabilities": {
+     "ABUSIVE": 0.0033619096502661705,
+     "ALREADY_PAID": 0.003547499654814601,
+     "CALLBACK_REQUESTED": 0.00365609023720026,
+     "DISPUTE": 0.0035387547686696053,
+     "HARDSHIP": 0.005945081356912851,
+     "HUMAN_REQUESTED": 0.0030017271637916565,
+     "LANGUAGE_BARRIER": 0.0035300448071211576,
+     "NEEDS_TIME_NO_DATE": 0.0028517250902950764,
+     "NO_RESPONSE": 0.0034269229508936405,
+     "PARTIAL_PTP": 0.003591117449104786,
+     "PAY_NOW_LINK": 0.0036726125981658697,
+     "PTP": 0.00383904785849154,
+     "REFUSED_TO_PAY": 0.008149959146976471,
+     "STOP_REQUESTED": 0.9403179883956909,
+     "THIRD_PARTY": 0.0037581506185233593,
+     "WRONG_PERSON": 0.0038112143520265818
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.5589176416397095,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.025409305468201637,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.9788894653320312,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 588,
+   "output_tokens": 0
+  }
+ },
+ "89230ffc6301b0921bb63f9594d0731a1c34cf77b161d3d2eb5ec7f544e95620": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "धन्यवाद। आपका कॉल बैक अनुरोध दर्ज कर लिया गया है। हमारी टीम का सदस्य कामकाजी समय (सोमवार से शनिवार, सुबह 8 से शाम 7) में आपको कॉल करेगा।",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109833,
+  "ec_transfer_params": null,
+  "id": "20261119_d7bd5928-26ed-42df-a000-06a0669aa831",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 40,
+   "completion_tokens_details": null,
+   "prompt_tokens": 246,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 128,
+    "created_cache_tokens": 96,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 286
+  }
+ },
+ "8b052246d7076cbdc21dd88c7fbf2b5392cd783deb600aeb619e518debe0e2f3": {
+  "answers": {
+   "abusive": {
+    "noul": 0.02250475250184536,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.5542935337871313,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.01260016206651926,
+     "1": 0.05647905170917511,
+     "2": 0.15860258042812347,
+     "3": 0.35436996817588806,
+     "4": 0.4179482161998749
+    },
+    "score": 3.1085869818925858,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.022728802636265755,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "ALREADY_PAID",
+    "confidence": 0.9142153598368168,
+    "probabilities": {
+     "ABUSIVE": 0.005420018453150988,
+     "ALREADY_PAID": 0.9192615151405334,
+     "BALANCE_QUERY": 0.0042901476845145226,
+     "CALLBACK": 0.00464806379750371,
+     "DISPUTE": 0.004974580369889736,
+     "GREETING": 0.0046552326530218124,
+     "HARDSHIP": 0.00548996776342392,
+     "HUMAN": 0.004743474069982767,
+     "LANGUAGE_CHANGE": 0.005417992360889912,
+     "LINK_REQUEST": 0.004569757729768753,
+     "NEEDS_TIME": 0.005115572363138199,
+     "PAY_NOW": 0.004849880933761597,
+     "PTP": 0.004915489815175533,
+     "STATEMENT_REQUEST": 0.005469314754009247,
+     "STOP": 0.0048491316847503185,
+     "UNKNOWN": 0.006145704537630081,
+     "WRONG_NUMBER": 0.0051841433160007
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.025052005425095558,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.03708406537771225,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 606,
+   "output_tokens": 0
+  }
+ },
+ "9280f92afcdb1fa0049f7911ead75b4ce9915982aacfb72b5da2d310994d7105": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Ticket TKT-121fb18faf for borrower E-10029 is a HARDSHIP WhatsApp hand-off from agent:cm03 on conversation WA-5a9d3864fbfc under policy 1.1.1. No borrower statement is recorded in the provided facts. It is pending in queue COLLECTIONS_SUPERVISOR with a HOLD_2_DAYS exception logged by agent:conversation.",
+     "function_call": null,
+     "reasoning_content": "We need answer as short plain English note for loan-collections operators. Use only facts. Three sentences max: what happened, what borrower said, what pending. Need include ids exactly. Facts: ticket TKT-121fb18faf, borrower E-10029, queue COLLECTIONS_SUPERVISOR, type HARDSHIP, summary lines: CM-03 WhatsApp hand-off: HARDSHIP; conversation WA-5a9d3864fbfc. Audit: agent cm03 handoff hardship at ts, policy 1.1.1 reason HARDSHIP; agent conversation exception hardship reason HOLD_2_DAYS same ts. What borrower said? JSON doesn't include borrower statement. Need not invent. We can say no borrower statement is recorded? Is that allowed? It's a fact inferred from absence? \"what the borrower said\" pending? We must use only facts. We can say \"No borrower statement is included in the case summary.\" That's about JSON. Pending: queue COLLECTIONS_SUPERVISOR, exception HOLD_2_DAYS? Need phrase pending supervisor review? Queue is COLLECTIONS_SUPERVISOR, so pending with collections supervisor. Also HOLD_2_DAYS exception. Need three sentences. Sentence1 what happened: \"Ticket TKT-121fb18faf for borrower E-10029 is a HARDSHIP WhatsApp hand-off from agent cm03 (conversation WA-5a9d3864fbfc) under policy 1.1.1.\" Sentence2 borrower said: \"No borrower statement is recorded in the provided facts.\" Sentence3 pending: \"It is in queue COLLECTIONS_SUPERVISOR with a HOLD_2_DAYS exception logged by agent conversation.\" That's three. Need no advice. Good. Ensure ids exact. \"agent:cm03\" exact? Use agent cm03? id exact as written includes colon. Better \"agent:cm03\". \"agent:conversation\". \"WA-5a9d3864fbfc\". \"TKT-121fb18faf\". \"E-10029\". \"COLLECTIONS_SUPERVISOR\". \"HOLD_2_DAYS\". \"1.1.1\". Good. Final only.",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109857,
+  "id": "20261119_3efc765c-4b10-4964-bb52-ca29a5001571",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 565,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 476,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 396,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 256
+   },
+   "total_tokens": 961
+  }
+ },
+ "9760a5cc2246896b6a59369e5d10c44d9999bab1975e59869d61d987d5777f68": {
+  "answers": {
+   "abusive": {
+    "noul": 0.025820080190896988,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.3150298403842109,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.23939058184623718,
+     "1": 0.33118894696235657,
+     "2": 0.22261963784694672,
+     "3": 0.1234544962644577,
+     "4": 0.08334633708000183
+    },
+    "score": 1.4801770597696304,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.033411893993616104,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "UNKNOWN",
+    "confidence": 0.6987791433930397,
+    "probabilities": {
+     "ABUSIVE": 0.006646414753049612,
+     "ALREADY_PAID": 0.010105233639478683,
+     "BALANCE_QUERY": 0.046316538006067276,
+     "CALLBACK": 0.0067492262460291386,
+     "DISPUTE": 0.059216711670160294,
+     "GREETING": 0.008791577070951462,
+     "HARDSHIP": 0.007316999137401581,
+     "HUMAN": 0.01088783424347639,
+     "LANGUAGE_CHANGE": 0.008510628715157509,
+     "LINK_REQUEST": 0.026833578944206238,
+     "NEEDS_TIME": 0.008837508037686348,
+     "PAY_NOW": 0.007201251573860645,
+     "PTP": 0.005270638968795538,
+     "STATEMENT_REQUEST": 0.023936670273542404,
+     "STOP": 0.01364244893193245,
+     "UNKNOWN": 0.7164980173110962,
+     "WRONG_NUMBER": 0.03323885798454285
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.025983409956097603,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.0306748915463686,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 602,
+   "output_tokens": 0
+  }
+ },
+ "9ae11e314dcf466beb4eb4c53edea1dbc0c83585b44a0cbc063072dd63f1a6e8": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Main bas ye pakka karna chahta hoon ki aapko sahi help mile, isliye maine isko apni team ke ek member ko bhej diya hai. Wo aapse contact karenge.",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109829,
+  "ec_transfer_params": null,
+  "id": "20261119_0514b2f0-e08c-43d6-b431-c310be6ed1ba",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 39,
+   "completion_tokens_details": null,
+   "prompt_tokens": 237,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 128,
+    "created_cache_tokens": 96,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 276
+  }
+ },
+ "9c7d47aafa3fce7a4c1a408a788e376426db4177d000f1a336ea64b8b3f7e1c7": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "हमें आपकी स्थिति जानकर दुख हुआ, बताने के लिए शुक्रिया। हमने अभी के लिए रिमाइंडर रोक दिए हैं, और हमारी team का member आपसे available options के बारे में बात करने के लिए संपर्क करेगा।",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109827,
+  "ec_transfer_params": null,
+  "id": "20261119_ed46b9b3-b05c-4b47-9f1a-b5271d8adb7e",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 40,
+   "completion_tokens_details": null,
+   "prompt_tokens": 243,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 96,
+    "created_cache_tokens": 128,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 283
+  }
+ },
+ "9d165b5b4424bb78650026f7f45bba6f20c1c2ba28444f2ab89c2730c6bba792": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "SIMULATED daily ops for campaign CMP-JOURNEY on 2026-11-27: two attempts were made, one on WhatsApp and one on voicebot, both in band B1, with no cap breaches. Spend committed was INR 0.4 on WhatsApp and INR 12.0 on voicebot, totaling INR 12.4. Reach was 1, with 0 responders, 0 meaningful replies, 0 verified payments, and 0.0 replies per 1000 INR.",
+     "function_call": null,
+     "reasoning_content": "We need answer one paragraph max four sentences, plain English, only facts. Mention SIMULATED. Include ids exactly. Need daily ops report. Facts: campaign CMP-JOURNEY, day 2026-11-27, simulated. Segments B1 whatsapp 1 attempt spend 0.4, voicebot 1 attempt spend 12.0, no replies, no cap breaches. Totals attempts 2, reach 1, responders 0, meaningful replies 0, spend 12.4, verified 0, replies per 1000 INR 0.0, cap breaches 0. Need no advice. One paragraph. Ensure at most four sentences. Could say: \"SIMULATED daily ops for campaign CMP-JOURNEY on 2026-11-27: two attempts were made, one on WhatsApp and one on voicebot, both in band B1, with no cap breaches. Spend committed was INR 0.4 on WhatsApp and INR 12.0 on voicebot, totaling INR 12.4. Reach was 1, with 0 responders, 0 meaningful replies, 0 verified payments, and 0.0 replies per 1000 INR.\" That's 3 sentences. Good. No markdown.",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109848,
+  "id": "20261119_d73f76f9-881b-497f-8ae8-acec0a49713f",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 368,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 262,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 372,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 256
+   },
+   "total_tokens": 740
+  }
+ },
+ "9e114e312cd03e5a0cd056f4f4bb96ca1a10fe9c42a44351d1c2bee3dc1e3429": {
+  "answers": {
+   "abusive": {
+    "noul": 0.4427306056022644,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.11546744406223308,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.1471070796251297,
+     "1": 0.23024138808250427,
+     "2": 0.24732598662376404,
+     "3": 0.21366754174232483,
+     "4": 0.16165798902511597
+    },
+    "score": 2.0125279426574707,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.02917124144732952,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "ABUSIVE",
+    "confidence": 0.44208942726254463,
+    "probabilities": {
+     "ABUSIVE": 0.47490769624710083,
+     "ALREADY_PAID": 0.013922138139605522,
+     "BALANCE_QUERY": 0.005663679912686348,
+     "CALLBACK": 0.0053424593061208725,
+     "DISPUTE": 0.14180876314640045,
+     "GREETING": 0.006285980809479952,
+     "HARDSHIP": 0.006373046897351742,
+     "HUMAN": 0.007143794093281031,
+     "LANGUAGE_CHANGE": 0.004781173542141914,
+     "LINK_REQUEST": 0.00684469286352396,
+     "NEEDS_TIME": 0.011323973536491394,
+     "PAY_NOW": 0.0062255579978227615,
+     "PTP": 0.004395525902509689,
+     "STATEMENT_REQUEST": 0.006546517368406057,
+     "STOP": 0.03630049526691437,
+     "UNKNOWN": 0.23359273374080658,
+     "WRONG_NUMBER": 0.02854175679385662
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.026289554312825203,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.10043797641992569,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 604,
+   "output_tokens": 0
+  }
+ },
+ "9e41544f38179db1c173d4d3f99f86a5690d4f206b193d22028129b11b43278e": {
+  "answers": {
+   "abusive": {
+    "noul": 0.020858725532889366,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.5603923983871937,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.019581859931349754,
+     "1": 0.06856206059455872,
+     "2": 0.13973140716552734,
+     "3": 0.3157387673854828,
+     "4": 0.45638588070869446
+    },
+    "score": 3.1207846999168396,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.024082675576210022,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "ALREADY_PAID",
+    "confidence": 0.9020949602127075,
+    "probabilities": {
+     "ABUSIVE": 0.005157540552318096,
+     "ALREADY_PAID": 0.9078540802001953,
+     "BALANCE_QUERY": 0.0044249617494642735,
+     "CALLBACK": 0.0044511607848107815,
+     "DISPUTE": 0.005439184606075287,
+     "GREETING": 0.00444020563736558,
+     "HARDSHIP": 0.005246489774435759,
+     "HUMAN": 0.0047831288538873196,
+     "LANGUAGE_CHANGE": 0.00517167616635561,
+     "LINK_REQUEST": 0.004903042688965797,
+     "NEEDS_TIME": 0.004686062689870596,
+     "PAY_NOW": 0.011296819895505905,
+     "PTP": 0.005140276160091162,
+     "STATEMENT_REQUEST": 0.005455403123050928,
+     "STOP": 0.005913781002163887,
+     "UNKNOWN": 0.010142391547560692,
+     "WRONG_NUMBER": 0.005493798293173313
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.023888172581791878,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.029622063040733337,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 603,
+   "output_tokens": 0
+  }
+ },
+ "a0bc630407845cb6ce5dbf4445cded75ed1a0519926254c61e81c06a622da45c": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Agent cm03 flagged E-10035 as a fraud suspect under policy 1.1.1 at 2026-11-20T11:00:00+05:30, with reason REFERENCE_REUSED. The summary says the reference was already used for another account's payment. No borrower statement is recorded, and ticket TKT-4fa2b63c10 is in the COLLECTIONS_SUPERVISOR queue.",
+     "function_call": null,
+     "reasoning_content": "We need answer three sentences max, plain English, only facts. Need mention what happened, borrower said, pending. Facts: audit actor agent cm03, borrower E-10035, policy 1.1.1, reason FRAUD_SUSPECT, ts, type. queue supervisor, summary lines: CM-03 fraud suspect: REFERENCE_REUSED; reference already used for another account's payment. ticket id. No borrower statement given. Need say borrower said? We cannot invent. Could say no borrower statement is recorded. Pending? Queue COLLECTIONS_SUPERVISOR, ticket pending? Need not decide. Three sentences. Keep ids exact. Mention E-10035, TKT-4fa2b63c10, agent:cm03, policy 1.1.1 maybe. \"Agent cm03 flagged E-10035 as a fraud suspect under policy 1.1.1 at 2026-11-20T11:00:00+05:30, with reason REFERENCE_REUSED.\" \"The summary says the reference was already used for another account's payment.\" \"No borrower statement is recorded, and ticket TKT-4fa2b63c10 is in the COLLECTIONS_SUPERVISOR queue.\" That's three sentences. Does \"pending\" = queue. Good. No advice. Ensure no markdown. Final. ",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109878,
+  "id": "20261119_7735cd32-9ae9-4b63-b1f6-1bc4f7ebc729",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 379,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 286,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 325,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 256
+   },
+   "total_tokens": 704
+  }
+ },
+ "a11d0b13dcb76cd4d5f5faeedb56172f0e6cd48fdc71196ba81cb34a7e486693": {
+  "answers": {
+   "abusive": {
+    "noul": 0.029967982321977615,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.40421924527202335,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.05421895533800125,
+     "1": 0.09733804315328598,
+     "2": 0.22314925491809845,
+     "3": 0.3716829717159271,
+     "4": 0.25361084938049316
+    },
+    "score": 2.673128865659237,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "WRONG_PERSON",
+    "confidence": 0.9168299992879232,
+    "probabilities": {
+     "ABUSIVE": 0.0037994286976754665,
+     "ALREADY_PAID": 0.003878321498632431,
+     "CALLBACK_REQUESTED": 0.0035372916609048843,
+     "DISPUTE": 0.0035098178777843714,
+     "HARDSHIP": 0.0038522009272128344,
+     "HUMAN_REQUESTED": 0.0033898756373673677,
+     "LANGUAGE_BARRIER": 0.0033058524131774902,
+     "NEEDS_TIME_NO_DATE": 0.003380203852429986,
+     "NO_RESPONSE": 0.0033999187871813774,
+     "PARTIAL_PTP": 0.003954625688493252,
+     "PAY_NOW_LINK": 0.0038398257456719875,
+     "PTP": 0.0038459384813904762,
+     "REFUSED_TO_PAY": 0.0031719631515443325,
+     "STOP_REQUESTED": 0.0036616679280996323,
+     "THIRD_PARTY": 0.02744499407708645,
+     "WRONG_PERSON": 0.922028124332428
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.026052139699459076,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.026303621008992195,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.09956866502761841,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 587,
+   "output_tokens": 0
+  }
+ },
+ "a1c6217360944c831b3493dd1170e09b0a587dc74e14c1bc3da1ac1c79be0e22": {
+  "answers": {
+   "abusive": {
+    "noul": 0.022336196154356003,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.25085309272011136,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.055472295731306076,
+     "1": 0.19016674160957336,
+     "2": 0.31945735216140747,
+     "3": 0.2719423472881317,
+     "4": 0.16296130418777466
+    },
+    "score": 2.296753704547882,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.02688334882259369,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "NEEDS_TIME",
+    "confidence": 0.8388679996132851,
+    "probabilities": {
+     "ABUSIVE": 0.004342422820627689,
+     "ALREADY_PAID": 0.004609173163771629,
+     "BALANCE_QUERY": 0.0040373895317316055,
+     "CALLBACK": 0.010338112711906433,
+     "DISPUTE": 0.0052020191214978695,
+     "GREETING": 0.0055768657475709915,
+     "HARDSHIP": 0.0058182114735245705,
+     "HUMAN": 0.0045336829498410225,
+     "LANGUAGE_CHANGE": 0.004611811134964228,
+     "LINK_REQUEST": 0.0053916918113827705,
+     "NEEDS_TIME": 0.8483463525772095,
+     "PAY_NOW": 0.0057558706030249596,
+     "PTP": 0.005481698550283909,
+     "STATEMENT_REQUEST": 0.004484421107918024,
+     "STOP": 0.004312592558562756,
+     "UNKNOWN": 0.07195891439914703,
+     "WRONG_NUMBER": 0.005198864731937647
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.02543468214571476,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.023520752787590027,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 604,
+   "output_tokens": 0
+  }
+ },
+ "a78312c72ab30f458cbe8b18e1e06ea40484cfa6a390dd890dd4fdb0a8c381f9": {
+  "answers": {
+   "abusive": {
+    "noul": 0.05298833176493645,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.46588691723133846,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.02479899488389492,
+     "1": 0.07882847636938095,
+     "2": 0.19758598506450653,
+     "3": 0.38066813349723816,
+     "4": 0.3181183934211731
+    },
+    "score": 2.888478420674801,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "REFUSED_TO_PAY",
+    "confidence": 0.9202711105346679,
+    "probabilities": {
+     "ABUSIVE": 0.004545384552329779,
+     "ALREADY_PAID": 0.004529478028416634,
+     "CALLBACK_REQUESTED": 0.004832956939935684,
+     "DISPUTE": 0.004606540780514479,
+     "HARDSHIP": 0.005047805607318878,
+     "HUMAN_REQUESTED": 0.004135400056838989,
+     "LANGUAGE_BARRIER": 0.004533073399215937,
+     "NEEDS_TIME_NO_DATE": 0.004339801613241434,
+     "NO_RESPONSE": 0.007130342070013285,
+     "PARTIAL_PTP": 0.004887743853032589,
+     "PAY_NOW_LINK": 0.004555644001811743,
+     "PTP": 0.004769641440361738,
+     "REFUSED_TO_PAY": 0.9252541661262512,
+     "STOP_REQUESTED": 0.007683343254029751,
+     "THIRD_PARTY": 0.004590524360537529,
+     "WRONG_PERSON": 0.004558146931231022
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.03165113553404808,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.02630273997783661,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.08348290622234344,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 583,
+   "output_tokens": 0
+  }
+ },
+ "acf0d9908ee9d7c348d7b5fbd6d270f44bd578c55cc4785a311d330dbed0c6f9": {
+  "answers": {
+   "abusive": {
+    "noul": 0.023870835080742836,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.20616958290338527,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.07441939413547516,
+     "1": 0.21544481813907623,
+     "2": 0.28265509009361267,
+     "3": 0.26664844155311584,
+     "4": 0.1608322262763977
+    },
+    "score": 2.22402922809124,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.027078332379460335,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "STATEMENT_REQUEST",
+    "confidence": 0.8768550045788288,
+    "probabilities": {
+     "ABUSIVE": 0.005212174728512764,
+     "ALREADY_PAID": 0.007019769866019487,
+     "BALANCE_QUERY": 0.004457154776901007,
+     "CALLBACK": 0.004936802666634321,
+     "DISPUTE": 0.005858752876520157,
+     "GREETING": 0.0058102780021727085,
+     "HARDSHIP": 0.005668585654348135,
+     "HUMAN": 0.004807563498616219,
+     "LANGUAGE_CHANGE": 0.005287392530590296,
+     "LINK_REQUEST": 0.0053090183064341545,
+     "NEEDS_TIME": 0.0055434443056583405,
+     "PAY_NOW": 0.004860468674451113,
+     "PTP": 0.005136772990226746,
+     "STATEMENT_REQUEST": 0.8840988278388977,
+     "STOP": 0.005255840718746185,
+     "UNKNOWN": 0.03425774723291397,
+     "WRONG_NUMBER": 0.006479361094534397
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.02828015573322773,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.04576927796006203,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 603,
+   "output_tokens": 0
+  }
+ },
+ "b0b9b58cfac4a3f4ce955ed2879900d46d0d6822864ad14b2c28ced91a23c080": {
+  "answers": {
+   "abusive": {
+    "noul": 0.02538621984422207,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.16341382265090942,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.24423059821128845,
+     "1": 0.23348605632781982,
+     "2": 0.23240193724632263,
+     "3": 0.1846434772014618,
+     "4": 0.10523799806833267
+    },
+    "score": 1.6731723546981812,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "CALLBACK_REQUESTED",
+    "confidence": 0.9081343332926433,
+    "probabilities": {
+     "ABUSIVE": 0.006113178562372923,
+     "ALREADY_PAID": 0.006292103789746761,
+     "CALLBACK_REQUESTED": 0.913875937461853,
+     "DISPUTE": 0.006072852294892073,
+     "HARDSHIP": 0.005747939459979534,
+     "HUMAN_REQUESTED": 0.0053165629506111145,
+     "LANGUAGE_BARRIER": 0.00530222337692976,
+     "NEEDS_TIME_NO_DATE": 0.005477007478475571,
+     "NO_RESPONSE": 0.005187326576560736,
+     "PARTIAL_PTP": 0.0060936096124351025,
+     "PAY_NOW_LINK": 0.0056287068873643875,
+     "PTP": 0.005796193610876799,
+     "REFUSED_TO_PAY": 0.005550845991820097,
+     "STOP_REQUESTED": 0.006061823572963476,
+     "THIRD_PARTY": 0.005686730612069368,
+     "WRONG_PERSON": 0.005797000601887703
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.039407432079315186,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.024605168029665947,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.019170604646205902,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 586,
+   "output_tokens": 0
+  }
+ },
+ "b289713c722e0ec6398a00a2b9d17dc2020b5eb197d208bc661d55e20552f363": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Thanks, you are verified.",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109823,
+  "ec_transfer_params": null,
+  "id": "20261119_e6fbd105-6548-4ff4-a22a-ed18c7987313",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 7,
+   "completion_tokens_details": null,
+   "prompt_tokens": 202,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 96,
+    "created_cache_tokens": 96,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 209
+  }
+ },
+ "b6abe65a6c17aab0ff7572503bc2634307632fe84d443e9925d03515056a1624": {
+  "answers": {
+   "abusive": {
+    "noul": 0.027557259425520897,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.5671716372349433,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.011074667796492577,
+     "1": 0.04142836108803749,
+     "2": 0.22357720136642456,
+     "3": 0.45761802792549133,
+     "4": 0.2663017809391022
+    },
+    "score": 2.9266439713537693,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "PTP",
+    "confidence": 0.8772228240966797,
+    "probabilities": {
+     "ABUSIVE": 0.005324846133589745,
+     "ALREADY_PAID": 0.0064121331088244915,
+     "CALLBACK_REQUESTED": 0.005889066960662603,
+     "DISPUTE": 0.006068859715014696,
+     "HARDSHIP": 0.005838447250425816,
+     "HUMAN_REQUESTED": 0.005733718164265156,
+     "LANGUAGE_BARRIER": 0.005743557587265968,
+     "NEEDS_TIME_NO_DATE": 0.0056512560695409775,
+     "NO_RESPONSE": 0.005610337480902672,
+     "PARTIAL_PTP": 0.03452588990330696,
+     "PAY_NOW_LINK": 0.004758027382194996,
+     "PTP": 0.8848963975906372,
+     "REFUSED_TO_PAY": 0.006263297516852617,
+     "STOP_REQUESTED": 0.005883778911083937,
+     "THIRD_PARTY": 0.005633574444800615,
+     "WRONG_PERSON": 0.0057668182998895645
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.04600090906023979,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.02477451041340828,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.02184828743338585,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 587,
+   "output_tokens": 0
+  }
+ },
+ "b7163092206c45a154b84f30e5424e0241a8c446c129cc94e8a9ff1e4dc1642f": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "I just want to make sure you get the right help, so I have passed this to a member of our team. They will get back to you.",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109827,
+  "ec_transfer_params": null,
+  "id": "20261119_26813183-007b-4bda-aff6-b87528262d5b",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 32,
+   "completion_tokens_details": null,
+   "prompt_tokens": 225,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 96,
+    "created_cache_tokens": 128,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 257
+  }
+ },
+ "b9bc0172cbc6b89afcc6a83342f34a81bb4d0d7203af3271053f382864350cec": {
+  "answers": {
+   "abusive": {
+    "noul": 0.028379807248711586,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.3472358052219664,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.07177084684371948,
+     "1": 0.11602724343538284,
+     "2": 0.2501286566257477,
+     "3": 0.3456990122795105,
+     "4": 0.21637418866157532
+    },
+    "score": 2.518878348171711,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "PTP",
+    "confidence": 0.8402797063191731,
+    "probabilities": {
+     "ABUSIVE": 0.004503781907260418,
+     "ALREADY_PAID": 0.0055374219082295895,
+     "CALLBACK_REQUESTED": 0.005938657559454441,
+     "DISPUTE": 0.004731154069304466,
+     "HARDSHIP": 0.006094046868383884,
+     "HUMAN_REQUESTED": 0.005149488337337971,
+     "LANGUAGE_BARRIER": 0.00489080511033535,
+     "NEEDS_TIME_NO_DATE": 0.005706925876438618,
+     "NO_RESPONSE": 0.0055346982553601265,
+     "PARTIAL_PTP": 0.07284057885408401,
+     "PAY_NOW_LINK": 0.006563596893101931,
+     "PTP": 0.8502622246742249,
+     "REFUSED_TO_PAY": 0.005620205774903297,
+     "STOP_REQUESTED": 0.005145580042153597,
+     "THIRD_PARTY": 0.006106915418058634,
+     "WRONG_PERSON": 0.005373937077820301
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.05115138366818428,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.02653379924595356,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.02512192912399769,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 583,
+   "output_tokens": 0
+  }
+ },
+ "bebe8d8cc5383ae575146873b8fbfa5733a7df600d68b78f4e65a22122007982": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Borrower E-10005 raised a dispute on WhatsApp, creating ticket TKT-bd25bd2b93 on 2026-11-20T11:00:00+05:30. The dispute was logged as an exception dispute by agent:conversation under policy 1.1.1. The ticket is in the COLLECTIONS_SUPERVISOR queue with K13 routed exception noted as acknowledge, no commitment.",
+     "function_call": null,
+     "reasoning_content": "We need answer as short plain English note for loan-collections operators. Use only facts. Three sentences max: what happened, what borrower said, what pending. Need include ids exactly. Facts: ticket TKT-bd25bd2b93, borrower E-10005, type DISPUTE, queue COLLECTIONS_SUPERVISOR, created 2026-11-20T11:00:00+05:30, audit actor agent:conversation reason CREATE_TICKET type EXCEPTION_DISPUTE policy 1.1.1. summary line 1 WhatsApp borrower raised dispute. summary line2 K13 routed exception: acknowledge, no commitment. Need what borrower said? Only \"raised dispute\" via WhatsApp. No details. Pending: routed to collections supervisor? \"K13 routed exception: acknowledge, no commitment\" pending acknowledgement? Need be careful. Three sentences: \"Borrower E-10005 raised a dispute on WhatsApp, creating ticket TKT-bd25bd2b93 on 2026-11-20T11:00:00+05:30.\" \"The borrower's dispute was logged as an exception dispute by agent:conversation under policy 1.1.1.\" \"The ticket is in COLLECTIONS_SUPERVISOR queue with K13 routed exception noted as acknowledge, no commitment.\" That's three. But \"what borrower said\" only raised dispute. Good. No advice. Keep ids exact. No markdown. Final. ",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109869,
+  "id": "20261119_89210c99-02c3-4cb7-ac9e-b11edeec1cff",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 402,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 309,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 314,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 256
+   },
+   "total_tokens": 716
+  }
+ },
+ "c075244d7852a70038f9c2cbf1586bad9ef56978f183333db983eea6d3b8a0d0": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "ताकि आपको सही मदद मिल सके, मैंने यह हमारी टीम के सदस्य को भेज दिया है। वे आपसे संपर्क करेंगे।",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109831,
+  "ec_transfer_params": null,
+  "id": "20261119_c74a6830-a3c0-411c-95f8-e20f1ba3aca5",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 25,
+   "completion_tokens_details": null,
+   "prompt_tokens": 223,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 128,
+    "created_cache_tokens": 64,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 248
+  }
+ },
+ "c0fbcc62fd8359d7c95923eb0f2238aa1067fdfbcdfb972b0da66d902c2b5f5f": {
+  "answers": {
+   "abusive": {
+    "noul": 0.022515831515192986,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.450032672445689,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.021285368129611015,
+     "1": 0.09421328455209732,
+     "2": 0.2715233266353607,
+     "3": 0.3668297827243805,
+     "4": 0.2461482584476471
+    },
+    "score": 2.7223423197865486,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.661811888217926,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "NEEDS_TIME",
+    "confidence": 0.5871278345584869,
+    "probabilities": {
+     "ABUSIVE": 0.0031035100109875202,
+     "ALREADY_PAID": 0.003933904692530632,
+     "BALANCE_QUERY": 0.0026767405215650797,
+     "CALLBACK": 0.0056119756773114204,
+     "DISPUTE": 0.0035196365788578987,
+     "GREETING": 0.0035341130569577217,
+     "HARDSHIP": 0.326174795627594,
+     "HUMAN": 0.003219442907720804,
+     "LANGUAGE_CHANGE": 0.0031650110613554716,
+     "LINK_REQUEST": 0.0032409571576863527,
+     "NEEDS_TIME": 0.6114144325256348,
+     "PAY_NOW": 0.004980173427611589,
+     "PTP": 0.003878000658005476,
+     "STATEMENT_REQUEST": 0.0027158865705132484,
+     "STOP": 0.002945189829915762,
+     "UNKNOWN": 0.0122067267075181,
+     "WRONG_NUMBER": 0.003679468994960189
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.02584993839263916,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.02122204191982746,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 605,
+   "output_tokens": 0
+  }
+ },
+ "c27ae79708dd4cee734893ff202c7c1910dbfa7064befd345a92e706d65bb79a": {
+  "answers": {
+   "abusive": {
+    "noul": 0.028556954115629196,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.5066849368491344,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.019639233127236366,
+     "1": 0.06552500277757645,
+     "2": 0.27836325764656067,
+     "3": 0.41416236758232117,
+     "4": 0.2223101258277893
+    },
+    "score": 2.7539791241288185,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "PARTIAL_PTP",
+    "confidence": 0.9022535959879557,
+    "probabilities": {
+     "ABUSIVE": 0.005863789934664965,
+     "ALREADY_PAID": 0.006045364309102297,
+     "CALLBACK_REQUESTED": 0.0068623460829257965,
+     "DISPUTE": 0.006123342551290989,
+     "HARDSHIP": 0.005773364566266537,
+     "HUMAN_REQUESTED": 0.0055171954445540905,
+     "LANGUAGE_BARRIER": 0.005997009575366974,
+     "NEEDS_TIME_NO_DATE": 0.004470459185540676,
+     "NO_RESPONSE": 0.005860127974301577,
+     "PARTIAL_PTP": 0.9083627462387085,
+     "PAY_NOW_LINK": 0.004840065725147724,
+     "PTP": 0.010201772674918175,
+     "REFUSED_TO_PAY": 0.005716860760003328,
+     "STOP_REQUESTED": 0.006050226744264364,
+     "THIRD_PARTY": 0.005929301492869854,
+     "WRONG_PERSON": 0.006385963410139084
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.05819783732295036,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.02607765793800354,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.022321995347738266,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 591,
+   "output_tokens": 0
+  }
+ },
+ "c46d25a0b8b22132a9fcb123a5f1e69059f045b3d61f61f60a1f4d9262958c00": {
+  "answers": {
+   "abusive": {
+    "noul": 0.05462522804737091,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.5208237171173096,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.018016036599874496,
+     "1": 0.05349947512149811,
+     "2": 0.17782600224018097,
+     "3": 0.3701379895210266,
+     "4": 0.3805204927921295
+    },
+    "score": 3.041647419333458,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "STOP_REQUESTED",
+    "confidence": 0.9198846181233724,
+    "probabilities": {
+     "ABUSIVE": 0.004845561925321817,
+     "ALREADY_PAID": 0.004744685720652342,
+     "CALLBACK_REQUESTED": 0.0056286961771547794,
+     "DISPUTE": 0.004705248400568962,
+     "HARDSHIP": 0.004909454379230738,
+     "HUMAN_REQUESTED": 0.0046504042111337185,
+     "LANGUAGE_BARRIER": 0.005087781231850386,
+     "NEEDS_TIME_NO_DATE": 0.00488844932988286,
+     "NO_RESPONSE": 0.004462237935513258,
+     "PARTIAL_PTP": 0.005421247333288193,
+     "PAY_NOW_LINK": 0.0054557896219193935,
+     "PTP": 0.0055158487521111965,
+     "REFUSED_TO_PAY": 0.004662100691348314,
+     "STOP_REQUESTED": 0.9248918294906616,
+     "THIRD_PARTY": 0.004945874679833651,
+     "WRONG_PERSON": 0.005184844136238098
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.04464457184076309,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.026239506900310516,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.9781981706619263,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 583,
+   "output_tokens": 0
+  }
+ },
+ "c708ea065f1a065c3d9e52ec1656daa2012d3bbc538709e7f6b943ceece3a881": {
+  "answers": {
+   "abusive": {
+    "noul": 0.03215004876255989,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.369520377367735,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.037512604147195816,
+     "1": 0.13128294050693512,
+     "2": 0.4016648828983307,
+     "3": 0.30881181359291077,
+     "4": 0.1207277923822403
+    },
+    "score": 2.34395931661129,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "HARDSHIP",
+    "confidence": 0.9369907379150391,
+    "probabilities": {
+     "ABUSIVE": 0.003698777873069048,
+     "ALREADY_PAID": 0.003751911921426654,
+     "CALLBACK_REQUESTED": 0.004695659037679434,
+     "DISPUTE": 0.004005317110568285,
+     "HARDSHIP": 0.9409288167953491,
+     "HUMAN_REQUESTED": 0.0036428228486329317,
+     "LANGUAGE_BARRIER": 0.004062087740749121,
+     "NEEDS_TIME_NO_DATE": 0.005018678959459066,
+     "NO_RESPONSE": 0.003570906352251768,
+     "PARTIAL_PTP": 0.003823263570666313,
+     "PAY_NOW_LINK": 0.0033885808661580086,
+     "PTP": 0.003920228220522404,
+     "REFUSED_TO_PAY": 0.0037816704716533422,
+     "STOP_REQUESTED": 0.003592404769733548,
+     "THIRD_PARTY": 0.004168740939348936,
+     "WRONG_PERSON": 0.003950108308345079
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.9805763363838196,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.029009142890572548,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.04665262624621391,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 587,
+   "output_tokens": 0
+  }
+ },
+ "c71bbe806d74f15520d30232425fa268a1ad9aa05fe75e8ea17b9935d469a58d": {
+  "answers": {
+   "abusive": {
+    "noul": 0.02298148162662983,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.19974199363163547,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.07554346323013306,
+     "1": 0.2228882908821106,
+     "2": 0.24216824769973755,
+     "3": 0.25361400842666626,
+     "4": 0.20578598976135254
+    },
+    "score": 2.2912107706069946,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.03470653295516968,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "NEEDS_TIME",
+    "confidence": 0.797779031097889,
+    "probabilities": {
+     "ABUSIVE": 0.006116774398833513,
+     "ALREADY_PAID": 0.005915433634072542,
+     "BALANCE_QUERY": 0.00536017632111907,
+     "CALLBACK": 0.019801534712314606,
+     "DISPUTE": 0.006512117106467485,
+     "GREETING": 0.008183431811630726,
+     "HARDSHIP": 0.007826309651136398,
+     "HUMAN": 0.006405631545931101,
+     "LANGUAGE_CHANGE": 0.005624556448310614,
+     "LINK_REQUEST": 0.007710325066000223,
+     "NEEDS_TIME": 0.8096743822097778,
+     "PAY_NOW": 0.008040041662752628,
+     "PTP": 0.009090565145015717,
+     "STATEMENT_REQUEST": 0.005633274558931589,
+     "STOP": 0.006054466590285301,
+     "UNKNOWN": 0.07486917078495026,
+     "WRONG_NUMBER": 0.007181852590292692
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.029208967462182045,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.026879556477069855,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 601,
+   "output_tokens": 0
+  }
+ },
+ "ccdafa440937ec999ca6779dfd029fc2e9b78979f6441aff3b4c40be07d4cc1f": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Hi, I'm Kaira, the virtual assistant of Kairos Demo Finance. To keep your account safe, I've sent a 6-digit code to your registered WhatsApp number. Just reply with that code to go ahead.",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109823,
+  "ec_transfer_params": null,
+  "id": "20261119_932eda8a-c353-4e18-9d35-410761453154",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 49,
+   "completion_tokens_details": null,
+   "prompt_tokens": 247,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 96,
+    "created_cache_tokens": 128,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 296
+  }
+ },
+ "cd2f233e2015f89128e297b34801646166c14f6741dc6c9199e9a5258fc7c088": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "अपने रजिस्टर्ड WhatsApp नंबर पर आया 6 अंकों का कोड डालिए। नया कोड मंगाने के लिए RESEND लिख दें।",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109828,
+  "ec_transfer_params": null,
+  "id": "20261119_d516de74-86bd-44ac-bb84-34a545ed74cf",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 28,
+   "completion_tokens_details": null,
+   "prompt_tokens": 232,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 128,
+    "created_cache_tokens": 96,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 260
+  }
+ },
+ "cf7a89ea657ffce12c468bbb3cb3c968fca76b5299650abb23f6971214c87fe4": {
+  "answers": {
+   "abusive": {
+    "noul": 0.028124168515205383,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.29580220952630054,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.05413096770644188,
+     "1": 0.13394682109355927,
+     "2": 0.3505869209766388,
+     "3": 0.31984198093414307,
+     "4": 0.1414933055639267
+    },
+    "score": 2.360619828104973,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "NEEDS_TIME_NO_DATE",
+    "confidence": 0.5918643315633138,
+    "probabilities": {
+     "ABUSIVE": 0.00293626356869936,
+     "ALREADY_PAID": 0.0032104933634400368,
+     "CALLBACK_REQUESTED": 0.11319968849420547,
+     "DISPUTE": 0.002916526747867465,
+     "HARDSHIP": 0.16315998136997223,
+     "HUMAN_REQUESTED": 0.004239508882164955,
+     "LANGUAGE_BARRIER": 0.00333792669698596,
+     "NEEDS_TIME_NO_DATE": 0.6173728108406067,
+     "NO_RESPONSE": 0.003967244178056717,
+     "PARTIAL_PTP": 0.010831335559487343,
+     "PAY_NOW_LINK": 0.004900013096630573,
+     "PTP": 0.051918018609285355,
+     "REFUSED_TO_PAY": 0.007507055066525936,
+     "STOP_REQUESTED": 0.003317893948405981,
+     "THIRD_PARTY": 0.0040718731470406055,
+     "WRONG_PERSON": 0.0031134269665926695
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.4080224335193634,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.026621093973517418,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.02506495825946331,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 586,
+   "output_tokens": 0
+  }
+ },
+ "d1562eed5afb93a503513ce56284e4c6a5b6236d5cebf73b11ffea1fbcd0239f": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Kindly share the 6-digit code sent to your registered WhatsApp number. If you need another one, just reply RESEND.",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109823,
+  "ec_transfer_params": null,
+  "id": "20261119_667b8b5c-64c5-458f-b2e3-d4111e905c4a",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 27,
+   "completion_tokens_details": null,
+   "prompt_tokens": 225,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 96,
+    "created_cache_tokens": 128,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 252
+  }
+ },
+ "d7528c3c60f8180ba2d29eb7f4b185fe7b2be69650c43561cee148f558f9e468": {
+  "answers": {
+   "abusive": {
+    "noul": 0.022770358249545097,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.5755966100841761,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.4563232660293579,
+     "1": 0.35513827204704285,
+     "2": 0.1037382259964943,
+     "3": 0.05300896242260933,
+     "4": 0.03179129213094711
+    },
+    "score": 0.8488067798316479,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.03955281525850296,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "UNKNOWN",
+    "confidence": 0.7875793017446995,
+    "probabilities": {
+     "ABUSIVE": 0.0056719230487942696,
+     "ALREADY_PAID": 0.009435161016881466,
+     "BALANCE_QUERY": 0.009022622369229794,
+     "CALLBACK": 0.011286895722150803,
+     "DISPUTE": 0.00700255436822772,
+     "GREETING": 0.03970260173082352,
+     "HARDSHIP": 0.00817196350544691,
+     "HUMAN": 0.008090139366686344,
+     "LANGUAGE_CHANGE": 0.005932820029556751,
+     "LINK_REQUEST": 0.012871760874986649,
+     "NEEDS_TIME": 0.032858286052942276,
+     "PAY_NOW": 0.01630423776805401,
+     "PTP": 0.00783928856253624,
+     "STATEMENT_REQUEST": 0.009243248961865902,
+     "STOP": 0.007964683696627617,
+     "UNKNOWN": 0.8000746369361877,
+     "WRONG_NUMBER": 0.0085272416472435
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.0255298875272274,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.02635682374238968,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 600,
+   "output_tokens": 0
+  }
+ },
+ "d85045388cafeb9219b7b5965c64dc6d578e7a05ed50027921855f2135fe545e": {
+  "answers": {
+   "abusive": {
+    "noul": 0.027263257652521133,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.3547155016234943,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.04335419088602066,
+     "1": 0.14612028002738953,
+     "2": 0.2783834934234619,
+     "3": 0.32943037152290344,
+     "4": 0.20271167159080505
+    },
+    "score": 2.502025067806244,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.08894570916891098,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "ALREADY_PAID",
+    "confidence": 0.8780289515852928,
+    "probabilities": {
+     "ABUSIVE": 0.005422966554760933,
+     "ALREADY_PAID": 0.8852037191390991,
+     "BALANCE_QUERY": 0.003774981712922454,
+     "CALLBACK": 0.005285413935780525,
+     "DISPUTE": 0.006129550747573376,
+     "GREETING": 0.0056162369437515736,
+     "HARDSHIP": 0.006006295792758465,
+     "HUMAN": 0.004637341480702162,
+     "LANGUAGE_CHANGE": 0.004714755807071924,
+     "LINK_REQUEST": 0.0063619669526815414,
+     "NEEDS_TIME": 0.007822278887033463,
+     "PAY_NOW": 0.014087907038629055,
+     "PTP": 0.008114050142467022,
+     "STATEMENT_REQUEST": 0.005609214771538973,
+     "STOP": 0.00408967724069953,
+     "UNKNOWN": 0.021189717575907707,
+     "WRONG_NUMBER": 0.00593394273892045
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.026624208316206932,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.021808335557579994,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 610,
+   "output_tokens": 0
+  }
+ },
+ "dad0f9d2526f763049f42cd03e25863315b5f1ba44759a381a712a3e5b7faae3": {
+  "answers": {
+   "abusive": {
+    "noul": 0.03177260607481003,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.2901231497526169,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.30956798791885376,
+     "1": 0.2363024353981018,
+     "2": 0.2392028272151947,
+     "3": 0.15466146171092987,
+     "4": 0.06026530638337135
+    },
+    "score": 1.4197537004947662,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "HUMAN_REQUESTED",
+    "confidence": 0.9183908462524414,
+    "probabilities": {
+     "ABUSIVE": 0.005481412634253502,
+     "ALREADY_PAID": 0.0052276477217674255,
+     "CALLBACK_REQUESTED": 0.005766987334936857,
+     "DISPUTE": 0.004823445342481136,
+     "HARDSHIP": 0.005133443977683783,
+     "HUMAN_REQUESTED": 0.9234914183616638,
+     "LANGUAGE_BARRIER": 0.004759128671139479,
+     "NEEDS_TIME_NO_DATE": 0.005107484757900238,
+     "NO_RESPONSE": 0.00453991862013936,
+     "PARTIAL_PTP": 0.005239467136561871,
+     "PAY_NOW_LINK": 0.00509043550118804,
+     "PTP": 0.00504548754543066,
+     "REFUSED_TO_PAY": 0.004631271585822105,
+     "STOP_REQUESTED": 0.0048391385935246944,
+     "THIRD_PARTY": 0.005472575314342976,
+     "WRONG_PERSON": 0.005350699182599783
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.03455604240298271,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.023986972868442535,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.028711332008242607,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 587,
+   "output_tokens": 0
+  }
+ },
+ "ddaa66ece49b77388869f979609d86aa7704bed66949b85a0da58bbe5fbeafb7": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Mujhe aapki situation ke baare mein sunkar khed hai, aur humein batane ke liye shukriya. Maine abhi ke liye reminders rok diye hain, aur humari team ka ek member aapse contact karega taaki jo options available hain un par baat kar sakein.",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109830,
+  "ec_transfer_params": null,
+  "id": "20261119_dc5d4a1b-f1be-475a-b504-2c750b27b6b9",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 62,
+   "completion_tokens_details": null,
+   "prompt_tokens": 247,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 128,
+    "created_cache_tokens": 96,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 309
+  }
+ },
+ "de2acdcb2a1e145d26b66112c9dfb33dc4f852ffe64b83b339286e4424d71db3": {
+  "answers": {
+   "abusive": {
+    "noul": 0.02256474457681179,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.2803151799099787,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.06696730852127075,
+     "1": 0.1611827164888382,
+     "2": 0.2122751921415329,
+     "3": 0.28755855560302734,
+     "4": 0.2720161974430084
+    },
+    "score": 2.5364735573530197,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.022153660655021667,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "WRONG_NUMBER",
+    "confidence": 0.7328933328390121,
+    "probabilities": {
+     "ABUSIVE": 0.0046487594954669476,
+     "ALREADY_PAID": 0.005268619395792484,
+     "BALANCE_QUERY": 0.003899029456079006,
+     "CALLBACK": 0.0053200386464595795,
+     "DISPUTE": 0.08810803294181824,
+     "GREETING": 0.005583695601671934,
+     "HARDSHIP": 0.00515832519158721,
+     "HUMAN": 0.00804834719747305,
+     "LANGUAGE_CHANGE": 0.0041561671532690525,
+     "LINK_REQUEST": 0.004192505497485399,
+     "NEEDS_TIME": 0.004573266953229904,
+     "PAY_NOW": 0.003983096219599247,
+     "PTP": 0.003537372685968876,
+     "STATEMENT_REQUEST": 0.004915278870612383,
+     "STOP": 0.007420710287988186,
+     "UNKNOWN": 0.09258120507001877,
+     "WRONG_NUMBER": 0.748605489730835
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.025359051302075386,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.07054058462381363,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 609,
+   "output_tokens": 0
+  }
+ },
+ "e04a11131ba7a64bb8853f427cbce620798f3006d7013006cf1b5846f3f1510f": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Kya main kisi aur cheez mein aapki help kar sakta hoon?",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109826,
+  "ec_transfer_params": null,
+  "id": "20261119_06f29675-9f5d-4dda-bd5d-29488096b3e6",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 15,
+   "completion_tokens_details": null,
+   "prompt_tokens": 216,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 128,
+    "created_cache_tokens": 64,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 231
+  }
+ },
+ "e21af04135ee4a428b3fcdae8c20be1b90db606f0b19f5710ba4573aae0a8525": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "The latest decision was a SEND_TIME_CHECK by the executor for borrower BRW-[account] on instruction INS-bcdf27d47a167fe8 at 2026-11-28T15:00:00+05:30. It recorded decision SEND with reason ELIGIBLE under policy version 1.1.1. The cited rule was ALL_PASSED. That rule is why the latest decision happened.",
+     "function_call": null,
+     "reasoning_content": "We need answer short plain English, max four sentences, only facts. Explain why latest decision happened citing rule. Latest decision is executor SEND_TIME_CHECK at 2026-11-28T15:00, decision SEND, reason ELIGIBLE, rule ALL_PASSED, policy 1.1.1, instruction id. Need mention latest decision happened because rule ALL_PASSED and reason ELIGIBLE. Keep ids exact. No advice. Could say: The latest decision was a SEND_TIME_CHECK by the executor for borrower BRW-[account] on instruction INS-bcdf27d47a167fe8 at 2026-11-28T15:00:00+05:30. It recorded decision SEND with reason ELIGIBLE under policy version 1.1.1. The cited rule was ALL_PASSED. That is why the latest decision happened. Four sentences. Ensure no markdown. Good.",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109853,
+  "id": "20261119_fad0b135-4276-41a1-8630-ca367c116b69",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 285,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 196,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 1047,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 1024
+   },
+   "total_tokens": 1332
+  }
+ },
+ "e25ba818a225785047d35899a54cb5b8d94ea46329b47a47935066105a4bda48": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Sorry to hear about your situation, and thank you for telling us. I have paused reminders for now, and a member of our team will reach out to discuss the options available to you with [lender name].",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109824,
+  "ec_transfer_params": null,
+  "id": "20261119_f6310edb-9eef-41d7-9f72-159627cbf3cb",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 44,
+   "completion_tokens_details": null,
+   "prompt_tokens": 235,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 96,
+    "created_cache_tokens": 128,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 279
+  }
+ },
+ "e32b069b5bd271af398ec0624ac6b02ba0fc04dfbf2c7eb0bf4173df530bbd7d": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Thanks for reaching out to Kairos Demo Finance. Have a great day!",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109826,
+  "ec_transfer_params": null,
+  "id": "20261119_5787f115-ef72-474e-8ae7-140e240b7d9d",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 16,
+   "completion_tokens_details": null,
+   "prompt_tokens": 214,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 96,
+    "created_cache_tokens": 96,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 230
+  }
+ },
+ "e3ad14c15622782ca056224f3261fee78ae57ba271c5448544411b11c1ab3954": {
+  "answers": {
+   "abusive": {
+    "noul": 0.027684813365340233,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.25352755934000026,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.10203643888235092,
+     "1": 0.19805064797401428,
+     "2": 0.31468307971954346,
+     "3": 0.2768162786960602,
+     "4": 0.10841356217861176
+    },
+    "score": 2.0915198922157288,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "THIRD_PARTY",
+    "confidence": 0.9065643310546875,
+    "probabilities": {
+     "ABUSIVE": 0.004911233205348253,
+     "ALREADY_PAID": 0.005119738634675741,
+     "CALLBACK_REQUESTED": 0.016561144962906837,
+     "DISPUTE": 0.005148056894540787,
+     "HARDSHIP": 0.004869761411100626,
+     "HUMAN_REQUESTED": 0.004638647194951773,
+     "LANGUAGE_BARRIER": 0.004200143273919821,
+     "NEEDS_TIME_NO_DATE": 0.005578908603638411,
+     "NO_RESPONSE": 0.005121896974742413,
+     "PARTIAL_PTP": 0.005178537219762802,
+     "PAY_NOW_LINK": 0.0049435910768806934,
+     "PTP": 0.005150365177541971,
+     "REFUSED_TO_PAY": 0.004482582211494446,
+     "STOP_REQUESTED": 0.004721122793853283,
+     "THIRD_PARTY": 0.9124040603637695,
+     "WRONG_PERSON": 0.006970211397856474
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.031125878915190697,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.023922622203826904,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.027928808704018593,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 587,
+   "output_tokens": 0
+  }
+ },
+ "e45aa82e8786519d830cde352598982c7022d952c7efd9fda45875da0228b087": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "For SIMULATED campaign CMP-JOURNEY on 2026-11-28, the PRE_DUE SMS segment recorded 1 attempt, 0 cap breaches, 0 meaningful replies and INR 0.25 committed spend. Totals show reach 1, 0 responders, 0 meaningful replies, 0.0 replies per INR 1,000 and INR 0.25 committed spend. Totals also show 1 verified payment and INR 11,012.0 verified.",
+     "function_call": null,
+     "reasoning_content": "We need answer one paragraph max four sentences, plain English, only facts. Mention SIMULATED. Include ids exactly. Daily ops report. Facts: campaign CMP-JOURNEY, day 2026-11-28, simulated. One segment PRE_DUE sms, 1 attempt, 0 cap breaches, 0 meaningful replies, spend 0.25 INR. Totals attempts 1, cap breaches 0, meaningful replies 0, reach 1, replies per 1000 INR 0.0, responders 0, spend 0.25, verified INR 11012.0, verified payments 1. Need no advice. One paragraph. Ensure not invent. Could say \"For SIMULATED campaign CMP-JOURNEY on 2026-11-28, the PRE_DUE SMS segment recorded 1 attempt, 0 cap breaches, 0 meaningful replies and INR 0.25 committed spend. Totals show reach 1, 0 responders, 0 meaningful replies, 0.0 replies per INR 1,000 and INR 0.25 committed spend. Totals also show 1 verified payment and INR 11,012.0 verified.\" That's 3 sentences. Good. Mention SIMULATED. No markdown.",
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    }
+   }
+  ],
+  "created": 1795109850,
+  "id": "20261119_d1c8540d-24f1-4dc4-b19c-3fa4d71f1d77",
+  "model": "deepseekv4.1-flash-1017",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": null,
+  "usage": {
+   "completion_tokens": 368,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 268,
+    "rejected_prediction_tokens": null
+   },
+   "prompt_tokens": 319,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 256
+   },
+   "total_tokens": 687
+  }
+ },
+ "e6466dd58b7051b5652cb2d0db6e00f721589c0dd6e73dd5d5ee2702f64b198b": {
+  "answers": {
+   "abusive": {
+    "noul": 0.022715754806995392,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.4138545343386276,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.02139625884592533,
+     "1": 0.11249221861362457,
+     "2": 0.22850097715854645,
+     "3": 0.33468106389045715,
+     "4": 0.30292946100234985
+    },
+    "score": 2.7852552086114883,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.02677488513290882,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "PAY_NOW",
+    "confidence": 0.9037296958267689,
+    "probabilities": {
+     "ABUSIVE": 0.0036179176531732082,
+     "ALREADY_PAID": 0.012516748160123825,
+     "BALANCE_QUERY": 0.0033223950304090977,
+     "CALLBACK": 0.003979906905442476,
+     "DISPUTE": 0.00431565148755908,
+     "GREETING": 0.004569674842059612,
+     "HARDSHIP": 0.0044278474524617195,
+     "HUMAN": 0.003471521893516183,
+     "LANGUAGE_CHANGE": 0.003688317956402898,
+     "LINK_REQUEST": 0.006515910848975182,
+     "NEEDS_TIME": 0.00472834799438715,
+     "PAY_NOW": 0.9093926548957825,
+     "PTP": 0.0061826156452298164,
+     "STATEMENT_REQUEST": 0.0037353269290179014,
+     "STOP": 0.003340453840792179,
+     "UNKNOWN": 0.017612433061003685,
+     "WRONG_NUMBER": 0.0045822253450751305
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.024399107322096825,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.017046915367245674,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 606,
+   "output_tokens": 0
+  }
+ },
+ "e9f41ea3a3a08380464557615c9f2562df34b06ec359a00085302862787211a2": {
+  "answers": {
+   "abusive": {
+    "noul": 0.032756488770246506,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.3937007958690326,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.0570593923330307,
+     "1": 0.20613038539886475,
+     "2": 0.4157758057117462,
+     "3": 0.23475901782512665,
+     "4": 0.08627542853355408
+    },
+    "score": 2.0870607644319534,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "NEEDS_TIME_NO_DATE",
+    "confidence": 0.9236546834309896,
+    "probabilities": {
+     "ABUSIVE": 0.0049635679461061954,
+     "ALREADY_PAID": 0.005386668723076582,
+     "CALLBACK_REQUESTED": 0.005722170230001211,
+     "DISPUTE": 0.005056274123489857,
+     "HARDSHIP": 0.004790509585291147,
+     "HUMAN_REQUESTED": 0.0043746475130319595,
+     "LANGUAGE_BARRIER": 0.0046127112582325935,
+     "NEEDS_TIME_NO_DATE": 0.9284262657165527,
+     "NO_RESPONSE": 0.004222838673740625,
+     "PARTIAL_PTP": 0.004822862334549427,
+     "PAY_NOW_LINK": 0.004439726006239653,
+     "PTP": 0.004801092203706503,
+     "REFUSED_TO_PAY": 0.003881271230056882,
+     "STOP_REQUESTED": 0.004644165746867657,
+     "THIRD_PARTY": 0.004865317605435848,
+     "WRONG_PERSON": 0.004989918787032366
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.09751353412866592,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.02847473882138729,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.026650022715330124,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 585,
+   "output_tokens": 0
+  }
+ },
+ "edee5b071803ed83a21c525baeba1fd06d10504b9067de5d080025269f3c5735": {
+  "answers": {
+   "abusive": {
+    "noul": 0.023650242015719414,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.4685718616736787,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.01842600665986538,
+     "1": 0.08994556218385696,
+     "2": 0.2865844964981079,
+     "3": 0.38279813528060913,
+     "4": 0.22224575281143188
+    },
+    "score": 2.7004919722676277,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.053632307797670364,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "NEEDS_TIME",
+    "confidence": 0.5960574187338352,
+    "probabilities": {
+     "ABUSIVE": 0.003256781492382288,
+     "ALREADY_PAID": 0.005615591071546078,
+     "BALANCE_QUERY": 0.004042814485728741,
+     "CALLBACK": 0.02760550193488598,
+     "DISPUTE": 0.004450507462024689,
+     "GREETING": 0.00555830355733633,
+     "HARDSHIP": 0.008326767943799496,
+     "HUMAN": 0.003902825992554426,
+     "LANGUAGE_CHANGE": 0.003586219623684883,
+     "LINK_REQUEST": 0.00859089195728302,
+     "NEEDS_TIME": 0.6198187470436096,
+     "PAY_NOW": 0.008301015943288803,
+     "PTP": 0.2051146775484085,
+     "STATEMENT_REQUEST": 0.00442130072042346,
+     "STOP": 0.0034892212133854628,
+     "UNKNOWN": 0.07934406399726868,
+     "WRONG_NUMBER": 0.004574822727590799
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.025944726541638374,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.021478211507201195,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 606,
+   "output_tokens": 0
+  }
+ },
+ "eec3ba24302dd2ae3d8befe31d2fd43af3ae8cbee899b312e4fa3b537806dcd7": {
+  "answers": {
+   "abusive": {
+    "noul": 0.023198574781417847,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.2928275465965272,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.06909769773483276,
+     "1": 0.19844844937324524,
+     "2": 0.3498218059539795,
+     "3": 0.2533009946346283,
+     "4": 0.1293310523033142
+    },
+    "score": 2.175319254398346,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.03616456687450409,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "ALREADY_PAID",
+    "confidence": 0.893053725361824,
+    "probabilities": {
+     "ABUSIVE": 0.004898356273770332,
+     "ALREADY_PAID": 0.8993446826934814,
+     "BALANCE_QUERY": 0.004132176749408245,
+     "CALLBACK": 0.004151840228587389,
+     "DISPUTE": 0.013869262300431728,
+     "GREETING": 0.004709247965365648,
+     "HARDSHIP": 0.004621132276952267,
+     "HUMAN": 0.004507132340222597,
+     "LANGUAGE_CHANGE": 0.005141576286405325,
+     "LINK_REQUEST": 0.00447210855782032,
+     "NEEDS_TIME": 0.004361951723694801,
+     "PAY_NOW": 0.005731381010264158,
+     "PTP": 0.004998866003006697,
+     "STATEMENT_REQUEST": 0.010195468552410603,
+     "STOP": 0.004065196495503187,
+     "UNKNOWN": 0.015310641378164291,
+     "WRONG_NUMBER": 0.005489081144332886
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.024883635342121124,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.02158461883664131,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 609,
+   "output_tokens": 0
+  }
+ },
+ "f33e7e7bbc8b967a27e7681ad4aed80585582705e5154eecb03e2a67b5309fd5": {
+  "answers": {
+   "abusive": {
+    "noul": 0.03439667820930481,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.4380854691068332,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.054723381996154785,
+     "1": 0.19972895085811615,
+     "2": 0.4401428997516632,
+     "3": 0.24568766355514526,
+     "4": 0.059717029333114624
+    },
+    "score": 2.055945858359337,
+    "type": "score"
+   },
+   "disposition": {
+    "choice": "NEEDS_TIME_NO_DATE",
+    "confidence": 0.7646843592325846,
+    "probabilities": {
+     "ABUSIVE": 0.003590512787923217,
+     "ALREADY_PAID": 0.005183589644730091,
+     "CALLBACK_REQUESTED": 0.029999302700161934,
+     "DISPUTE": 0.004249939229339361,
+     "HARDSHIP": 0.007879706099629402,
+     "HUMAN_REQUESTED": 0.004816179629415274,
+     "LANGUAGE_BARRIER": 0.00424125837162137,
+     "NEEDS_TIME_NO_DATE": 0.7793915867805481,
+     "NO_RESPONSE": 0.010899566113948822,
+     "PARTIAL_PTP": 0.02336954139173031,
+     "PAY_NOW_LINK": 0.008396866731345654,
+     "PTP": 0.09433332085609436,
+     "REFUSED_TO_PAY": 0.007459217216819525,
+     "STOP_REQUESTED": 0.004517552442848682,
+     "THIRD_PARTY": 0.006740486714988947,
+     "WRONG_PERSON": 0.004931370262056589
+    },
+    "type": "choice"
+   },
+   "hardship": {
+    "noul": 0.04173877090215683,
+    "type": "noul"
+   },
+   "self_harm": {
+    "noul": 0.025831982493400574,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.027007369324564934,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 586,
+   "output_tokens": 0
+  }
+ },
+ "fa997ae6a41a5ef22fc142891dfacc3c37a1dd317e0d4c329e3a43979b5d41cb": {
+  "answers": {
+   "abusive": {
+    "noul": 0.035323791205883026,
+    "type": "noul"
+   },
+   "confidence": {
+    "confidence": 0.20251552015542995,
+    "legend": {
+     "0": "very_low",
+     "1": "low",
+     "2": "medium",
+     "3": "high",
+     "4": "very_high"
+    },
+    "probabilities": {
+     "0": 0.11595551669597626,
+     "1": 0.252323180437088,
+     "2": 0.2912853956222534,
+     "3": 0.20812465250492096,
+     "4": 0.13231125473976135
+    },
+    "score": 1.9885129481554031,
+    "type": "score"
+   },
+   "hardship": {
+    "noul": 0.02683369629085064,
+    "type": "noul"
+   },
+   "intent": {
+    "choice": "GREETING",
+    "confidence": 0.3890209998935461,
+    "probabilities": {
+     "ABUSIVE": 0.04505995661020279,
+     "ALREADY_PAID": 0.020334456115961075,
+     "BALANCE_QUERY": 0.004895559046417475,
+     "CALLBACK": 0.005322112701833248,
+     "DISPUTE": 0.01720648631453514,
+     "GREETING": 0.4249609410762787,
+     "HARDSHIP": 0.007226781453937292,
+     "HUMAN": 0.005982807371765375,
+     "LANGUAGE_CHANGE": 0.003971628379076719,
+     "LINK_REQUEST": 0.011153504252433777,
+     "NEEDS_TIME": 0.011269318871200085,
+     "PAY_NOW": 0.019114699214696884,
+     "PTP": 0.00545481126755476,
+     "STATEMENT_REQUEST": 0.007543499115854502,
+     "STOP": 0.022018514573574066,
+     "UNKNOWN": 0.36603468656539917,
+     "WRONG_NUMBER": 0.022450223565101624
+    },
+    "type": "choice"
+   },
+   "self_harm": {
+    "noul": 0.025278190150856972,
+    "type": "noul"
+   },
+   "stop_request": {
+    "noul": 0.025462215766310692,
+    "type": "noul"
+   }
+  },
+  "model": "sarvam-prism",
+  "usage": {
+   "input_tokens": 604,
+   "output_tokens": 0
+  }
+ },
+ "fe5410952b7febdc6e1c9c1e26325f38b491f0ac3bb6c261a6e5d1f34cddfad3": {
+  "choices": [
+   {
+    "finish_reason": "stop",
+    "index": 0,
+    "logprobs": null,
+    "message": {
+     "annotations": null,
+     "audio": null,
+     "content": "Hello, main Kaira hoon, virtual assistant of Kairos Demo Finance. Aapke account ko surakshit rakhne ke liye, maine aapke registered WhatsApp number par ek 6-digit code bheja hai. Aage badhne ke liye us code ke saath reply karein.",
+     "function_call": null,
+     "reasoning": null,
+     "refusal": null,
+     "role": "assistant",
+     "tool_calls": null
+    },
+    "routed_experts": null,
+    "stop_reason": null,
+    "token_ids": null
+   }
+  ],
+  "created": 1795109821,
+  "ec_transfer_params": null,
+  "id": "20261119_cce6ec14-9936-4285-b608-0af5172ec3af",
+  "kv_transfer_params": null,
+  "metrics": null,
+  "model": "sarvam-105b-conversations",
+  "object": "chat.completion",
+  "prompt_logprobs": null,
+  "prompt_text": null,
+  "prompt_token_ids": null,
+  "service_tier": null,
+  "system_fingerprint": "vllm-0.29.1rc1.dev145+gfe61f3317-9c902b0a",
+  "usage": {
+   "completion_tokens": 59,
+   "completion_tokens_details": null,
+   "prompt_tokens": 259,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 0,
+    "created_cache_tokens": 256,
+    "multimodal_tokens": null
+   },
+   "total_tokens": 318
+  }
+ }
+}

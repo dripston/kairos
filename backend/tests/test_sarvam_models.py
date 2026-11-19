@@ -68,9 +68,34 @@ def client(fn, **kw):
     return SarvamClient(api_key=FAKE_KEY, transport=t, **kw), t
 
 
-def stack_with(fn, **kw):
+def stack_with(fn, model=None, **kw):
     c, t = client(fn, **kw)
-    return IntentStack(prism=PrismClassifier(c)), t
+    return IntentStack(prism=PrismClassifier(c), **({"model": model} if model is not None else {})), t
+
+
+class UnsureModel:
+    """Tier-2 stand-in that never answers alone: top 2 = NEEDS_TIME, PTP."""
+    model_version = "unsure-1"
+
+    def predict_proba(self, text):
+        from kairos_backend.intent_stack import LABELS
+        out = {lab: 0.0 for lab in LABELS}
+        out.update({"NEEDS_TIME": 0.4, "PTP": 0.3, "UNKNOWN": 0.3})
+        return out
+
+    def top_features(self, *a, **k):
+        return []
+
+
+# The live sarvam-prism shape (recorded 2026-11-19, values rounded).
+LIVE_SHAPE = {"answers": {
+    "abusive": {"noul": 0.027, "type": "noul"}, "hardship": {"noul": 0.86, "type": "noul"},
+    "self_harm": {"noul": 0.31, "type": "noul"}, "stop_request": {"noul": 0.02, "type": "noul"},
+    "confidence": {"confidence": 0.06, "legend": {"0": "very_low", "1": "low", "2": "medium", "3": "high",
+                                                  "4": "very_high"}, "probabilities": {"0": 0.2}, "score": 3.0,
+                   "type": "score"},
+    "intent": {"choice": "NEEDS_TIME", "confidence": 0.87, "probabilities": {"NEEDS_TIME": 0.87}, "type": "choice"}},
+    "model": "sarvam-prism", "usage": {"input_tokens": 600, "output_tokens": 0}}
 
 
 VAGUE = "dekhte hain kya hota hai"       # rules have nothing; the small model is unsure
@@ -121,6 +146,10 @@ def test_no_key_or_switched_off_means_no_client(monkeypatch):
     assert shared_client({"SARVAM_API_KEY": FAKE_KEY, "KAIROS_SARVAM_MODELS": "off"}) is None
     c = shared_client({"SARVAM_API_KEY": FAKE_KEY})
     assert c is not None and FAKE_KEY not in repr(c)
+    from kairos_backend.sarvam.prism import PRISM_INTENT_DEFAULT, shared_prism, shared_voice_prism
+    assert (shared_prism({"SARVAM_API_KEY": FAKE_KEY}) is not None) == PRISM_INTENT_DEFAULT
+    assert shared_prism({"SARVAM_API_KEY": FAKE_KEY, "KAIROS_SARVAM_FEATURES": "prism,voice"}) is not None
+    assert shared_voice_prism({"SARVAM_API_KEY": FAKE_KEY}) is not None
     reset_shared_client()
     assert IntentStack.from_env({"KAIROS_SARVAM_MODELS": "off", "SARVAM_API_KEY": FAKE_KEY}).prism is None
 
@@ -191,6 +220,13 @@ def test_chat_endpoint_body_and_schema():
     assert call["body"]["temperature"] == 0.0 and call["body"]["model"] == DEEPSEEK
     c2, _ = client(lambda u, r: (200, {"choices": []}))
     assert c2.chat(DEEPSEEK, []).error == "schema: no message content"
+    # live deepseek: max_tokens spent inside reasoning_content -> empty content, finish_reason "length"
+    cut = {"choices": [{"finish_reason": "length", "message": {"content": "", "reasoning_content": "We need to"}}]}
+    c3, _ = client(lambda u, r: (200, cut))
+    assert c3.chat(DEEPSEEK, []).error == "schema: truncated (finish_reason=length)"
+    only_reasoning = {"choices": [{"finish_reason": "stop", "message": {"content": None, "reasoning_content": "x y"}}]}
+    c4, _ = client(lambda u, r: (200, only_reasoning))
+    assert c4.chat(DEEPSEEK, []).data is None                     # reasoning text is never used as output
 
 
 # ---------------------------------------------------------------------------------------------
@@ -206,6 +242,14 @@ def test_chat_endpoint_body_and_schema():
 def test_parse_answers_shapes(resp):
     a = parse_answers(resp, "intent", ["PTP", "UNKNOWN"])
     assert a.label == "PTP" and a.error is None and a.confidence == pytest.approx(0.8)
+
+
+def test_parse_live_shape():
+    a = parse_answers(LIVE_SHAPE, "intent", ["NEEDS_TIME", "UNKNOWN"])
+    assert a.label == "NEEDS_TIME" and a.confidence == pytest.approx(0.87)      # the choice's own probability
+    assert a.score_question == pytest.approx(0.75)                              # score 3 of legend 0..4
+    assert (a.stop, a.hardship, a.self_harm, a.abusive) == ("no", "yes", "unknown", "no")
+    assert [parse_noul(x) for x in (0.98, 0.5, 0.35, 0.2, 0.02, 1.7)] == ["yes", "yes", "unknown", "no", "no", "unknown"]
 
 
 def test_parse_helpers():
@@ -231,7 +275,7 @@ def test_schema_violations_fall_through(bad):
 
 
 def test_prism_answers_when_confident_and_is_recorded():
-    s, t = stack_with(lambda u, r: prism_reply("NEEDS_TIME", 0.92))
+    s, t = stack_with(lambda u, r: prism_reply("NEEDS_TIME", 0.92), model=UnsureModel())
     r = s.classify(VAGUE, TODAY)
     assert r.label == "NEEDS_TIME" and r.tier_used == "prism" and r.confidence == 0.85   # capped
     assert r.evidence["prism"]["model"] == "sarvam-prism" and "latency_ms" in r.evidence["prism"]
@@ -243,9 +287,18 @@ def test_prism_answers_when_confident_and_is_recorded():
 
 
 def test_prism_low_confidence_or_unknown_falls_through():
-    for rep in (prism_reply("NEEDS_TIME", 0.5), prism_reply("UNKNOWN", 0.99)):
-        s, _ = stack_with(lambda u, r, rep=rep: rep)
+    for rep in (prism_reply("NEEDS_TIME", 0.5), prism_reply("NEEDS_TIME", 0.79), prism_reply("UNKNOWN", 0.99)):
+        s, _ = stack_with(lambda u, r, rep=rep: rep, model=UnsureModel())
         assert s.classify(VAGUE, TODAY).tier_used == "abstain"
+
+
+def test_prism_must_agree_with_small_model_top2():
+    s, _ = stack_with(lambda u, r: prism_reply("CALLBACK", 0.97), model=UnsureModel())   # top 2: NEEDS_TIME, PTP
+    r = s.classify(VAGUE, TODAY)
+    assert r.tier_used == "abstain" and "neither" in r.evidence["prism"]["rejected"]
+    s, _ = stack_with(lambda u, r: (200, LIVE_SHAPE), model=UnsureModel())
+    r = s.classify(VAGUE, TODAY)                                                          # live shape, hardship 0.86
+    assert r.label == "HARDSHIP" and r.needs_human and "hardship_unconfirmed" in r.safety_flags
 
 
 def test_prism_must_pick_among_rule_candidates():
@@ -439,6 +492,33 @@ def test_validator_accepts_faithful_rephrasings():
                     "en", False) == "account_detail_before_verification"
     assert validate("Kripya 6-digit code bhejein. Naya code ke liye reply karein.", otp, "OTP_PROMPT", "en",
                     False) == "keyword_dropped"
+
+
+def test_validator_rejects_new_caps_and_lender_case():
+    g = "Thank you for contacting Kairos Demo Finance. Have a good day."
+    assert validate("Kairos Demo Finance se contact karne ke liye shukriya. Aapka din achha rahe.", g, "GOODBYE", "en",
+                    True, "Kairos Demo Finance") is None
+    assert validate("KAIROS DEMO FINANCE se contact karne ke liye shukriya. Aapka din achha rahe.", g, "GOODBYE", "en",
+                    True, "Kairos Demo Finance") == "lender_dropped"
+    assert validate("Thanks, HUMARI TEAM aapse jald baat karegi, take care.", HARD[:60], "HANDOFF_HOLD", "en",
+                    True) in ("new_caps", "length")
+
+
+def test_phraser_prompt_lists_must_keep_and_retries_once_on_a_keeping_slip():
+    g = "Thank you for contacting Kairos Demo Finance. Have a good day."
+    answers = iter(["Thanks for reaching out to KAIROS DEMO FINANCE, have a great day!",
+                    "Thanks for reaching out to Kairos Demo Finance, have a great day!"])
+    c, t = client(lambda u, r: chat_reply(next(answers)))
+    p = Phraser(c, lender="Kairos Demo Finance")
+    r = p.phrase("GOODBYE", g, "en", False, True)
+    assert r.used_model and r.text.endswith("have a great day!") and r.meta["retried_after"] == "lender_dropped"
+    first = json.loads(t.calls[0]["body"]["messages"][1]["content"])
+    assert first["must_keep"] == ["Kairos Demo Finance"] and "letter case" in t.calls[0]["body"]["messages"][0]["content"]
+    assert len(t.calls) == 2 and p.summary()["accepted_after_retry"] == 1
+    # a content violation is never retried
+    c2, t2 = client(lambda u, r: chat_reply(g + " Pay ₹500 now."))
+    assert Phraser(c2, lender="Kairos Demo Finance").phrase("GOODBYE", g, "en", False, True).reason == "digits_added"
+    assert len(t2.calls) == 1
 
 
 def test_phraser_eligibility_pre_verify_only_identity_prompts():

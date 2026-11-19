@@ -105,14 +105,29 @@ def eval_intent(client: SarvamClient) -> Dict[str, Any]:
     sets["combined"] = sets["gold"] + sets["heldout"]
     out: Dict[str, Any] = {}
     for name, rows in sets.items():
-        base = _metrics(rows, _run_stack(IntentStack(), rows))
+        b_run = _run_stack(IntentStack(), rows)
+        base = _metrics(rows, b_run)
         calls0 = sum(client.stats.calls.values())
-        withp = _metrics(rows, _run_stack(IntentStack(prism=PrismClassifier(client)), rows))
+        p_run = _run_stack(IntentStack(prism=PrismClassifier(client)), rows)
+        withp = _metrics(rows, p_run)
         withp["prism_network_calls"] = sum(client.stats.calls.values()) - calls0
-        out[name] = {"current_stack": base, "stack_plus_prism": withp,
+        gold = [r["label"] for r in rows]
+        new_err = [{"text": r["text"], "gold": g, "was": b, "now": p} for r, g, b, p
+                   in zip(rows, gold, b_run["preds"], p_run["preds"]) if b == g and p != g]
+        fixed = [{"text": r["text"], "gold": g, "was": b} for r, g, b, p
+                 in zip(rows, gold, b_run["preds"], p_run["preds"]) if b != g and p == g]
+        withp["answered_by_prism"] = p_run["tiers"].count("prism")
+        out[name] = {"current_stack": base, "stack_plus_prism": withp, "new_errors": new_err, "fixed": fixed,
                      "delta_accuracy_pts": round(100 * (withp["accuracy"] - base["accuracy"]), 2),
                      "safety_recall_100": all(x[k] in (None, 1.0) for x in (base, withp)
                                               for k in ("stop_recall", "hardship_recall"))}
+    c = out["combined"]
+    # Decision rule, fixed BEFORE the live re-run (coordinator, 2026-11-19): the prism intent tier stays on by
+    # default only if combined gold + held-out accuracy rises AND it adds no new error.
+    rises = c["stack_plus_prism"]["accuracy"] > c["current_stack"]["accuracy"]
+    out["decision"] = {"rule": "default ON only if combined accuracy rises and new_errors == 0",
+                       "combined_accuracy_rises": rises, "new_errors": len(c["new_errors"]),
+                       "prism_intent_tier_default": "ON" if rises and not c["new_errors"] else "OFF"}
     return out
 
 
@@ -327,6 +342,9 @@ def main(argv=None) -> int:
         inj = Counter((x["kind"], x["injected_bad"]) for x in transport.log)
         rep["fixture"] = {"replayed_recorded": transport.replayed,
                           "standin_answers": {f"{k}{'_injected_bad' if b else ''}": v for (k, b), v in inj.items()}}
+        if transport.replayed and not transport.log:
+            rep["mode"] = mode = mode.replace("FIXTURE", "REPLAY of recorded live responses (latency not measured)")
+            rep["note"] = "Every model answer replayed from tests/data/sarvam_recorded.json (recorded live)."
     if isinstance(transport, RecordingTransport):
         rep["recorded_fixtures"] = transport.save()
     rep["elapsed_s"] = round(time.perf_counter() - t0, 1)
@@ -334,7 +352,7 @@ def main(argv=None) -> int:
     with open(a.out, "w", encoding="utf-8") as f:
         json.dump(rep, f, indent=2, ensure_ascii=False, default=str)
 
-    print(f"Sarvam models eval · {mode}")
+    print(f"Sarvam models eval · {rep['mode']}")
     for name in ("gold", "heldout", "combined"):
         if "intent" in rep:
             x = rep["intent"][name]
@@ -342,7 +360,10 @@ def main(argv=None) -> int:
             print(f"  intent {name:8s} n={b['n']:3d}  acc {b['accuracy']:.3f} -> {p['accuracy']:.3f}  "
                   f"macroF1 {b['macro_f1']:.3f} -> {p['macro_f1']:.3f}  abstain {b['abstain_rate']:.3f} -> "
                   f"{p['abstain_rate']:.3f}  STOP/HARDSHIP recall {b['stop_recall']}/{b['hardship_recall']} -> "
-                  f"{p['stop_recall']}/{p['hardship_recall']}  prism calls {p['prism_network_calls']}")
+                  f"{p['stop_recall']}/{p['hardship_recall']}  answered by prism {p['answered_by_prism']}  "
+                  f"new errors {len(x['new_errors'])} fixed {len(x['fixed'])}  latency p50 {p['latency_ms']['p50']} ms")
+    if "intent" in rep:
+        print(f"  intent decision: {rep['intent']['decision']}")
     if "voice" in rep:
         v = rep["voice"]
         print(f"  voice  n={v['n']} prism acc {v['prism_reclassification_accuracy']} upgrades {v['upgrades']} "
@@ -355,7 +376,9 @@ def main(argv=None) -> int:
               f"{'PASS' if c['on']['all_bars_pass'] else 'FAIL'} · disclosures {c['off']['disclosure_before_verification']}"
               f"/{c['on']['disclosure_before_verification']} · outcomes identical {c['outcomes_identical_on_vs_off']} · "
               f"model replies {ph['model_answers']}, rejected {ph['rejected_by_validator']} "
-              f"({ph['validator_rejection_rate']}) {ph['rejected_by_reason']}")
+              f"({ph['validator_rejection_rate']}) {ph['rejected_by_reason']}; distinct requests "
+              f"{ph['unique_model_answers']}, rejected {ph['unique_rejected']} ({ph['unique_rejection_rate']}), "
+              f"retries {ph['corrective_retries']} accepted after retry {ph['accepted_after_retry']}")
     if "summaries" in rep:
         for k, b in rep["summaries"]["by_kind"].items():
             print(f"  summary {k:16s} n={b['n']} accepted {b['accepted']} fell back {b['fell_back']} "
