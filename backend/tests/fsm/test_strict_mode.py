@@ -45,13 +45,13 @@ def test_declared_flow_passes_and_undeclared_writes_abort(policy, tmp_path, monk
     lg.close()
 
 
-def test_strict_mode_surfaces_finding_f1(policy, tmp_path, monkeypatch):
-    """FSM-F1 in strict mode: the provider callback on a never-dispatched touch is refused by the database."""
+def test_strict_mode_orphan_provider_callback_is_not_a_write(policy, tmp_path, monkeypatch):
+    """FSM-F1 fixed: a provider callback on a never-dispatched touch is an orphan receipt, so even the strict
+    database sees no status change (it used to refuse RESERVED -> SENT here)."""
     monkeypatch.setenv("KAIROS_FSM_STRICT", "1")
     lg = new_ledger(policy, tmp_path / "s.db")
     add_borrower(lg, "S2")
     iid = lg.reserve(Instruction("S2", "S2-A-1", "C1", "sms", "SMS_EN", at(10), 20)).instruction_id
-    with pytest.raises(sqlite3.IntegrityError, match="KAIROS_FSM_STRICT"):
-        lg.record_provider_status(iid, "ACCEPTED")
+    assert lg.record_provider_status(iid, "ACCEPTED") == "RESERVED"
     assert lg.touch(iid)["status"] == "RESERVED"
     lg.close()

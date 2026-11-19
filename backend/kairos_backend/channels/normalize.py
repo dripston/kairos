@@ -9,7 +9,8 @@ adapters produce the same dict) and returns a CRM-style envelope:
     applied        did this callback change anything?
     duplicate      True when the dedupe_key was already processed
     ignored_reason DUPLICATE | STALE | NO_CHANGE | TOUCH_CLOSED | ALREADY_SENT | SMS_READ_NOT_TRACKED |
-                   UNKNOWN_INSTRUCTION
+                   UNKNOWN_INSTRUCTION | NOT_DISPATCHED (receipt for a touch still queued: audited by the
+                   ledger as PROVIDER_STATUS_ORPHAN, touch unchanged, dedupe key not consumed; FSM-F1)
     counts_as_reply, read_status, reachability, outcome, intent, stop, canceled, touch_status, ...
 
 Rules (K01 reply_attribution, edge cases E02/E04/E06/E10):
@@ -38,7 +39,7 @@ import json
 from datetime import datetime, timedelta
 from typing import Iterable, List, Optional
 
-from ..ledger import RANK, Ledger
+from ..ledger import QUEUED, RANK, Ledger
 from .mock import IVR_MENU
 
 DELIVERY_STATUSES = ("ACCEPTED", "SENT", "DELIVERED", "READ", "CLICKED", "FAILED", "UNKNOWN")
@@ -152,7 +153,12 @@ def apply_callback(ledger: Ledger, event: dict) -> dict:
         raise
     env["touch_status"] = ledger.touch(iid)["status"]
     with ledger.tx() as c:
-        c.execute("UPDATE channel_events SET envelope=? WHERE dedupe_key=?", (json.dumps(env, default=str), key))
+        if env["ignored_reason"] == "NOT_DISPATCHED":
+            # an orphan receipt does not consume the dedupe key: the same callback re-delivered after the
+            # touch is really dispatched must still apply (FSM-F1)
+            c.execute("DELETE FROM channel_events WHERE dedupe_key=?", (key,))
+        else:
+            c.execute("UPDATE channel_events SET envelope=? WHERE dedupe_key=?", (json.dumps(env, default=str), key))
     return env
 
 
@@ -195,6 +201,8 @@ def _delivery(ledger: Ledger, touch: dict, event: dict, status: str, env: dict) 
         env["applied"] = True  # new engagement information (read_status / reachability), not a reply
     elif before in ("CANCELED", "FAILED"):
         env["ignored_reason"] = "TOUCH_CLOSED"
+    elif before in QUEUED:  # FSM-F1: never dispatched -> orphan receipt, audited by the ledger, touch unchanged
+        env["ignored_reason"] = "NOT_DISPATCHED"
     elif status == "FAILED":
         env["ignored_reason"] = "ALREADY_SENT"
     else:
@@ -218,6 +226,12 @@ def _message(ledger: Ledger, touch: dict, event: dict, occurred: datetime, env: 
 
 def _call(ledger: Ledger, touch: dict, event: dict, status: str, occurred: datetime, env: dict) -> None:
     bid, ch = touch["borrower_id"], touch["channel"]
+    if ledger.touch(touch["instruction_id"])["status"] in QUEUED:
+        # FSM-F1: a call outcome for a touch the Executor never dispatched changes nothing (no pickup,
+        # no intent); the ledger audits it as an orphan receipt.
+        _record_status(ledger, touch, "FAILED" if status == "FAILED" else "DELIVERED", event.get("provider_ref"))
+        env["ignored_reason"] = "NOT_DISPATCHED"
+        return
     if status == "FAILED":
         before, after = _record_status(ledger, touch, "FAILED", event.get("provider_ref"),
                                        reason=event.get("error") or "CALL_FAILED")

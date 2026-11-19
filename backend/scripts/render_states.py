@@ -87,38 +87,41 @@ happens next.
    machine using facts it reads itself. After the call, the database must match the prediction exactly.
    A second test requires every reachable declared transition to have been taken.
 3. **Strict mode** (`KAIROS_FSM_STRICT=1`). SQLite triggers on `touches` refuse any status change that is
-   not a declared `k06.touch` transition, whichever module tries to write it. The full backend suite on
-   this branch passes in strict mode, and so does the merge with cm03/whatsapp-servicing. On local merges
-   with k06/hitl-control and k17-k18/voice-engine, exactly one existing test fails in each, and each
-   failure is a finding (FSM-F2 and FSM-F1).
+   not a declared `k06.touch` transition, whichever module tries to write it. The full backend suite
+   (with HITL, voice and CM-03 merged) passes in strict mode. The two tests that used to fail there were
+   findings FSM-F1 and FSM-F2, both now fixed.
 4. **Audit.** `Machine.record()` turns each fired transition into a CRM-envelope-style record with the
    machine, version, from, event, guard, to and rule. The supervisor already emits `supervisor.decision`
    and `touch.dispatched` envelopes for its own transitions.
-5. **Known gaps are tracked, not hidden.** Transitions the code takes that contradict a declaration are
-   strict `xfail` tests (FSM-F1, FSM-F2). Once fixed, they XPASS and fail CI until the marker is removed.
-   See [Findings](#findings).
+5. **Known gaps are tracked, not hidden.** A transition the code takes that contradicts a declaration
+   is tracked as a strict `xfail` test until it is fixed; it then XPASSes and fails CI until the marker is
+   removed. FSM-F1 to FSM-F7 are all fixed and have focused tests. See [Findings](#findings).
 """
 
 FINDINGS = """## Findings
 
-These are real transitions found while declaring the machines and running the conformance tests. Core
-code was **not** changed to fix them, because several open branches touch `ledger.py`. Each one is
-either tracked as a strict xfail or declared as-is with a note.
+These are real transitions found while declaring the machines and running the conformance tests. All
+seven are **fixed** on `k06/fsm-fixes`; the declarations above describe the fixed behaviour and the
+conformance tests hold the code to it.
 
-| ID | Machine | What the code does | Why it matters | Tracked by |
+| ID | Machine | What the code did | Fix | Proven by |
 |---|---|---|---|---|
-| FSM-F1 | `k06.touch` | `Ledger.record_provider_status` accepts a callback for a touch that is still **RESERVED** and was never dispatched. ACCEPTED or SENT moves it to SENT; DELIVERED or READ to DELIVERED; UNKNOWN to UNCERTAIN; FAILED or REJECTED to FAILED and releases the budget. It also accepts the words `RESERVED` and `DISPATCHING` as provider statuses. After `DISPATCHING`, the touch is stranded, because `begin_dispatch` needs RESERVED. The callback can come in through `POST /provider-status/{id}`, `channels/normalize.py` (k07-k08), and the K17 call-end webhook, which marks the call's touch DELIVERED whatever its status (k17-k18 `VoiceIngester._process`). | Nothing is sent. But the touch skips the send-time re-check, writes a K03 `touch_sent` event for a message that never went out, and makes the real dispatch SKIPPED. | `test_conformance_touch.py::test_provider_callback_on_a_reserved_touch_is_not_a_declared_transition` (strict xfail). In strict mode the database refuses the write; on a merge with k17-k18, `tests/test_voice_engine.py::test_api_registry_select_and_webhook` then fails. Suggested fix: refuse provider callbacks on RESERVED touches and limit the vocabulary to ACCEPTED, SENT, DELIVERED, READ, UNKNOWN, FAILED and REJECTED. |
-| FSM-F2 | `k06.touch+hitl`, `k06.hitl.approval` | `HITL.reschedule` cancels the touch first. If the new slot is then refused, `_restore` moves the **CANCELED** touch back to RESERVED or PENDING_APPROVAL and commits its cost again (k06/hitl-control). | Everything else treats CANCELED as final: provider callbacks, `begin_dispatch` and the outcome finalizer. | `test_conformance_hitl.py::test_reschedule_refused_does_not_resurrect_a_canceled_touch` (strict xfail; runs once HITL is merged). In strict mode, `tests/test_hitl.py::test_cancel_and_reschedule` fails on the merge. Suggested fix: preview the new slot before canceling, or restore under a new instruction id. |
-| FSM-F3 | `k06.hitl.approval` | When STOP, a hold, a payment or a pause cancels a PENDING_APPROVAL touch, `hitl_approvals.decision` stays NULL forever. | The approvals history shows no outcome. The state is declared as `WITHDRAWN`, which is worked out from the canceled touch. | Declared; `test_conformance_hitl.py`. |
-| FSM-F4 | `k17.payment_claim` | There is no **REJECTED** state. A claim whose payment never verifies, for example because the bank reference was already used and `PaymentError` was raised, just **EXPIRES** after 48 h. A claim is VERIFIED whenever its EMI is fully paid, whichever payment paid it. A claim without an EMI can only expire. | The requested CLAIMED → VERIFIED / REJECTED / EXPIRED lifecycle is really PENDING_VERIFICATION → VERIFIED / EXPIRED. A known-fake claim pauses reminders for the full 48 h. | Declared from the code; `test_conformance_voice.py`. |
-| FSM-F5 | `k13.hold.hardship` | A later HARDSHIP report with no date, or a date within 4 days, on a borrower in HARDSHIP_HANDOFF sets `hardship_supervisor=0` and replaces the date. | The supervisor flag from an earlier "beyond 4 days" report is silently dropped (HANDOFF → HOLD), and the hold can get shorter. This contradicts K01 `holds.HARDSHIP`: "keep hold and flag to supervisor". | Declared as-is (`HARDSHIP_HANDOFF --HARDSHIP[!date_beyond]--> HARDSHIP_HOLD`); the conformance tests exercise it. |
-| FSM-F6 | `k13.hold.ptp` | A PTP captured without an `obligation_id` can never be KEPT: `start_day` counts it as BROKEN even if the borrower paid. This can come from `apply_exception(..., obligation_id=None)`, or from voice when the touch has no EMI. | This makes the broken-PTP count, and the "no new hold at 2 broken" rule, stricter than K13 intends. | Declared (the `promised_emi_paid` guard is false when there is no EMI); `test_conformance_holds.py`. |
-| FSM-F7 | `k13.hold.callback` | `CALLBACK_DUE` (unanswered, retry left) sets CALLBACK_PENDING even when no callback was requested (NONE → CALLBACK_PENDING). | This is minor: the K13 table does not check that a callback is actually open. | Declared; `test_conformance_holds.py`. |
+| FSM-F1 | `k06.touch` | `Ledger.record_provider_status` moved a never-dispatched **RESERVED** touch to SENT / DELIVERED / UNCERTAIN / FAILED (FAILED also released its budget), and accepted `RESERVED` / `DISPATCHING` as provider words, which stranded the touch. Reachable through `POST /provider-status/{id}`, `channels/normalize.py` and the K17 call-end webhook. The touch skipped the send-time re-check, wrote a false K03 `touch_sent`, and the real dispatch was SKIPPED. | A provider status applies only to a touch that is DISPATCHING or later. For a queued touch (RESERVED / PENDING_APPROVAL) it is an orphan / early receipt: audited as `PROVIDER_STATUS_ORPHAN`, touch unchanged. Only provider words are accepted; anything else is 422. `normalize.py` reports `NOT_DISPATCHED` and does not consume the dedupe key; a call outcome for a queued touch changes nothing; the email channel and the voice webhook follow the same rule (borrower intent such as STOP is still honoured). | `test_conformance_touch.py` (orphan loops exercised; `test_provider_callback_on_a_reserved_touch_is_an_orphan_receipt`, `test_internal_statuses_are_not_provider_words`), `test_channels.py`, `test_voice_engine.py::test_webhook_for_a_touch_never_dispatched_leaves_it_queued`, `test_api.py`. |
+| FSM-F2 | `k06.touch+hitl`, `k06.hitl.approval` | `HITL.reschedule` canceled the touch first; if the new slot was refused, `_restore` moved the **CANCELED** touch back to RESERVED / PENDING_APPROVAL. | The new slot is checked first (`Ledger.preview(exclude=old)` plus the HITL vetoes). A refused move returns the refusal with `kept: true` and leaves the original untouched. `_restore` is gone; CANCELED is final. | `test_conformance_hitl.py::test_reschedule_refused_keeps_the_original_untouched`, `..._never_writes_canceled_to_live_in_strict_mode`; `test_hitl.py::test_cancel_and_reschedule` in strict mode. |
+| FSM-F3 | `k06.hitl.approval` | When STOP, a hold, a payment or a pause canceled a PENDING_APPROVAL touch, `hitl_approvals.decision` stayed NULL forever. | `Ledger.cancel_hook` (installed by HITL) sets `decision='WITHDRAWN'` with the cancel reason and audits `APPROVAL_WITHDRAWN`. `cancel_next` on a pending send records `CANCELED`. | `test_conformance_hitl.py` (a NULL decision on a non-pending touch fails the harness; `test_system_cancel_withdraws_the_pending_approval_with_a_reason`). |
+| FSM-F4 | `k17.payment_claim` | No **REJECTED** state: a known-fake claim (for example a reused UTR) paused reminders for the full 48 h and then EXPIRED. | REJECTED when there is fraud evidence (`Ledger.fraud_evidence`: a CM-03 `FRAUD_SUSPECT`, or a D7 payment refused because its bank reference belongs to another account). The claim's remaining pause days are lifted. VERIFIED stays ledger-only and takes precedence. | `test_conformance_voice.py` (harness drives reused references; `test_reused_reference_rejects_the_claim_and_lifts_the_pause` and others). |
+| FSM-F5 | `k13.hold.hardship` | A later hardship report with no date, or a date within 4 days, cleared the supervisor flag an earlier "beyond 4 days" report set, and could shorten the hold. | Holds only tighten: while a hold runs, a later report can extend it or add the flag, never shorten it or drop the flag (`HARDSHIP_HOLD_KEPT` audited). Only a supervisor release clears the flag. | `test_conformance_holds.py::test_hardship_holds_only_tighten` and the seeded harness. |
+| FSM-F6 | `k13.hold.ptp` | A PTP captured without an `obligation_id` could never be KEPT. | Capture resolves the EMI: the one given, else the borrower's oldest unpaid EMI; with none, capture is refused (422). KEPT when the promised EMI is paid, or verified payments on the borrower's covered EMIs from capture through the PTP date add up to the promised amount. | `test_conformance_holds.py` (`promise_kept` computed independently; `test_ptp_*`). |
+| FSM-F7 | `k13.hold.callback` | `CALLBACK_DUE` (unanswered, retry left) created CALLBACK_PENDING even when no callback was requested. | It creates or keeps a callback only when one is open; otherwise it is a normal retry (`NO_OPEN_CALLBACK_NORMAL_RETRY`: no hold, no ticket). | `test_conformance_holds.py::test_callback_due_without_a_requested_callback_is_a_normal_retry` and the seeded harness. |
 
 Other notes:
 - A HARDSHIP date of `0` days means the hold lasts until *now*, so there is no hold at all.
 - The K13 holds CALLBACK_PENDING and SUPERVISOR_HOLD are still placed in the Gate order by
   `gate.EXTRA_RULES_AFTER`, pending Product.
+- FSM-F2: if the new slot passes the pre-check but the reservation is refused anyway (the world changed
+  between the two transactions), the original stays CANCELED. It is never resurrected.
+- FSM-F7: a `CALLBACK_DUE` whose second attempt was missed still sends the one "we tried to reach you"
+  message, even when no callback was requested. The finding only covered the retry branch.
 """
 
 VOICE_PLACEHOLDER = """## Voice bots (Sarvam)

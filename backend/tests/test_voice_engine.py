@@ -1105,3 +1105,22 @@ def test_api_registry_select_and_webhook(client, monkeypatch):
     assert c.post("/webhooks/sarvam/call-end", json={**body, "call_id": "sv-2"}).status_code == 401
     ok = c.post("/webhooks/sarvam/call-end", json={**body, "call_id": "sv-2"}, headers={"X-Kairos-Webhook-Secret": "s3cret"})
     assert ok.status_code == 200
+
+
+# =====================================================================================
+# FSM-F1: a call-end webhook only moves a touch the Executor dispatched
+# =====================================================================================
+def test_webhook_for_a_touch_never_dispatched_leaves_it_queued(env):
+    ob = add_loan(env.lg, "B-F1", D, dpd=12, consents=VOICE_CONSENT, campaign="C1")
+    r = env.lg.reserve(Instruction("B-F1", ob, "C1", "voicebot", VOICE_TPL, at(10), 300))
+    assert r.reserved
+    out = env.ing.ingest(payload("call-f1", r.instruction_id, "NO_RESPONSE", 0.9, duration=3))
+    assert out["status"] == "PROCESSED"
+    assert out["effects"]["touch_status"] == "RESERVED" and out["effects"]["touch_not_dispatched"] is True
+    assert env.lg.touch(r.instruction_id)["status"] == "RESERVED"
+    assert not any(e["event_type"] == "touch_sent" for e in env.lg.borrower_state("B-F1")["events"])
+    assert any(a["type"] == "PROVIDER_STATUS_ORPHAN" for a in env.lg.audit_log(borrower_id="B-F1"))
+    # the real dispatch still runs (send-time re-check), after which a webhook marks it DELIVERED
+    assert env.ex.dispatch(r.instruction_id, at(10, 30)).outcome == "SENT"
+    env.ing.ingest(payload("call-f1b", r.instruction_id, "NO_RESPONSE", 0.9, duration=3, ended=at(10, 35)))
+    assert env.lg.touch(r.instruction_id)["status"] == "DELIVERED"

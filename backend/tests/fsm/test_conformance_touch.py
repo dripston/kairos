@@ -152,12 +152,12 @@ class Harness:
         self.check(before, exp, f"resolve {iid} ({known})")
 
     def op_callback(self):
-        """A provider callback for a touch the provider has seen (dispatched at least once)."""
+        """A provider callback for any touch: one the provider has seen, or (FSM-F1) an orphan / early
+        receipt for a touch that is still RESERVED, which must leave it unchanged."""
         before = self.rows()
-        seen = sorted(k for k, r in before.items() if r["status"] not in ("RESERVED",))
-        if not seen:
+        if not before:
             return
-        iid = self.rng.choice(seen)
+        iid = self.rng.choice(sorted(before))
         word = self.rng.choice(sorted(PROVIDER_STATUS_EVENT))
         exp = {k: r["status"] for k, r in before.items()}
         exp[iid] = self.run(before[iid]["status"], [(PROVIDER_STATUS_EVENT[word], {})])
@@ -323,18 +323,37 @@ def test_pre_gate_control_stop_is_a_refusal(policy, tmp_path):
     lg.close()
 
 
-# ---------- findings: real transitions the declaration does not allow ----------
-@pytest.mark.xfail(strict=True, reason="FSM-F1: a provider callback moves a never-dispatched RESERVED touch "
-                                       "(bypasses begin_dispatch); RESERVED/DISPATCHING accepted as provider words")
-@pytest.mark.parametrize("word", ["ACCEPTED", "DELIVERED", "UNKNOWN", "FAILED", "DISPATCHING"])
-def test_provider_callback_on_a_reserved_touch_is_not_a_declared_transition(policy, tmp_path, word):
+# ---------- FSM-F1 (fixed): provider callbacks never move a touch that was not dispatched ----------
+@pytest.mark.parametrize("word", ["ACCEPTED", "SENT", "DELIVERED", "READ", "UNKNOWN", "UNCERTAIN", "FAILED", "REJECTED"])
+def test_provider_callback_on_a_reserved_touch_is_an_orphan_receipt(policy, tmp_path, word):
     lg = new_ledger(policy, tmp_path / "f1.db")
     add_borrower(lg, "F1")
     iid = lg.reserve(Instruction("F1", "F1-A-1", "C1", "sms", "SMS_EN", at(10), 20)).instruction_id
-    try:
-        lg.record_provider_status(iid, word)
-    except ValueError:
-        pass  # refusing the callback would conform too
-    after = lg.touch(iid)["status"]
+    committed = lg.campaign_state("C1")["committed_paise"]
+    assert lg.record_provider_status(iid, word) == "RESERVED"
+    assert lg.touch(iid)["status"] == "RESERVED"
+    assert lg.campaign_state("C1")["committed_paise"] == committed          # FAILED released nothing
+    assert not lg.borrower_state("F1")["events"] or all(e["event_type"] != "touch_sent"
+                                                         for e in lg.borrower_state("F1")["events"])
+    orphan = [a for a in lg.audit_log(borrower_id="F1") if a["type"] == "PROVIDER_STATUS_ORPHAN"]
+    assert orphan and orphan[0]["reason"] == word and orphan[0]["instruction_id"] == iid
+    # the real dispatch still happens, through the send-time re-check
+    assert Executor(lg, {"sms": FakeProvider("sms")}).dispatch(iid, at(10)).outcome == "SENT"
+    assert lg.touch(iid)["status"] == "SENT"
     lg.close()
-    assert after == "RESERVED", f"RESERVED -> {after} on a provider '{word}' callback: not a declared transition"
+
+
+@pytest.mark.parametrize("word", ["RESERVED", "DISPATCHING", "CANCELED", "PENDING_APPROVAL", "bogus", ""])
+def test_internal_statuses_are_not_provider_words(policy, tmp_path, word):
+    lg = new_ledger(policy, tmp_path / "f1w.db")
+    add_borrower(lg, "F1")
+    iid = lg.reserve(Instruction("F1", "F1-A-1", "C1", "sms", "SMS_EN", at(10), 20)).instruction_id
+    with pytest.raises(ValueError):
+        lg.record_provider_status(iid, word)
+    assert lg.touch(iid)["status"] == "RESERVED"
+    lg.close()
+
+
+def test_provider_vocabulary_matches_the_declared_events():
+    from kairos_backend.ledger import PROVIDER_STATUSES
+    assert set(PROVIDER_STATUSES) == set(PROVIDER_STATUS_EVENT)

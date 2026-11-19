@@ -32,14 +32,15 @@ from typing import Iterator, Optional
 from spine.db import create_schema as create_spine_schema
 from spine.db import get_connection as spine_connection
 from spine.ledger import PaymentError, apply_payment, record_event, reverse_payment
+from spine.ledger import reference_key as spine_reference_key
 
-from .exceptions import ExceptionEvent, handle
+from .exceptions import ExceptionEvent, ExceptionOutcome, handle
 from .gate import SEND, WAIT, Decision, Facts, evaluate
 from .pii import scrub
 from .policy import Policy
 
 __all__ = ["Ledger", "Instruction", "ReserveResult", "PaymentError", "stable_instruction_id", "MAX_PAISE", "check_paise",
-           "CONFLICT_INSTRUCTION_ID"]
+           "CONFLICT_INSTRUCTION_ID", "PROVIDER_STATUSES"]
 
 CONFLICT_INSTRUCTION_ID = "CONFLICT_INSTRUCTION_ID"  # instruction id reused for a different touch (RT-F07)
 
@@ -51,9 +52,14 @@ LIVE = ("RESERVED", "PENDING_APPROVAL", "DISPATCHING", "UNCERTAIN", "SENT", "DEL
 QUEUED = ("RESERVED", "PENDING_APPROVAL")
 # provider status ranks: an older/lower status never overwrites a newer one (E04)
 RANK = {"RESERVED": 0, "DISPATCHING": 1, "UNCERTAIN": 2, "SENT": 3, "DELIVERED": 4}
+# The provider vocabulary record_provider_status accepts (FSM-F1). Our own internal statuses
+# (RESERVED, DISPATCHING, CANCELED, PENDING_APPROVAL) are never provider words: anything else -> ValueError (422).
+PROVIDER_STATUSES = ("ACCEPTED", "SENT", "DELIVERED", "READ", "UNKNOWN", "UNCERTAIN", "FAILED", "REJECTED")
 # Ceiling for any single money value (budget per case, cost estimate, actual charge): 10^12 paise = Rs.1,000 crore.
 # Far above any real figure, far below SQLite's INTEGER limit (2^63 - 1), so sums never overflow (RT-F01).
 MAX_PAISE = 10 ** 12
+# borrower_state fields that describe the open promise-to-pay; cleared together when it ends (kept or broken)
+PTP_CLEARED = {"ptp_date": None, "ptp_obligation": None, "ptp_captured_on": None, "ptp_amount_paise": None}
 # Clock skew tolerated between the LMS feed and us before a sync stamp counts as "from the future" (RT-F05).
 SYNC_SKEW = timedelta(minutes=5)
 
@@ -95,7 +101,8 @@ CREATE TABLE IF NOT EXISTS borrower_state (
   stopped INTEGER NOT NULL DEFAULT 0,
   hardship_until TEXT, hardship_supervisor INTEGER NOT NULL DEFAULT 0,
   callback_pending INTEGER NOT NULL DEFAULT 0, supervisor_hold INTEGER NOT NULL DEFAULT 0,
-  ptp_date TEXT, ptp_obligation TEXT, broken_ptp INTEGER NOT NULL DEFAULT 0);
+  ptp_date TEXT, ptp_obligation TEXT, broken_ptp INTEGER NOT NULL DEFAULT 0,
+  ptp_captured_on TEXT, ptp_amount_paise INTEGER);
 CREATE TABLE IF NOT EXISTS templates (
   id TEXT PRIMARY KEY, channel TEXT NOT NULL, lang TEXT NOT NULL, approved INTEGER NOT NULL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS touches (
@@ -164,6 +171,9 @@ class Ledger:
         # transaction only after the Gate allowed the touch: (c, ins, decision) -> (status, decision).
         # It may only make things stricter: hold the touch as PENDING_APPROVAL, or veto it.
         self.reserve_hook = None
+        # Optional hook for system cancellations (hitl.HITL installs it): called inside _cancel_queued's
+        # transaction with (c, canceled_rows, reason) so a held approval records why it was withdrawn (FSM-F3).
+        self.cancel_hook = None
         # every connection this Ledger opens, in any thread, so close_all() can flush and close them
         # (graceful shutdown); a bumped generation makes threads reopen lazily afterwards.
         self._all_conns: list = []
@@ -171,6 +181,10 @@ class Ledger:
         self._gen = 0
         create_spine_schema(self._spine())   # K03 tables
         self._conn().executescript(K06_SCHEMA)  # K06 tables
+        cols = {r[1] for r in self._conn().execute("PRAGMA table_info(borrower_state)")}
+        for col, typ in (("ptp_captured_on", "TEXT"), ("ptp_amount_paise", "INTEGER")):  # FSM-F6, older files
+            if col not in cols:
+                self._conn().execute(f"ALTER TABLE borrower_state ADD COLUMN {col} {typ}")
         from .fsm_strict import sync_strict_mode  # KAIROS_FSM_STRICT=1: only declared touch transitions (STATES.md)
         sync_strict_mode(self)
 
@@ -300,7 +314,8 @@ class Ledger:
         r = c.execute("SELECT * FROM borrower_state WHERE borrower_id=?", (borrower_id,)).fetchone()
         return dict(r) if r else {"lender_id": None, "stopped": 0, "hardship_until": None, "hardship_supervisor": 0,
                                   "callback_pending": 0, "supervisor_hold": 0, "ptp_date": None,
-                                  "ptp_obligation": None, "broken_ptp": 0}
+                                  "ptp_obligation": None, "broken_ptp": 0, "ptp_captured_on": None,
+                                  "ptp_amount_paise": None}
 
     def _set_state(self, c, borrower_id: str, **fields) -> None:
         c.execute("INSERT OR IGNORE INTO borrower_state (borrower_id) VALUES (?)", (borrower_id,))
@@ -705,14 +720,27 @@ class Ledger:
                                reason: Optional[str] = None) -> str:
         """Provider callbacks. Never downgrade (a late SENT after DELIVERED is ignored — E04).
         FAILED/REJECTED releases the reservation; UNKNOWN keeps it (conservative). The first time a
-        touch is confirmed sent, a K03 'touch_sent' event is written against its EMI."""
-        status = status.upper()
+        touch is confirmed sent, a K03 'touch_sent' event is written against its EMI.
+
+        FSM-F1: a provider status only applies to a touch the Executor already handed over
+        (DISPATCHING or later). For a touch that is still queued (RESERVED / PENDING_APPROVAL) the
+        callback is an orphan / early receipt: it is audited (PROVIDER_STATUS_ORPHAN) and the touch is
+        NOT changed, so the send-time re-check and the real dispatch still happen. Only provider words
+        (PROVIDER_STATUSES) are accepted; RESERVED / DISPATCHING / anything else raise ValueError (422)."""
+        status = str(status or "").strip().upper()
+        if status not in PROVIDER_STATUSES:
+            raise ValueError(f"unknown provider status {status!r}: one of {', '.join(PROVIDER_STATUSES)}")
         with self.tx() as c:
             t = c.execute("SELECT * FROM touches WHERE instruction_id=?", (instruction_id,)).fetchone()
             if t is None:
                 raise KeyError(instruction_id)
             cur = t["status"]
             if cur in ("CANCELED", "FAILED"):
+                return cur
+            if cur in QUEUED:  # never dispatched: an orphan / early receipt, recorded but never applied
+                self._audit(c, "provider", "PROVIDER_STATUS_ORPHAN", t["borrower_id"], instruction_id,
+                            reason=status, previous=cur, now=cur, provider_ref=provider_ref,
+                            note="touch not dispatched yet: status recorded, touch unchanged")
                 return cur
             if status in ("FAILED", "REJECTED"):
                 if cur in ("SENT", "DELIVERED"):
@@ -724,8 +752,6 @@ class Ledger:
             else:
                 # READ is reachability only (never a reply, K01 §7) — it ranks with DELIVERED
                 target = {"ACCEPTED": "SENT", "UNKNOWN": "UNCERTAIN", "READ": "DELIVERED"}.get(status, status)
-                if target not in RANK:
-                    raise ValueError(f"unknown provider status {status}")
                 new = target if RANK[target] > RANK.get(cur, -1) else cur
                 c.execute("UPDATE touches SET status=?, provider_ref=COALESCE(?, provider_ref), updated_at=?"
                           " WHERE instruction_id=?", (new, provider_ref, self._iso(self.policy.now()), instruction_id))
@@ -764,6 +790,8 @@ class Ledger:
             self._release(c, t)
         c.execute(f"UPDATE touches SET status='CANCELED', reason=?, updated_at=? WHERE {q}",
                   (reason, self._iso(self.policy.now()), *QUEUED, *args))
+        if rows and self.cancel_hook is not None:
+            self.cancel_hook(c, rows, reason)
         return len(rows)
 
     # ---------- borrower events ----------
@@ -855,8 +883,12 @@ class Ledger:
             ob = self._obligation(c, obligation_id)
         if ob is None:
             raise KeyError(f"unknown obligation {obligation_id}")
-        applied = apply_payment(self._spine(), payment_id, ob["loan_id"], obligation_id, int(amount_paise),
-                                at.date().isoformat(), mode, reference)
+        try:
+            applied = apply_payment(self._spine(), payment_id, ob["loan_id"], obligation_id, int(amount_paise),
+                                    at.date().isoformat(), mode, reference)
+        except PaymentError as e:
+            self._payment_refused(ob, obligation_id, payment_id, reference, int(amount_paise), at, e)
+            raise
         with self.tx() as c:
             cleared, n = False, 0
             if applied:
@@ -866,11 +898,37 @@ class Ledger:
                     n = self._cancel_queued(c, "obligation_id=?", (obligation_id,), "OBLIGATION_CLEARED")
                     st = self._state(c, ob["borrower_id"])
                     if st["ptp_obligation"] == obligation_id:
-                        self._set_state(c, ob["borrower_id"], ptp_date=None, ptp_obligation=None)
+                        self._set_state(c, ob["borrower_id"], **PTP_CLEARED)
                 self._refresh_progress(c, ob["loan_id"], at.date(), int(amount_paise))
             self._audit(c, "tool:d7", "PAYMENT_VERIFIED", ob["borrower_id"], at=at, obligation_id=obligation_id,
                         amount_paise=amount_paise, applied=applied, cleared=cleared, canceled=n, reference=reference)
         return {"applied": applied, "obligation_cleared": cleared, "canceled": n}
+
+    def _payment_refused(self, ob, obligation_id: str, payment_id: str, reference, amount_paise: int, at: datetime,
+                         err: Exception) -> None:
+        """K03 refused a payment: audit PAYMENT_REFUSED. A bank reference already used for ANOTHER account's
+        payment is fraud evidence (REFERENCE_REUSED, the same rule as CM-03's check_reference); one already
+        used by this borrower is a repeat (REFERENCE_ALREADY_APPLIED), anything else INVALID_PAYMENT."""
+        kind = "INVALID_PAYMENT"
+        key = spine_reference_key(reference) if reference else ""
+        if key:
+            row = self._conn().execute("SELECT p.payment_id, l.borrower_id FROM payments p JOIN loans l ON l.loan_id=p.loan_id"
+                                       " WHERE p.reference_key=? AND p.payment_id<>? LIMIT 1", (key, payment_id)).fetchone()
+            if row is not None:
+                kind = "REFERENCE_REUSED" if row["borrower_id"] != ob["borrower_id"] else "REFERENCE_ALREADY_APPLIED"
+        with self.tx() as c:
+            self._audit(c, "tool:d7", "PAYMENT_REFUSED", ob["borrower_id"], at=at, reason=kind, obligation_id=obligation_id,
+                        payment_id=payment_id, amount_paise=amount_paise, error=self._scrub(c, ob["borrower_id"], str(err)))
+
+    def fraud_evidence(self, borrower_id: str, since: datetime, until: Optional[datetime] = None) -> list[dict]:
+        """Audited fraud signals for one borrower in [since, until]: a CM-03 FRAUD_SUSPECT (fake / reused UTR,
+        doctored receipt, other people's data) or a D7 payment refused because its bank reference belongs to
+        another account (REFERENCE_REUSED). Used to REJECT a pending payment claim (k17.payment_claim, FSM-F4)."""
+        rows = self._conn().execute(
+            "SELECT id, ts, type, reason, detail FROM audit WHERE borrower_id=? AND ts>=? AND ts<=?"
+            " AND (type='FRAUD_SUSPECT' OR (type='PAYMENT_REFUSED' AND reason='REFERENCE_REUSED')) ORDER BY id",
+            (borrower_id, self._iso(since), self._iso(until or self.policy.now()))).fetchall()
+        return [{"audit_id": r["id"], "ts": r["ts"], "type": r["type"], "reason": r["reason"]} for r in rows]
 
     def record_payment_reversed(self, payment_id: str, at: datetime, reason: str) -> bool:
         """The bank reversed a payment (E15): K03 makes that EMI due again; collection progress is
@@ -897,18 +955,36 @@ class Ledger:
         self.mark_spine_synced(datetime.combine(day, time(0, 0)))
         broken = []
         with self.tx() as c:
-            rows = c.execute("SELECT borrower_id, ptp_obligation FROM borrower_state WHERE ptp_date IS NOT NULL AND ptp_date < ?",
+            rows = c.execute("SELECT * FROM borrower_state WHERE ptp_date IS NOT NULL AND ptp_date < ?",
                              (day.isoformat(),)).fetchall()
             for r in rows:
-                ob = self._obligation(c, r["ptp_obligation"]) if r["ptp_obligation"] else None
-                paid = ob is not None and ob["amount_paid_paise"] >= ob["amount_due_paise"]
-                if not paid:
+                kept, why = self._ptp_kept(c, dict(r))
+                if not kept:
                     c.execute("UPDATE borrower_state SET broken_ptp = broken_ptp + 1 WHERE borrower_id=?", (r["borrower_id"],))
                     broken.append(r["borrower_id"])
                     self._audit(c, "supervisor", "BROKEN_PTP", r["borrower_id"], reason="BROKEN_PTP",
-                                obligation_id=r["ptp_obligation"])
-                self._set_state(c, r["borrower_id"], ptp_date=None, ptp_obligation=None)
+                                obligation_id=r["ptp_obligation"], **why)
+                else:
+                    self._audit(c, "supervisor", "PTP_KEPT", r["borrower_id"], reason="PTP_KEPT",
+                                obligation_id=r["ptp_obligation"], **why)
+                self._set_state(c, r["borrower_id"], **PTP_CLEARED)
         return broken
+
+    def _ptp_kept(self, c, st: dict) -> tuple[bool, dict]:
+        """FSM-F6: a promise is KEPT when the promised EMI is fully paid, or when D7/LMS-verified payments
+        (not reversed) on the borrower's covered EMIs — every EMI of the borrower that could still take
+        money at capture — made from the capture day through the PTP date add up to at least what was
+        outstanding on the promised EMI at capture. A partial payment alone does not keep it (E14)."""
+        ob = self._obligation(c, st["ptp_obligation"]) if st["ptp_obligation"] else None
+        promised_paid = ob is not None and ob["amount_paid_paise"] >= ob["amount_due_paise"]
+        covered = 0
+        if st.get("ptp_captured_on"):
+            covered = c.execute("SELECT COALESCE(SUM(p.amount_paise), 0) FROM payments p JOIN loans l ON l.loan_id=p.loan_id"
+                                " WHERE l.borrower_id=? AND p.reversed_on IS NULL AND p.paid_on BETWEEN ? AND ?",
+                                (st["borrower_id"], st["ptp_captured_on"], st["ptp_date"])).fetchone()[0]
+        amount = st.get("ptp_amount_paise")
+        kept = promised_paid or (amount is not None and amount > 0 and covered >= amount)
+        return kept, {"promised_emi_paid": promised_paid, "covered_paid_paise": covered, "promised_paise": amount}
 
     def _ticket(self, c, queue: str, borrower_id: str, obligation_id: Optional[str], type_: str, summary: tuple[str, str],
                 at: datetime, evidence_ids=(), sla_hours: Optional[float] = None) -> str:
@@ -938,19 +1014,40 @@ class Ledger:
         at = self._loc(at)
         with self.tx() as c:
             self._require_borrower(c, borrower_id)
-            canceled, ticket = 0, None
+            st = self._state(c, borrower_id)
+            canceled, ticket, extra = 0, None, {}
+            if event.event == "CALLBACK_DUE" and out.hold == "CALLBACK_PENDING" and not st["callback_pending"]:
+                # FSM-F7: an unanswered call with a retry left only becomes a callback when one was requested;
+                # otherwise it is an ordinary unanswered contact: no hold, no ticket, normal retry at band caps.
+                out = ExceptionOutcome("NO_OPEN_CALLBACK_NORMAL_RETRY", "NONE", "")
             if out.hold == "STOP_FOR_DAY":
                 canceled = self._stop_for_day(c, borrower_id, at, "BORROWER_RESPONSE")
             elif out.hold == "PTP_HOLD":
+                ob = self._ptp_obligation(c, borrower_id, obligation_id)  # FSM-F6: never a PTP without an EMI
+                obligation_id = ob["obligation_id"]
                 ptp = (at + timedelta(days=event.date_offset_days or 0)).date()
-                self._set_state(c, borrower_id, ptp_date=ptp.isoformat(), ptp_obligation=obligation_id)
+                self._set_state(c, borrower_id, ptp_date=ptp.isoformat(), ptp_obligation=obligation_id,
+                                ptp_captured_on=at.date().isoformat(),
+                                ptp_amount_paise=max(0, ob["amount_due_paise"] - ob["amount_paid_paise"]))
                 c.execute("INSERT OR IGNORE INTO stop_for_day VALUES (?,?,?)", (borrower_id, at.date().isoformat(), "BORROWER_RESPONSE"))
                 canceled = self._cancel_queued(c, "borrower_id=?", (borrower_id,), "PTP_HOLD")
+                extra["obligation_id"] = obligation_id
             elif out.hold == "HARDSHIP_HOLD":
                 hs = self.policy.raw["holds"]["HARDSHIP"]
                 days = event.date_offset_days if event.date_offset_days is not None else hs["default_pause_days"]
-                self._set_state(c, borrower_id, hardship_until=self._iso(at + timedelta(days=days)),
-                                hardship_supervisor=int(bool(out.queue)))
+                want_until, want_flag = at + timedelta(days=days), int(bool(out.queue))
+                # FSM-F5: holds only tighten. While an earlier hardship hold is still running, a later report
+                # can extend it or add the supervisor flag, never shorten it or drop the flag; only a
+                # supervisor release (clear_supervisor_hold / HITL resume) clears the flag.
+                cur_until = self._dt(st["hardship_until"])
+                running = cur_until is not None and cur_until > at
+                until = max(want_until, cur_until) if running else want_until
+                flag = max(want_flag, int(st["hardship_supervisor"])) if running else want_flag
+                self._set_state(c, borrower_id, hardship_until=self._iso(until), hardship_supervisor=flag)
+                if (until, flag) != (want_until, want_flag):
+                    self._audit(c, "agent:conversation", "HARDSHIP_HOLD_KEPT", borrower_id, at=at,
+                                reason="HOLDS_ONLY_TIGHTEN", requested_until=self._iso(want_until),
+                                requested_supervisor=want_flag, kept_until=self._iso(until), kept_supervisor=flag)
                 canceled = self._cancel_queued(c, "borrower_id=?", (borrower_id,), "HARDSHIP_HOLD")
             elif out.hold == "CALLBACK_PENDING":
                 self._set_state(c, borrower_id, callback_pending=1)
@@ -964,8 +1061,25 @@ class Ledger:
                 sla = self.policy.exceptions.get("callback", {}).get("sla_working_hours") if event.event.startswith("CALLBACK") else None
                 ticket = self._ticket(c, out.queue, borrower_id, obligation_id, event.event, summary, at, evidence_ids, sla)
             self._audit(c, "agent:conversation", f"EXCEPTION_{event.event}", borrower_id, at=at, reason=out.action,
-                        hold=out.hold, queue=out.queue, ticket=ticket, canceled=canceled)
-        return {"action": out.action, "hold": out.hold, "queue": out.queue, "ticket_id": ticket, "canceled": canceled}
+                        hold=out.hold, queue=out.queue, ticket=ticket, canceled=canceled, **extra)
+        return {"action": out.action, "hold": out.hold, "queue": out.queue, "ticket_id": ticket, "canceled": canceled,
+                **extra}
+
+    def _ptp_obligation(self, c, borrower_id: str, obligation_id: Optional[str]):
+        """FSM-F6: the EMI a promise is judged against. The given EMI (it must be the borrower's), else the
+        borrower's oldest unpaid EMI; with neither, capture is refused (ValueError -> 422): a PTP that
+        names no EMI could never be KEPT."""
+        if obligation_id:
+            ob = self._obligation(c, obligation_id)
+            if ob is None or ob["borrower_id"] != borrower_id:
+                raise ValueError(f"PTP obligation {obligation_id} is not an EMI of borrower {borrower_id}")
+            return ob
+        r = c.execute("SELECT o.obligation_id FROM obligations o JOIN loans l ON l.loan_id=o.loan_id WHERE l.borrower_id=?"
+                      " AND o.amount_paid_paise < o.amount_due_paise ORDER BY o.due_date, o.obligation_id LIMIT 1",
+                      (borrower_id,)).fetchone()
+        if r is None:
+            raise ValueError(f"PTP capture refused: borrower {borrower_id} has no unpaid EMI to promise against")
+        return self._obligation(c, r["obligation_id"])
 
     def clear_supervisor_hold(self, borrower_id: str, actor: str = "human:supervisor") -> None:
         with self.tx() as c:

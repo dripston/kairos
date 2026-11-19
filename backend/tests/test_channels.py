@@ -503,3 +503,27 @@ def test_build_providers_modes(monkeypatch):
     with pytest.raises(ValueError):
         build_providers("live", env={})
     assert MODES == ("mock", "phone-demo")
+
+
+# ---------------------------------------------------------------- FSM-F1: receipts for touches never dispatched
+def test_receipt_for_a_queued_touch_is_an_orphan_and_does_not_burn_the_dedupe_key(lg):
+    p = mock("sms")
+    iid = lg.reserve(ins("B1", "sms", at(10), tpl="SMS_EN")).instruction_id
+    early = {"channel": "sms", "instruction_id": iid, "provider_ref": "R1", "status": "DELIVERED", "at": 5,
+             "provenance": "SIMULATED"}
+    env = apply_callback(lg, early)
+    assert env["ignored_reason"] == "NOT_DISPATCHED" and not env["applied"] and env["touch_status"] == "RESERVED"
+    assert [a["type"] for a in lg.audit_log(borrower_id="B1")].count("PROVIDER_STATUS_ORPHAN") == 1
+    assert lg.touch(iid)["status"] == "RESERVED"
+    # the real dispatch still runs through the send-time re-check; the same receipt now applies
+    assert Executor(lg, {"sms": p}).dispatch(iid).outcome == "SENT"
+    again = apply_callback(lg, early)
+    assert not again["duplicate"] and again["applied"] and lg.touch(iid)["status"] == "DELIVERED"
+
+
+def test_call_outcome_for_a_queued_touch_changes_nothing(lg):
+    iid = lg.reserve(ins("B1", "ivr", at(10), tpl="IVR_HI")).instruction_id
+    env = apply_callback(lg, _call_event(iid, "ivr", "COMPLETED", duration_s=40, dtmf="1"))
+    assert env["ignored_reason"] == "NOT_DISPATCHED" and not env["applied"] and not env["counts_as_reply"]
+    assert lg.touch(iid)["status"] == "RESERVED"
+    assert lg.borrower_state("B1")["stop_for_day"] == []

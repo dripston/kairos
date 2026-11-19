@@ -187,6 +187,7 @@ class HITL:
         self.ap = approval_policy or load_approval_policy()
         ledger._conn().executescript(HITL_SCHEMA)
         ledger.reserve_hook = self._on_reserve  # every reservation (automated or manual) passes through here
+        ledger.cancel_hook = self._on_cancel_queued  # STOP / holds / payment / pause withdraw held approvals
 
     # ---------- small helpers ----------
     @property
@@ -310,13 +311,14 @@ class HITL:
                 hits.append(rid)
         return hits
 
-    def _manual_duplicate(self, c, ins: Instruction) -> Optional[str]:
-        """Manual sends: one live send per EMI + channel + day, automated or manual."""
+    def _manual_duplicate(self, c, ins: Instruction, exclude: Optional[str] = None) -> Optional[str]:
+        """Manual sends: one live send per EMI + channel + day, automated or manual. `exclude` leaves one
+        more touch out (reschedule's pre-check: the touch being moved is about to be canceled)."""
         day = self.ledger._loc(ins.at).date().isoformat()
         live = ",".join("?" * len(LIVE))
         r = c.execute(f"SELECT instruction_id FROM touches WHERE obligation_id=? AND channel=? AND day=?"
-                      f" AND status IN ({live}) AND instruction_id<>? LIMIT 1",
-                      (ins.obligation_id, ins.channel, day, *LIVE, ins.instruction_id or "")).fetchone()
+                      f" AND status IN ({live}) AND instruction_id NOT IN (?,?) LIMIT 1",
+                      (ins.obligation_id, ins.channel, day, *LIVE, ins.instruction_id or "", exclude or "")).fetchone()
         return r["instruction_id"] if r else None
 
     def _on_reserve(self, c, ins: Instruction, d: Decision):
@@ -338,6 +340,23 @@ class HITL:
                                             self._iso(self.policy.now()), self._iso(expires)))
         d.detail.update(touch_status="PENDING_APPROVAL", approval_rules=rules, approval_expires_at=self._iso(expires))
         return "PENDING_APPROVAL", d
+
+    def _on_cancel_queued(self, c, rows, reason: str) -> None:
+        """Ledger.cancel_hook (FSM-F3): a system event (STOP, a K13 / HITL hold, a verified payment, the
+        outbound or campaign pause, stop-for-day, contact unverified) canceled queued touches. A send that
+        was waiting for approval gets its final decision WITHDRAWN with that reason, never NULL forever."""
+        pending = [t["instruction_id"] for t in rows if t["status"] == "PENDING_APPROVAL"]
+        if not pending:
+            return
+        now = self.policy.now()
+        for iid in pending:
+            n = c.execute("UPDATE hitl_approvals SET decision='WITHDRAWN', decided_by='system:ledger', decided_role='system',"
+                          " decided_at=?, decision_reason=? WHERE instruction_id=? AND decision IS NULL",
+                          (self._iso(now), reason, iid)).rowcount
+            if n:
+                t = next(r for r in rows if r["instruction_id"] == iid)
+                self._audit(c, "APPROVAL_WITHDRAWN", "system:ledger", "system", t["borrower_id"], iid,
+                            f"touch canceled by {reason}", now, cancel_reason=reason, released_paise=t["est_cost_paise"])
 
     # ---------- approvals ----------
     def list_approvals(self, role: str, status: str = "PENDING", borrower_id: Optional[str] = None,
@@ -561,6 +580,9 @@ class HITL:
         if t is None:
             return {"canceled_instruction_id": None, "note": "nothing queued"}
         self._cancel_touch(c, t, "CANCELED_BY_HUMAN", now)
+        c.execute("UPDATE hitl_approvals SET decision='CANCELED', decided_by=?, decided_role=?, decided_at=?,"
+                  " decision_reason=? WHERE instruction_id=? AND decision IS NULL",
+                  (self._actor(actor), role, self._iso(now), "cancel_next", t["instruction_id"]))
         return {"canceled_instruction_id": t["instruction_id"], "_instruction_id": t["instruction_id"],
                 "channel": t["channel"], "scheduled_at": t["scheduled_at"], "released_paise": t["est_cost_paise"]}
 
@@ -760,44 +782,62 @@ class HITL:
 
     def reschedule(self, instruction_id: str, at: datetime, actor: str, role: str, reason: str,
                    now: Optional[datetime] = None) -> dict:
-        """= cancel + a NEW reservation through the full Gate. If the new slot is refused, the original
-        is restored (only if it still passes every guardrail)."""
+        """= cancel + a NEW reservation through the full Gate.
+
+        FSM-F2: CANCELED is final, so the new slot is checked BEFORE anything is canceled: the same
+        Ledger.preview the Supervisor uses, with the moving touch excluded (its cap slot, same-channel gap
+        and, on the same day, its cost), plus this control plane's own reserve-hook vetoes (an active
+        person's hold, the manual one-per-EMI/channel/day rule). If the new slot is refused, the original
+        stays exactly as it was ({"kept": True}) and the refusal is returned. Only then is the original
+        canceled and the new instruction reserved; if that reservation is still refused (the world changed
+        between the two transactions) the original stays CANCELED — it is never resurrected."""
         reason = self._reason(reason)
         now = self._now(now)
         self._authorize("reschedule", actor, role, now, instruction_id=instruction_id)
         with self.ledger.tx() as c:
-            t = self._touch(c, instruction_id)
+            t = dict(self._touch(c, instruction_id))
             if t["status"] not in QUEUED:
                 raise Conflict(f"NOT_RESCHEDULABLE_{t['status']}", f"{instruction_id} is {t['status']}; only queued sends can move")
             manual = c.execute("SELECT 1 FROM hitl_manual WHERE instruction_id=?", (instruction_id,)).fetchone() is not None
-            self._cancel_touch(c, t, "RESCHEDULED", now)
+        origin = "manual" if manual else "auto"
+        refused = self._reschedule_precheck(t, at, actor, role, reason, now, origin)
+        if refused is not None:
+            return {"instruction_id": instruction_id, "status": t["status"], "kept": True, "new": refused}
+        with self.ledger.tx() as c:
+            cur = self._touch(c, instruction_id)
+            if cur["status"] not in QUEUED:  # canceled / approved / dispatched since the pre-check
+                raise Conflict(f"NOT_RESCHEDULABLE_{cur['status']}", f"{instruction_id} is {cur['status']}; only queued sends can move")
+            self._cancel_touch(c, cur, "RESCHEDULED", now)
             c.execute("UPDATE hitl_approvals SET decision='RESCHEDULED', decided_by=?, decided_role=?, decided_at=?"
                       " WHERE instruction_id=? AND decision IS NULL", (self._actor(actor), role, self._iso(now), instruction_id))
-        t = dict(t)
         res = self._schedule_one(t["borrower_id"], t["channel"], t["template_id"], at, actor, role, reason,
                                  t["est_cost_paise"], t["campaign_id"], t["obligation_id"], None, now,
-                                 origin="manual" if manual else "auto", replaces=instruction_id)
-        if res["outcome"] != "REFUSED":
-            return {"instruction_id": instruction_id, "status": "CANCELED", "new": res}
-        restored = self._restore(instruction_id, t["status"], now)
-        return {"instruction_id": instruction_id, "status": t["status"] if restored else "CANCELED",
-                "restored": restored, "new": res}
+                                 origin=origin, replaces=instruction_id)
+        return {"instruction_id": instruction_id, "status": "CANCELED", "kept": False, "new": res}
 
-    def _restore(self, instruction_id: str, prior_status: str, now: datetime) -> bool:
+    def _reschedule_precheck(self, t: dict, at: datetime, actor: str, role: str, reason: str, now: datetime,
+                             origin: str) -> Optional[dict]:
+        """The refusal _schedule_one would return for the new slot, worked out without canceling anything
+        (None = the new slot passes). Audited as HUMAN_ACTION_REFUSED, like any refused manual send."""
         with self.ledger.tx() as c:
-            t = self._touch(c, instruction_id)
-            if t["status"] != "CANCELED" or t["reason"] != "RESCHEDULED":
-                return False
-            d = self._recheck(c, t, self.ledger._dt(t["scheduled_at"]), own_cost_reserved=False)
-            if not d.allowed:
-                return False
-            c.execute("UPDATE touches SET status=?, reason=?, updated_at=? WHERE instruction_id=?",
-                      (prior_status, "RESTORED", self._iso(now), instruction_id))
-            self.ledger._commit_cost(c, t["campaign_id"], t["day"], t["est_cost_paise"])
-            if prior_status == "PENDING_APPROVAL":
-                c.execute("UPDATE hitl_approvals SET decision=NULL, decided_by=NULL, decided_role=NULL, decided_at=NULL"
-                          " WHERE instruction_id=?", (instruction_id,))
-            return True
+            tgt = self._target(c, t["borrower_id"], t["campaign_id"], t["obligation_id"])
+        if tgt is None:
+            return self._manual_refused(t["borrower_id"], None, t["channel"], t["template_id"], at, actor, role, reason,
+                                        now, "NO_OPEN_EMI_IN_CAMPAIGN", "no unpaid EMI for this borrower in an enrolled campaign")
+        ins = Instruction(t["borrower_id"], tgt["obligation_id"], tgt["campaign_id"], t["channel"], t["template_id"], at,
+                          t["est_cost_paise"], instruction_id="RESCHEDULE-PRECHECK", origin=origin)
+        d = self.ledger.preview(ins, exclude=t["instruction_id"])
+        if d.allowed:
+            with self.ledger.tx() as c:
+                if self._active_holds(c, ins.borrower_id):
+                    d = Decision(WAIT, "SUPERVISOR_HOLD", "SUPERVISOR_HOLD", d.policy_version, d.band, d.detail)
+                elif (origin == "manual" and self.ap["manual_scheduler"]["dedupe_scope"] == "obligation_channel_day"
+                      and self._manual_duplicate(c, ins, exclude=t["instruction_id"])):
+                    d = Decision(WAIT, "MANUAL_DUPLICATE", "HITL_DEDUPE", d.policy_version, d.band, d.detail)
+        if d.allowed:
+            return None
+        return self._manual_refused(t["borrower_id"], None, t["channel"], t["template_id"], at, actor, role, reason, now,
+                                    d.reason, f"refused by {d.rule}: {d.reason}", gate=d.as_dict())
 
     # ---------- case queue ----------
     def list_cases(self, role: str, queue: Optional[str] = None, status: str = "OPEN", borrower_id: Optional[str] = None,

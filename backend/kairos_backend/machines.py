@@ -21,7 +21,7 @@ Machines (name -> builder):
     k01.consent             per-channel contactability: STOP on any channel, re-entry per channel
     k09.intent              inbound message -> intent: rules first, at most one LLM call (the only LLM choice)
     k09.learner.arm         where an arm's estimate comes from: prior -> pooled -> segment
-    k17.payment_claim       "I already paid" claim: PENDING_VERIFICATION -> VERIFIED / EXPIRED
+    k17.payment_claim       "I already paid" claim: PENDING_VERIFICATION -> VERIFIED / REJECTED / EXPIRED
     k06.hitl.approval       a held send's approval: PENDING -> APPROVED / BLOCKED_AT_RECHECK / ...
     k17.voice.disposition   disposition x confidence -> action (thresholds.json)
     k17.voice.call          one call-end webhook: PROCESSING -> DONE / UNMATCHED / DUPLICATE
@@ -125,6 +125,10 @@ def touch_machine(hitl: bool = False) -> Machine:
                  "E04 never downgrade: a late / lower status is ignored")
     tr += _loops(["DELIVERED", "FAILED", "CANCELED"], TOUCH_PROVIDER_EVENTS,
                  "final: provider callbacks change nothing")
+    # FSM-F1 (fixed): a provider word for a touch that was never dispatched is an orphan / early receipt.
+    tr += _loops(queued, TOUCH_PROVIDER_EVENTS,
+                 "FSM-F1: not dispatched yet -> orphan receipt; the send-time re-check and dispatch still run",
+                 action="audit PROVIDER_STATUS_ORPHAN; touch unchanged")
     states = ["PROPOSED", "REFUSED"] + rows
     terminal = ["REFUSED", "DELIVERED", "FAILED", "CANCELED"]
     name = "k06.touch+hitl" if hitl else "k06.touch"
@@ -376,16 +380,22 @@ def ptp_hold_machine() -> Machine:
     R = "K01 holds.PROMISE_TO_PAY"
     tr = []
     for s in ("NO_PTP", "PTP_KEPT", "PTP_BROKEN", "PTP_HOLD"):
-        tr.append(T(s, "PTP_OFFERED", "PTP_HOLD", "!broken_threshold", "ptp_date, ptp_obligation; stop-for-day today; cancel queued",
+        tr.append(T(s, "PTP_OFFERED", "PTP_HOLD", "!broken_threshold & has_emi",
+                    "ptp_date, ptp_obligation (given EMI, else oldest unpaid), captured_on, promised amount; "
+                    "stop-for-day today; cancel queued",
                     R + " (K13 CAPTURE_PTP" + ("; replaces the open promise)" if s == "PTP_HOLD" else ")")))
+        tr.append(T(s, "PTP_OFFERED", s, "!broken_threshold & !has_emi", "capture refused (ValueError / 422); nothing written",
+                    "FSM-F6: a promise must name an EMI it can be kept against (no unpaid EMI -> no hold)"))
         tr.append(T(s, "PTP_OFFERED", s, "broken_threshold", "stop-for-day only",
                     "K13 broken_ptp >= threshold: RECORD_PTP_NO_HOLD"))
     tr += [
         T("PTP_HOLD", "PAYMENT_VERIFIED", "PTP_KEPT", "clears_promised_emi", "cancel that EMI's queued touches", R + ".if_paid"),
         T("PTP_HOLD", "PAYMENT_VERIFIED", "PTP_HOLD", "!clears_promised_emi", None,
-          "another EMI, or partial: hold stays (E14)"),
-        T("PTP_HOLD", "DAY_STARTED", "PTP_KEPT", "promise_date_passed & promised_emi_paid", None, R + ".on_ptp_date"),
-        T("PTP_HOLD", "DAY_STARTED", "PTP_BROKEN", "promise_date_passed & !promised_emi_paid", "broken_ptp += 1",
+          "another EMI, or partial: hold stays (E14); judged on the day after the PTP date"),
+        T("PTP_HOLD", "DAY_STARTED", "PTP_KEPT", "promise_date_passed & promise_kept", "audit PTP_KEPT",
+          R + ".on_ptp_date: promised EMI paid, or verified payments on the borrower's covered EMIs since capture "
+              ">= the promised amount (FSM-F6)"),
+        T("PTP_HOLD", "DAY_STARTED", "PTP_BROKEN", "promise_date_passed & !promise_kept", "broken_ptp += 1",
           R + ".if_unpaid_by_end_of_ptp_date"),
         T("PTP_HOLD", "DAY_STARTED", "PTP_HOLD", "!promise_date_passed", None, "hold runs through the PTP date (inclusive)"),
     ]
@@ -395,7 +405,10 @@ def ptp_hold_machine() -> Machine:
         description=("A borrower-wide promise-to-pay hold: no outbound activity on any channel through the PTP date. "
                      "Kept = the promised EMI is verified paid (D7/LMS); broken = unpaid when the next day starts "
                      "(BROKEN_PTP counted; at the threshold no new hold is granted). KEPT / BROKEN are the outcome of "
-                     "the last promise; a new promise starts a new hold."),
+                     "the last promise; a new promise starts a new hold. Every promise names an EMI: the one given, else "
+                     "the borrower's oldest unpaid EMI; with none, capture is refused. Kept also counts any verified "
+                     "payment on the borrower's covered EMIs from capture through the PTP date that adds up to the "
+                     "promised amount."),
         enforced_by=["kairos_backend/ledger.py: apply_exception (PTP_HOLD), record_payment_verified, start_day",
                      "kairos_backend/gate.py: PTP_HOLD rule"],
         proven_by=["tests/fsm/test_conformance_holds.py", "tests/test_ledger.py"],
@@ -407,10 +420,17 @@ def hardship_hold_machine() -> Machine:
     R = "K01 holds.HARDSHIP"
     tr = []
     for s in ("NONE", "HARDSHIP_HOLD", "HARDSHIP_HANDOFF"):
-        tr.append(T(s, "HARDSHIP", "HARDSHIP_HANDOFF", "date_beyond", "hardship_until=date, supervisor=1, ticket",
+        keep = "" if s == "NONE" else " (holds only tighten: until = max(current, new))"
+        tr.append(T(s, "HARDSHIP", "HARDSHIP_HANDOFF", "date_beyond", "hardship_until=date, supervisor=1, ticket" + keep,
                     R + ".if_borrower_gives_date_beyond_4_days"))
-        tr.append(T(s, "HARDSHIP", "HARDSHIP_HOLD", "!date_beyond", "hardship_until=date or +2 days, supervisor=0",
-                    R + ".if_no_date / within 4 days"))
+        if s == "HARDSHIP_HANDOFF":
+            tr.append(T(s, "HARDSHIP", "HARDSHIP_HANDOFF", "!date_beyond",
+                        "keep the longer date and the supervisor flag; audit HARDSHIP_HOLD_KEPT",
+                        "FSM-F5: a later, weaker report never clears an earlier flag or shortens the hold; "
+                        "only a supervisor release does (" + R + ": keep hold and flag to supervisor)"))
+        else:
+            tr.append(T(s, "HARDSHIP", "HARDSHIP_HOLD", "!date_beyond", "hardship_until=date or +2 days, supervisor=0" + keep,
+                        R + ".if_no_date / within 4 days"))
     tr += [
         T("HARDSHIP_HOLD", "CLOCK", "NONE", "until_passed", None, "hold ends at hardship_until (Gate compares at send time)"),
         T("HARDSHIP_HOLD", "CLOCK", "HARDSHIP_HOLD", "!until_passed", None, "still held"),
@@ -423,7 +443,9 @@ def hardship_hold_machine() -> Machine:
     tr += _loops(["NONE", "HARDSHIP_HOLD"], ["CLEAR_SUPERVISOR"], "no supervisor flag on this hold")
     return Machine(
         "k13.hold.hardship", "1", ["NONE", "HARDSHIP_HOLD", "HARDSHIP_HANDOFF"], "NONE", [], tr,
-        description="Hardship pauses every channel (Gate WAIT, or HANDOFF when the borrower's date is beyond 4 days).",
+        description=("Hardship pauses every channel (Gate WAIT, or HANDOFF when the borrower's date is beyond 4 days). "
+                     "Holds only tighten: while a hold runs, a new report can extend it or add the supervisor flag, "
+                     "never shorten it or drop the flag; only a supervisor release clears the flag."),
         enforced_by=["kairos_backend/ledger.py: apply_exception (HARDSHIP_HOLD), clear_supervisor_hold",
                      "kairos_backend/gate.py: HARDSHIP_HOLD rule"],
         proven_by=["tests/fsm/test_conformance_holds.py"], source="code")
@@ -436,10 +458,14 @@ def callback_hold_machine() -> Machine:
         tr += [
             T(s, "CALLBACK_REQUEST", "CALLBACK_PENDING", None, "ticket (deduped per day), pause all outbound", R + ".while_pending"),
             T(s, "CALLBACK_DUE", "NONE", "answered", "close task; stop-for-day", R + ".if_answered"),
-            T(s, "CALLBACK_DUE", "CALLBACK_PENDING", "!answered & retry_left", "retry in 2 h", R + ".if_unanswered"),
             T(s, "CALLBACK_DUE", "NONE", "!answered & !retry_left", "one 'we tried to reach you' message; stop-for-day",
               R + ".if_second_attempt_missed"),
         ]
+    tr += [
+        T("CALLBACK_PENDING", "CALLBACK_DUE", "CALLBACK_PENDING", "!answered & retry_left", "retry in 2 h", R + ".if_unanswered"),
+        T("NONE", "CALLBACK_DUE", "NONE", "!answered & retry_left", "no hold, no ticket: normal retry at band caps",
+          "FSM-F7: only a requested callback is retried as a callback (NO_OPEN_CALLBACK_NORMAL_RETRY)"),
+    ]
     return Machine(
         "k13.hold.callback", "1", ["NONE", "CALLBACK_PENDING"], "NONE", [], tr,
         description="A borrower asked for a person: all outbound nudges pause until the callback is answered or missed twice.",
@@ -559,19 +585,27 @@ def payment_claim_machine() -> Machine:
           "stop_for_day rows for every day the 48 h pause touches; cancel those days' queued touches; NEVER mark paid",
           "K17 thresholds.json payment_claim (ALREADY_PAID >= accept_at)"),
         T("PENDING_VERIFICATION", "RESOLVE", "VERIFIED", "emi_paid", None,
-          "the ledger (D7/LMS via Ledger.record_payment_verified) shows the EMI fully paid"),
-        T("PENDING_VERIFICATION", "RESOLVE", "EXPIRED", "!emi_paid & pause_over", None,
+          "the ledger (D7/LMS via Ledger.record_payment_verified) shows the EMI fully paid — the only way to VERIFIED"),
+        T("PENDING_VERIFICATION", "RESOLVE", "REJECTED", "!emi_paid & fraud_evidence",
+          "lift this claim's remaining PAYMENT_CLAIM_PENDING days (pause ends early); audit VOICE_PAYMENT_CLAIM_REJECTED",
+          "FSM-F4: Ledger.fraud_evidence — CM-03 FRAUD_SUSPECT, or a D7 payment refused for a bank reference "
+          "already used by another account (REFERENCE_REUSED), from pause_hours before the claim to now"),
+        T("PENDING_VERIFICATION", "RESOLVE", "EXPIRED", "!emi_paid & !fraud_evidence & pause_over", None,
           "no verification within pause_hours: reminders resume on their own"),
-        T("PENDING_VERIFICATION", "RESOLVE", "PENDING_VERIFICATION", "!emi_paid & !pause_over", None, "still waiting"),
+        T("PENDING_VERIFICATION", "RESOLVE", "PENDING_VERIFICATION", "!emi_paid & !fraud_evidence & !pause_over", None,
+          "still waiting"),
     ]
-    tr += _loops(["VERIFIED", "EXPIRED"], ["RESOLVE"], "final: resolve_payment_claims only reads PENDING_VERIFICATION")
+    tr += _loops(["VERIFIED", "REJECTED", "EXPIRED"], ["RESOLVE"],
+                 "final: resolve_payment_claims only reads PENDING_VERIFICATION")
     return Machine(
-        "k17.payment_claim", "0.1.0-draft", ["NONE", "PENDING_VERIFICATION", "VERIFIED", "EXPIRED"], "NONE",
-        ["VERIFIED", "EXPIRED"], tr,
+        "k17.payment_claim", "0.2.0-draft", ["NONE", "PENDING_VERIFICATION", "VERIFIED", "REJECTED", "EXPIRED"], "NONE",
+        ["VERIFIED", "REJECTED", "EXPIRED"], tr,
         description=("A borrower says they already paid. A claim is never a payment: reminders pause for 48 h while "
-                     "the ledger waits for D7/LMS; only Ledger.record_payment_verified clears an EMI. There is no "
-                     "REJECTED state in the code: a fake claim simply EXPIRES (see findings)."),
-        enforced_by=["kairos_backend/voice/ingest.py (k17-k18/voice-engine): VoiceIngester._payment_claim / resolve_payment_claims"],
+                     "the ledger waits for D7/LMS; only Ledger.record_payment_verified clears an EMI (VERIFIED). "
+                     "Fraud evidence (a CM-03 FRAUD_SUSPECT or a reused bank reference) REJECTS the claim and ends "
+                     "the pause early; otherwise it EXPIRES."),
+        enforced_by=["kairos_backend/voice/ingest.py: VoiceIngester._payment_claim / resolve_payment_claims",
+                     "kairos_backend/ledger.py: Ledger.fraud_evidence / record_payment_verified (PAYMENT_REFUSED)"],
         proven_by=["tests/fsm/test_conformance_voice.py (runs when kairos_backend.voice is present)"],
         source="branch:k17-k18/voice-engine")
 
@@ -592,10 +626,14 @@ def hitl_approval_machine() -> Machine:
         T("PENDING", "EXPIRE_DUE", "EXPIRED", "expired", "touch CANCELED, budget released", "HITL.expire_due / tick"),
         T("PENDING", "EXPIRE_DUE", "PENDING", "!expired", None, "not yet"),
         T("PENDING", "HUMAN_CANCEL", "CANCELED", None, "touch CANCELED, budget released", "HITL.cancel_scheduled / cancel_next"),
-        T("PENDING", "RESCHEDULE", "RESCHEDULED", None, "touch CANCELED; a NEW instruction through the full Gate",
-          "HITL.reschedule"),
-        T("PENDING", "CANCEL_QUEUED", "WITHDRAWN", None, "touch CANCELED; approval decision left NULL",
-          "STOP / holds / payment / pause cancel PENDING_APPROVAL like RESERVED"),
+        T("PENDING", "RESCHEDULE", "RESCHEDULED", "new_slot_allowed",
+          "touch CANCELED; a NEW instruction through the full Gate",
+          "HITL.reschedule: Ledger.preview(exclude=old) + HITL vetoes pass BEFORE anything is canceled (FSM-F2)"),
+        T("PENDING", "RESCHEDULE", "PENDING", "!new_slot_allowed", "refusal returned; original untouched (kept)",
+          "HITL.reschedule pre-check: CANCELED is final, so a refused move never cancels (FSM-F2)"),
+        T("PENDING", "CANCEL_QUEUED", "WITHDRAWN", None,
+          "touch CANCELED; decision='WITHDRAWN', decision_reason=<cancel reason>; APPROVAL_WITHDRAWN audited",
+          "STOP / holds / payment / pause cancel PENDING_APPROVAL like RESERVED (Ledger.cancel_hook, FSM-F3)"),
     ]
     tr += _loops(["APPROVED", "BLOCKED_AT_RECHECK", "REJECTED", "EXPIRED", "CANCELED", "WITHDRAWN"],
                  ["APPROVE", "REJECT"], "Conflict NOT_PENDING_<status>: nothing changes")
@@ -605,11 +643,12 @@ def hitl_approval_machine() -> Machine:
          "WITHDRAWN"], "NEW",
         ["APPROVED", "BLOCKED_AT_RECHECK", "REJECTED", "EXPIRED", "CANCELED", "RESCHEDULED", "WITHDRAWN"], tr,
         description=("A send that passed every guardrail but matches an approval rule waits for a person. Approval can "
-                     "only make outreach stricter: the Gate runs again at approval and at send time. RESCHEDULED is "
-                     "final here; the code can restore it when the new slot is refused (see findings)."),
+                     "only make outreach stricter: the Gate runs again at approval and at send time. A reschedule "
+                     "checks the new slot first and only then cancels the original; every final state records a "
+                     "decision (WITHDRAWN when a system event canceled the touch)."),
         enforced_by=["kairos_backend/hitl.py (k06/hitl-control): HITL._on_reserve / approve / reject / expire_due / cancel_scheduled / reschedule"],
         proven_by=["tests/fsm/test_conformance_hitl.py (runs when kairos_backend.hitl is present)"],
-        state_notes={"WITHDRAWN": "touch canceled by a system event"},
+        state_notes={"WITHDRAWN": "touch canceled by a system event; decision='WITHDRAWN' + reason"},
         source="branch:k06/hitl-control")
 
 

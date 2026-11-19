@@ -38,7 +38,7 @@ from spine.ledger import record_event
 
 from ..contracts import SYNTHETIC_COSTS, CrmSink, RecordingSink, crm_envelope
 from ..exceptions import ExceptionEvent
-from ..ledger import Instruction, Ledger
+from ..ledger import QUEUED, Instruction, Ledger
 from .dispositions import (_EMAIL, _PHONE, DISPOSITIONS, UNCLEAR, Disposition, parse_disposition, report_level,
                            scrub_text)
 from .registry import agent_use_case, load_registry, load_thresholds, max_ptp_days, normalize_language
@@ -557,7 +557,11 @@ class VoiceIngester:
         effects: dict[str, Any] = {}
         # 1. provider delivery (reach) — never a reply
         if touch is not None and p["connected"] is True and touch["status"] not in ("CANCELED", "FAILED"):
+            # Only a touch the Executor dispatched moves. For a touch still queued (RESERVED /
+            # PENDING_APPROVAL) the ledger records an orphan receipt and leaves it unchanged (FSM-F1).
             effects["touch_status"] = lg.record_provider_status(touch["instruction_id"], "DELIVERED")
+            if touch["status"] in QUEUED:
+                effects["touch_not_dispatched"] = True
         if self.finalizer is not None and touch is not None and p["connected"] is not None:
             self.finalizer.record_reach(touch["instruction_id"], bool(p["connected"]), at)
         if p["duration_seconds"] is not None and p["connected"] is not False:
@@ -709,8 +713,13 @@ class VoiceIngester:
         lg = self.ledger
         broken = lg._state(lg._conn(), bid)["broken_ptp"]
         offset = v.detail["date_offset_days"]
-        k13 = lg.apply_exception(bid, ExceptionEvent("PTP_OFFERED", band or "UNKNOWN", date_offset_days=offset,
-                                                     broken_ptp_count=broken), at, ob, self._summary(d, v))
+        try:
+            k13 = lg.apply_exception(bid, ExceptionEvent("PTP_OFFERED", band or "UNKNOWN", date_offset_days=offset,
+                                                         broken_ptp_count=broken), at, ob, self._summary(d, v))
+        except ValueError:  # FSM-F6: no unpaid EMI to promise against -> a person reads the call, no hold
+            return {"promise_date": d.ptp_date, "ptp": "NOT_CAPTURED_NO_UNPAID_EMI",
+                    **self._review(bid, ob, at, "PTP_WITHOUT_EMI", self._summary(d, v)[1])}
+        ob = k13.get("obligation_id") or ob
         out = {"k13": k13, "promise_date": d.ptp_date}
         if k13["hold"] == "PTP_HOLD":
             due = date.fromisoformat(d.ptp_date) + timedelta(days=int(self.thresholds["ptp"]["follow_up_due_days_after_promise"]))
@@ -770,19 +779,64 @@ class VoiceIngester:
 
     # ----- clocks / reads -----
     def resolve_payment_claims(self, now: datetime) -> list[dict]:
-        """Claims whose EMI the ledger has since verified as paid -> VERIFIED; claims past pause_until
-        without verification -> EXPIRED (reminders resume on their own). Never marks anything paid."""
+        """Resolve pending "already paid" claims. Never marks anything paid.
+
+          VERIFIED  the ledger (D7/LMS, Ledger.record_payment_verified) shows the claimed EMI fully paid — the
+                    only way to VERIFIED;
+          REJECTED  not paid, and there is fraud evidence for the borrower from pause_hours before the claim up to
+                    now (Ledger.fraud_evidence: a CM-03 FRAUD_SUSPECT, or a D7 payment refused because its bank
+                    reference belongs to another account). The pause ends early: this claim's remaining
+                    PAYMENT_CLAIM_PENDING stop-for-day days are lifted (FSM-F4);
+          EXPIRED   not paid, no evidence, pause_until reached: reminders resume on their own."""
         lg, now = self.ledger, self._loc(now)
+        window = timedelta(hours=float(self.thresholds["payment_claim"]["pause_hours"]))
         out = []
         with lg.tx() as c:
-            for r in c.execute("SELECT * FROM voice_payment_claims WHERE status='PENDING_VERIFICATION'").fetchall():
+            rows = c.execute("SELECT * FROM voice_payment_claims WHERE status='PENDING_VERIFICATION'").fetchall()
+        for r in rows:
+            with lg.tx() as c:
                 o = lg._obligation(c, r["obligation_id"]) if r["obligation_id"] else None
-                paid = o is not None and o["amount_paid_paise"] >= o["amount_due_paise"]
-                status = "VERIFIED" if paid else ("EXPIRED" if lg._iso(now) >= r["pause_until"] else None)
-                if status:
-                    c.execute("UPDATE voice_payment_claims SET status=? WHERE call_id=?", (status, r["call_id"]))
-                    out.append({"call_id": r["call_id"], "borrower_id": r["borrower_id"], "status": status})
+            paid = o is not None and o["amount_paid_paise"] >= o["amount_due_paise"]
+            evidence = [] if paid else lg.fraud_evidence(r["borrower_id"], lg._dt(r["claimed_at"]) - window, now)
+            status = ("VERIFIED" if paid else "REJECTED" if evidence
+                      else "EXPIRED" if lg._iso(now) >= r["pause_until"] else None)
+            if not status:
+                continue
+            item = {"call_id": r["call_id"], "borrower_id": r["borrower_id"], "status": status}
+            with lg.tx() as c:
+                reason = ",".join(sorted({e["reason"] for e in evidence})) if evidence else None
+                c.execute("UPDATE voice_payment_claims SET status=?, resolved_at=?, reason=? WHERE call_id=?"
+                          " AND status='PENDING_VERIFICATION'", (status, lg._iso(now), reason, r["call_id"]))
+                if status == "REJECTED":
+                    item["lifted_days"] = self._end_claim_pause(c, r, now)
+                    item["evidence"] = evidence
+                    lg._audit(c, ACTOR, "VOICE_PAYMENT_CLAIM_REJECTED", r["borrower_id"], at=now, reason=reason,
+                              call_id=r["call_id"], obligation_id=r["obligation_id"], lifted_days=item["lifted_days"],
+                              evidence_audit_ids=[e["audit_id"] for e in evidence])
+            out.append(item)
         return out
+
+    def _end_claim_pause(self, c, claim, now: datetime) -> list[str]:
+        """Lift the PAYMENT_CLAIM_PENDING stop-for-day rows a rejected claim placed, from today on, except days
+        another still-pending claim of the same borrower covers. Other stop-for-day triggers (a reply, a pickup)
+        are never touched. Canceled touches stay canceled; the Supervisor replans."""
+        lg = self.ledger
+        today = now.date().isoformat()
+        others = c.execute("SELECT claimed_at, pause_until FROM voice_payment_claims WHERE borrower_id=? AND call_id<>?"
+                           " AND status='PENDING_VERIFICATION'", (claim["borrower_id"], claim["call_id"])).fetchall()
+        covered = set()
+        for o in others:
+            d, end = lg._dt(o["claimed_at"]).date(), lg._dt(o["pause_until"]).date()
+            while d <= end:
+                covered.add(d.isoformat())
+                d += timedelta(days=1)
+        days = [r["day"] for r in c.execute(
+            "SELECT day FROM stop_for_day WHERE borrower_id=? AND trigger='PAYMENT_CLAIM_PENDING' AND day>=? AND day<=?",
+            (claim["borrower_id"], today, lg._dt(claim["pause_until"]).date().isoformat())) if r["day"] not in covered]
+        for day in days:
+            c.execute("DELETE FROM stop_for_day WHERE borrower_id=? AND day=? AND trigger='PAYMENT_CLAIM_PENDING'",
+                      (claim["borrower_id"], day))
+        return days
 
     def due_followups(self, day: date) -> list[dict]:
         return [dict(r) for r in self.ledger._conn().execute(

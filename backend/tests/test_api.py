@@ -42,6 +42,12 @@ def test_end_to_end(client):
     d = c.post("/decide", json=body).json()
     assert d["action"] == "SEND" and d["reserved"], d
 
+    # FSM-F1: internal statuses are not provider words (422); a receipt before dispatch changes nothing
+    for word in ("DISPATCHING", "RESERVED", "bogus"):
+        assert c.post(f"/provider-status/{d['instruction_id']}", json={"status": word}).status_code == 422
+    early = c.post(f"/provider-status/{d['instruction_id']}", json={"status": "DELIVERED"})
+    assert early.status_code == 200 and early.json()["status"] == "RESERVED"
+
     assert c.post(f"/dispatch/{d['instruction_id']}").json()["outcome"] == "SENT"
     blocked = c.post("/decide", json={**body, "at": f"{AS_OF}T11:00:00"}).json()
     assert (blocked["action"], blocked["reason"]) == ("WAIT", "SAME_CHANNEL_GAP")
