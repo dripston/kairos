@@ -48,19 +48,19 @@ def layers(policy) -> dict:
         ps = [mdl.p_arm(b, ch, s) for b in ("B1", "B2", "B3", "B4") for s in ("08-11", "14-17", "17-19")]
         base[ch] = sum(ps) / len(ps)
     cohorts = sorted({r.cohort for r in mdl.records}) or ["C?"]
-    rules, mermaid = [], ["flowchart LR"]
+    rules, mermaid = [], ["flowchart LR"] + [f"  L{i}[\"{LAYER_NAMES[i]}\"]" for i in (1, 2, 3)]
     for co in cohorts:
         for layer in (1, 2, 3):
             for out in ("D", "U"):
-                best = None
+                best = (0.0, "none")
                 for ch in sorted(CH_LAYER):
-                    if not costs.get(ch):
+                    if not costs.get(ch) or base[ch] < policy.min_reply_prob:   # channels that can qualify
                         continue
                     k = (f"L{layer}", out, ch)
                     v = base[ch] * mdl.trans.get(k) * mdl.trans_cohort.get((co,) + k) / (costs[ch] / 100)
-                    if best is None or v > best[0]:
+                    if v > best[0]:
                         best = (v, ch)
-                nxt = CH_LAYER[best[1]]
+                nxt = CH_LAYER.get(best[1], 4)
                 rules.append({"cohort": co, "after": f"{LAYER_NAMES[layer]} {'delivered, no reply' if out == 'D' else 'not delivered'}",
                               "next_channel": best[1], "next_layer": LAYER_NAMES[nxt],
                               "replies_per_inr": round(best[0], 4)})
@@ -120,3 +120,53 @@ def levels_report(policy) -> dict:
         "learning_by_day": policy.snapshots,
         "borrower_trace": borrower_trace(policy),
     }
+
+
+def print_levels(rep: dict, full: bool = False) -> None:
+    """Console view of RL2Policy.report() (scripts/run_k09_replay.py --policy rl2 [--report-levels])."""
+    lv = rep["levels"]
+    st = rep["stats"]
+    print(f"\nK09 RL v2 {rep['version']}: evaluated {st.get('evaluated', 0):,} borrower-days "
+          f"({rep['borrowers_evaluated_per_second']} /s), SEND {st.get('SEND', 0):,}, WAIT {st.get('WAIT', 0):,}, "
+          f"paused for good {rep['paused']}")
+    lam = [round(d["lambda"] * 100, 4) for d in rep["pacing"]]
+    print(f"Price of money lambda (replies per ₹, by day): {lam}")
+    print("Learned reply effects per level (kappa = shrinkage strength estimated from between-group spread):")
+    for x in lv["reply"]:
+        top = ", ".join(f"{e['group']} x{e['multiplier']}" for e in x["top_effects"][:3])
+        print(f"  {x['level']:30} kappa {x['kappa']:>9} groups {x['groups']:>5}"
+              f"{'  (collapses to parent)' if x['collapsed_to_parent'] else ''}  {top}")
+    print(f"P(pay | reply) {lv['pay_given_reply']['global']}; STOP share of reply propensity "
+          f"{lv['stop']['stop_share_of_reply_propensity']}")
+    for s in lv["drilldown"][:5]:
+        print("  " + s)
+    if not full:
+        print("(--report-levels for layers, the per-segment daily table and a borrower trace)")
+        return
+    print("\nChannel layers: learned next step after a touch without a reply")
+    for r in lv["layers"]["rules"]:
+        print(f"  {r['cohort']}: after {r['after']:42} -> {r['next_channel']:9} ({r['next_layer']}, "
+              f"{r['replies_per_inr']} replies/₹)")
+    print("```mermaid\n" + lv["layers"]["mermaid"] + "\n```")
+    print("\nPer-segment daily learning (cohort x executed day):")
+    print(f"  {'day':>3} {'cohort':6} {'touches':>7} {'replies':>7} {'paid':>5} {'STOP':>5} {'spend ₹':>8} {'rep/₹1k':>8}")
+    for r in lv["segment_daily"]:
+        print(f"  {r['day']:>3} {r['cohort']:6} {r['touches']:>7} {r['replies']:>7} {r['verified_payments']:>5} "
+              f"{r['stops']:>5} {r['spend_inr']:>8.2f} {r['replies_per_1000_inr']:>8}")
+    print("\nBest arm per band by day (posterior replies/₹):")
+    for s in lv["learning_by_day"]:
+        print(f"  day {s['day']:>2} n={s['finalized_touches']:>5} fatigue {s['fatigue']}  " +
+              "  ".join(f"{b}: {v}" for b, v in s["best_arm_by_band"].items()))
+    t = lv["borrower_trace"]
+    if t:
+        print(f"\nBorrower trace {t['borrower_id']} ({t['cohort']}, {t['region']}, EMI ₹{t['emi_inr']:,.0f}):")
+        for s in t["steps"]:
+            b = s["best_arm"]
+            f = " x ".join(f"{n.split(' (')[0]} {v}" for n, v in s["factors"])
+            print(f"  day {s['day']:>2} {s['band']} recent {s['recent_touches']} prev {s['previous']}: "
+                  f"{s['decision']} {b['channel']} {b['slot']} p={b['p_reply']} V/paisa={b['value_per_paisa']} "
+                  f"vs lambda {s['lambda']} — {s['why']}\n         p = {f}")
+        for h in t["history"]:
+            print(f"    outcome: {h['channel']} -> {h['outcome']}")
+        if t["paused"]:
+            print(f"    paused: {t['paused']}")
