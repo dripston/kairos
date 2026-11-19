@@ -13,6 +13,8 @@ Everything is SIMULATED. Run from backend/:
     python3 scripts/run_k09_replay.py --kairos-opts '{"decay": 0.8}'   # override K09 decision options (replay.k09.KairosOptions)
     python3 scripts/run_k09_replay.py --kairos-opts '{"stop_penalty": 0}'   # PR #17 default (no opt-out penalty)
     python3 scripts/run_k09_replay.py --legacy-k09           # the K09 default before k09/optimize (no decay, floor, STOP penalty)
+    python3 scripts/run_k09_replay.py --journeys churn       # Kairos arm = K09 + K27 auto-churn (cohort/journey/layer)
+    python3 scripts/run_k09_replay.py --journeys both        # K09 alone AND K09 + K27, same seed/budget/caps
 
 Baselines: cn10 = CreditNirvana's own "Personal Loan 10-Day Post-Due Digital Collections Strategy"
 (HDFC project), a stand-in until the official fixed-cadence policy file (K02) arrives; k15 = the K15
@@ -64,6 +66,9 @@ def main() -> int:
     p.add_argument("--rl2-opts", default=None, help="JSON of kairos_backend.rl.policy.RL2Options overrides")
     p.add_argument("--report-levels", action="store_true",
                    help="rl2: print learned effects per level, layers, per-segment daily table, a borrower trace")
+    p.add_argument("--journeys", choices=("none", "churn", "both"), default="none",
+                   help="churn: the Kairos arm runs K27 cohort/risk/journey/layer reassignment on top of K09 "
+                        "(CN10 baseline unchanged); both: K09 alone and K09 + K27 side by side")
     p.add_argument("--budget-per-case-paise", type=int, default=None,
                    help="fixed paise per loan for every arm (default: match the baseline's spend)")
     a = p.parse_args()
@@ -72,7 +77,8 @@ def main() -> int:
     kwargs = dict(baselines=baselines, context=not a.no_context, explore=a.explore, dataset=a.dataset,
                   kairos_opts={**(LEGACY_KAIROS_OPTIONS if a.legacy_k09 else {}),
                                **(json.loads(a.kairos_opts) if a.kairos_opts else {})},
-                  policy=a.policy, rl2_opts=json.loads(a.rl2_opts) if a.rl2_opts else None)
+                  policy=a.policy, rl2_opts=json.loads(a.rl2_opts) if a.rl2_opts else None,
+                  journeys=a.journeys)
 
     t0 = time.perf_counter()
     r = run_comparison(a.borrowers, a.days, a.seed, drift, a.budget_per_case_paise, **kwargs)
@@ -84,7 +90,8 @@ def main() -> int:
     print(f"Dataset: {m['dataset']}")
     print(f"Simulator: {k['simulator']}")
     print(f"K09 options: {m['kairos_options']}\n")
-    arms = [(b, r["baselines"][b]) for b in baselines] + [("K09", k)]
+    names = {"kairos": "K09", "kairos_churn": "K09+K27"}
+    arms = [(b, r["baselines"][b]) for b in baselines] + [(names[a], x) for a, x in r["learning_arms"].items()]
     rows = [
         ("Attempted (unique)", lambda x: x["funnel_unique_borrowers"]["attempted"]),
         ("Reached (unique)", lambda x: x["funnel_unique_borrowers"]["reached"]),
@@ -102,10 +109,21 @@ def main() -> int:
         ("K15 safety violations", lambda x: sum(x["k15_safety_violations"].values())),
         ("Decisions / second", lambda x: x["decisions_per_second"]),
     ]
-    print(f"{'':28}" + "".join(f"{name:>12}" for name, _ in arms) + f"{'K09 vs ' + baselines[0]:>14}")
+    learn = [n for n, _ in arms[len(baselines):]]
+    print(f"{'':28}" + "".join(f"{name:>12}" for name, _ in arms)
+          + "".join(f"{n + ' vs ' + baselines[0]:>18}" for n in learn))
     for title, get in rows:
         vals = [get(x) for _, x in arms]
-        print(f"{title:28}" + "".join(f"{fmt(v):>12}" for v in vals) + f"{pct(vals[-1] or 0, vals[0] or 0):>14}")
+        print(f"{title:28}" + "".join(f"{fmt(v):>12}" for v in vals)
+              + "".join(f"{pct(v or 0, vals[0] or 0):>18}" for v in vals[len(baselines):]))
+    for name, x in arms:
+        if "k27" in x:
+            kk = x["k27"]
+            print(f"\nK27 ({name}) cohorts at start {kk['initial_cohorts']}")
+            print(f"K27 ({name}) cohorts at end   {kk['final_cohorts']}")
+            print(f"K27 ({name}) lifecycle {kk['final_lifecycle']}  layers {kk['final_layers']}  risk {kk['final_risk']}")
+            print(f"K27 ({name}) transitions {kk['transitions_by_engine']}  journey waits {kk['journey_waits']}")
+            print(f"K27 ({name}) top rules {kk['top_rules']}")
 
     for name, x in arms:
         print(f"\nSupervisor decisions {name:6}: {x['decisions']}   top WAIT/CANCEL rules: {x['wait_rules']}")

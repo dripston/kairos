@@ -218,7 +218,10 @@ ARMS = {
     "cn10": cn10.LABEL + " on the K06 stack",
     "k15": "Fixed cadence (K15 placeholder schedule: WhatsApp every 5 days, SMS every 3) on the K06 stack",
     "kairos": "K09 Beta-Bernoulli (+ borrower context) with seeded Thompson sampling on the K06 stack",
+    "kairos_churn": ("K09 + K27 auto-churn: cohort / risk / journey / layer / lifecycle engine picks the day's allowed "
+                     "channels, K09 ranks within them, on the K06 stack"),
 }
+JOURNEYS = ("none", "churn", "both")
 
 
 class StackRun:
@@ -228,6 +231,8 @@ class StackRun:
                  drift_day: Optional[int] = None, context: bool = True, explore: bool = True,
                  start: date = START, portfolio=None, loans=None, kairos_opts: Optional[dict] = None,
                  policy: str = "default", rl2_opts: Optional[dict] = None, warm_start: Optional[dict] = None):
+        """arm 'kairos_churn' = the K09 arm (same KairosOptions) with the K27 auto-churn engine on top
+        (journeys='churn'); policy='rl2' applies to the plain 'kairos' arm only."""
         if arm not in ARMS:
             raise ValueError(f"unknown arm {arm}")
         self.arm, self.seed, self.days, self.start = arm, seed, days, start
@@ -241,7 +246,9 @@ class StackRun:
         self.sink = RecordingSink()
         self.providers = {ch: FakeProvider(ch, cost_paise=COST_PAISE[ch]) for ch in S.CHANNELS}
         self.executor = Executor(self.ledger, self.providers)
-        if arm == "kairos":
+        self.learning = arm.startswith("kairos")   # 'kairos' and 'kairos_churn' (K09 + K27)
+        self.churn = None
+        if self.learning:
             o = self.opts
             base = BetaBernoulliLearner(self.ledger, min_reply_prob=o.min_reply_prob, decay=o.decay,
                                         hier_strength=o.hier_strength, min_replies_per_inr=o.min_replies_per_inr)
@@ -264,10 +271,12 @@ class StackRun:
                 self.ledger, self, rl2_opts, campaign_id=CAMPAIGN_ID, warm_start=warm_start, costs=COST_PAISE,
                 has_template=lambda ch, lang: template_for(ch, lang) is not None)
         self.fsm = SupervisorFSM(self.ledger, self.executor, self.ranker, self.sink, mode=Mode.SIMULATOR)
-        self.finalizer = OutcomeFinalizer(self.ledger, self.ranker if arm == "kairos" else _NullLearner())
+        self.finalizer = OutcomeFinalizer(self.ledger, self.ranker if self.learning else _NullLearner())
         self.simulator = DriftSimulator(self.portfolio, seed, drift_day)
         self.log = ContactLog()
         self.import_report = self._setup(csv_path, budget_per_case_paise)
+        if arm == "kairos_churn":
+            self._setup_churn()
         self.decisions = Counter()          # SEND / WAIT / CANCEL / HANDOFF from plan()
         self.wait_rules = Counter()
         self.dispatch = Counter()           # SENT / BLOCKED / SKIPPED / ...
@@ -332,12 +341,16 @@ class StackRun:
         queue = []
         if self.rl2 is not None:   # K09 RL v2 planner (kairos_backend/rl/policy.py)
             return self.rl2.plan_queue(self, day, d, plan_at, too_soon)
-        if self.arm == "kairos":
-            order = []
+        if self.learning:
+            order, cand = [], {}
             for b in self.portfolio:
-                if b.paid or b.opted_out or not b.consents or too_soon(b):
+                if b.paid or b.opted_out or not b.consents:
                     continue
-                r = self.ranker.rank(dpd_band(self._dpd(b.index, day)), self.candidates(b, d), Mode.SIMULATOR,
+                cands = self._churn_candidates(b, d) if self.churn is not None else self.candidates(b, d)
+                if not cands or too_soon(b):
+                    continue
+                cand[b.index] = cands
+                r = self.ranker.rank(dpd_band(self._dpd(b.index, day)), cands, Mode.SIMULATOR,
                                      rng=self._rng(day, b.index), borrower_id=b.borrower_id, persist=False,
                                      at=plan_at)
                 if r.action == "SEND":
@@ -355,7 +368,7 @@ class StackRun:
                     order.append((-replies_per_rupee(value, c.est_cost_paise),
                                   -(self._dpd(b.index, day) or 0), b.index))
             order.sort()
-            return [(self.portfolio[i], self.candidates(self.portfolio[i], d), None) for _, _, i in order]
+            return [(self.portfolio[i], cand[i], None) for _, _, i in order]
         if self.arm == "k15":
             for b in self.portfolio:
                 if "whatsapp" in b.consents and (day + b.index) % 5 == 0:
@@ -380,9 +393,84 @@ class StackRun:
                 queue.append((b, self.candidates(b, d, channels=[ch], template=tpl), (ch, tpl)))
         return queue
 
+    # ---------- K27 auto-churn on top of K09 (arm kairos_churn) ----------
+    def _setup_churn(self):
+        """Enrol every loan in the K27 engine from spine-visible fields only (risk tag, bounce string, POS, DPD,
+        language, re-presentment flag). In-memory, no per-event trace (speed); decisions stay deterministic."""
+        from kairos_backend.churn import ChurnEngine, static_profile
+        self.churn = ChurnEngine(":memory:", trace_events=False)
+        cut = cn10.high_ticket_threshold([x.pos_paise for x in self.loans])
+        for b, loan in zip(self.portfolio, self.loans):
+            prof = static_profile(dpd=loan.file_dpd, as_of=self.start, pos_paise=loan.pos_paise, risk_tag=loan.risk_tag,
+                                  bounce_string=loan.bounce_string, language=b.language, emi_paise=loan.emi_paise,
+                                  represent=loan.represent, loan_id=loan.loan_id, obligation_id=loan.obligation_id,
+                                  high_ticket_pos_paise=cut)
+            self.churn.enroll(b.borrower_id, prof, CAMPAIGN_ID, self.start)
+        self.churn_waits = Counter()
+
+    def _churn_candidates(self, b, d: date) -> list:
+        a = self.churn.allowed_channels(b.borrower_id, d, consented=set(b.consents))
+        if not a["channels"]:
+            self.churn_waits[a["reason"]] += 1
+            return []
+        avoid = set(a.get("avoid_slots") or [])
+        out = [c for c in self.candidates(b, d, channels=a["channels"]) if c.slot not in avoid]
+        return out or self.candidates(b, d, channels=a["channels"])
+
+    def _churn_feed(self, sent_meta, outcomes):
+        """Feed ledger-visible outcomes to K27 as normalized events (ids from the instruction id: idempotent)."""
+        ev = self.churn.process
+        for o, (res, b, at) in zip(outcomes, sent_meta):
+            iid, ch, bid = res.instruction_id, o.channel, b.borrower_id
+            base = {"borrower_id": bid, "channel": ch, "touch_id": iid, "provenance": "SIMULATED"}
+            ev({**base, "event_id": f"{iid}:attempt", "kind": "attempt", "occurred_at": at,
+                "cost_paise": COST_PAISE[ch]})
+            t1 = at + timedelta(minutes=1)
+            if ch in ("ivr", "voicebot"):
+                ev({**base, "event_id": f"{iid}:call", "kind": "call", "occurred_at": t1,
+                    "status": "ANSWERED" if o.delivered else "NO_ANSWER", "duration_s": 30 if o.delivered else 0,
+                    "slot": res.slot})
+            else:
+                ev({**base, "event_id": f"{iid}:dlr", "kind": "delivery", "occurred_at": t1,
+                    "status": "DELIVERED" if o.delivered else "FAILED"})
+            t2 = at + timedelta(minutes=90)
+            if o.opted_out:
+                ev({**base, "event_id": f"{iid}:stop", "kind": "stop", "occurred_at": t2})
+            if o.meaningful_reply:
+                ev({**base, "event_id": f"{iid}:reply", "kind": "reply", "occurred_at": t2})
+                if o.payment_claimed and not o.payment_verified:
+                    ev({**base, "event_id": f"{iid}:claim", "kind": "payment", "occurred_at": t2 + timedelta(minutes=1),
+                        "state": "CLAIMED"})
+            if o.payment_verified:
+                ev({"borrower_id": bid, "event_id": f"{iid}:paid", "kind": "payment",
+                    "occurred_at": t2 + timedelta(hours=2), "state": "VERIFIED", "cleared": True,
+                    "provenance": "SIMULATED"})
+
+    def churn_report(self) -> dict:
+        c = self.churn
+        st = [c.state(bid) for bid in c.borrower_ids()]
+        tr = Counter()
+        rules = Counter()
+        for r in c.db.execute("SELECT engine, rule_id, COUNT(*) n FROM churn_transitions GROUP BY engine, rule_id"):
+            tr[r["engine"]] += r["n"]
+            rules[r["rule_id"]] += r["n"]
+        initial = Counter()
+        for r in c.db.execute("SELECT to_value, COUNT(*) n FROM churn_transitions WHERE engine='cohort' AND "
+                              "from_value='-' GROUP BY to_value"):
+            initial[r["to_value"]] = r["n"]
+        return {"versions": c.versions(), "initial_cohorts": dict(sorted(initial.items())),
+                "final_cohorts": dict(sorted(Counter(s.cohort for s in st).items())),
+                "final_lifecycle": dict(sorted(Counter(s.lifecycle for s in st).items())),
+                "final_layers": dict(sorted(Counter(s.layer for s in st).items())),
+                "final_risk": dict(sorted(Counter(s.risk_tier for s in st).items())),
+                "transitions_by_engine": dict(sorted(tr.items())), "top_rules": dict(rules.most_common(15)),
+                "journey_waits": dict(self.churn_waits.most_common(10))}
+
     def run_day(self, day: int):
         d = self.start + timedelta(days=day)
         self.ledger.start_day(d)  # daily LMS refresh: spine DPD fresh (K01 stale rule)
+        if self.churn is not None:
+            self.churn.tick(d)  # K27 daily tick: PTP due checks, expiries, tick rules
         plan_at = datetime.combine(d, dtime(8, 0))
         t0 = time.perf_counter()
         sends = []
@@ -452,7 +540,9 @@ class StackRun:
 
         # close reply windows that have ended (learning happens here, inside the campaign)
         self.finalizer.finalize_due(datetime.combine(d, dtime(23, 59)))
-        if self.arm == "kairos":
+        if self.churn is not None:
+            self._churn_feed(sent_meta, outcomes)
+        if self.learning:
             self.preference.append({band: (score_table(self.ranker, band, eligible_only=True) or [None])[0]
                                     for band in BANDS})
         self.spend_paise += day_spend
@@ -505,6 +595,8 @@ class StackRun:
             "crm_envelopes": len(self.sink.envelopes), "envelope_hash": envelope_hash,
             "daily": self.daily,
         }
+        if self.churn is not None:
+            out["k27"] = self.churn_report()
         if self.arm == "cn10":
             out["cn10"] = {"cohorts": dict(sorted(Counter(x.cohort for x in self.loans).items())),
                            "scheduled_steps": dict(sorted(self.scheduled.items())),
@@ -584,7 +676,7 @@ def run_comparison(n_borrowers: int, days: int, seed: int, drift_day: Optional[i
                    baselines: tuple = ("cn10",), context: bool = True, explore: bool = True,
                    dataset: Optional[str] = None, start: Optional[date] = None,
                    kairos_opts: Optional[dict] = None, policy: str = "default", rl2_opts: Optional[dict] = None,
-                   warm_start: Optional[dict] = None) -> dict:
+                   warm_start: Optional[dict] = None, journeys: str = "none") -> dict:
     """budget_per_case_paise=None → MATCHED SPEND: the shared pool is set to what the FIRST baseline
     spends when unconstrained (a calibration run), so every arm runs on the same money and K09 has
     to allocate it better. Pass a number to fix the pool instead.
@@ -612,7 +704,7 @@ def run_comparison(n_borrowers: int, days: int, seed: int, drift_day: Optional[i
     def stack(arm, name, per_case):
         return StackRun(arm, csv_path, seed, days, os.path.join(workdir, f"{name}.db"), per_case, drift_day,
                         context=context, explore=explore, start=start, portfolio=portfolio, loans=loans,
-                        kairos_opts=kairos_opts if arm == "kairos" else None,
+                        kairos_opts=kairos_opts if arm.startswith("kairos") else None,
                         **(dict(policy=policy, rl2_opts=rl2_opts, warm_start=warm_start) if arm == "kairos" else {}))
 
     budget_basis = "fixed"
@@ -626,13 +718,16 @@ def run_comparison(n_borrowers: int, days: int, seed: int, drift_day: Optional[i
         budget_basis = (f"matched to {baselines[0]} fixed-cadence spend (calibration run "
                         f"₹{cal.spend_paise / 100:,.2f}, unconstrained)")
     runs, before = {}, None
-    for arm in (*baselines, "kairos"):
+    if journeys not in JOURNEYS:
+        raise ValueError(f"unknown journeys option {journeys} (choose from {JOURNEYS})")
+    learning_arms = {"none": ("kairos",), "churn": ("kairos_churn",), "both": ("kairos", "kairos_churn")}[journeys]
+    for arm in (*baselines, *learning_arms):
         run = stack(arm, arm, budget_per_case_paise)
-        if arm == "kairos":
+        if arm == learning_arms[0]:
             before = {band: score_table(run.ranker, band) for band in ("B1", "B2")}
         runs[arm] = run
         run.run()
-    k = runs["kairos"]
+    k = runs[learning_arms[0]]
     out = {
         "provenance": "SIMULATED (DEV simulator, synthetic dataset and priors, placeholder costs/caps/templates)",
         "baseline_arm": baselines[0],
@@ -652,6 +747,8 @@ def run_comparison(n_borrowers: int, days: int, seed: int, drift_day: Optional[i
         "baseline": runs[baselines[0]].report(),
         "baselines": {b: runs[b].report() for b in baselines},
         "kairos": k.report(),
+        "journeys": journeys,
+        "learning_arms": {a: runs[a].report() for a in learning_arms},
         "scores_before": before,
         "scores_after": {band: score_table(k.ranker, band)[:4] for band in ("B1", "B2")},
         "preference_switches": {band: preference_switches(k, band) for band in BANDS},

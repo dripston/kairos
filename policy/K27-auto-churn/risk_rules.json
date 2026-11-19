@@ -1,0 +1,251 @@
+{
+  "policy_id": "kairos-auto-churn-risk",
+  "policy_version": "0.1.0-draft",
+  "status": "DRAFT",
+  "owner": "Ojas (Product) — proposed by K27, not signed off",
+  "source": "CN PRD v3 §1/§2: an event-driven engine that reclassifies a borrower's risk band against live disposition events (independent of cohort reassignment). Analytics §5.6: risk transition matrix, rule-trigger frequency, days-to-transition.",
+  "tiers": [
+    "LOW",
+    "MEDIUM",
+    "HIGH",
+    "CRITICAL"
+  ],
+  "evaluation": "Rules run in list order on every event (and on the daily tick). The FIRST rule whose `on` and `when` match and whose action changes the tier applies: at most one tier change per event. Blocked changes (cooldown / hysteresis / frozen) are audited as suppressed.",
+  "cooldown_hours": 48,
+  "cooldown_note": "Event-driven strong signals (verified / reversed payment, broken / kept promise, refusal, hardship) bypass the cooldown; the tick rules (no-contact, sustained engagement, DPD floor) are subject to it.",
+  "reversal_cooldown_hours": 120,
+  "hysteresis_note": "A move in the OPPOSITE direction to the last change needs 120 h since that change (unless bypass_cooldown): up-down-up flapping on noisy outcomes is impossible.",
+  "freeze_note": "While frozen (hardship), only rules with applies_when_frozen change anything.",
+  "rules": [
+    {
+      "id": "RISK.HARDSHIP_FREEZE",
+      "on": [
+        "intent",
+        "call",
+        "hold",
+        "reply"
+      ],
+      "when": {
+        "field": "hardship",
+        "op": "eq",
+        "value": true
+      },
+      "action": {
+        "freeze": true
+      },
+      "bypass_cooldown": true,
+      "description": "Hardship -> special handling: tier frozen (no escalation while a person handles the case)."
+    },
+    {
+      "id": "RISK.HARDSHIP_UNFREEZE",
+      "on": [
+        "tick",
+        "hold"
+      ],
+      "when": {
+        "all": [
+          {
+            "field": "risk_frozen",
+            "op": "eq",
+            "value": true
+          },
+          {
+            "field": "hardship",
+            "op": "eq",
+            "value": false
+          }
+        ]
+      },
+      "action": {
+        "freeze": false
+      },
+      "bypass_cooldown": true,
+      "applies_when_frozen": true,
+      "description": "Hardship hold over -> tier unfrozen (no change of tier)."
+    },
+    {
+      "id": "RISK.PAYMENT_REVERSED_UP",
+      "on": [
+        "payment"
+      ],
+      "when": {
+        "field": "event.payment_state",
+        "op": "eq",
+        "value": "REVERSED"
+      },
+      "action": {
+        "shift": 1
+      },
+      "bypass_cooldown": true,
+      "description": "A verified payment was reversed by the bank (E15): up one tier."
+    },
+    {
+      "id": "RISK.PAYMENT_VERIFIED_DOWN",
+      "on": [
+        "payment"
+      ],
+      "when": {
+        "field": "event.payment_state",
+        "op": "eq",
+        "value": "VERIFIED"
+      },
+      "action": {
+        "shift": -1
+      },
+      "bypass_cooldown": true,
+      "description": "D7/LMS-verified payment (full or partial): down one tier."
+    },
+    {
+      "id": "RISK.REPEAT_BROKEN_PTP_CRITICAL",
+      "on": [
+        "ptp",
+        "tick"
+      ],
+      "when": {
+        "field": "ptp.broken_count",
+        "op": "ge",
+        "value": 2
+      },
+      "action": {
+        "set": "CRITICAL"
+      },
+      "bypass_cooldown": true,
+      "description": "Two or more broken promises (K13 broken_ptp.threshold = 2): CRITICAL."
+    },
+    {
+      "id": "RISK.BROKEN_PTP_UP",
+      "on": [
+        "ptp"
+      ],
+      "when": {
+        "field": "event.ptp_state",
+        "op": "eq",
+        "value": "BROKEN"
+      },
+      "action": {
+        "shift": 1
+      },
+      "description": "Broken promise-to-pay: up one tier.",
+      "bypass_cooldown": true
+    },
+    {
+      "id": "RISK.PTP_KEPT_DOWN",
+      "on": [
+        "ptp"
+      ],
+      "when": {
+        "field": "event.ptp_state",
+        "op": "eq",
+        "value": "KEPT"
+      },
+      "action": {
+        "shift": -1
+      },
+      "description": "Promise kept: down one tier."
+    },
+    {
+      "id": "RISK.REFUSED_TO_PAY_UP",
+      "on": [
+        "call",
+        "intent"
+      ],
+      "when": {
+        "any": [
+          {
+            "all": [
+              {
+                "field": "event.disposition",
+                "op": "eq",
+                "value": "REFUSED_TO_PAY"
+              },
+              {
+                "field": "event.confidence",
+                "op": "ge",
+                "value": 0.6
+              }
+            ]
+          },
+          {
+            "field": "event.intent",
+            "op": "eq",
+            "value": "REFUSED_TO_PAY"
+          }
+        ]
+      },
+      "action": {
+        "shift": 1,
+        "max": "HIGH"
+      },
+      "description": "Explicit refusal to pay (voicebot, confidence >= 0.6): up one tier, at most HIGH.",
+      "bypass_cooldown": true
+    },
+    {
+      "id": "RISK.NO_CONTACT_MULTICHANNEL_UP",
+      "on": [
+        "tick"
+      ],
+      "when": {
+        "field": "no_contact_channels_7d",
+        "op": "ge",
+        "value": 2
+      },
+      "action": {
+        "shift": 1,
+        "max": "HIGH"
+      },
+      "description": "Repeated no-contact on >= 2 channels in 7 days (>= 2 attempts each, none delivered/connected): up one tier, at most HIGH."
+    },
+    {
+      "id": "RISK.DPD_B3_FLOOR",
+      "on": [
+        "tick"
+      ],
+      "when": {
+        "field": "band",
+        "op": "in",
+        "value": [
+          "B3",
+          "B4"
+        ]
+      },
+      "action": {
+        "floor": "HIGH"
+      },
+      "description": "61+ DPD: tier at least HIGH."
+    },
+    {
+      "id": "RISK.SUSTAINED_ENGAGEMENT_DOWN",
+      "on": [
+        "tick"
+      ],
+      "when": {
+        "all": [
+          {
+            "field": "any.replied_14d",
+            "op": "ge",
+            "value": 3
+          },
+          {
+            "field": "ptp.broken_count",
+            "op": "eq",
+            "value": 0
+          },
+          {
+            "field": "band",
+            "op": "in",
+            "value": [
+              "PRE_DUE",
+              "B1",
+              "B2"
+            ]
+          }
+        ]
+      },
+      "action": {
+        "shift": -1,
+        "min": "LOW"
+      },
+      "description": "Three or more meaningful replies in 14 days, no broken promise, below 61 DPD: down one tier (tick rule: cooldown + hysteresis apply)."
+    }
+  ]
+}

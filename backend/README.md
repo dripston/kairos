@@ -880,3 +880,87 @@ probes `GET /api/tags` once; if the server or the model is missing, tier 3 is si
 * Open follow-ups: a real LLM-tier eval (needs Ollama or a key; the report counts how many messages
   would reach one), a held-out half of the gold set for future rule tuning, and wiring
   `record_text_reply` into the CM-03 inbound webhook once that lands.
+
+## Auto-churn engine (K27)
+
+`kairos_backend/churn/` is CreditNirvana's event-driven cohort and risk engine (CN "Collection
+Orchestration Engine" PRD v3): live outcomes from **every** channel (SMS, WhatsApp, email, IVR, the
+Sarvam voicebot, payments, CM-03 WhatsApp intents, K13 holds) move a borrower between cohorts, and so
+between omnichannel journeys. Policy (all DRAFT): [`../policy/K27-auto-churn`](../policy/K27-auto-churn/README.md).
+Sarvam findings: [`../docs/sarvam-campaigns-notes.md`](../docs/sarvam-campaigns-notes.md).
+
+```
+normalized event (any channel) ──► dedupe by event_id ──► fold into features (older events never overwrite newer)
+   ──► RISK engine (risk_rules.json: tier LOW..CRITICAL, cooldown 48 h, hysteresis 120 h, hardship freeze)
+   ──► COHORT engine (reassign_rules.json: STOP / paid / hardship / K13 hold ALWAYS win → override → rules → pin)
+   ──► journey entry (CN10: continue at DPD cycle day; behaviour journeys: restart at day 1)
+   ──► LIFECYCLE (stop rules: ACTIVE, PAUSED_PTP, PAUSED_CLAIM, PAUSED_HOLD, HARDSHIP_HUMAN,
+                  EXHAUSTED_CAMPAIGN, STOPPED_OPT_OUT, PAID_EXIT; transition table churn/fsm.py)
+   ──► LAYER rules (L1 SMS/email · L2 WhatsApp · L3 IVR/voicebot · L4 human)
+daily tick ──► PTP due (KEPT / BROKEN), hold / claim / pin expiry, tick rules, cohort-size snapshot
+journey step of the day ──► allowed_channels(borrower, day) ──► K09 ranks (Rechurn / RL v2) ──► K06 Supervisor gates
+```
+
+| Module | What |
+|---|---|
+| `dsl.py` | Condition language: `= ≠ > < ≥ ≤ contains between in not_in exists`, `all/any/not`, PRD left-to-right `chain`; ordinal status fields; scope by campaign / cohort / region |
+| `state.py` | `ChurnEvent` (kinds: delivery, reply, stop, opt_in, call, intent, ptp, payment, hold, attempt), `BorrowerState.apply` (time-ordered, per-touch max level, SMS read never tracked, STOP is not a reply), lazy `Features` + `FEATURE_CATALOGUE` |
+| `cohorts.py` | `CohortSet`: first-match membership, `UNASSIGNED` live orphans, coverage (counts, overlaps, orphan ids), frozen orphan snapshot |
+| `risk_rules.py` / `reassign_rules.py` | The two independent rule engines |
+| `journeys.py` | Journeys (CN10 C1–C5 verbatim + behaviour journeys), layer gating, layer rules, `recommend_layer` acceptance, stop rules + `stop_policy` hook |
+| `fsm.py` | Lifecycle `STATES` and `TRANSITIONS` (terminal states exit only on their own trigger) |
+| `engine.py` | `ChurnEngine`: enroll (from K03 spine), process, tick, allowed_channels, recommend_layer, maker-checker overrides, manual schedule, start_campaign, borrower, trace, coverage, analytics (by campaign / cohort / region / layer) |
+| `sarvam_export.py` | DRY RUN: `upload_cohort` + `configure_campaign` bodies with a K01-safe retry plan, CN AICC gate replies, Sarvam webhook → normalized events |
+| `api.py` | `/churn/*` routes (mounted in `kairos_backend.api`) |
+
+API: `GET/PUT /churn/cohorts`, `GET /churn/coverage`, `POST /churn/enroll`, `GET /churn/borrowers/{id}`,
+`GET /churn/borrowers/{id}/trace`, `GET /churn/borrowers/{id}/allowed?day=`, `POST
+/churn/borrowers/{id}/recommend-layer`, `POST /churn/events`, `POST /churn/tick`, `GET /churn/analytics`
+(`?campaign=&region=&cohort=&layer=`), `POST /churn/overrides`, `POST /churn/overrides/{id}/decision`,
+`POST /churn/manual`, `GET /churn/fsm`, `POST /churn/sarvam/webhook`, `POST /churn/sarvam/gate`,
+`GET /churn/sarvam/export?day=`. Env `KAIROS_CHURN_DB` (default `backend/kairos_churn.db`, gitignored).
+Actor via `X-Kairos-Actor` header (demo only, not real auth).
+
+Example event (`POST /churn/events`):
+
+```json
+{"event_id": "wa:INS-1:reply:abc", "borrower_id": "BRW-SL100001", "kind": "intent", "channel": "whatsapp",
+ "occurred_at": "2026-11-23T10:05:00+05:30", "intent": "PTP", "ptp_date": "2026-11-26", "provenance": "SIMULATED"}
+```
+
+Replay (SIMULATED): `python3 scripts/run_k09_replay.py --borrowers 1500 --days 14 --seed 42 --journeys both`
+runs CN10 (unchanged), K09 alone and K09 + K27 on the same seed, borrowers, budget and caps, using only
+ledger-visible outcomes (delivery, reply, STOP, claim, verified payment).
+
+| Seed (1,500 × 14 days, matched budget/caps) | CN10 replies/₹1k | K09 | K09 + K27 | STOP opt-outs CN10 / K09 / K09+K27 | Verified payments | Cap breaches |
+|---|---|---|---|---|---|---|
+| 42 | 58.79 | 74.54 (+26.8%) | 67.00 (+14.0%) | 15 / 17 / 17 | 53 / 62 / 51 | 0 / 0 / 0 |
+| 7 | 56.18 | 78.30 (+39.4%) | 63.69 (+13.4%) | 11 / 24 / 12 | 35 / 60 / 47 | 0 / 0 / 0 |
+
+Reading (SIMULATED): K27's default journeys keep CN10's contact calendar (a day with no step = no contact,
+~4,000 waits) and gate voice by layer, so K09 has fewer days to spend on: replies/₹ stays above CN10 but
+below K09 alone. On seed 7 it halves K09's STOP opt-outs back to CN10's level. The DEV simulator produces no
+PTP / hardship / dispute outcomes, so those cohorts are exercised by tests, not by this replay. Tuning the
+journeys (e.g. more step days for WhatsApp-responsive borrowers) is open; never tune against the simulator's
+hidden parameters.
+
+### Context for Claude / how to continue
+
+- **Read first:** `policy/K27-auto-churn/README.md` (open decisions defaulted, all DRAFT), `churn/engine.py`
+  docstring (pipeline order), `tests/test_churn.py` (one test per behaviour).
+- **Determinism:** no wall clock or randomness inside decisions: `at` = max(event time, last event time),
+  `as_of` = max(event day, last tick). Same events + same policy files ⇒ same transitions (tested).
+- **Never** let an override, pin, RL recommendation or journey beat STOP / verified payment / hardship /
+  K13 holds — `reassign_rules.json` precedence and the lifecycle FSM enforce it; keep that order.
+- **Interfaces for K09 RL v2 (`k09/rl-v2`):** `ChurnEngine.allowed_channels(borrower_id, day, consented)`
+  (channels ordered step-first, `avoid_slots`, step purpose/tier/intensity), `recommend_layer(borrower_id,
+  {"layer", "source", "recommendation_id"}, {"n_obs", "expected_lift"})` → accepted / rejected with a rule
+  id, and `ChurnEngine(stop_policy=fn)` where `fn(features, state) -> {"budget": int, "source": str}` is
+  the learned no-response stopping threshold. Do not edit `learner.py` from here.
+- **HITL (`k06/hitl-control`):** pass `ChurnEngine(hitl=HITL(...))` to hand EXHAUSTED borrowers to a person
+  (`hitl.act(..., "handoff", ...)`); overrides are already maker-checker.
+- **K17/K18 voice engine:** map Sarvam payloads with `sarvam_export.webhook_to_events`; the fields the voice
+  engine still misses are listed in `sarvam_export.VOICE_ENGINE_DIFFS`.
+- **When `origin/k06/deterministic-states` lands:** declare `churn/fsm.py` there (`STATES`, `TRANSITIONS`).
+- **Adding a cohort / rule:** edit the JSON (fields must be in `FEATURE_CATALOGUE`; validation refuses
+  unknown fields or operators), add a test, bump `policy_version`.

@@ -98,6 +98,12 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 cm03_engine = ConversationEngine(ledger)
 app.include_router(cm03_router(cm03_engine))
 
+# K27 auto-churn engine (cohort / risk / journey / layer / lifecycle), additive routes under /churn
+from .churn import api as churn_api  # noqa: E402
+
+churn_api.configure(ledger=ledger)
+app.include_router(churn_api.router)
+
 
 def _call(fn, *a, **k):
     try:

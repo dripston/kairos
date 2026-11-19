@@ -1,0 +1,36 @@
+{
+  "policy_id": "kairos-auto-churn-reassign",
+  "policy_version": "0.1.0-draft",
+  "status": "DRAFT",
+  "owner": "Ojas (Product) — proposed by K27, not signed off",
+  "source": "CN PRD v3 §1/§2: a second, independent event-driven engine that reassigns cohort membership outright against live channel dispositions. §7 Phase 3 'Disposition-triggered flows'.",
+  "evaluation": [
+    "1. precedence (safety, always wins): first matching entry fixes the cohort; pins, rules and manual overrides cannot beat it",
+    "2. an approved manual override (maker-checker) that has not expired",
+    "3. rules: first rule whose `on` matches the event kind (\"*\" = any event, \"tick\" = daily tick), whose scope matches and whose `when` holds; `assign` moves outright (optional pin_days), `recompute` re-runs cohort membership",
+    "4. an active pin keeps its cohort until it expires (recompute is skipped while pinned)"
+  ],
+  "precedence": [
+    { "id": "PREC.STOP", "when": { "field": "stop", "op": "eq", "value": true }, "cohort": "OPTED_OUT" },
+    { "id": "PREC.PAID", "when": { "field": "payment.cleared", "op": "eq", "value": true }, "cohort": "PAID_EXITED" },
+    { "id": "PREC.HARDSHIP", "when": { "field": "hardship", "op": "eq", "value": true }, "cohort": "HARDSHIP" },
+    { "id": "PREC.K13_HOLD", "when": { "field": "k13.hold", "op": "ne", "value": "" }, "cohort": "ON_HOLD" }
+  ],
+  "entry_default": "journey",
+  "entry_note": "DRAFT (the PRD does not say): the target journey's `entry` decides — CN10 risk journeys CONTINUE at the DPD cycle day (moving C3 -> C4 keeps the calendar position), behaviour journeys RESTART at day 1 from the move date. A rule may force restart/continue.",
+  "rules": [
+    { "id": "RA.CM03_NEEDS_TIME_PIN", "on": ["intent"],
+      "when": { "all": [ { "field": "event.intent", "op": "eq", "value": "NEEDS_TIME" }, { "field": "ptp.status", "op": "ne", "value": "OPEN" } ] },
+      "assign": "ENGAGED", "pin_days": 3, "entry": "restart",
+      "description": "CM-03 'needs time' (no date): ENGAGED for 3 days (ask for a date, K13 needs_time)." },
+    { "id": "RA.WA_REPLY_PIN", "on": ["reply"],
+      "when": { "all": [ { "field": "event.channel", "op": "eq", "value": "whatsapp" },
+                         { "field": "ptp.status", "op": "ne", "value": "OPEN" },
+                         { "field": "payment.claimed", "op": "eq", "value": false },
+                         { "field": "dispute", "op": "eq", "value": false } ] },
+      "assign": "WA_RESPONSIVE", "pin_days": 7, "entry": "restart",
+      "description": "Meaningful WhatsApp reply: WhatsApp-first journey for at least 7 days." },
+    { "id": "RA.RECOMPUTE", "on": ["*", "tick"], "when": true, "recompute": true,
+      "description": "Every other event and the daily tick: cohort = first matching cohort in cohorts.json order." }
+  ]
+}
