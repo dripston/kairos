@@ -104,6 +104,7 @@ class ArmScore:
     replies_per_inr: float       # p_used per rupee = p_used / (est_cost_paise / 100); 0 when cost <= 0
     qualifies: bool              # p_used >= min_reply_prob and est_cost_paise > 0
     reason: str
+    stop_risk: Optional[float] = None  # P(STOP | touch) when a StopRiskModel scored it (K09 context layer)
 
 
 @dataclass
