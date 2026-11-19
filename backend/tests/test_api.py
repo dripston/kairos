@@ -58,3 +58,21 @@ def test_end_to_end(client):
 def test_unknown_borrower_is_404(client):
     c, _ = client
     assert c.get("/borrowers/NOPE").status_code == 404
+
+
+def test_unknown_channel_and_wrong_typed_gate_facts_are_422(client):
+    """RT-F03: malformed enums / wrong-typed facts are the caller's error (422), never a 500."""
+    c, _ = client
+    t = "2026-11-20T10:00:00"
+    for url, body in [("/events/opt-in", {"borrower_id": "B1", "channel": "telegram", "consent_version": "v", "at": t}),
+                      ("/events/stop", {"borrower_id": "B1", "channel": "telegram", "at": t}),
+                      ("/events/response", {"borrower_id": "B1", "channel": "telegram", "at": t}),
+                      ("/events/call", {"borrower_id": "B1", "channel": "telegram", "at": t, "answered_seconds": 3}),
+                      ("/decide", {"borrower_id": "B1", "obligation_id": "B1-A-1", "campaign_id": "C1",
+                                   "channel": "telegram", "template_id": None, "at": t, "est_cost_paise": 20})]:
+        assert c.post(url, json=body).status_code == 422, url
+    gate = {"at": "2026-11-20T10:00:00+05:30", "channel": "sms", "dpd": 12}
+    assert c.post("/gate/evaluate", json=gate).json()["decision"] == "SEND"
+    for bad in ({"dpd": "12"}, {"sends_today_channel": "x"}, {"consent": "yes"}, {"channel": "telegram"},
+                {"at": "garbage"}, {"no_such_fact": 1}):
+        assert c.post("/gate/evaluate", json={**gate, **bad}).status_code == 422, bad

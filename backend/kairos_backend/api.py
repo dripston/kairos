@@ -10,13 +10,14 @@ Money is integer paise (100 paise = ₹1), as in the K03 spine. Every *_paise in
 from __future__ import annotations
 
 import os
+import sqlite3
 from datetime import date, datetime
 from pathlib import Path
-from typing import Optional
+from typing import Annotated, Optional
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StrictBool, StrictFloat, StrictInt
 
 from .exceptions import ExceptionEvent
 from .executor import Executor, FakeProvider, Supervisor
@@ -45,9 +46,19 @@ def _call(fn, *a, **k):
         raise HTTPException(409, str(e))
     except ValueError as e:
         raise HTTPException(422, str(e))
+    except sqlite3.IntegrityError:  # backstop: a constraint the models did not catch is the caller's input (RT-F03)
+        raise HTTPException(422, "rejected by a data constraint")
 
 
 # ---------- models ----------
+def _known_channel(ch: str) -> str:
+    if ch not in policy.raw["channels"]:
+        raise ValueError(f"channel must be one of {policy.raw['channels']}")
+    return ch
+
+
+Channel = Annotated[str, AfterValidator(_known_channel)]  # K01 policy channels only; else 422 (RT-F03)
+
 class CampaignIn(BaseModel):
     id: str
     name: str = ""
@@ -79,7 +90,7 @@ class InstructionIn(BaseModel):
     borrower_id: str
     obligation_id: str
     campaign_id: str
-    channel: str
+    channel: Channel
     template_id: Optional[str]
     at: datetime
     est_cost_paise: int = Field(ge=0, le=MAX_PAISE)
@@ -100,7 +111,7 @@ class ProviderStatusIn(BaseModel):
 class BorrowerEventIn(BaseModel):
     borrower_id: str
     at: datetime
-    channel: Optional[str] = None
+    channel: Optional[Channel] = None
     details: str = ""
 
 
@@ -108,7 +119,7 @@ class CallIn(BaseModel):
     borrower_id: str
     at: datetime
     answered_seconds: float
-    channel: str = "ivr"
+    channel: Channel = "ivr"
 
 
 class PaymentIn(BaseModel):
@@ -128,7 +139,7 @@ class ReversalIn(BaseModel):
 
 class OptInIn(BaseModel):
     borrower_id: str
-    channel: str
+    channel: Channel
     consent_version: str
     at: datetime
 
@@ -164,6 +175,37 @@ class CampaignStatusIn(BaseModel):
 
 class LenderIn(BaseModel):
     lender_id: Optional[str]
+
+
+class GateFactsIn(BaseModel):
+    """gate.Facts over HTTP: numbers and flags must be JSON numbers / booleans ("12" is a 422, RT-F03)."""
+    model_config = ConfigDict(extra="forbid")
+    at: datetime
+    channel: Channel
+    dpd: Optional[StrictInt]
+    dpd_age_hours: StrictFloat = 0.0
+    consent: StrictBool = True
+    opted_out: StrictBool = False
+    hardship_until: Optional[datetime] = None
+    hardship_supervisor: StrictBool = False
+    callback_pending: StrictBool = False
+    supervisor_hold: StrictBool = False
+    ptp_date: Optional[date] = None
+    obligation_cleared: StrictBool = False
+    stop_for_day: StrictBool = False
+    sends_today_channel: StrictInt = Field(0, ge=0)
+    sends_today_all: StrictInt = Field(0, ge=0)
+    sends_week_channel: StrictInt = Field(0, ge=0)
+    sends_week_all: StrictInt = Field(0, ge=0)
+    mins_since_last_same_channel: Optional[StrictFloat] = None
+    official_cap: Optional[StrictInt] = None
+    lender_id: Optional[str] = None
+    template_approved: StrictBool = True
+    budget_remaining_inr: StrictFloat = float("inf")
+    est_cost_inr: StrictFloat = 0.0
+    campaign_target_met: StrictBool = False
+    purpose: Optional[str] = None
+    verified_overdue: StrictBool = True
 
 
 # ---------- read ----------
@@ -246,14 +288,10 @@ def put_template(t: TemplateIn):
 
 # ---------- decide / reserve / dispatch ----------
 @app.post("/gate/evaluate")
-def gate_evaluate(f: dict):
+def gate_evaluate(f: GateFactsIn):
     """Stateless check with caller-supplied facts (same fields as gate.Facts). `at` is judged in IST: an
     offset-aware timestamp is converted, a naive one is taken to be IST (RT-F04)."""
-    try:
-        facts = Facts(**{**f, "at": datetime.fromisoformat(f["at"])})
-    except (TypeError, KeyError, ValueError) as e:
-        raise HTTPException(422, str(e))
-    return evaluate(policy, facts).as_dict()
+    return evaluate(policy, Facts(**f.model_dump())).as_dict()
 
 
 @app.post("/preview")

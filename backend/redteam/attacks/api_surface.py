@@ -122,7 +122,7 @@ def unknown_other_ids(ctx):
     return chk.result()
 
 
-@attack("RT-API-04", category="api", component="k06.api", finding="RT-F03", requires=("fastapi",),
+@attack("RT-API-04", category="api", component="k06.api", requires=("fastapi",),
         title="Malformed enums, channels, dates and wrong-typed facts -> 4xx, never 500",
         covers=("K06:api",))
 def malformed_inputs(ctx):

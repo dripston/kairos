@@ -27,11 +27,6 @@ _F = [
             "ledger._set_state / record_response / record_call / apply_exception",
             "Add Ledger.require_borrower(id) (KeyError -> 404) at the top of every borrower-scoped mutator, and map "
             "sqlite3.IntegrityError to 422 in api._call as a backstop. A STOP/opt-in for an unknown id must not 500."),
-    Finding("RT-F03", "Malformed enums and wrong-typed fields reach SQLite / the Gate and return 500",
-            "MEDIUM", "Rehan (K06)", "api.py OptInIn/BorrowerEventIn.channel, POST /gate/evaluate",
-            "Type channel as a Literal of policy channels (or validate against policy.raw['channels']) in the "
-            "pydantic models; validate /gate/evaluate input with a pydantic model mirroring gate.Facts; map "
-            "sqlite3.IntegrityError and TypeError to 422 in _call."),
     Finding("RT-F07", "Instruction-id replay never compares the payload: a reused id for another borrower or an "
             "unknown campaign is answered SEND / reserved=true", "MEDIUM", "Rehan (K06)",
             "ledger.reserve (prior-row short-circuit)",
