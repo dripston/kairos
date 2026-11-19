@@ -534,6 +534,84 @@ Seed 42, 300 × 14: Kairos ₹1,76,723 recovered / ₹471.05 spent / 49 replies 
 - **Frontend:** `Shell.jsx` links to it ("Live collections", new tab) via `LIVE_COLLECTIONS_URL`.
   `npm run build` is not verified here (no Node).
 
+### Live view: full mode events
+
+`POST /demo/live/start {"mode": "full", seed=42, borrowers=300, days=14, speed=1, interactive_approvals=false}`
+runs ONE SIMULATED campaign (K09 + K27 arm) through every component on the real modules, on a fresh temp
+DB: K03/K24 spine → K27 auto-churn → K09 learner → K06 Gate ("Aladdin") → HITL approvals → executor +
+mock channel adapters (dry-run, no real sends) → DEV simulator → reply text → intent stack → Sarvam
+call-end webhook → `voice/ingest.py` → CM-03 WhatsApp agent (OTP) → D7/LMS payments → OutcomeFinalizer
+→ K09 posteriors → K26 daily report. `mode` defaults to `"race"` (the K09 vs CN10 view above, unchanged).
+
+**Every event** (`GET /demo/live/state` → `events[]`):
+
+| Field | Meaning |
+|---|---|
+| `id` | 1, 2, 3 … in release order (same as `seq`; pass `cursor` back to page) |
+| `t` | simulated time, ISO local `2026-11-23T09:30` |
+| `day` | campaign day, 1-based |
+| `component` | `spine` `churn` `learner` `aladdin` `executor` `channel` `borrower` `intent` `voice` `cm03` `hitl` `payments` `outcomes` `reports` |
+| `kind` | per component, table below |
+| `borrower_id` | synthetic `BRW-<loan id>`, or `null` for campaign-level events |
+| `first_name` | synthetic first name (K03 generator), or `null` |
+| `summary` | one plain-English sentence, ready to show |
+| `detail` | structured fields (see table); money is integer paise (`*_paise`) |
+| `links` | `[{"from_component": "learner", "to_component": "aladdin"}, …]`: the hop(s) to animate |
+| `provenance` | always `"SIMULATED"` |
+
+| component | kind | detail (main fields) |
+|---|---|---|
+| spine | `portfolio_loaded` | `borrowers`, `loans_enrolled`, `obligations`, `consents_by_channel`, `bands` |
+| spine | `budget_scope` | `per_case_paise`, `pool_paise`, `days`, `basis` |
+| spine | `day_start` | `date`, `weekday`, `quiet_day` |
+| borrower | `world_change` | `channel`, `factor` (the day-7 WhatsApp drift) |
+| churn | `assigned` | day 0, per borrower: `cohort`, `risk_tier`, `layer`, `journey`, `lifecycle` |
+| churn | `moved` | `engine` (cohort / layer / risk / journey / lifecycle), `from`, `to`, `rule`, `cohort`, `layer`, `risk_tier`, `trigger` |
+| learner | `contact` | per borrower per day: `channel`, `slot`, `send_time`, `template_id`, `band`, `reply_chance`, `replies_per_inr`, `reason`, `lane` (`k09` or `voice_first`) |
+| learner | `wait` | `reason`, `rule` (`REST`, `LEARNER`, `JOURNEY`) |
+| learner | `posterior` | `channel`, `band`, `slot`, `before`, `after`, `direction` (day end, biggest moves) |
+| learner | `switch` | `from_channel`, `to_channel`, `counts` (top channel changed, e.g. after the drift) |
+| aladdin | `allowed` | `stage` `plan`, `channel`, `rules_checked`, `policy_version` |
+| aladdin | `blocked` | `stage` (`plan` / `send` / `approval`), `rule`, `reason`, `label` (e.g. "quiet day", "weekly limit", "said STOP", "no consent", "budget used", "promised to pay", "hardship hold", "held by a person"), `channel` |
+| aladdin | `rechecked` | `stage` `send` / `approval`, `channel`: the Gate ran again and passed |
+| hitl | `approval_pending` | `approval_id` (= instruction id), `rules` (`VOICE_CHANNEL`, `FIRST_SEND_AFTER_HARDSHIP`, …), `channel`, `send_time`, `interactive` |
+| hitl | `approved` / `rejected` / `blocked_at_recheck` / `expired` | `approval_id`, `by` (`simulated supervisor` or `you`), `gate` |
+| hitl | `case_opened` / `case_resolved` | `queue`, `case_type`, `reason` |
+| executor | `dispatched` | `channel`, `cost_paise`, `provider_ref`, `adapter` (`mock-sms` …, dry-run) |
+| channel | `delivered` / `failed` / `read` / `call_answered` / `call_not_answered` / `duplicate_ignored` | `channel`, `status` |
+| borrower | `replied` / `stop` / `whatsapp_inbound` | `channel`, `text` (synthetic reply text, Hinglish / English / Hindi) |
+| intent | `classified` | `label`, `tier` (`rules` / `small_model` / `abstain`), `confidence`, `needs_human`, `safety_flags`, `action` (what Kairos did: `PTP_HOLD`, `HARDSHIP_HOLD`, `STOP_ALL_CHANNELS`, `PAYMENT_CLAIM`, …) |
+| voice | `bot_selected` | `bot` (Ritu / Advait), `use_case`, `language`, `agent_id`, `requires_human_approval` |
+| voice | `call_ended` | `disposition`, `confidence`, `effective`, `action`, `rule`, `connected`, `bot`, `meaningful` |
+| voice | `duplicate_ignored` | `call_id`: same Sarvam webhook delivered twice, nothing changed |
+| cm03 | `message` | `turn`, `state`, `verified`, `text` (OTP shown as `<OTP>`), `tools`, `reply_keys`, `discloses_account_data` |
+| cm03 | `otp_verified` / `balance_shared` / `fraud_suspect` / `claim_recorded` / `resolved` / `handoff` | `reason`, `signal` |
+| payments | `verified` | `amount_paise`, `obligation_id`, `source` (`D7/LMS` / `CM-03 claim` / `promise kept`), `cancelled_touches`, `cancelled_other_emis` (always 0) |
+| payments | `claim_pending` / `claim_rejected` / `claim_verified` | `source`, `reason` (F4: no D7 credit by T+2 → rejected) |
+| payments | `promise_broken` / `promise_kept` | `promise_date` |
+| outcomes | `finalized` | `count`, `by_status` (`REPLY` / `NO_REPLY` / `UNRESOLVED`), `learner_updates` |
+| reports | `daily_summary` | K26 totals: `attempts`, `reach`, `meaningful_replies`, `spend_paise`, `cap_breaches`, `top_segments` |
+| reports | `day_end` | `cap_breaches`, `sent`, `spend_paise` |
+
+**`GET /demo/live/state`** in full mode also has `mode: "full"`, `components` (counters built only from
+released events): `spine {borrowers, loans_enrolled, pool_paise}`, `churn {cohort_sizes, layer_sizes,
+risk_sizes, moves, moves_by_engine}`, `learner {contact, wait, by_channel, switches, posterior_moves}`,
+`aladdin {checked, allowed, blocked, blocked_by_rule, rechecked, cap_breaches}`, `executor {dispatched,
+by_channel, spend_paise}`, `channel {delivered, read, failed, answered, duplicates_ignored, by_channel}`,
+`borrower {replies, stops, inbound}`, `intent {classified, by_label, by_tier, needs_human}`, `voice {calls,
+connected, by_disposition, by_bot, low_confidence_to_review, duplicates_ignored}`, `cm03 {conversations,
+otp_verified, disclosures_before_otp, fakes_caught, claims_verified, resolved_without_human, handoffs}`,
+`hitl {requested, pending, approved, rejected, blocked_at_recheck, expired, cases_opened, by_rule}`,
+`payments {verified, rupees, recovered_paise, claims, claims_verified, claims_rejected, touches_cancelled,
+promises_kept, promises_broken}`, `outcomes {finalized, by_status}`, `reports {daily_reports, last}`.
+Plus `counters.kairos` (sent, spent, replies, verified payments, ₹ recovered, STOPs, cap breaches) for the
+scoreboard, and `pending_approvals: [{approval_id, borrower_id, first_name, channel, rules, send_time}]`.
+
+| Endpoint (full mode) | What |
+|---|---|
+| `GET /demo/live/borrower/{borrower_id}` | One borrower's released events across components, oldest first, plus a card (`first_name`, `cohort`, `layer`, `risk_tier`, `holds`, `paid`) |
+| `POST /demo/live/approvals/{approval_id}/approve` / `reject` `{reason?}` | With `interactive_approvals=true`: the real `HITL.approve` / `HITL.reject` with role `supervisor` (approve re-runs the Gate). 404 unknown, 409 not pending. Without the flag a simulated supervisor decides |
+
 ## Voice engine (K17/K18)
 
 Kairos side of the Sarvam voice bots: **which** bot / voice / language a call uses, and what Kairos
