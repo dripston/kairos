@@ -45,17 +45,27 @@ def test_shipped_catalog_loads_and_is_marked_placeholder(catalog):
 @pytest.mark.parametrize("intensity", ["LOW", "STANDARD"])
 def test_reminder_covered_on_every_channel_language_intensity(catalog, channel, lang, intensity):
     c = catalog.select(channel, lang, "REMINDER", intensity, "B2")
-    assert c.send and c.intensity == intensity and c.reason == "MATCH"
     t = catalog.get(c.template_id)
     assert t.approved and (t.channel, t.lang, t.purpose) == (channel, lang, "REMINDER")
     assert c.catalog_version == catalog.version
+    if channel == "voicebot" and intensity == "STANDARD":
+        # Stated gap: the Sarvam reminder agent (K17) only ever states late charges (T2-level),
+        # so there is no STANDARD voicebot reminder; a STANDARD request de-escalates.
+        assert (c.decision, c.intensity, c.reason) == ("SEND", "LOW", "DE_ESCALATED")
+    else:
+        assert c.send and c.intensity == intensity and c.reason == "MATCH"
 
 
-@pytest.mark.parametrize("purpose", ["ASK_PAYMENT_DATE", "PTP_CONFIRM", "PAYMENT_RECEIVED", "CALLBACK_ACK", "HARDSHIP_ACK"])
-@pytest.mark.parametrize("channel", ["sms", "whatsapp"])
+K13_PURPOSES = ["ASK_PAYMENT_DATE", "PTP_CONFIRM", "PAYMENT_RECEIVED", "CALLBACK_ACK", "HARDSHIP_ACK", "STOP_CONFIRM"]
+
+
+@pytest.mark.parametrize("purpose", K13_PURPOSES)
+@pytest.mark.parametrize("channel", ["sms", "whatsapp", "email"])
 @pytest.mark.parametrize("lang", ["en", "hi"])
-def test_other_purposes_covered_on_whatsapp_and_sms(catalog, purpose, channel, lang):
-    assert catalog.select(channel, lang, purpose, "LOW", "B1").send
+@pytest.mark.parametrize("band", ALL_BANDS)
+def test_k13_purposes_covered_on_whatsapp_sms_email(catalog, purpose, channel, lang, band):
+    c = catalog.select(channel, lang, purpose, "LOW", band, payment_verified=True)
+    assert c.send and catalog.get(c.template_id).purpose == purpose
 
 
 def test_reuses_frontend_template_ids(catalog):
@@ -80,8 +90,9 @@ def test_unapproved_never_selected_anywhere(catalog):
                         assert catalog.select(ch, lang, p, level, band).template_id not in unapproved
 
 
-def test_only_unapproved_match_waits(catalog):
-    c = catalog.select("email", "en", "ASK_PAYMENT_DATE", "LOW", "B1")
+def test_only_unapproved_match_waits(policy):
+    cat = mini(policy, tpl("EM_ASKDATE_EN_01", channel="email", purpose="ASK_PAYMENT_DATE", approved=False))
+    c = cat.select("email", "en", "ASK_PAYMENT_DATE", "LOW", "B1")
     assert (c.decision, c.template_id, c.reason) == ("WAIT", None, "NO_APPROVED_TEMPLATE")
 
 
@@ -133,9 +144,12 @@ def test_standard_de_escalates_to_low_when_no_standard(catalog):
 
 # ---------- band ----------
 def test_band_filter_pre_due_has_no_standard_reminder(catalog):
-    """STANDARD reminders list B1-B4 only; pre-due a STANDARD request de-escalates to LOW."""
+    """Pre-due only has LOW PRE_DUE_REMINDER templates: a STANDARD request de-escalates to LOW,
+    and channels without a pre-due template (ivr blast, voicebot) WAIT."""
+    c = catalog.select("sms", "hi", "REMINDER", "STANDARD", "PRE_DUE")
+    assert (c.template_id, c.purpose, c.intensity, c.reason) == ("SMS_PREDUE_HI_01", "PRE_DUE_REMINDER", "LOW", "DE_ESCALATED")
     c = catalog.select("ivr", "hi", "REMINDER", "STANDARD", "PRE_DUE")
-    assert (c.template_id, c.intensity, c.reason) == ("IVR_REMIND_HI_SOFT_01", "LOW", "DE_ESCALATED")
+    assert (c.decision, c.reason) == ("WAIT", "NO_APPROVED_TEMPLATE")
 
 
 def test_band_not_listed_waits(policy):
@@ -176,7 +190,7 @@ def test_same_input_same_output(catalog):
 @pytest.mark.parametrize("intent,purpose", [
     ("NEEDS_TIME", "ASK_PAYMENT_DATE"), ("PTP", "PTP_CONFIRM"), ("PTP_OFFERED", "PTP_CONFIRM"),
     ("CALLBACK", "CALLBACK_ACK"), ("CALLBACK_REQUEST", "CALLBACK_ACK"), ("HARDSHIP", "HARDSHIP_ACK"),
-    ("PAID", "PAYMENT_RECEIVED"), ("payment_verified", "PAYMENT_RECEIVED"),
+    ("PAID", None), ("payment_verified", "PAYMENT_RECEIVED"),
     (None, "REMINDER"), ("", "REMINDER"), ("NO_REPLY", "REMINDER"), ("DISPUTE", "REMINDER"),
 ])
 def test_intent_to_purpose(intent, purpose):
@@ -190,6 +204,17 @@ def test_routed_stop_intents_get_no_template(catalog, intent):
     assert (c.decision, c.reason) == ("WAIT", "INTENT_NOT_AUTOMATED")
 
 
+def test_paid_claim_never_gets_a_receipt_or_reminder(catalog):
+    """A borrower saying "already paid" is not a verified payment (D7/LMS checks first)."""
+    for intent in ("PAID", "CLAIMS_PAID", "ALREADY_PAID"):
+        c = catalog.select("whatsapp", "en", None, "LOW", "B1", intent=intent)
+        assert (c.decision, c.reason) == ("WAIT", "PAYMENT_NOT_VERIFIED")
+    c = catalog.select("whatsapp", "en", "PAYMENT_RECEIVED", "LOW", "B1")
+    assert (c.decision, c.reason) == ("WAIT", "PAYMENT_NOT_VERIFIED")
+    assert catalog.select("whatsapp", "en", None, "LOW", "B1", intent="PAYMENT_VERIFIED").template_id == "WA_PAIDACK_EN_01"
+    assert catalog.select("sms", "hi", "PAYMENT_RECEIVED", "LOW", "B3", payment_verified=True).template_id == "SMS_PAIDACK_HI_01"
+
+
 def test_select_by_intent(catalog):
     c = catalog.select("whatsapp", "hi", None, "LOW", "B1", intent="NEEDS_TIME")
     assert (c.purpose, c.template_id) == ("ASK_PAYMENT_DATE", "WA_ASKDATE_HI_01")
@@ -197,11 +222,12 @@ def test_select_by_intent(catalog):
 
 # ---------- per channel ----------
 def test_wait_is_per_channel(catalog):
-    out = catalog.select_for_channels(["whatsapp", "email", "sms"], "en", "ASK_PAYMENT_DATE", "LOW", "B1")
-    assert list(out) == ["whatsapp", "email", "sms"]
+    # the IVR blast is one-way, so there is no IVR date-ask template
+    out = catalog.select_for_channels(["whatsapp", "ivr", "sms"], "en", "ASK_PAYMENT_DATE", "LOW", "B1")
+    assert list(out) == ["whatsapp", "ivr", "sms"]
     assert out["whatsapp"].template_id == "WA_ASKDATE_EN_01"
     assert out["sms"].template_id == "SMS_ASKDATE_EN_01"
-    assert (out["email"].decision, out["email"].reason) == ("WAIT", "NO_APPROVED_TEMPLATE")
+    assert (out["ivr"].decision, out["ivr"].reason) == ("WAIT", "NO_APPROVED_TEMPLATE")
 
 
 def test_per_channel_intensity_mapping(catalog):
@@ -325,3 +351,140 @@ def test_respects_kairos_policy_dir(tmp_path, monkeypatch):
     cat = TemplateCatalog.load()
     assert cat.version == "d13-test" and not cat.is_placeholder
     assert cat.select("sms", "en", "REMINDER", "LOW", "B1").template_id == "SMS_ONLY_EN_01"
+
+
+# ---------- CN tone tiers (T1-T4) ----------
+TIER_CHANNELS = ["sms", "whatsapp", "email", "ivr"]
+
+
+@pytest.mark.parametrize("channel", TIER_CHANNELS)
+@pytest.mark.parametrize("lang", ["en", "hi"])
+@pytest.mark.parametrize("tier,intensity", [(1, "LOW"), (2, "LOW"), (3, "STANDARD"), (4, "STANDARD")])
+def test_every_channel_language_has_all_four_tiers(catalog, channel, lang, tier, intensity):
+    c = catalog.select(channel, lang, "REMINDER", intensity, "B2", tier=tier)
+    assert c.send and c.tier == tier and c.intensity == intensity
+    t = catalog.get(c.template_id)
+    assert t.tier == tier and t.extra["approval"]["status"] == "APPROVED_FOR_DEMO"
+
+
+def test_tier_intensity_mapping_is_enforced_on_every_tiered_template(catalog):
+    from kairos_backend.templates import TIER_INTENSITY
+    tiered = [t for t in catalog if t.tier is not None]
+    assert tiered and all(t.purpose == "REMINDER" and t.intensity == TIER_INTENSITY[t.tier] for t in tiered)
+    assert TIER_INTENSITY == {1: "LOW", 2: "LOW", 3: "STANDARD", 4: "STANDARD"}
+
+
+@pytest.mark.parametrize("channel", TIER_CHANNELS)
+def test_tier_band_rules(catalog, channel):
+    for t in catalog:
+        if t.channel == channel and t.purpose == "REMINDER" and t.tier:
+            assert "PRE_DUE" not in t.dpd_bands
+            if t.tier == 4:
+                assert "B1" not in t.dpd_bands and {"B2", "B3", "B4"} <= set(t.dpd_bands)
+            else:
+                assert {"B1", "B2", "B3", "B4"} <= set(t.dpd_bands)
+
+
+def test_default_picks_least_intense_tier(catalog):
+    assert catalog.select("whatsapp", "en", "REMINDER", "LOW", "B2").tier == 1
+    assert catalog.select("whatsapp", "en", "REMINDER", "STANDARD", "B2").tier == 3
+    assert catalog.select("email", "hi", "REMINDER", "STANDARD", "B4").template_id == "EM_DUE_HI_01"
+
+
+def test_t4_is_not_used_in_b1(catalog):
+    c = catalog.select("sms", "en", "REMINDER", "STANDARD", "B1", tier=4)
+    assert (c.decision, c.reason) == ("WAIT", "NO_APPROVED_TEMPLATE")
+    assert catalog.select("sms", "en", "REMINDER", "STANDARD", "B2", tier=4).template_id == "SMS_FINAL_EN_01"
+    assert catalog.select("sms", "en", "REMINDER", "STANDARD", "B1", tier=3).template_id == "SMS_DUE_EN_01"
+
+
+def test_tier_never_exceeds_permitted_intensity(catalog):
+    c = catalog.select("whatsapp", "hi", "REMINDER", "LOW", "B3", tier=3)
+    assert (c.decision, c.reason) == ("WAIT", "TIER_EXCEEDS_INTENSITY")
+    # STANDARD permits a LOW tier (de-escalation)
+    c = catalog.select("whatsapp", "hi", "REMINDER", "STANDARD", "B3", tier=2)
+    assert (c.template_id, c.reason) == ("WA_LATEFEE_HI_01", "DE_ESCALATED")
+
+
+@pytest.mark.parametrize("bad", [0, 5, True, "2"])
+def test_unknown_tier_raises(catalog, bad):
+    with pytest.raises(ValueError):
+        catalog.select("sms", "en", "REMINDER", "LOW", "B1", tier=bad)
+
+
+def test_tier_only_for_reminders(catalog):
+    with pytest.raises(ValueError):
+        catalog.select("sms", "en", "HARDSHIP_ACK", "LOW", "B1", tier=1)
+
+
+def test_tier_ladder(catalog):
+    assert catalog.tier_ladder("whatsapp", "hi", "B2") == {
+        1: "WA_REMIND_HI_SOFT_02", 2: "WA_LATEFEE_HI_01", 3: "WA_PAYLINK_HI_01", 4: "WA_FINAL_HI_01"}
+    assert catalog.tier_ladder("ivr", "en", "B1")[4] is None
+    assert catalog.tier_ladder("voicebot", "en", "B2") == {1: None, 2: None, 3: None, 4: None}
+
+
+# ---------- band filtering: pre-due, NACH ----------
+@pytest.mark.parametrize("channel,expected", [("sms", "SMS_PREDUE_EN_01"), ("whatsapp", "WA_PREDUE_EN_01"),
+                                              ("email", "EM_PREDUE_EN_01")])
+def test_pre_due_reminder_served_at_pre_due(catalog, channel, expected):
+    c = catalog.select(channel, "en", "REMINDER", "LOW", "PRE_DUE")
+    assert (c.template_id, c.purpose) == (expected, "PRE_DUE_REMINDER")
+
+
+@pytest.mark.parametrize("channel", ["ivr", "voicebot"])
+def test_no_pre_due_voice_template(catalog, channel):
+    assert catalog.select(channel, "hi", "REMINDER", "LOW", "PRE_DUE").reason == "NO_APPROVED_TEMPLATE"
+
+
+def test_post_due_reminders_never_list_pre_due_and_pre_due_never_post(catalog):
+    for t in catalog:
+        if t.purpose == "REMINDER":
+            assert "PRE_DUE" not in t.dpd_bands, t.id
+        if t.purpose == "PRE_DUE_REMINDER":
+            assert list(t.dpd_bands) == ["PRE_DUE"], t.id
+    c = catalog.select("sms", "en", "PRE_DUE_REMINDER", "LOW", "B1")
+    assert (c.decision, c.reason) == ("WAIT", "NO_APPROVED_TEMPLATE")
+
+
+@pytest.mark.parametrize("channel", ["sms", "whatsapp"])
+@pytest.mark.parametrize("lang", ["en", "hi"])
+def test_nach_represent_notice(catalog, channel, lang):
+    c = catalog.select(channel, lang, "NACH_REPRESENTMENT", "LOW", "B1")
+    assert c.send and "represent_date" in catalog.get(c.template_id).variables
+    assert catalog.select(channel, lang, "NACH_REPRESENTMENT", "LOW", "B3").reason == "NO_APPROVED_TEMPLATE"
+
+
+def test_stop_confirm_is_selected_explicitly_never_from_intent(catalog):
+    assert purpose_for_intent("STOP") is None
+    c = catalog.select("whatsapp", "hi", "STOP_CONFIRM", "LOW", "B2")
+    assert c.template_id == "WA_STOP_HI_01"
+
+
+def test_voice_touches_have_sarvam_script_ids(catalog):
+    k17 = catalog.select("voicebot", "hi", "REMINDER", "LOW", "B1")
+    k18 = catalog.select("voicebot", "en", "CALLBACK_ACK", "LOW", "B1")
+    assert catalog.get(k17.template_id).extra["sarvam_agent"]["name"] == "Kairos - EMI Reminder Call (K17 IVR)"
+    assert catalog.get(k18.template_id).extra["sarvam_agent"]["name"] == "Kairos - Callback Voicebot (K18)"
+    assert {catalog.get(k17.template_id).type, catalog.get(k18.template_id).type} == {"voicebot_script"}
+
+
+def test_frontend_ids_still_exist_and_are_approved(catalog):
+    for tid in ("SMS_REMIND_HI_01", "SMS_REMIND_EN_01", "SMS_DUE_HI_02", "WA_REMIND_HI_SOFT_02", "WA_PAYLINK_HI_01",
+                "WA_PAYLINK_EN_01", "EM_STATEMENT_EN_01", "IVR_DUE_HI_01", "IVR_DUE_EN_01", "VB_CALLBACK_HI_01"):
+        assert catalog.get(tid) is not None and catalog.get(tid).approved, tid
+
+
+# ---------- validation of the new fields ----------
+@pytest.mark.parametrize("bad,msg", [
+    ({"tier": 5}, "'tier' must be 1, 2, 3 or 4"),
+    ({"tier": 3}, "tier 3 must be intensity STANDARD"),
+    ({"tier": 1, "purpose": "HARDSHIP_ACK"}, "only REMINDER templates carry a tier"),
+    ({"type": "ivr_blast"}, "does not fit channel"),
+    ({"approval": {"status": "FAILED_CHECKLIST"}}, "disagrees with approval.status"),
+    ({"approval": "yes"}, "'approval' must be an object"),
+])
+def test_validation_of_tier_type_and_approval(policy, bad, msg):
+    with pytest.raises(CatalogError) as e:
+        mini(policy, tpl("SMS_X_EN_01", **bad))
+    assert msg in str(e.value)
