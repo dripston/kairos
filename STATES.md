@@ -74,7 +74,7 @@ happens next.
 |---|---|---|---|---|---|
 | [`k06.touch`](#k06touch-v1) | 1 | 9 | 49 | this branch | tests/fsm/test_conformance_touch.py |
 | [`k06.touch+hitl`](#k06touchhitl-v1) | 1 | 10 | 60 | this branch | tests/fsm/test_conformance_touch.py |
-| [`k01.gate`](#k01gate-v110) | 1.1.0 | 24 | 41 | this branch | tests/fsm/test_conformance_gate.py |
+| [`k01.gate`](#k01gate-v111) | 1.1.1 | 24 | 41 | this branch | tests/fsm/test_conformance_gate.py |
 | [`k06.supervisor.plan`](#k06supervisorplan-v1) | 1 | 7 | 15 | this branch | tests/fsm/test_conformance_supervisor.py |
 | [`k06.supervisor.dispatch`](#k06supervisordispatch-v1) | 1 | 5 | 6 | this branch | tests/fsm/test_conformance_supervisor.py |
 | [`k09.outcome`](#k09outcome-v1) | 1 | 6 | 30 | this branch | tests/fsm/test_conformance_outcome.py |
@@ -301,7 +301,7 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_touch.py (seeded random event sequences); tests/test_ledger.py (dispatch once, uncertain, STOP / payment scope); tests/fsm/test_conformance_hitl.py (runs when kairos_backend.hitl is present)
 
-### `k01.gate` (v1.1.0)
+### `k01.gate` (v1.1.1)
 
 **Purpose.** May this touch be sent at this moment? The rules run in policy.json evaluation_order and the first hit wins; every decision carries the rule and policy_version. The Gate is pure: all state arrives as Facts computed atomically by the ledger.
 
@@ -355,7 +355,7 @@ stateDiagram-v2
     HANDOFF --> [*]
 ```
 
-States: `PRE_GATE`, `STOP_OPT_OUT`, `CONSENT`, `DPD_VALID`, `IN_SCOPE`, `HARDSHIP_HOLD`, `CALLBACK_PENDING`, `SUPERVISOR_HOLD`, `PTP_HOLD`, `OBLIGATION_CLEARED`, `QUIET_DAY`, `CONTACT_WINDOW`, `STOP_FOR_DAY`, `CHANNEL_CAP`, `PRE_DUE_TOTAL_CAP`, `WEEKLY_CAPS`, `SAME_CHANNEL_GAP`, `TEMPLATE_APPROVED`, `BUDGET_AVAILABLE`, `CAMPAIGN_STOP_CONDITION`, `SEND`, `WAIT`, `CANCEL`, `HANDOFF`. Initial: `PRE_GATE`. Final: `CANCEL`, `HANDOFF`, `SEND`, `WAIT`. Fingerprint `e8b58670462a`.
+States: `PRE_GATE`, `STOP_OPT_OUT`, `CONSENT`, `DPD_VALID`, `IN_SCOPE`, `HARDSHIP_HOLD`, `CALLBACK_PENDING`, `SUPERVISOR_HOLD`, `PTP_HOLD`, `OBLIGATION_CLEARED`, `QUIET_DAY`, `CONTACT_WINDOW`, `STOP_FOR_DAY`, `CHANNEL_CAP`, `PRE_DUE_TOTAL_CAP`, `WEEKLY_CAPS`, `SAME_CHANNEL_GAP`, `TEMPLATE_APPROVED`, `BUDGET_AVAILABLE`, `CAMPAIGN_STOP_CONDITION`, `SEND`, `WAIT`, `CANCEL`, `HANDOFF`. Initial: `PRE_GATE`. Final: `CANCEL`, `HANDOFF`, `SEND`, `WAIT`. Fingerprint `ea208ab15280`.
 
 Transitions (self-loops are events that are accepted and change nothing):
 
