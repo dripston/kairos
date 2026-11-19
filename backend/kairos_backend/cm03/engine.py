@@ -116,8 +116,15 @@ class ConversationEngine:
     def __init__(self, ledger, clock: Optional[Callable[[], datetime]] = None,
                  adapter: Optional[DryRunWhatsAppAdapter] = None, classifier: Optional[k09.IntentClassifier] = None,
                  otp_code_source: Optional[Callable[[], str]] = None, ptp_max_days: Optional[int] = None,
-                 identity_mode: Optional[str] = None):
+                 identity_mode: Optional[str] = None, phraser=None):
         self.ledger = ledger
+        # sarvam-105b-conversations phrasing (kairos_backend/sarvam/phrasing.py): only after this engine chose
+        # the state, the action and the reply key; validator-checked; the approved line verbatim on any failure.
+        # None = off (the default for tests / evals); "auto" = on when a Sarvam key is configured.
+        if phraser == "auto":
+            from ..sarvam.phrasing import shared_phraser
+            phraser = shared_phraser(lender=LENDER)
+        self.phraser = phraser
         # "otp" (default): registered number + OTP (CM-03 brief). "k10": Ojas's K10 - registered number + name
         # confirmation, OTP step-up only if K10 otp_step_up.enabled. Which is the default: OPEN_DECISION K10-1.
         self.identity_mode = identity_mode or "otp"
@@ -239,9 +246,16 @@ class ConversationEngine:
             text = K10.render(key, self._k10_lang(conv), **self._k10_fields(conv, kw))
         else:
             text = render(key, conv.lang, **kw)
+        phrasing = None
+        if self.phraser is not None and self.phraser.eligible(key, conv.verified):
+            pr = self.phraser.phrase(key, text, conv.lang, bool(conv.data.get("hinglish")), conv.verified)
+            text, phrasing = pr.text, pr.envelope()
         self.tools.send_whatsapp_reply(turn, conv.sender, text)
         turn.replies.append({"key": key, "text": text})
-        turn.add("REPLY", key, {"text": scrub(text), "to": mask_phone(conv.sender), "lang": conv.lang}, self._iso())
+        payload = {"text": scrub(text), "to": mask_phone(conv.sender), "lang": conv.lang}
+        if phrasing is not None:
+            payload["phrasing"] = phrasing
+        turn.add("REPLY", key, payload, self._iso())
 
     def _k10_lang(self, conv: Conversation) -> str:
         if conv.lang == "hi":
