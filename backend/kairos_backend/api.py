@@ -8,6 +8,7 @@ Money is integer paise (100 paise = ₹1), as in the K03 spine.
 """
 from __future__ import annotations
 
+import json
 import os
 from datetime import date, datetime
 from pathlib import Path
@@ -345,3 +346,32 @@ def control_outbound(body: PauseIn):
 def supervisor_clear(borrower_id: str):
     ledger.clear_supervisor_hold(borrower_id)
     return {"ok": True}
+
+
+# ---------- live event feed (for the demo UI's streaming panel) ----------
+EVENT_KIND = {"DECISION": "supervisor.decision", "SEND_TIME_CHECK": "gate.send_time", "PROVIDER_STATUS": "touch.status",
+              "RESPONSE": "borrower.reply", "CALL_RESULT": "call.result", "VOICE_DISPOSITION": "voice.call_disposition"}
+
+
+@app.get("/events/since")
+def events_since(cursor: int = 0, limit: int = 200, borrower_id: Optional[str] = None):
+    """Audit rows after `cursor` (oldest first) as CRM-envelope-like events, for polling every 1–2 s.
+    Read-only over the K06 audit table; `cursor` in the reply is the last id returned (pass it back)."""
+    limit = max(1, min(limit, 1000))
+    q, args = "SELECT * FROM audit WHERE id > ?", [cursor]
+    if borrower_id:
+        q, args = q + " AND borrower_id = ?", args + [borrower_id]
+    rows = ledger._conn().execute(q + " ORDER BY id LIMIT ?", (*args, limit)).fetchall()
+    events = []
+    for r in rows:
+        r = dict(r)
+        try:
+            detail = json.loads(r.get("detail") or "{}")
+        except ValueError:
+            detail = {}
+        events.append({"id": r["id"], "event_type": EVENT_KIND.get(r["type"], str(r["type"] or "").lower()), "type": r["type"],
+                       "occurred_at": r["ts"], "actor": r["actor"], "borrower_id": r["borrower_id"],
+                       "instruction_id": r["instruction_id"], "decision": r["decision"], "reason": r["reason"],
+                       "rule": r["rule"], "policy_version": r["policy_version"], "detail": detail,
+                       "provenance": "SIMULATED"})
+    return {"cursor": events[-1]["id"] if events else cursor, "events": events, "provenance": "SIMULATED"}

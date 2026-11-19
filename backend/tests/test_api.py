@@ -58,3 +58,23 @@ def test_end_to_end(client):
 def test_unknown_borrower_is_404(client):
     c, _ = client
     assert c.get("/borrowers/NOPE").status_code == 404
+
+
+def test_events_since_is_a_cursor_over_the_audit(client):
+    c, api = client
+    csv_path = os.path.join(tempfile.mkdtemp(), "syn.csv")
+    write_dataset(csv_path, 5, seed=42)
+    c.post("/spine/import", json={"csv_path": csv_path})
+    c.put("/campaigns", json={"id": "C1", "budget_per_case_paise": 5_000, "start_date": str(AS_OF), "end_date": "2026-08-20"})
+    c.put("/templates", json={"id": "SMS_EN", "channel": "sms", "lang": "en"})
+    c.post("/campaigns/C1/enroll", json={"loan_ids": ["SL100001"]})
+    first = c.get("/events/since").json()
+    assert first["provenance"] == "SIMULATED" and first["events"]
+    body = {"borrower_id": "BRW-SL100001", "obligation_id": "SL100001-OD1", "campaign_id": "C1", "channel": "sms",
+            "template_id": "SMS_EN", "at": f"{AS_OF}T10:00:00", "est_cost_paise": 20}
+    c.post("/decide", json=body)
+    nxt = c.get("/events/since", params={"cursor": first["cursor"]}).json()
+    assert [e["event_type"] for e in nxt["events"]] == ["supervisor.decision"]
+    e = nxt["events"][0]
+    assert e["decision"] == "SEND" and e["policy_version"] == "1.1.0" and e["detail"]["channel"] == "sms"
+    assert c.get("/events/since", params={"cursor": nxt["cursor"]}).json()["events"] == []
