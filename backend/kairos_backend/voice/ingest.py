@@ -30,7 +30,7 @@ Ledger.clear_supervisor_hold (a person).
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Optional
 
@@ -436,7 +436,7 @@ def normalize_payload(payload: dict) -> dict:
 class VoiceIngester:
     def __init__(self, ledger: Ledger, thresholds: Optional[dict] = None, registry: Optional[dict] = None,
                  finalizer=None, sink: Optional[CrmSink] = None, supervisor=None, handoff=None, hitl=None,
-                 provenance: str = "SIMULATED"):
+                 provenance: str = "SIMULATED", prism: Any = "auto"):
         self.ledger = ledger
         self.policy = ledger.policy
         self.thresholds = thresholds or load_thresholds()
@@ -449,6 +449,10 @@ class VoiceIngester:
         self.supervisor = supervisor
         self.handoff = handoff or default_handoff(ledger, self.thresholds["handoff_queue"], hitl)
         self.provenance = provenance
+        if prism == "auto":   # sarvam-prism re-classification only when a Sarvam key is configured
+            from ..sarvam.prism import shared_voice_prism
+            prism = shared_voice_prism()
+        self.prism = prism
         ensure_schema(ledger)
 
     @property
@@ -574,6 +578,9 @@ class VoiceIngester:
         if not_connected:
             d = Disposition(disposition="NO_RESPONSE", confidence=0.0, raw_disposition=d.raw_disposition)
         band = self._band_of(ob, at)
+        assist = None
+        if self.prism is not None and not not_connected:
+            d, assist = self._model_assist(d)
         v = decide(d, band, use_case, at, self.thresholds, self.policy)
         if not_connected:
             v.reason = f"NOT_CONNECTED:{p['status'] or 'UNKNOWN'}"
@@ -583,6 +590,8 @@ class VoiceIngester:
         effects.update(self._apply(v, d, at, bid, ob, band, touch, call_id) or {})
         if d.needs_human and v.action not in HANDS_TO_HUMAN:
             effects.update(self._review(bid, ob, at, "NEEDS_HUMAN", d.call_summary or "bot flagged needs_human"))
+        elif assist and assist["action"] == "REVIEW" and v.action not in HANDS_TO_HUMAN and v.action != "REVIEW":
+            effects.update(self._review(bid, ob, at, "MODEL_REVIEW", assist["reason"]))
         if use_case in ("PTP_FOLLOW_UP", "CALLBACK") and not not_connected:  # this call was the follow-up due
             with lg.tx() as c:
                 c.execute("UPDATE voice_followups SET status='DONE', closed_by=? WHERE borrower_id=? AND status='PENDING'"
@@ -631,6 +640,8 @@ class VoiceIngester:
             "meaningful_reply": meaningful, "reward": reward, "effects": effects,
             "payment_verified": False,  # a voice call never verifies a payment
         }
+        if assist is not None:
+            payload["model_assist"] = assist
         env = crm_envelope(event_type=EVENT_TYPE, borrower_id=bid, occurred_at=at, dedupe_key=f"k17:call:{call_id}",
                            payload=payload, provenance=self.provenance, source=SOURCE, loan_id=loan_id,
                            campaign_id=touch["campaign_id"] if touch else None,
@@ -643,6 +654,27 @@ class VoiceIngester:
                 "effective_disposition": v.effective, "confidence": d.confidence, "rule": v.rule, "action": v.action,
                 "accepted": v.accepted, "reason": v.reason, "policy_version": self.version, "effects": effects,
                 "meaningful_reply": meaningful, "reward": reward, "report_label": label, "envelope": env}
+
+    def _model_assist(self, d: Disposition):
+        """sarvam-prism on a LOW-confidence call summary (below the disposition's accept_at). It may only
+        raise the bot's confidence for the SAME disposition within prism.VOICE_* limits, or add a human
+        review. It never changes the disposition and never lowers a safety outcome (README: Voice engine)."""
+        rule = self.thresholds["rules"].get(d.disposition)
+        if rule is None or d.disposition == "NO_RESPONSE" or not d.call_summary:
+            return d, None
+        if d.confidence >= float(rule["accept_at"]):
+            return d, None
+        from ..sarvam.prism import mask_for_model, voice_rule
+        try:
+            a = self.prism.classify_call(mask_for_model(d.call_summary), d.disposition)
+            va = voice_rule(d.disposition, d.confidence, a)
+        except Exception as e:  # defensive: the deterministic path always wins
+            return d, {"model": "sarvam-prism", "action": "NONE", "reason": f"adapter error: {type(e).__name__}"}
+        assist = {**a.meta, "action": va.action, "reason": va.reason, "bot_confidence": d.confidence,
+                  "prism": a.as_dict(), "new_confidence": va.new_confidence}
+        if va.action == "UPGRADE":
+            d = replace(d, confidence=va.new_confidence)
+        return d, assist
 
     # ----- actions -----
     def _apply(self, v: Verdict, d: Disposition, at: datetime, bid: str, ob: Optional[str], band: Optional[str],
