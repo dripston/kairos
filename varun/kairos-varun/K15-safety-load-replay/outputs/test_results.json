@@ -1,0 +1,77 @@
+[
+  {
+    "case_id": "K15-T01",
+    "passed": true,
+    "detail": "500 rows, tracker columns present: True; 50,000 borrowers all trace to a source Loan ID: True; sha256 789208ef91e8; official D1-D13 used: no (pending)"
+  },
+  {
+    "case_id": "K15-T02",
+    "passed": true,
+    "detail": "{'fixed_cadence': 28, 'kairos': 28} days planned for 50,000 borrowers; slowest day 0.15 s (limit 600 s)"
+  },
+  {
+    "case_id": "K15-T03",
+    "passed": true,
+    "detail": "seed 42 for both; pool \u20b9400,000 for both; same 28-day window; K01 1.1.0 sha ca4a5da8dd68"
+  },
+  {
+    "case_id": "K15-T04",
+    "passed": true,
+    "detail": "kairos: 49,226 -> 49,127 -> 49,069 -> 16,943 -> 8,653; fixed_cadence: 49,226 -> 49,154 -> 49,096 -> 13,059 -> 6,190 (recomputed from logs = funnel.csv)"
+  },
+  {
+    "case_id": "K15-T05",
+    "passed": true,
+    "detail": "kairos: reach 49,069, replies/\u20b9 0.0867, paid after reply 8,653 | fixed_cadence: reach 49,096, replies/\u20b9 0.0461, paid after reply 6,190"
+  },
+  {
+    "case_id": "K15-T06",
+    "passed": true,
+    "detail": "0.0867 vs 0.0461 replies per \u20b9 = +88.1% (needs >= +20%)"
+  },
+  {
+    "case_id": "K15-T07",
+    "passed": true,
+    "detail": "kairos: 1,034,425 of 1,034,425 sends checked, 0 breaches | fixed_cadence: 1,360,836 of 1,360,836 sends checked, 0 breaches"
+  },
+  {
+    "case_id": "K15-T08",
+    "passed": true,
+    "detail": "injected 5, caught 5 with the right reason: {'STOP_OPT_OUT': 'STOP_OPT_OUT', 'SAME_CHANNEL_GAP': 'SAME_CHANNEL_GAP', 'NO_APPROVED_TEMPLATE': 'NO_APPROVED_TEMPLATE', 'CONTACT_WINDOW': 'CONTACT_WINDOW', 'PTP_HOLD': 'PTP_HOLD'}"
+  },
+  {
+    "case_id": "K15-T09",
+    "passed": true,
+    "detail": "peak 500 concurrent, 2,040 turns in 8.03 s; first reply p95 0.0 s (SLA 30 s); 0 leaks; target: in-process reference agent around Ojas's K10 gate"
+  },
+  {
+    "case_id": "K15-T10",
+    "passed": true,
+    "detail": "leaking agent produced 76 violations (e.g. genuine_retry_then_ok) -> checker works"
+  },
+  {
+    "case_id": "K15-T11",
+    "passed": true,
+    "detail": "2,395,261 sends, band mismatches 0; borrowers contacted at both DPD 30 (B1) and 31 (B2): 16,367; 60 (B2) and 61 (B3): 3,979; 0 (PRE_DUE) and 1 (B1): 3,927; stale-DPD borrower-days held: 4,118. Note: K01 puts the switch at 30->31 and 60->61; the tracker text says 29->30 / 59->60 - K01 is the source of truth"
+  },
+  {
+    "case_id": "K15-T12",
+    "passed": true,
+    "detail": "SMS rows with read=True: 0 (stays UNKNOWN); 481,725 touches clicked/read without a reply, none counted as replies. Duplicate/late provider callbacks need Rehan's adapters (K07/K08) - not in this replay"
+  },
+  {
+    "case_id": "K15-T13",
+    "passed": true,
+    "detail": "after an unanswered SMS, Kairos sends WhatsApp first next day 38% with an earlier WhatsApp click vs 16% without (47,769 cases); switch 2026-12-08: salaried WhatsApp share Kairos 34% -> 22%, fixed cadence 20% -> 21% (Kairos moved -14 points relative to fixed cadence)"
+  },
+  {
+    "case_id": "K15-T14",
+    "passed": true,
+    "detail": "run 1 5ed104986242 = run 2 5ed104986242: True; touch_id unique in both logs: True"
+  },
+  {
+    "case_id": "K15-T15",
+    "passed": true,
+    "detail": "data_mode values {'SIMULATED'}; run RUN-s42-n50000-1cf8996d, seed 42, baseline: dev stand-in (config.json baseline.cadence) - official fixed-cadence file pending K02"
+  }
+]

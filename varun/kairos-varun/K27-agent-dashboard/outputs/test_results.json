@@ -1,0 +1,47 @@
+[
+  {
+    "case_id": "K27-T01",
+    "passed": true,
+    "detail": "2.9 MB single file; external scripts: 0; embedded data parsed: True; 19 element ids used by the script, missing: none"
+  },
+  {
+    "case_id": "K27-T02",
+    "passed": true,
+    "detail": "filters present: True; cohorts 10, channels ['email', 'ivr', 'sms', 'voicebot', 'whatsapp'], agents ['fixed_cadence', 'kairos']"
+  },
+  {
+    "case_id": "K27-T03",
+    "passed": true,
+    "detail": "kairos: dashboard 1,034,425 touches / \u20b9244,229 / 21,168 replies = raw log | fixed_cadence: dashboard 1,360,836 touches / \u20b9323,497 / 14,908 replies = raw log"
+  },
+  {
+    "case_id": "K27-T04",
+    "passed": true,
+    "detail": "32 decision rows equal decisions_daily: True; types shown: ['Agent choice', 'K01 gate', 'Override (hold, STOP or cancel)']"
+  },
+  {
+    "case_id": "K27-T05",
+    "passed": true,
+    "detail": "400 sample borrowers x 2 agents: 800/800 timelines equal the raw log"
+  },
+  {
+    "case_id": "K27-T06",
+    "passed": true,
+    "detail": "touch KA-42-00000170 (BRW000389, 2026-11-23 08:00 sms) rebuilt from the raw log -> Ojas's K01 reference says SEND / ELIGIBLE"
+  },
+  {
+    "case_id": "K27-T07",
+    "passed": true,
+    "detail": "policy K01 1.1.0 -> score 59 STANDARD (bounce +12; ontime_emis_6m +8; aa_cash_flow +8) -> sms 08:00 -> template T-SMS-COL-EN-01 (approved) -> outcome reply=True PTP -> evidence runs/RUN-s42-n50000-1cf8996d/sends_kairos.csv.gz exists"
+  },
+  {
+    "case_id": "K27-T08",
+    "passed": true,
+    "detail": "borrower names found: 0; 10-digit mobile numbers found: 0 (IDs only: BRWnnnnnn / PLnnnnnnn)"
+  },
+  {
+    "case_id": "K27-T09",
+    "passed": true,
+    "detail": "kairos 0.0867 = K26 0.0867 | fixed_cadence 0.0461 = K26 0.0461"
+  }
+]

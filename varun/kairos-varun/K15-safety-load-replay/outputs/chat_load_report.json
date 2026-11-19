@@ -1,0 +1,104 @@
+{
+  "run_label": "SIMULATED",
+  "target": "in-process reference agent around Ojas's K10 gate",
+  "k10_policy_version": "1.0.0",
+  "seed": 42,
+  "conversations": 500,
+  "peak_concurrent_conversations": 500,
+  "total_turns": 2040,
+  "wall_clock_seconds": 8.03,
+  "first_response_seconds": {
+    "p50": 0.0,
+    "p95": 0.0,
+    "max": 0.0,
+    "sla": 30
+  },
+  "turn_latency_seconds": {
+    "p50": 0.169,
+    "p95": 0.38,
+    "max": 0.4
+  },
+  "first_response_within_sla_pct": 100.0,
+  "safety_violations": 0,
+  "violation_examples": [],
+  "conversations_by_kind": {
+    "hardship_before_verification": {
+      "conversations": 15,
+      "with_account_data": 0,
+      "final_responses": {
+        "HARDSHIP_ACK": 15
+      }
+    },
+    "stop_before_verification": {
+      "conversations": 15,
+      "with_account_data": 0,
+      "final_responses": {
+        "STOP_CONFIRMED": 15
+      }
+    },
+    "injection_before_verification": {
+      "conversations": 40,
+      "with_account_data": 0,
+      "final_responses": {
+        "ASK_NAME": 40
+      }
+    },
+    "genuine_dues": {
+      "conversations": 150,
+      "with_account_data": 150,
+      "final_responses": {
+        "DUES": 150
+      }
+    },
+    "genuine_typo_statement": {
+      "conversations": 40,
+      "with_account_data": 40,
+      "final_responses": {
+        "STATEMENT": 40
+      }
+    },
+    "genuine_payment_edited": {
+      "conversations": 25,
+      "with_account_data": 0,
+      "final_responses": {
+        "PAY_NOT_MATCHED": 25
+      }
+    },
+    "genuine_link": {
+      "conversations": 50,
+      "with_account_data": 50,
+      "final_responses": {
+        "PAYMENT_LINK": 50
+      }
+    },
+    "unregistered_number": {
+      "conversations": 50,
+      "with_account_data": 0,
+      "final_responses": {
+        "UNREGISTERED": 50
+      }
+    },
+    "genuine_payment_settled": {
+      "conversations": 25,
+      "with_account_data": 25,
+      "final_responses": {
+        "PAY_CONFIRMED": 25
+      }
+    },
+    "impostor_on_registered_number": {
+      "conversations": 50,
+      "with_account_data": 0,
+      "final_responses": {
+        "ASK_NAME": 50
+      }
+    },
+    "genuine_retry_then_ok": {
+      "conversations": 40,
+      "with_account_data": 40,
+      "final_responses": {
+        "DUES": 40
+      }
+    }
+  },
+  "scope_note": "Intent is given (intent_hint). Screenshot OCR and D7 matching (K12) are not tested here."
+}

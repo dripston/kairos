@@ -1,0 +1,269 @@
+{
+  "policy_id": "kairos-outreach-policy",
+  "policy_version": "1.1.0",
+  "status": "draft-for-signoff",
+  "owner": "Ojas (Product)",
+  "approved_on": null,
+  "timezone": "Asia/Kolkata",
+  "dpd_bands": [
+    {
+      "id": "PRE_DUE",
+      "dpd_min": -6,
+      "dpd_max": 0,
+      "label": "Pre-due D-6 to due date",
+      "message_purpose": [
+        "reminder"
+      ]
+    },
+    {
+      "id": "B1",
+      "dpd_min": 1,
+      "dpd_max": 30,
+      "label": "1-30 DPD",
+      "message_purpose": [
+        "reminder",
+        "collection"
+      ]
+    },
+    {
+      "id": "B2",
+      "dpd_min": 31,
+      "dpd_max": 60,
+      "label": "31-60 DPD",
+      "message_purpose": [
+        "reminder",
+        "collection"
+      ]
+    },
+    {
+      "id": "B3",
+      "dpd_min": 61,
+      "dpd_max": 90,
+      "label": "61-90 DPD",
+      "message_purpose": [
+        "reminder",
+        "collection"
+      ]
+    },
+    {
+      "id": "B4",
+      "dpd_min": 91,
+      "dpd_max": null,
+      "label": "91+ DPD",
+      "message_purpose": [
+        "reminder",
+        "collection"
+      ]
+    }
+  ],
+  "dpd_rules": {
+    "missing_or_stale_dpd": "HOLD",
+    "stale_after_hours": 24,
+    "collection_purpose_requires_verified_overdue": true,
+    "before_first_band": "NOT_IN_SCOPE",
+    "pre_due_start_dpd": -6
+  },
+  "channels": [
+    "sms",
+    "whatsapp",
+    "email",
+    "ivr",
+    "voicebot"
+  ],
+  "channels_allowed_by_band": {
+    "PRE_DUE": [
+      "sms",
+      "whatsapp",
+      "email",
+      "ivr",
+      "voicebot"
+    ],
+    "B1": [
+      "sms",
+      "whatsapp",
+      "email",
+      "ivr",
+      "voicebot"
+    ],
+    "B2": [
+      "sms",
+      "whatsapp",
+      "email",
+      "ivr",
+      "voicebot"
+    ],
+    "B3": [
+      "sms",
+      "whatsapp",
+      "email",
+      "ivr",
+      "voicebot"
+    ],
+    "B4": [
+      "sms",
+      "whatsapp",
+      "email",
+      "ivr",
+      "voicebot"
+    ]
+  },
+  "consent_required_per_channel": true,
+  "contact_window": {
+    "start": "08:00",
+    "end_exclusive": "19:00",
+    "quiet_days": {
+      "weekdays": [
+        "SUN"
+      ],
+      "national_holidays": [
+        "2026-01-26",
+        "2026-08-15",
+        "2026-10-02",
+        "2027-01-26",
+        "2027-08-15",
+        "2027-10-02"
+      ]
+    },
+    "applies_to": "outbound_only",
+    "inbound_servicing_always_on": true
+  },
+  "caps": {
+    "scope": "per_borrower_across_all_campaigns",
+    "per_channel_per_day_by_band": {
+      "B1": 3,
+      "B2": 6,
+      "B3": 9,
+      "B4": 12
+    },
+    "all_channels_per_day_by_band": {
+      "PRE_DUE": 3
+    },
+    "cross_channel_daily_ceiling": null,
+    "min_gap_minutes_same_channel": 120,
+    "min_gap_scope": "per_channel",
+    "effective_cap_rule": "for every cap: min(policy, lender_override, official) ignoring nulls; for min gap: max(policy, lender_override, official)",
+    "note": "With a 120-minute same-channel gap inside 08:00-19:00 (end exclusive), at most 6 sends per channel per day are physically possible. B3=9 and B4=12 are stored as configured but bind at 6 under the current window. Lender overrides may tighten any cap, including adding weekly caps, which policy itself does not set.",
+    "lender_overrides": {
+      "description": "Optional caps supplied by the lender per allocation. Can only tighten policy, never loosen it. null = lender sets no limit for that item.",
+      "lender_id": null,
+      "effective_from": null,
+      "per_channel_per_day_by_band": {},
+      "per_channel_per_week_by_band": {},
+      "all_channels_per_day_by_band": {},
+      "all_channels_per_week_by_band": {},
+      "per_channel_overrides": {},
+      "min_gap_minutes_same_channel": null
+    }
+  },
+  "stop_for_day_triggers": [
+    {
+      "id": "CALL_PICKUP",
+      "rule": "ivr or voicebot call answered for more than 10 seconds",
+      "threshold_seconds": 10
+    },
+    {
+      "id": "BORROWER_RESPONSE",
+      "rule": "any reply or borrower behaviour disposition captured on any channel"
+    }
+  ],
+  "stop_for_day_effect": "no further outbound on any channel until next contact day",
+  "holds": {
+    "PROMISE_TO_PAY": {
+      "trigger": "PTP captured with a date",
+      "effect": "no outbound activity on any channel until the PTP date",
+      "on_ptp_date": "check verified payment before any outreach",
+      "if_paid": "close obligation; cancel queued touches for that obligation",
+      "if_unpaid_by_end_of_ptp_date": "tag BROKEN_PTP; resume next contact day at band caps"
+    },
+    "HARDSHIP": {
+      "trigger": "borrower reports hardship (accident, illness, job loss, similar)",
+      "default_pause_days": 2,
+      "borrower_date_within_days": 4,
+      "if_borrower_gives_date_within_4_days": "hold until that date and time, then resume",
+      "if_borrower_gives_date_beyond_4_days": "keep hold and flag to supervisor (HANDOFF)",
+      "if_no_date": "pause 2 days, then resume",
+      "detail_owner": "K13"
+    },
+    "STOP_OPT_OUT": {
+      "trigger": "STOP or opt-out on any channel",
+      "effect": "suppress ALL channels from the next decision cycle; cancel pending queued sends",
+      "re_entry": "borrower can opt back in per channel; consent version recorded"
+    }
+  },
+  "reply_attribution": {
+    "reply_window_hours": 24,
+    "applies_to_channels": "all",
+    "counts_as_reply": [
+      "inbound text or voice reply",
+      "call answered with a captured response",
+      "PTP captured"
+    ],
+    "does_not_count_as_reply": [
+      "delivery receipt",
+      "read receipt",
+      "link click",
+      "email delivery"
+    ],
+    "click_effect": "updates reachability only",
+    "unknown_read_status": "UNKNOWN (never inferred)",
+    "one_reward_per_touch": true
+  },
+  "templates": {
+    "approved_only": true,
+    "languages": [
+      "en",
+      "hi"
+    ],
+    "no_suitable_template": "WAIT",
+    "catalog_owner": "K22"
+  },
+  "budget": {
+    "inputs": {
+      "budget_per_case_inr": "REQUIRED_INPUT",
+      "collection_target": "REQUIRED_INPUT"
+    },
+    "campaign_pool_inr": "budget_per_case_inr * allocated_cases",
+    "period": "allocation_start_date to allocation_end_date",
+    "per_case_spend": "flexible; individual cases may spend below or above budget_per_case",
+    "daily_pacing": "remaining_pool / remaining_contact_days, recomputed each contact day; unspent carries forward",
+    "reserve_before_send": true,
+    "reconcile_actual_charge": true,
+    "stop_conditions": "pool exhausted OR collection target achieved (whichever first) - applies in ALL runs including the official simulator run (decided by Ojas, 19 Nov; accepted risk: may shorten the judged comparison window)"
+  },
+  "collection_target": {
+    "amount_pct": {
+      "definition": "verified INR collected in period / INR overdue at allocation start",
+      "target": "REQUIRED_INPUT"
+    },
+    "count_pct": {
+      "definition": "accounts fully cured in period / accounts allocated",
+      "target": "REQUIRED_INPUT"
+    },
+    "trigger": "either"
+  },
+  "evaluation_order": [
+    "STOP_OPT_OUT",
+    "CONSENT",
+    "DPD_VALID",
+    "IN_SCOPE",
+    "HARDSHIP_HOLD",
+    "PTP_HOLD",
+    "OBLIGATION_CLEARED",
+    "QUIET_DAY",
+    "CONTACT_WINDOW",
+    "STOP_FOR_DAY",
+    "CHANNEL_CAP",
+    "PRE_DUE_TOTAL_CAP",
+    "WEEKLY_CAPS",
+    "SAME_CHANNEL_GAP",
+    "TEMPLATE_APPROVED",
+    "BUDGET_AVAILABLE",
+    "CAMPAIGN_STOP_CONDITION"
+  ],
+  "decision_outputs": [
+    "SEND",
+    "WAIT",
+    "CANCEL",
+    "HANDOFF"
+  ]
+}

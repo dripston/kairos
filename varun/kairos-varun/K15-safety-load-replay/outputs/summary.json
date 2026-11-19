@@ -1,0 +1,73 @@
+{
+  "run_id": "RUN-s42-n50000-1cf8996d",
+  "label": "SIMULATED - dev fallback (PL_Dummy_Collections_Data_500 scaled to 50K; dev simulator, not the official CM-02 simulator)",
+  "seed": 42,
+  "borrowers": 50000,
+  "campaign": {
+    "start": "2026-11-23",
+    "end": "2026-12-20",
+    "contact_days": 24
+  },
+  "budget_pool_inr": 400000,
+  "policy_versions": {
+    "k01": "1.1.0",
+    "k21": "1.1.0",
+    "k21_model": "scorecard-heuristic-1.0 (synthetic weights; re-fit on official D1/D2 when available)"
+  },
+  "simulator_drift_day_hidden_from_policy": 12,
+  "lift_replies_per_inr_pct": 88.1,
+  "acceptance_checks": {
+    "lift_at_least_20pct": true,
+    "zero_cap_breaches": true,
+    "decisions_under_10_min_per_day": true,
+    "deterministic_replay": true
+  },
+  "policies": {
+    "fixed_cadence": {
+      "touches": 1360836,
+      "spend_inr": 323496.8,
+      "replies": 14908,
+      "allocated": 50000,
+      "eligible": 49226,
+      "attempted": 49154,
+      "reached": 49096,
+      "responders": 13059,
+      "paid_after_contact": 15556,
+      "paid_after_reply": 6190,
+      "paid_total": 16210,
+      "collected_inr": 305727918.0,
+      "opt_outs_during": 4846,
+      "max_plan_seconds": 0.021,
+      "replies_per_inr": 0.04608391798620574,
+      "inr_per_reply": 21.69954386906359
+    },
+    "kairos": {
+      "touches": 1034425,
+      "spend_inr": 244229.1,
+      "replies": 21168,
+      "allocated": 50000,
+      "eligible": 49226,
+      "attempted": 49127,
+      "reached": 49069,
+      "responders": 16943,
+      "paid_after_contact": 17338,
+      "paid_after_reply": 8653,
+      "paid_total": 18033,
+      "collected_inr": 339392452.0,
+      "opt_outs_during": 2814,
+      "max_plan_seconds": 0.147,
+      "replies_per_inr": 0.08667271836157116,
+      "inr_per_reply": 11.53765589569161
+    }
+  },
+  "elapsed_seconds": 59.5,
+  "determinism": {
+    "run_1_sha256": "5ed1049862429c226d3226194a465c4ee0b3da0fa12c6a2b83e9adb0782be8e6",
+    "run_2_sha256": "5ed1049862429c226d3226194a465c4ee0b3da0fa12c6a2b83e9adb0782be8e6",
+    "identical": true
+  },
+  "audit": {
+    "sends_checked": 2395261,
+    "breaches": 0
+  }
+}

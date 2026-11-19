@@ -1,0 +1,77 @@
+{
+  "run_id": "RUN-s42-n50000-1cf8996d",
+  "run_label": "SIMULATED",
+  "seed": 42,
+  "touch_id": "KA-42-00000170",
+  "borrower_id": "BRW000389",
+  "loan_id": "PL0000389",
+  "obligation_id": "PL0000389-EMI1",
+  "segment": "C1-SAL",
+  "language": "en",
+  "step_1_policy": {
+    "k01_version": "1.1.0",
+    "gates_in_order": [
+      "STOP_OPT_OUT",
+      "CONSENT",
+      "DPD_VALID",
+      "IN_SCOPE",
+      "HARDSHIP_HOLD",
+      "PTP_HOLD",
+      "OBLIGATION_CLEARED",
+      "QUIET_DAY",
+      "CONTACT_WINDOW",
+      "STOP_FOR_DAY",
+      "CHANNEL_CAP",
+      "PRE_DUE_TOTAL_CAP",
+      "WEEKLY_CAPS",
+      "SAME_CHANNEL_GAP",
+      "TEMPLATE_APPROVED",
+      "BUDGET_AVAILABLE",
+      "CAMPAIGN_STOP_CONDITION"
+    ],
+    "dpd": 38,
+    "band": "B2",
+    "consented_channels": [
+      "sms",
+      "whatsapp",
+      "email",
+      "ivr",
+      "voicebot"
+    ]
+  },
+  "step_2_score": {
+    "k21_version": "1.1.0",
+    "score": 59,
+    "intensity": "STANDARD",
+    "top_reasons": "bounce +12; ontime_emis_6m +8; aa_cash_flow +8"
+  },
+  "step_3_recommendation": {
+    "channel": "sms",
+    "time": "08:00",
+    "date": "2026-11-23",
+    "expected_reply": 0.3388,
+    "cost_inr": 0.2,
+    "budget_remaining_inr_before": 16357.4667
+  },
+  "step_4_template": "T-SMS-COL-EN-01",
+  "step_5_outcome": {
+    "delivered": true,
+    "read": false,
+    "clicked": false,
+    "answered": false,
+    "replied": true,
+    "reply_type": "PTP",
+    "actual_charge_inr": 0.2
+  },
+  "step_6_evidence": {
+    "touch_log": "runs/RUN-s42-n50000-1cf8996d/sends_kairos.csv.gz (touch_id KA-42-00000170)",
+    "payment_events": [
+      {
+        "date": "2026-12-06",
+        "amount_inr": 40974.0,
+        "source": "ptp_kept"
+      }
+    ],
+    "audit": "re-checked with Ojas's K01 reference_check.evaluate -> SEND (see K15 audit_kairos.json)"
+  }
+}

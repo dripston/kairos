@@ -1,0 +1,39 @@
+case_id,edge_case,description,date,time,dpd,dpd_age_hours,channel,consent,opted_out,hardship_until,hardship_supervisor,ptp_date,obligation_cleared,stop_for_day,sends_today_channel,sends_today_all,mins_since_last_same_channel,official_cap,lender,sends_week_channel,sends_week_all,template_approved,budget_remaining_inr,est_cost_inr,campaign_target_met,expected_decision,expected_reason
+K01-T01,,Normal B1 WhatsApp send,2026-11-20,10:00,12,2,whatsapp,Y,N,,N,,N,N,0,0,,,,,,Y,5000,0.40,N,SEND,ELIGIBLE
+K01-T02,E01,DPD 30 is B1 (cap 3) - 3rd send allowed,2026-11-20,14:00,30,2,sms,Y,N,,N,,N,N,2,2,240,,,,,Y,5000,0.20,N,SEND,ELIGIBLE
+K01-T03,E01,DPD 30 is B1 - 4th send blocked,2026-11-20,16:00,30,2,sms,Y,N,,N,,N,N,3,3,120,,,,,Y,5000,0.20,N,WAIT,CHANNEL_CAP
+K01-T04,E01,DPD 31 is B2 (cap 6) - 4th send allowed,2026-11-20,16:00,31,2,sms,Y,N,,N,,N,N,3,3,120,,,,,Y,5000,0.20,N,SEND,ELIGIBLE
+K01-T05,E01,DPD 60 is B2 - 7th send blocked,2026-11-20,18:00,60,2,sms,Y,N,,N,,N,N,6,6,120,,,,,Y,5000,0.20,N,WAIT,CHANNEL_CAP
+K01-T06,E01,DPD 61 is B3 (cap 9),2026-11-20,18:00,61,2,sms,Y,N,,N,,N,N,6,6,120,,,,,Y,5000,0.20,N,SEND,ELIGIBLE
+K01-T07,E01,DPD 91 is B4 (cap 12),2026-11-20,18:00,91,2,whatsapp,Y,N,,N,,N,N,6,8,120,,,,,Y,5000,0.40,N,SEND,ELIGIBLE
+K01-T08,E01,Missing DPD holds outreach,2026-11-20,10:00,,2,sms,Y,N,,N,,N,N,0,0,,,,,,Y,5000,0.20,N,WAIT,DPD_INVALID
+K01-T09,E01,Stale DPD (>24h) holds outreach,2026-11-20,10:00,15,30,sms,Y,N,,N,,N,N,0,0,,,,,,Y,5000,0.20,N,WAIT,DPD_INVALID
+K01-T10,,Pre-due: 3rd contact across channels allowed,2026-11-20,14:00,0,2,email,Y,N,,N,,N,N,0,2,,,,,,Y,5000,0.05,N,SEND,ELIGIBLE
+K01-T11,,Pre-due: 4th contact across channels blocked,2026-11-20,16:00,0,2,ivr,Y,N,,N,,N,N,0,3,,,,,,Y,5000,1.50,N,WAIT,PRE_DUE_TOTAL_CAP
+K01-T12,,Before 08:00 blocked,2026-11-20,07:59,12,2,sms,Y,N,,N,,N,N,0,0,,,,,,Y,5000,0.20,N,WAIT,CONTACT_WINDOW
+K01-T13,,19:00 is outside window (end exclusive),2026-11-20,19:00,12,2,sms,Y,N,,N,,N,N,0,0,,,,,,Y,5000,0.20,N,WAIT,CONTACT_WINDOW
+K01-T14,,18:59 inside window,2026-11-20,18:59,12,2,sms,Y,N,,N,,N,N,0,0,,,,,,Y,5000,0.20,N,SEND,ELIGIBLE
+K01-T15,,Sunday is a quiet day,2026-11-22,11:00,12,2,sms,Y,N,,N,,N,N,0,0,,,,,,Y,5000,0.20,N,WAIT,QUIET_DAY
+K01-T16,,National holiday is a quiet day,2026-10-02,11:00,12,2,sms,Y,N,,N,,N,N,0,0,,,,,,Y,5000,0.20,N,WAIT,QUIET_DAY
+K01-T17,,Same channel inside 2h gap blocked,2026-11-20,11:00,45,2,sms,Y,N,,N,,N,N,1,1,90,,,,,Y,5000,0.20,N,WAIT,SAME_CHANNEL_GAP
+K01-T18,,Different channel inside 2h of last SMS allowed (gap is per channel),2026-11-20,11:00,45,2,whatsapp,Y,N,,N,,N,N,0,1,,,,,,Y,5000,0.40,N,SEND,ELIGIBLE
+K01-T19,E02,STOP on WhatsApp suppresses SMS too,2026-11-20,11:00,45,2,sms,Y,Y,,N,,N,N,0,0,,,,,,Y,5000,0.20,N,CANCEL,STOP_OPT_OUT
+K01-T20,,No consent for channel,2026-11-20,11:00,45,2,email,N,N,,N,,N,N,0,0,,,,,,Y,5000,0.05,N,WAIT,NO_CONSENT
+K01-T21,,Call picked up >10s earlier today stops further outreach,2026-11-20,15:00,45,2,sms,Y,N,,N,,N,Y,0,1,,,,,,Y,5000,0.20,N,WAIT,STOP_FOR_DAY
+K01-T22,,PTP date in future holds all activity,2026-11-20,11:00,45,2,whatsapp,Y,N,,N,2026-11-24,N,N,0,0,,,,,,Y,5000,0.40,N,WAIT,PTP_HOLD
+K01-T23,,Obligation cleared by verified payment cancels queued touch,2026-11-20,11:00,45,2,whatsapp,Y,N,,N,,Y,N,0,0,,,,,,Y,5000,0.40,N,CANCEL,OBLIGATION_CLEARED
+K01-T24,E09,Hardship pause active,2026-11-20,11:00,45,2,whatsapp,Y,N,2026-11-21T23:59,N,,N,N,0,0,,,,,,Y,5000,0.40,N,WAIT,HARDSHIP_HOLD
+K01-T25,E09,Hardship date beyond 4 days goes to supervisor,2026-11-20,11:00,45,2,whatsapp,Y,N,2026-11-30T10:00,Y,,N,N,0,0,,,,,,Y,5000,0.40,N,HANDOFF,HARDSHIP_HOLD
+K01-T26,,Official cap tighter than policy wins,2026-11-20,14:00,45,2,sms,Y,N,,N,,N,N,2,2,240,2,,,,Y,5000,0.20,N,WAIT,CHANNEL_CAP
+K01-T27,E05,No approved template means WAIT,2026-11-20,11:00,45,2,whatsapp,Y,N,,N,,N,N,0,0,,,,,,N,5000,0.40,N,WAIT,NO_APPROVED_TEMPLATE
+K01-T28,,Budget insufficient for this send,2026-11-20,11:00,45,2,ivr,Y,N,,N,,N,N,0,0,,,,,,Y,1.00,1.50,N,WAIT,BUDGET_EXHAUSTED
+K01-T29,,Collection target achieved stops campaign,2026-11-20,11:00,45,2,sms,Y,N,,N,,N,N,0,0,,,,,,Y,5000,0.20,Y,WAIT,CAMPAIGN_TARGET_MET
+K01-T30,,STOP outranks every other rule (precedence),2026-11-22,07:00,,2,sms,N,Y,2026-11-21T23:59,N,2026-11-24,N,Y,9,9,10,,,,,N,0,0.20,Y,CANCEL,STOP_OPT_OUT
+K01-T31,,DPD -6 is first pre-due day (in scope),2026-11-20,11:00,-6,2,sms,Y,N,,N,,N,N,0,0,,,,,,Y,5000,0.20,N,SEND,ELIGIBLE
+K01-T32,,DPD -7 is before pre-due start (out of scope),2026-11-20,11:00,-7,2,sms,Y,N,,N,,N,N,0,0,,,,,,Y,5000,0.20,N,WAIT,NOT_IN_SCOPE
+K01-T33,,Lender B1 per-channel cap 2 tighter than policy 3,2026-11-20,14:00,12,2,sms,Y,N,,N,,N,N,2,2,240,,EXAMPLE,,,Y,5000,0.20,N,WAIT,CHANNEL_CAP
+K01-T34,,Lender IVR override 1/day,2026-11-20,14:00,45,2,ivr,Y,N,,N,,N,N,1,1,240,,EXAMPLE,,,Y,5000,1.50,N,WAIT,CHANNEL_CAP
+K01-T35,,Lender all-channel daily cap (B2=6) reached,2026-11-20,16:00,45,2,whatsapp,Y,N,,N,,N,N,0,6,,,EXAMPLE,,,Y,5000,0.40,N,WAIT,ALL_CHANNEL_DAY_CAP
+K01-T36,,Lender weekly per-channel cap (B1=8) reached,2026-11-20,11:00,12,2,sms,Y,N,,N,,N,N,0,0,,,EXAMPLE,8,8,Y,5000,0.20,N,WAIT,WEEKLY_CAP
+K01-T37,,Lender 180-min gap tighter than policy 120,2026-11-20,11:00,45,2,sms,Y,N,,N,,N,N,1,1,150,,EXAMPLE,,,Y,5000,0.20,N,WAIT,SAME_CHANNEL_GAP
+K01-T38,,Lender caps present but not reached - send,2026-11-20,11:00,45,2,sms,Y,N,,N,,N,N,1,2,200,,EXAMPLE,3,5,Y,5000,0.20,N,SEND,ELIGIBLE

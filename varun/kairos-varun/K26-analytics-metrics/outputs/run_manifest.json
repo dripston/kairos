@@ -1,0 +1,50 @@
+{
+  "run_id": "RUN-s42-n50000-1cf8996d",
+  "run_mode": "SIMULATED",
+  "label": "SIMULATED - dev fallback (PL_Dummy_Collections_Data_500 scaled to 50K; dev simulator, not the official CM-02 simulator)",
+  "seed": 42,
+  "borrowers": 50000,
+  "baseline": "dev stand-in (config.json baseline.cadence) - official fixed-cadence file pending K02",
+  "campaign": {
+    "start": "2026-11-23",
+    "end": "2026-12-20",
+    "contact_days": 24
+  },
+  "budget_pool_inr": 400000,
+  "policy_files": {
+    "k01_policy": {
+      "source": "bundled copy (policy_bundled/k01_policy.json)",
+      "sha256_12": "ca4a5da8dd68"
+    },
+    "k01_reference": {
+      "source": "bundled copy (policy_bundled/k01_reference_check.py)",
+      "sha256_12": "f116cf2ff365"
+    },
+    "k21_scorecard": {
+      "source": "bundled copy (policy_bundled/k21_scorecard.json)",
+      "sha256_12": "c9f06e936b1a"
+    },
+    "k10_policy": {
+      "source": "bundled copy (policy_bundled/k10_conversation_policy.json)",
+      "sha256_12": "ccba799cdda1"
+    },
+    "k10_reference": {
+      "source": "bundled copy (policy_bundled/k10_reference_check.py)",
+      "sha256_12": "3533eb35bc15"
+    }
+  },
+  "config_hash": "1cf8996d",
+  "dataset": {
+    "file": "PL_Dummy_Collections_Data_500.csv",
+    "sha256_12": "789208ef91e8",
+    "tracker_row": "Datasets: PL_Dummy_Collections_Data_500 (Dev fallback, verified Drive file)",
+    "official_datasets_used": false,
+    "official_pending": [
+      "D1/D2/D4",
+      "D10/D11/D13",
+      "Campaign simulator + fixed-cadence baseline"
+    ]
+  },
+  "run_dir": "runs/RUN-s42-n50000-1cf8996d",
+  "elapsed_seconds": 79.3
+}

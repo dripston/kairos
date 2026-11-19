@@ -1,0 +1,10 @@
+case_id,requirement,edge_case,description,how_it_is_checked
+K27-T01,Build a separate dashboard,,dashboard.html exists as one self-contained file that works offline,no external script; embedded data parses; every element the script uses exists in the page
+K27-T02,Done when: filter by cohort / channel / agent,,Cohort / channel and agent filters cover every value in the run,cohort = all 10 segments; channel = all 5; agent = Kairos + fixed cadence
+K27-T03,Agent activity,,Touches / spend / replies per agent on the dashboard equal the raw touch log,totals from the embedded data cube vs raw sends logs
+K27-T04,Decision reasons and overrides,,Every decision reason is shown and typed as K01 gate / override / agent choice,dashboard decision rows equal decisions_daily totals; all three types present
+K27-T05,Borrower drill-down,,Each sample borrower's timeline equals their raw touches for both agents,touch IDs per borrower in the dashboard equal the raw log
+K27-T06,Done when: trace one recommendation to policy,,The traced recommendation re-passes Ojas's K01 reference,counters rebuilt from the raw log for that borrower; K01 reference_check.evaluate returns SEND
+K27-T07,Done when: trace to send outcome and evidence,,Trace fields equal the logged touch and point to evidence that exists,channel / time / template / score / outcome equal the log row; template approved in the registry; policy versions match the files; evidence file exists
+K27-T08,K28 readiness: no sensitive fields,,The dashboard shows no borrower names or mobile numbers,no source-file name or 10-digit mobile number appears in dashboard.html
+K27-T09,Consistency across tasks,,Dashboard replies per rupee per agent equal the K26 KPIs,cube totals vs kpis.csv
