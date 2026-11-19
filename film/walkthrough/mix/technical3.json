@@ -1,0 +1,113 @@
+{
+ "out": "audio/technical3_mix.wav",
+ "duration": 112.62,
+ "lufs": -14,
+ "ceiling": -1.0,
+ "music": {
+  "file": "../music/licensed/inspiring_technology_the_mountain.mp3",
+  "segments": [
+   {
+    "src": 0.0,
+    "len": 108.02,
+    "at": 0.0,
+    "fadeIn": 0,
+    "fadeOut": 0.025
+   }
+  ],
+  "gain": 0
+ },
+ "duck": {
+  "db": 18,
+  "attack": 0.12,
+  "release": 0.5,
+  "pre": 0.18
+ },
+ "voLevel": -20,
+ "vo": [
+  {
+   "file": "audio/vo/t01.wav",
+   "at": 0.5,
+   "text": "This is what happens inside Kairos, for one borrower, on one day.",
+   "who": "",
+   "gain": 0
+  },
+  {
+   "file": "audio/vo/t02b.wav",
+   "at": 11.6,
+   "text": "Each day, every borrower is re-sorted. Every move names its rule.",
+   "who": "",
+   "gain": 0
+  },
+  {
+   "file": "audio/vo/t03b.wav",
+   "at": 19.6,
+   "text": "A Bayesian learner tracks reply chances. On day seven, WhatsApp replies drop. Kairos isn't told.",
+   "who": "",
+   "gain": 0
+  },
+  {
+   "file": "audio/vo/t03c.wav",
+   "at": 27.9,
+   "text": "By the end of day fourteen, that segment has moved to SMS. Learned from replies alone.",
+   "who": "",
+   "gain": 0
+  },
+  {
+   "file": "audio/vo/t04.wav",
+   "at": 34.4,
+   "text": "Models only suggest. Aladdin reserves the budget and limits, then checks every rule again at send time.",
+   "who": "",
+   "gain": 0
+  },
+  {
+   "file": "audio/vo/t05.wav",
+   "at": 42.2,
+   "text": "Messages go out through each channel. Delivery and replies come back as webhooks, and duplicates are ignored.",
+   "who": "",
+   "gain": 0
+  },
+  {
+   "file": "../audio/dialogue/vc_a2.wav",
+   "at": 50.5,
+   "text": "Your EMI was due last week. Could you pay by Friday?",
+   "who": "Kairos",
+   "gain": -1.0
+  },
+  {
+   "file": "../audio/dialogue/vc_b2.wav",
+   "at": 54.5,
+   "text": "Yes, I'll pay on Friday.",
+   "who": "Sunita",
+   "gain": -1.0
+  },
+  {
+   "file": "audio/vo/tv_voice.wav",
+   "at": 56.4,
+   "text": "Voice calls run on Sarvam agents. Every call comes back with a disposition and a confidence. Below a hand-set threshold, a person reviews it.",
+   "who": "",
+   "gain": 0
+  },
+  {
+   "file": "audio/vo/tv_intent.wav",
+   "at": 66.4,
+   "text": "Replies climb a ladder: rules first, then a small model. Still unsure? A person decides.",
+   "who": "",
+   "gain": 0
+  },
+  {
+   "file": "audio/vo/t07.wav",
+   "at": 73.4,
+   "text": "People can step in at any moment. Every action still passes Aladdin, and lands in the audit log.",
+   "who": "",
+   "gain": 0
+  },
+  {
+   "file": "audio/vo/tv_proof.wav",
+   "at": 81.8,
+   "text": "Same data in, same decisions out. And we attack it, load it, and test it.",
+   "who": "",
+   "gain": 0
+  }
+ ],
+ "cuesOut": "audio/technical3_cues_raw.json"
+}

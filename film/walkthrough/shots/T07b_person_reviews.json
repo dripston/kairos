@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H10_1_agent_headset_closeup.mp4",
+ "in": 6.5,
+ "dur": 3.8,
+ "mode": "none",
+ "out": "comp/T07b_person_reviews.mov",
+ "fps": 30
+}

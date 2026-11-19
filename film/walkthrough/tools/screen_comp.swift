@@ -128,7 +128,8 @@ func trackGreen(_ frame: CIImage) -> Quad? {
     // top edge = the shorter of the two opposite edge pairs, the one whose midpoint lies furthest along "up"
     func len(_ a: CGPoint, _ b: CGPoint) -> CGFloat { hypot(a.x - b.x, a.y - b.y) }
     let e0 = len(q[0], q[1]) + len(q[2], q[3]), e1 = len(q[1], q[2]) + len(q[3], q[0])
-    let cands = e0 < e1 ? [0, 2] : [1, 3]
+    let landscape = (spec["landscape"] as? Bool) ?? false   // laptops/monitors: the top edge is a LONG edge
+    let cands = (e0 < e1) != landscape ? [0, 2] : [1, 3]
     func proj(_ k: Int) -> CGFloat { let m = CGPoint(x: (q[k].x + q[(k + 1) % 4].x) / 2, y: (q[k].y + q[(k + 1) % 4].y) / 2); return m.x * upHint.x + m.y * upHint.y }
     let top = proj(cands[0]) > proj(cands[1]) ? cands[0] : cands[1]
     q = (0..<4).map { q[(top + $0) % 4] }   // TL, TR, BR, BL
@@ -198,7 +199,9 @@ for i in 0..<nFrames {
             if mode == "green" {
                 cube.setValue(src, forKey: kCIInputImageKey)
                 let keyed = cube.outputImage!
-                out = keyed.composited(over: warped.composited(over: src))
+                // residual green the inscribed quad does not cover (e.g. under a thumb) reads as dark bezel, not green
+                let bezel = CIImage(color: CIColor(red: 0.07, green: 0.07, blue: 0.08)).cropped(to: warped.extent.insetBy(dx: -60, dy: -60))
+                out = keyed.composited(over: warped.composited(over: bezel.composited(over: src)))
             } else {
                 out = warped.composited(over: src)
             }

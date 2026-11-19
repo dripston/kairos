@@ -174,5 +174,29 @@
   "lang": "en-IN",
   "text": "Same data in, same decisions out. And we attack it, load it, and test it.",
   "ok": true
+ },
+ "t02b": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Each day, every borrower is re-sorted. Every move names its rule.",
+  "ok": true
+ },
+ "t03b": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "A Bayesian learner tracks reply chances. On day seven, WhatsApp replies drop. Kairos isn't told.",
+  "ok": true
+ },
+ "t03c": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "By the end of day fourteen, that segment has moved to SMS. Learned from replies alone.",
+  "ok": true
  }
 }

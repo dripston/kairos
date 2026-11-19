@@ -1,0 +1,174 @@
+[
+ {
+  "t0": 0.5,
+  "t1": 5.54,
+  "who": "",
+  "lines": [
+   "This is what happens inside Kairos, for",
+   "one borrower, on one day."
+  ]
+ },
+ {
+  "t0": 11.6,
+  "t1": 17.378,
+  "who": "",
+  "lines": [
+   "Each day, every borrower is re-sorted.",
+   "Every move names its rule."
+  ]
+ },
+ {
+  "t0": 19.6,
+  "t1": 26.169,
+  "who": "",
+  "lines": [
+   "A Bayesian learner tracks reply chances.",
+   "On day seven, WhatsApp replies drop."
+  ]
+ },
+ {
+  "t0": 26.189,
+  "t1": 27.88,
+  "who": "",
+  "lines": [
+   "Kairos isn't told."
+  ]
+ },
+ {
+  "t0": 27.9,
+  "t1": 32.16,
+  "who": "",
+  "lines": [
+   "By the end of day fourteen, that segment",
+   "has moved to SMS."
+  ]
+ },
+ {
+  "t0": 32.18,
+  "t1": 34.38,
+  "who": "",
+  "lines": [
+   "Learned from replies alone."
+  ]
+ },
+ {
+  "t0": 34.4,
+  "t1": 38.817,
+  "who": "",
+  "lines": [
+   "Models only suggest. Aladdin reserves the",
+   "budget and limits,"
+  ]
+ },
+ {
+  "t0": 38.837,
+  "t1": 42.18,
+  "who": "",
+  "lines": [
+   "then checks every rule again at send time."
+  ]
+ },
+ {
+  "t0": 42.2,
+  "t1": 44.672,
+  "who": "",
+  "lines": [
+   "Messages go out through each channel."
+  ]
+ },
+ {
+  "t0": 44.692,
+  "t1": 49.725,
+  "who": "",
+  "lines": [
+   "Delivery and replies come back as",
+   "webhooks, and duplicates are ignored."
+  ]
+ },
+ {
+  "t0": 50.5,
+  "t1": 54.48,
+  "who": "Kairos",
+  "lines": [
+   "Your EMI was due last week. Could",
+   "you pay by Friday?"
+  ]
+ },
+ {
+  "t0": 54.5,
+  "t1": 56.38,
+  "who": "Sunita",
+  "lines": [
+   "Yes, I'll pay on Friday."
+  ]
+ },
+ {
+  "t0": 56.4,
+  "t1": 58.7,
+  "who": "",
+  "lines": [
+   "Voice calls run on Sarvam agents."
+  ]
+ },
+ {
+  "t0": 58.72,
+  "t1": 62.778,
+  "who": "",
+  "lines": [
+   "Every call comes back with a disposition",
+   "and a confidence."
+  ]
+ },
+ {
+  "t0": 62.798,
+  "t1": 66.38,
+  "who": "",
+  "lines": [
+   "Below a hand-set threshold, a person",
+   "reviews it."
+  ]
+ },
+ {
+  "t0": 66.4,
+  "t1": 71.828,
+  "who": "",
+  "lines": [
+   "Replies climb a ladder: rules first, then",
+   "a small model. Still unsure?"
+  ]
+ },
+ {
+  "t0": 71.848,
+  "t1": 73.38,
+  "who": "",
+  "lines": [
+   "A person decides."
+  ]
+ },
+ {
+  "t0": 73.4,
+  "t1": 78.72,
+  "who": "",
+  "lines": [
+   "People can step in at any moment. Every",
+   "action still passes Aladdin,"
+  ]
+ },
+ {
+  "t0": 78.74,
+  "t1": 81.11,
+  "who": "",
+  "lines": [
+   "and lands in the audit log."
+  ]
+ },
+ {
+  "t0": 81.8,
+  "t1": 88.048,
+  "who": "",
+  "lines": [
+   "Same data in, same decisions out. And we",
+   "attack it, load it, and test it."
+  ]
+ }
+]

@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H1_4_mumbai_street_autos.mp4",
+ "in": 3.0,
+ "dur": 2.8,
+ "mode": "none",
+ "out": "comp/T03_street.mov",
+ "fps": 30
+}

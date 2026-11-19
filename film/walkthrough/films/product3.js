@@ -199,16 +199,17 @@ window.FILM = {
    "exit": {
     "dur": 0.0
    },
-   "bgCream": true
+   "bgCream": true,
+   "opa0": 0.5
   },
   {
    "kind": "headline",
-   "t0": 21.2,
+   "t0": 20.9,
    "t1": 23.9,
    "pos": "c",
    "y": 540,
    "text": "Collections that decide who, when and how.",
-   "size": 60,
+   "size": 72,
    "exit": {
     "dur": 0.0
    }

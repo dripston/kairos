@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H13_8_ots_dev_curved_monitor.mp4",
+ "in": 6.0,
+ "dur": 3.6,
+ "mode": "none",
+ "out": "comp/T01_engineer.mov",
+ "fps": 30
+}

@@ -20,30 +20,33 @@ def call(off, vid, who):
 
 JSON_BLOCK = [358, 372, 640, 212]
 clip("T01_engineer", 3.4);                          say(0.5, "t01")
-other("headline", 3.0, text="How Kairos works.", sub="One decision per borrower, per day. Every step checked.")
-other("diagram_build", 5.4)
-clip("T03_street", 2.6);                            say(0.3, "t02")
-card("ov", "d1_churn_tech", [13, 296, 312, 317], 5.6, node="rec")
-clip("T04_vikram_phone", 2.4);                      say(0.3, "t03")
-card("ov", "d1_learner_tech", [349, 379, 658, 223], 4.4, node="learn")
-card("ov", "d1_learner_tech_scrolled", JSON_BLOCK, 3.2, node="learn")
-clip("T05_asha", 2.0);                              say(0.2, "t04")
+other("headline", 2.8, text="How Kairos works.", sub="One decision per borrower, per day. Every step checked.")
+other("diagram_build", 4.8)
+# churn + learning: single panels of the Engine Room (the real K27 + K09 + Aladdin run, seed 42, SIMULATED)
+ER_FLOW, ER_RULE, ER_LEARN7, ER_LEARN14 = [27, 199, 582, 321], [27, 677, 582, 200], [647, 199, 606, 225], [647, 199, 606, 237]
+ER_TAG = "Engine Room · SIMULATED · seed 42 · 300 synthetic borrowers · 14 days"
+clip("T03_street", 2.0);                            say(0.6, "t02b")
+card("er", "d7", ER_FLOW, 3.0, node="churn", maxh=680)
+card("er", "d7", ER_RULE, 3.4, node="churn")
+clip("V1_vikram_reads", 2.0);                      say(0.2, "t03b")
+card("er", "d7", ER_LEARN7, 6.0, node="learn", tag=ER_TAG)
+card("er", "d14", ER_LEARN14, 6.0, node="learn", tag=ER_TAG); say(0.5, "t03c")
+clip("P16a_asha_close", 1.8);                              say(1.0, "t04")
 clip("P16b_laptop_held", 2.4, push=[1.0, 2.4, [530, 115, 885, 365]])
-card("aarav", "blocked", [349, 333, 658, 187], 4.0, node="ald")
-card("ov", "d1_aladdin_tech_scrolled", JSON_BLOCK, 3.2, node="ald")
+card("aarav", "blocked", [349, 333, 658, 187], 4.4, node="ald")
 clip("P03_phone_lights", 1.8);                      say(0.2, "t05")
 card("sys", "trace", [410, 278, 322, 296], 6.4, node="hook", play=[5, 10])
-clip("T07_sunita_call", 5.2);                       call(0.3, "vc_a2", "Kairos"); call(4.4, "vc_b2", "Sunita")
-card("dv", "voice", [700, 715, 700, 150], 5.6, node="chan", maxScale=2.4); say(0.3, "tv_voice")
-clip("T07b_person_reviews", 3.6)
-clip("P12_vikram_whatsapp", 2.4, start=3.4);        say(0.3, "tv_intent")
-card("ov", "d3_intent_tech", [349, 384, 658, 218], 4.4, node="intent")
-clip("T09_asha", 2.0);                              say(0.2, "t07")
+clip("T07_sunita_call", 5.2);                       call(0.3, "vc_a2", "Kairos"); call(4.3, "vc_b2", "Sunita")
+card("dv", "voice", [700, 715, 700, 150], 6.0, node="chan", maxScale=2.4); say(1.0, "tv_voice")
+clip("T07b_person_reviews", 4.4)
+clip("P12_vikram_whatsapp", 2.4, start=1.2);        say(0.6, "tv_intent")
+card("ov", "d3_intent_tech", [349, 384, 658, 218], 5.0, node="intent")
+clip("P20b_asha_side", 1.4);                              say(0.2, "t07")
 clip("P20c_laptop_console", 3.0, push=[1.4, 3.0, [560, 255, 780, 500]])
 card("in", "takeoverB", [972, 357, 448, 313], 3.8, node="people", maxScale=2.2)
 clip("T10_engineer", 2.6);                          say(0.4, "tv_proof")
 other("terminal", 16.5)
-other("research", 5.4)
+other("research", 4.8)
 other("pulse", 3.4)
 HARD_STOP = 108.02                                   # The_Mountain, bar 36 downbeat
 
@@ -85,8 +88,9 @@ for i, (kind, dur, p) in enumerate(seq):
         layers.append(L)
     elif kind == "card":
         fr = [{"at": round(t0, 3), "label": p["label"], "play": p["play"][0], "from": p["play"][1]}] if "play" in p else [{"at": 0, "label": p["label"]}]
-        layers.append({"kind": "card", "cap": p["cap"], "frames": fr, "rect": p["rect"], "t0": round(t0 - 0.05, 3), "t1": round(t1, 3), "maxw": 1500, "maxh": 640,
+        layers.append({"kind": "card", "cap": p["cap"], "frames": fr, "rect": p["rect"], "t0": round(t0 - 0.05, 3), "t1": round(t1, 3), "maxw": 1500, "maxh": p.get("maxh", 640),
                        "cx": 900, "cy": 470, "maxScale": p.get("maxScale", 2.6), "enter": {"dur": 0.4}, "exit": {"dur": 0}})
+        if p.get("tag"): layers.append({"kind": "tag", "t0": round(t0 + 0.2, 3), "t1": round(t1, 3), "pos": "t", "text": p["tag"], "exit": {"dur": 0}})
         if p.get("node"): mini_focus.append({"t": round(t0, 3), "nodes": [p["node"]]}); mini_spans.append((t0, t1))
     elif kind == "headline":
         layers.append({"kind": "headline", "t0": t0, "t1": t1, "pos": "c", "text": p["text"], "sub": p["sub"], "size": 108, "stagger": 0.15, "exit": {"dur": 0}, "bgCream": True})
@@ -123,9 +127,12 @@ layers.append({"kind": "logo", "t0": HARD_STOP, "t1": END, "opa0": 1, "y": 330, 
                "credits": "Music: “Inspiring Technology” by The_Mountain (Pixabay licence) · Voices: Sarvam bulbul:v3 (Neha, Ritu, Pooja), AI-generated<br>Footage: Pexels · Every screen and terminal run is the real Kairos software · All data SIMULATED",
                "creditsY": 820, "exit": {"dur": 0}, "bgCream": True})
 film = {"duration": round(END, 3), "cues": "audio/technical3_cues.json", "bg": "#FBF8F1",
-        "captures": {"ov": "captures/out_vikram", "aarav": "captures/out_aarav", "in": "captures/inbound2", "sys": "captures/live_system", "dv": "captures/deployed_voice"},
+        "captures": {"ov": "captures/out_vikram", "aarav": "captures/out_aarav", "in": "captures/inbound2", "sys": "captures/live_system", "dv": "captures/deployed_voice", "er": "captures/engine_room"},
         "terms": {"redteam": "term/redteam.json", "bench": "term/bench.json", "determinism": "term/determinism.json", "pytest": "term/pytest.json", "ope": "term/ope.json"},
         "layers": layers}
+import os
+for L in layers:
+    if L.get("kind") == "video" and not os.path.exists(L["src"]): raise SystemExit("missing clip " + L["src"] + " (python3 tools/shots_product.py <name>)")
 open("films/technical3.js", "w").write("/* generated by tools/build_technical3.py — edit that, not this */\nwindow.FILM = " + json.dumps(film, ensure_ascii=False, indent=1) + ";\n")
 vo = [{"file": f, "at": round(starts[si] + off, 3), "text": text, "who": who, "gain": 0 if f.startswith("audio/vo") else -1.0} for si, off, f, text, who in voice]
 mix = {"out": "audio/technical3_mix.wav", "duration": round(END, 3), "lufs": -14, "ceiling": -1.0,
