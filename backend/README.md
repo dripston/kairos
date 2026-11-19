@@ -9,7 +9,8 @@ cd backend
 python -m venv .venv
 .venv/Scripts/activate            # Windows  (macOS/Linux: source .venv/bin/activate)
 pip install -e ".[dev]"
-pytest                            # 186 tests: K01 + K13 cases, K06 ledger/executor/API, K03 spine + K15 replay
+pytest                            # 240 tests: K01 + K13 cases, K06 ledger/executor/API, K03 spine + K15 replay, red-team (10 xfail = open findings)
+python scripts/run_redteam.py     # guardrail red-team: PASS/FAIL per attack -> reports/redteam_report.json (see redteam/README.md)
 uvicorn kairos_backend.api:app --reload    # http://127.0.0.1:8000/docs
 python scripts/bench_ledger.py 50000       # 50k decisions on K03's synthetic dataset
 ```
@@ -24,6 +25,7 @@ Environment: `KAIROS_POLICY_DIR` (default `../policy`), `KAIROS_DB` (default `ba
 |---|---|---|---|
 | `spine/` | K03 | Varun | Borrowers, consents, loans, EMIs (obligations), payments, events. Money in paise. Dataset importer + synthetic 50k generator. |
 | `replay/` | K15 | Varun | Campaign replay: baseline vs learning policy, dev simulator, 500-chat load test. |
+| `redteam/` | — | — | Guardrail red-team suite: 49 adversarial attacks on K01/K13/K06/K03 guardrails, PASS/FAIL report, open findings. [`redteam/README.md`](redteam/README.md) |
 | `kairos_backend/` | K06 | Rehan | Gate, ledger, supervisor, executor, API — reads the spine, never copies it. |
 
 ## How K06 uses the spine
