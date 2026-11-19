@@ -158,6 +158,38 @@ python3 scripts/run_redteam.py
 Prints 49 attacks with PASS/FAIL. Today: 39 pass; the 10 fails are known gaps, each with an owner
 and a fix (the 4 serious ones are being fixed on `redteam/fix-high`).
 
+### Live collections view (`/demo/live`)
+
+The one to put on the projector. A 14-day campaign plays out live (about 3 minutes at 1×, under a
+minute at 4×): Kairos on the left, the usual fixed schedule on the right, with the same 300 synthetic
+borrowers, the same budget and the same rules. Everything on it is **SIMULATED**.
+
+```bash
+cd kairos/backend && source .venv/bin/activate && uvicorn kairos_backend.api:app --port 8000
+```
+
+Then open <http://localhost:8000/demo/live>. It looks like the lender's own operations console: a
+sidebar (Overview, Live activity, Approvals, Borrowers, Rules (Aladdin), System) and a small
+**Demo controls** group at the top right. Leave the run type on "vs fixed schedule", pick seed 42 and
+press **Start** (4× is the default). **P** toggles Presenter mode (hides the demo controls, larger
+type), **S** steps Overview → Live activity → System, and **Space** pauses. `?presenter=1` opens
+straight into Presenter mode, `?theme=dark` in the dark theme (light is the default). "Full system
+trace" (or **Start full system trace** on the System page) runs the full-mode campaign through every
+component instead; it has no fixed-schedule comparison.
+
+**Presenter script (about 60 seconds).** "Three hundred people have missed an EMI. This is the
+collections console. Kairos decides every morning, for each person, whether to message them, when, and
+on which channel. The usual fixed schedule does the same job with the same money and the same rules,
+and the chart compares the two. Every message passes Aladdin, our supervisor, which holds back anything
+the lender's rules forbid: a STOP, a quiet day, a weekly limit. The activity feed says what happened in
+plain words, like 'Ravi gets a WhatsApp at 5:30 pm' or 'not contacted today'. Payment claims the bank
+has not confirmed come to a person under Needs you. On day 7 WhatsApp stops working as well. Nobody tells
+Kairos; by day 11 it has moved to SMS. Recovered is confirmed by the bank, and rule breaches stay at zero.
+The borrowers are synthetic and the replies come from a simulator, which is why it says SIMULATED."
+
+Seed 42 ends at Kairos ₹1,76,723 recovered on ₹471 spent vs the fixed schedule's ₹17,938 on ₹575
+(about 9.9× the fixed schedule), with 0 rule breaches on both sides. Every run of the same seed gives the same numbers.
+
 ---
 
 ## 5. If something goes wrong

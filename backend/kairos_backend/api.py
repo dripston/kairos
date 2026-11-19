@@ -23,7 +23,7 @@ import threading
 from datetime import date, datetime
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated, Literal, Optional
 
 from fastapi import FastAPI, Header, HTTPException, Query, Response
 from fastapi.concurrency import run_in_threadpool
@@ -910,6 +910,111 @@ def demo_journey_run(body: JourneyIn):
         raise HTTPException(503, "shutting down")
     with _journey_lock:  # one at a time: each run builds its own world
         return run_player(body.seed)
+
+
+# ---------- live collections view (/demo/live): replay/live.py, SIMULATED ----------
+from fastapi.responses import HTMLResponse  # noqa: E402
+from replay import live as _live  # noqa: E402
+
+LIVE_PAGE = Path(__file__).with_name("static") / "live.html"
+live_runs = _live.LiveManager()
+lifecycle.add_loop(_live.LiveLoop(live_runs))  # SIGTERM/SIGINT stops a running campaign like the tick loops
+
+
+class LiveStartIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    seed: int = Field(42, ge=0, le=2**31 - 1)
+    borrowers: int = Field(300, ge=10, le=2000)
+    days: int = Field(14, ge=1, le=30)
+    speed: float = Field(1.0, ge=0.25, le=64)
+    mode: Literal["race", "full"] = "race"
+    interactive_approvals: bool = False                     # full mode: approvals wait for a real click
+    approval_wait_s: float = Field(45.0, ge=5, le=600)      # full mode, interactive: how long a day waits
+
+
+class LiveApprovalIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    reason: Optional[str] = Field(None, max_length=200)
+
+
+class LiveControlIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    speed: Optional[float] = Field(None, ge=0.25, le=64)
+    paused: Optional[bool] = None
+
+
+@app.get("/demo/live", response_class=HTMLResponse)
+def demo_live_page():
+    """The live collections view: plain HTML/CSS/JS, no build step, no external assets."""
+    return LIVE_PAGE.read_text(encoding="utf-8")
+
+
+@app.post("/demo/live/start")
+def demo_live_start(body: LiveStartIn):
+    """Start a SIMULATED campaign (K09 vs CN10 on the replay stack, fresh temp DB) in a background thread.
+    One run at a time (409 while one is running). Deterministic given the seed."""
+    if not lifecycle.accepting:
+        raise HTTPException(503, "shutting down")
+    try:
+        extra = ({"interactive_approvals": body.interactive_approvals, "approval_wait_s": body.approval_wait_s}
+                 if body.mode == "full" else {})
+        run = live_runs.start(mode=body.mode, seed=body.seed, borrowers=body.borrowers, days=body.days,
+                              speed=body.speed, **extra)
+    except _live.Busy as e:
+        raise HTTPException(409, str(e))
+    return {"started": True, "mode": body.mode, "seed": run.seed, "borrowers": run.n, "days": run.days,
+            "speed": run.speed, "interactive_approvals": bool(getattr(run, "interactive", False)),
+            "provenance": _live.PROVENANCE}
+
+
+@app.get("/demo/live/state")
+def demo_live_state(cursor: int = Query(0, ge=0), limit: int = Query(3000, ge=1, le=10000)):
+    """Events after `cursor` (pass back the returned cursor) plus live counters for both arms."""
+    return live_runs.state(cursor, limit)
+
+
+@app.post("/demo/live/control")
+def demo_live_control(body: LiveControlIn):
+    """Change speed or pause/resume the running campaign (display pacing only; results do not change)."""
+    return live_runs.control(speed=body.speed, paused=body.paused)
+
+
+@app.post("/demo/live/stop")
+def demo_live_stop():
+    """Stop the running campaign: the worker stops between steps, closes its SQLite files, removes its temp dir."""
+    return live_runs.stop()
+
+
+@app.get("/demo/live/borrower/{borrower_id}")
+def demo_live_borrower(borrower_id: str):
+    """Full mode: one borrower's released events across every component (oldest first) plus a card. SIMULATED."""
+    try:
+        return live_runs.borrower(borrower_id)
+    except KeyError:
+        raise HTTPException(404, "no such borrower in the current full-mode run")
+
+
+def _live_decide(approval_id: str, approve: bool, body: Optional[LiveApprovalIn]):
+    from replay.live_full import NotPending
+    try:
+        out = live_runs.decide_approval(approval_id, approve, body.reason if body else None)
+    except KeyError:
+        raise HTTPException(404, "no such approval in the current full-mode run")
+    except NotPending as e:
+        raise HTTPException(409, str(e))
+    return {**out, "provenance": _live.PROVENANCE}
+
+
+@app.post("/demo/live/approvals/{approval_id}/approve")
+def demo_live_approve(approval_id: str, body: Optional[LiveApprovalIn] = None):
+    """Full mode with interactive_approvals: the real HITL.approve as role supervisor (the Gate runs again)."""
+    return _live_decide(approval_id, True, body)
+
+
+@app.post("/demo/live/approvals/{approval_id}/reject")
+def demo_live_reject(approval_id: str, body: Optional[LiveApprovalIn] = None):
+    """Full mode with interactive_approvals: the real HITL.reject as role supervisor (budget released)."""
+    return _live_decide(approval_id, False, body)
 
 
 # ---------- live event feed (for the demo UI's streaming panel) ----------
