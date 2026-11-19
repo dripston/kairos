@@ -7,7 +7,7 @@ import {
 // label, icon, tone, audit severity
 export const EVENT_META = {
   CRM_SYNCED: { label: 'Enrolled from CRM', icon: Database, tone: 'neutral', sev: 'info' },
-  SUPERVISOR_DECISION: { label: 'Supervisor decision', icon: Gavel, tone: 'info', sev: 'info' },
+  SUPERVISOR_DECISION: { label: "Aladdin's decision", icon: Gavel, tone: 'info', sev: 'info' },
   SEND_RESERVED: { label: 'Send reserved', icon: Bookmark, tone: 'ok', sev: 'info' },
   SEND_BLOCKED: { label: 'Send blocked', icon: Ban, tone: 'warn', sev: 'medium' },
   SENT: { label: 'Sent', icon: Send, tone: 'neutral', sev: 'info' },
@@ -55,5 +55,5 @@ export const MODULE = (e) => {
   if (e.type.startsWith('PROVIDER') || e.type === 'BOUNCED') return 'Channel adapter'
   if (e.type.startsWith('CAMPAIGN')) return 'Campaigns'
   if (e.type === 'TICKET_CREATED') return 'Routing'
-  return 'Supervisor'
+  return 'Aladdin'
 }

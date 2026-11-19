@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
-  Gauge, Megaphone, Database, TrendingUp, Search, FlaskConical, ChevronRight, RotateCcw,
+  Gauge, Megaphone, Database, TrendingUp, Layers, Search, FlaskConical, ChevronRight, RotateCcw,
   CircleCheck, TriangleAlert, Info, CircleX, X, ShieldCheck, Pause, Play, Sun,
 } from 'lucide-react'
 import { useKairos, useDerived, fmtClock } from '../lib/store'
@@ -11,8 +11,9 @@ const NAV = [
   { group: 'Overview', items: [{ to: '/learning', label: 'Learning & Proof', icon: TrendingUp }] },
   { group: 'Operations', items: [{ to: '/control', label: 'Control Room', icon: Gauge }] },
   { group: 'Business', items: [
-    { to: '/campaigns', label: 'Campaign Management', icon: Megaphone },
     { to: '/crm', label: 'Smart CRM', icon: Database },
+    { to: '/cohorts', label: 'Cohorts', icon: Layers },
+    { to: '/campaigns', label: 'Campaign Management', icon: Megaphone },
   ] },
 ]
 

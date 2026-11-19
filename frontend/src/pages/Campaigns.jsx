@@ -43,6 +43,10 @@ export default function Campaigns() {
                   <ChannelIcons channels={c.channels} />
                   <Chip tone={c.mode === 'ADAPTIVE' ? 'info' : c.mode === 'SHADOW' ? 'violet' : 'neutral'}>{c.mode[0] + c.mode.slice(1).toLowerCase()}</Chip>
                 </div>
+                <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[12px]">
+                  <span className="text-faint">Cohorts</span>
+                  {c.cohortIds.length ? c.cohortIds.map((id) => <Chip key={id}>{state.cohorts.find((k) => k.id === id)?.name ?? id}</Chip>) : <span className="text-warn">none — attach in Cohorts</span>}
+                </div>
                 <div className="mt-3.5">
                   <div className="mb-1 flex justify-between text-[12px] text-muted">
                     <span>Budget {inr(spent)} / {inr(c.totalBudget)}</span>
@@ -57,8 +61,8 @@ export default function Campaigns() {
                 {(c.status === 'SCHEDULED' || c.status === 'DRAFT') && <Button size="sm" icon={Play} onClick={() => dispatch({ type: 'CAMPAIGN', id: c.id, action: 'start', reason: 'Operator decision' })}>Start</Button>}
                 {['RUNNING', 'PAUSED', 'SCHEDULED'].includes(c.status) && <Button size="sm" icon={Square} onClick={() => setDialog({ c, action: 'stop', danger: true, title: `Stop "${c.name}"`, effect: 'Every pending reservation is canceled and its budget released.' })}>Stop</Button>}
                 <div className="flex-1" />
-                {live ? <Link to="/control" className="inline-flex items-center gap-1 text-[12.5px] text-muted hover:text-fg">Control Room <ArrowUpRight size={13} /></Link>
-                  : <span className="text-[12.5px] text-muted">{c.status === 'PAUSED' ? 'Held — audience kept' : c.status === 'SCHEDULED' ? `Starts Day ${c.startDay}` : c.status === 'STOPPED' ? 'Stopped' : 'Not started'}</span>}
+                {!live && <span className="mr-2 text-[12.5px] text-muted">{c.status === 'PAUSED' ? 'Held — audience kept' : c.status === 'SCHEDULED' ? `Starts Day ${c.startDay}` : c.status === 'STOPPED' ? 'Stopped' : 'Not started'}</span>}
+                <Link to={`/control?campaign=${c.id}`} className="inline-flex items-center gap-1 text-[12.5px] text-muted hover:text-fg">Control Room <ArrowUpRight size={13} /></Link>
               </div>
             </Card>
           )
@@ -73,7 +77,7 @@ export default function Campaigns() {
 
 const STEPS = [
   ['Basics', 'Name and purpose'],
-  ['Audience', 'From Smart CRM or a CSV'],
+  ['Audience', 'Cohorts from Smart CRM, or a CSV'],
   ['Exclusions', 'DNC, consent, frequency'],
   ['Channels & templates', 'Where and what to say'],
   ['Budget & learning', 'Spend and policy mode'],
@@ -86,7 +90,7 @@ function NewCampaign({ onClose }) {
   const { state, dispatch } = useKairos()
   const [step, setStep] = useState(() => Number(new URLSearchParams(window.location.search).get('step') || 0))
   const [f, setF] = useState({
-    name: '', purpose: '', source: 'CRM', bands: new Set(['1–29', '30–59', '60–89']), langs: 'All', minOut: 0,
+    name: '', purpose: '', source: 'CRM', cohorts: new Set(['C2', 'C3']), bands: new Set(['1–29', '30–59', '60–89', '90+']), langs: 'All', minOut: 0,
     csv: null, ex: { hold: true, other: true, stale: true },
     capDay: 1, capWeek: 3, quiet: '20:00–08:00', gap: 24,
     channels: { sms: true, whatsapp: true, email: false, ivr: false, voicebot: false },
@@ -103,6 +107,7 @@ function NewCampaign({ onClose }) {
     const exc = []
     const enabled = Object.entries(f.channels).filter(([, v]) => v).map(([k]) => k)
     pool.forEach((b) => {
+      if (!f.cohorts.has(b.cohortId)) return
       if (!f.bands.has(b.band)) return
       if (f.langs !== 'All' && b.language !== f.langs) return
       if (b.loans.reduce((a, l) => a + l.outstanding, 0) < f.minOut) return
@@ -137,12 +142,13 @@ function NewCampaign({ onClose }) {
     const id = 'C-' + String(state.campaigns.length + 1).padStart(2, '0')
     dispatch({ type: 'CREATE_CAMPAIGN', campaign: {
       id, name: f.name.trim(), purpose: f.purpose || 'Created in Kairos Campaign Management.', status: f.startDay <= state.day ? 'RUNNING' : 'SCHEDULED',
-      source: f.source, enrolled: audience, excluded: excluded.length, mode: f.mode, channels: f.channels,
+      cohortIds: [...f.cohorts], source: f.source, enrolled: audience, excluded: excluded.length, mode: f.mode, channels: f.channels,
       dailyBudget: f.daily, totalBudget: f.total, startDay: f.startDay, endDay: f.endDay, caps: { day: f.capDay, week: f.capWeek }, frozen: false,
     } })
     onClose()
   }
 
+  const toggleCohort = (id) => { const n = new Set(f.cohorts); n.has(id) ? n.delete(id) : n.add(id); set({ cohorts: n }) }
   const toggleBand = (b) => { const n = new Set(f.bands); n.has(b) ? n.delete(b) : n.add(b); set({ bands: n }) }
 
   return (
@@ -181,7 +187,13 @@ function NewCampaign({ onClose }) {
               <div className="flex items-center gap-2.5 text-[13.5px]"><Database size={16} className="text-info" /> Fetched automatically from Smart CRM · <span className="text-muted">last synced {synced ? 'just now' : '4 min ago'}</span></div>
               <Button size="sm" icon={RefreshCw} onClick={() => setSynced(synced + 1)}>Re-sync</Button>
             </div>
-            <Field label="DPD bands">
+            <Field label="Cohorts — which slices of the portfolio this campaign serves">
+              <div className="flex flex-wrap gap-2">{[...state.cohorts].sort((a, b) => a.priority - b.priority).map((c) => {
+                const n = pool.filter((b) => b.cohortId === c.id).length
+                return <button key={c.id} onClick={() => toggleCohort(c.id)} className={cx('rounded-lg border px-3 py-1.5 text-[13px]', f.cohorts.has(c.id) ? 'border-fg bg-fg text-bg' : 'border-line text-muted')}>{c.name} <span className="opacity-60">· {n}</span></button>
+              })}</div>
+            </Field>
+            <Field label="Refine by DPD band (optional)">
               <div className="flex gap-2">{BANDS.map((b) => (
                 <button key={b} onClick={() => toggleBand(b)} className={cx('rounded-lg border px-3.5 py-1.5 text-[13px]', f.bands.has(b) ? 'border-fg bg-fg text-bg' : 'border-line text-muted')}>{b} DPD</button>
               ))}</div>
@@ -296,7 +308,7 @@ function NewCampaign({ onClose }) {
             <Card className="divide-y divide-line">
               {[
                 ['Name', f.name || <span className="text-bad">Missing</span>],
-                ['Audience', `${audience} from ${f.source === 'CRM' ? 'Smart CRM' : 'Smart CRM + CSV'} · ${excluded.length} excluded`],
+                ['Audience', `${audience} from ${f.cohorts.size} cohort${f.cohorts.size === 1 ? '' : 's'}${f.source === 'CSV' ? ' + CSV' : ''} · ${excluded.length} excluded`],
                 ['Channels', enabledCh.length ? enabledCh.map((c) => CHANNEL_META[c].label).join(' · ') : <span className="text-bad">None</span>],
                 ['Caps', `${f.capDay}/day · ${f.capWeek}/week · quiet ${f.quiet} · ${f.gap}h gap`],
                 ['Budget', `${inr(f.daily)} / day · ${inr(f.total)} total`],

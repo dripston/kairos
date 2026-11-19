@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer } from 'react'
 import {
-  rng, makeBorrowers, makeHero, makeCampaigns, TEMPLATES, CHANNEL_META, HERO_ID,
-  START_DAY, CAMPAIGN_DAYS, SERIES, sumTo, ESTIMATES,
+  rng, makeBorrowers, makeHero, makeCampaigns, makeCohorts, cohortOf, TEMPLATES, CHANNEL_META, HERO_ID,
+  START_DAY, CAMPAIGN_DAYS, SERIES, sumTo, ESTIMATES, COLLECTED, REGIONS, REGION_FACTOR, COHORT_FACTOR,
 } from './mock'
 
 const Ctx = createContext(null)
@@ -50,12 +50,13 @@ function genDayEvents(day, borrowers, startSeq) {
   return { events: out, seq }
 }
 
-function genQueue(day, borrowers, approval) {
+function genQueue(day, borrowers, approval, campaigns) {
   const r = rng(2000 + day)
-  const eligible = borrowers.filter((b) => b.nextAction === 'SEND' && b.nextChannel)
+  const camp = Object.fromEntries(campaigns.map((c) => [c.id, c]))
+  const eligible = borrowers.filter((b) => b.nextAction === 'SEND' && b.nextChannel && b.campaignId && ['RUNNING', 'SCHEDULED', 'PAUSED'].includes(camp[b.campaignId]?.status))
   const rows = []
   const used = new Set()
-  for (let i = 0; rows.length < 22 && i < 200; i++) {
+  for (let i = 0; rows.length < 64 && i < 600; i++) {
     const b = eligible[Math.floor(r() * eligible.length)]
     if (used.has(b.id)) continue
     used.add(b.id)
@@ -65,6 +66,8 @@ function genQueue(day, borrowers, approval) {
     const est = (ESTIMATES[ch]?.[day - 1] ?? 0.08)
     const rpr = est / CHANNEL_META[ch].cost
     const needsApproval = (ch === 'ivr' && approval.ivr) || (tpl?.intensity === 'STANDARD' && approval.high && b.dpd > 60)
+    const c = camp[b.campaignId]
+    const scheduled = c.status === 'SCHEDULED' && c.startDay > day
     rows.push({
       id: `Q-${day}-${i}`,
       borrowerId: b.id,
@@ -72,12 +75,14 @@ function genQueue(day, borrowers, approval) {
       band: b.band,
       loan: b.loans[0].id,
       channel: ch,
-      when: `Day ${day} · ${fmtClock(min)}`,
+      when: `Day ${scheduled ? c.startDay : day} · ${fmtClock(min)}`,
       min,
       template: tpl?.id ?? '—',
       reason: `Best replies/₹ for ${b.band} DPD (${CHANNEL_META[ch].label} ${rpr.toFixed(2)})`,
-      status: needsApproval ? 'NEEDS_APPROVAL' : r() < 0.7 ? 'RESERVED' : 'SCHEDULED',
-      campaignId: 'C-01',
+      status: c.status === 'PAUSED' ? 'PAUSED' : scheduled ? 'SCHEDULED' : needsApproval ? 'NEEDS_APPROVAL' : r() < 0.7 ? 'RESERVED' : 'SCHEDULED',
+      prev: c.status === 'PAUSED' ? 'RESERVED' : undefined,
+      campaignId: b.campaignId,
+      cohortId: b.cohortId,
       cost: CHANNEL_META[ch].cost,
     })
   }
@@ -154,16 +159,26 @@ export function heroQueueRows(hero, day, overrides) {
   else if (hero.flags.manualPause) { bStatus = 'PAUSED'; bReason = 'Borrower paused by operator' }
   else if (hero.flags.callback) { bStatus = 'HELD'; bReason = 'Callback pending — nudges paused' }
   const rows = [
-    { id: 'Q-H-A', borrowerId: HERO_ID, name: hero.name, band: hero.band, loan: loanA.id, channel: 'whatsapp', when: aWhen, min: 1080, template: 'WA_REMIND_HI_SOFT_02', reason: aReason, status: aStatus, campaignId: 'C-01', cost: 0.4, hero: true },
-    { id: 'Q-H-B', borrowerId: HERO_ID, name: hero.name, band: hero.band, loan: loanB.id, channel: 'sms', when: `Day ${day + 1} · 10:00`, min: 1500, template: 'SMS_REMIND_HI_01', reason: bReason, status: bStatus, campaignId: 'C-01', cost: 0.2, hero: true },
+    { id: 'Q-H-A', borrowerId: HERO_ID, name: hero.name, band: hero.band, loan: loanA.id, channel: 'whatsapp', when: aWhen, min: 1080, template: 'WA_REMIND_HI_SOFT_02', reason: aReason, status: aStatus, campaignId: 'C-01', cohortId: hero.cohortId, cost: 0.4, hero: true },
+    { id: 'Q-H-B', borrowerId: HERO_ID, name: hero.name, band: hero.band, loan: loanB.id, channel: 'sms', when: `Day ${day + 1} · 10:00`, min: 1500, template: 'SMS_REMIND_HI_01', reason: bReason, status: bStatus, campaignId: 'C-01', cohortId: hero.cohortId, cost: 0.2, hero: true },
   ]
   return rows.map((r) => (overrides[r.id] && r.status !== 'CANCELED' ? { ...r, status: overrides[r.id] } : r))
 }
 
 // ---------- initial state ----------
+export function assignCohorts(borrowers, cohorts, campaigns) {
+  return borrowers.map((b) => {
+    const cohortId = cohortOf(b, cohorts)
+    const campaign = campaigns.find((c) => c.cohortIds.includes(cohortId) && c.mode !== 'FIXED')
+    return { ...b, cohortId, campaignId: campaign?.id ?? null }
+  })
+}
+
 function init() {
-  const borrowers = makeBorrowers()
-  const hero = { ...makeHero(), decisionVersion: 4 }
+  const cohorts = makeCohorts()
+  const campaigns = makeCampaigns()
+  const borrowers = assignCohorts(makeBorrowers(), cohorts, campaigns)
+  const hero = { ...makeHero(), decisionVersion: 4, cohortId: 'C3', campaignId: 'C-01' }
   let seq = 0
   let events = []
   for (let d = 1; d <= START_DAY; d++) {
@@ -180,13 +195,15 @@ function init() {
     role: 'operator',
     globalPause: false,
     outage: { whatsapp: false, sms: false, email: false, ivr: false },
-    campaigns: makeCampaigns(),
+    campaigns,
+    cohorts,
+    scope: { type: 'campaign', id: 'ALL' },
     borrowers,
     hero,
     heroOverrides: {},
     events,
     seq: 10000,
-    queue: genQueue(START_DAY, borrowers, approval),
+    queue: genQueue(START_DAY, borrowers, approval, campaigns),
     approval,
     segmentsPaused: {},
     inbox: [
@@ -253,7 +270,7 @@ function reducer(state, a) {
         const d = decideHero(s.hero, day)
         s = push(s, { type: 'SUPERVISOR_DECISION', borrowerId: HERO_ID, channel: d.channel ?? null, actor: 'supervisor', detail: `${d.action}${d.channel ? ` · ${CHANNEL_META[d.channel].label} ${d.when?.split('· ')[1]}` : ''} — ${d.reason}` })
       }
-      return toast({ ...s, queue: s.globalPause ? genQueue(day, s.borrowers, s.approval).map((q) => ({ ...q, status: 'PAUSED' })) : genQueue(day, s.borrowers, s.approval) }, `Day ${day} started · ${sent} reserved sends completed · estimates updated`, 'info')
+      return toast({ ...s, queue: s.globalPause ? genQueue(day, s.borrowers, s.approval, s.campaigns).map((q) => ({ ...q, status: 'PAUSED' })) : genQueue(day, s.borrowers, s.approval, s.campaigns) }, `Day ${day} started · ${sent} reserved sends completed · estimates updated`, 'info')
     }
 
     case 'GLOBAL_PAUSE': {
@@ -339,16 +356,22 @@ function reducer(state, a) {
     }
 
     case 'SEGMENT': {
-      const on = !state.segmentsPaused[a.band]
+      // pause / resume one slice of the queue: a cohort (default) or a DPD band
+      const field = a.field ?? 'cohortId'
+      const key = a.key
+      const label = a.label ?? key
+      const on = !state.segmentsPaused[key]
       let n = 0
       const queue = state.queue.map((q) => {
-        if (q.band !== a.band) return q
+        if (q[field] !== key) return q
         if (on && ACTIVE.includes(q.status)) { n++; return { ...q, status: 'PAUSED', prev: q.status } }
         if (!on && q.status === 'PAUSED' && q.prev) { n++; return { ...q, status: q.prev, prev: undefined } }
         return q
       })
-      const s = human({ ...state, queue, segmentsPaused: { ...state.segmentsPaused, [a.band]: on } }, `${on ? 'Paused' : 'Resumed'} segment ${a.band} DPD · ${n} sends affected`)
-      return toast(s, `${a.band} DPD ${on ? 'paused' : 'resumed'} · ${n} sends affected`, on ? 'warn' : 'ok')
+      const heroOverrides = { ...state.heroOverrides }
+      if (state.hero[field] === key) ['Q-H-A', 'Q-H-B'].forEach((id) => (on ? (heroOverrides[id] = 'PAUSED') : delete heroOverrides[id]))
+      const s = human({ ...state, queue, heroOverrides, segmentsPaused: { ...state.segmentsPaused, [key]: on } }, `${on ? 'Paused' : 'Resumed'} ${label} · ${n} sends affected`)
+      return toast(s, `${label} ${on ? 'paused' : 'resumed'} · ${n} sends affected`, on ? 'warn' : 'ok')
     }
 
     case 'APPROVAL': {
@@ -404,6 +427,45 @@ function reducer(state, a) {
 
     case 'SIM':
       return sim(state, a.kind)
+
+    case 'SET_SCOPE':
+      return { ...state, scope: { type: a.scopeType ?? state.scope.type, id: a.id ?? 'ALL' } }
+
+    case 'SAVE_COHORT': {
+      // a new custom cohort goes to the top: it is narrower than the broad lender tags
+      const rest = state.cohorts.filter((c) => c.id !== a.cohort.id).sort((x, y) => x.priority - y.priority)
+      const cohorts = [a.cohort, ...rest].map((c, k) => ({ ...c, priority: k + 1 }))
+      const borrowers = assignCohorts(state.borrowers, cohorts, state.campaigns)
+      const n = borrowers.filter((b) => b.cohortId === a.cohort.id).length
+      return toast(human({ ...state, cohorts, borrowers }, `Saved cohort "${a.cohort.name}" · ${n} loans (priority 1)`), `Cohort "${a.cohort.name}" saved at the top · ${n} loans`)
+    }
+
+    case 'DELETE_COHORT': {
+      const cohorts = state.cohorts.filter((c) => c.id !== a.id)
+      const campaigns = state.campaigns.map((c) => ({ ...c, cohortIds: c.cohortIds.filter((x) => x !== a.id) }))
+      const borrowers = assignCohorts(state.borrowers, cohorts, campaigns)
+      return toast(human({ ...state, cohorts, campaigns, borrowers }, `Deleted cohort ${a.id}`), `Cohort deleted — its loans fall back to the next matching cohort`, 'warn')
+    }
+
+    case 'MOVE_COHORT': {
+      const sorted = [...state.cohorts].sort((x, y) => x.priority - y.priority)
+      const i = sorted.findIndex((c) => c.id === a.id)
+      const j = i + a.dir
+      if (j < 0 || j >= sorted.length) return state
+      ;[sorted[i], sorted[j]] = [sorted[j], sorted[i]]
+      const cohorts = sorted.map((c, k) => ({ ...c, priority: k + 1 }))
+      return { ...state, cohorts, borrowers: assignCohorts(state.borrowers, cohorts, state.campaigns) }
+    }
+
+    case 'ATTACH_COHORT': {
+      const campaigns = state.campaigns.map((c) => c.id !== a.campaignId ? c : {
+        ...c, cohortIds: a.on ? [...new Set([...c.cohortIds, a.cohortId])] : c.cohortIds.filter((x) => x !== a.cohortId) })
+      const camp = campaigns.find((c) => c.id === a.campaignId)
+      const cohort = state.cohorts.find((c) => c.id === a.cohortId)
+      return toast(human({ ...state, campaigns, borrowers: assignCohorts(state.borrowers, state.cohorts, campaigns) },
+        `${a.on ? 'Attached' : 'Detached'} cohort "${cohort?.name}" ${a.on ? 'to' : 'from'} campaign "${camp.name}"`),
+        `${cohort?.name} ${a.on ? '→' : '✕'} ${camp.name}`)
+    }
 
     case 'LOG':
       return toast(human(state, a.detail, a.borrowerId ?? null), a.toast || a.detail)
@@ -544,7 +606,39 @@ export function useDerived() {
     const optOuts = state.borrowers.filter((b) => b.flags.stop || b.flags.dnc).length + (state.hero.flags.stop ? 1 : 0)
     const camp = state.campaigns.find((c) => c.id === 'C-01')
     const todaySpend = A.spend[d - 1] * (state.minute > 600 ? Math.min(1, (state.minute - 540) / 600) : 0.15)
+    // ---- collections (what a collections manager decides on) ----
+    const everyone = [state.hero, ...state.borrowers]
+    const overdueOf = (b) => b.loans.reduce((a, l) => a + l.emi, 0)
+    const overdueStart = everyone.reduce((a, b) => a + overdueOf(b), 0)
+    const heroPaid = state.hero.loans[0].status === 'PAID' ? state.hero.loans[0].emi : 0
+    const collected = sumTo(COLLECTED.adaptive, d) + heroPaid
+    const fCollected = sumTo(COLLECTED.fixed, d)
+    const trend = Array.from({ length: Math.min(6, d) }, (_, i) => {
+      const day = d - Math.min(6, d) + i + 1
+      return { day: `D${day}`, Kairos: COLLECTED.adaptive[day - 1], 'Fixed cadence': COLLECTED.fixed[day - 1] }
+    })
+    const slice = (keyOf, factor) => {
+      const groups = {}
+      everyone.forEach((b) => {
+        const k = keyOf(b)
+        if (!k) return
+        groups[k] ??= { key: k, loans: 0, overdue: 0, replied: 0, paid: 0 }
+        groups[k].loans += 1
+        groups[k].overdue += overdueOf(b)
+        if (b.lastResponse === 'Replied') groups[k].replied += 1
+        if (b.status === 'Collected') groups[k].paid += 1
+      })
+      const weight = Object.values(groups).reduce((a, g) => a + g.overdue * (factor[g.key] ?? 1), 0)
+      return Object.values(groups).map((g) => {
+        const amt = Math.round(collected * (g.overdue * (factor[g.key] ?? 1)) / weight)
+        return { ...g, collected: amt, pct: amt / g.overdue, responseRate: g.replied / g.loans }
+      })
+    }
+    const byRegion = slice((b) => b.region, REGION_FACTOR).sort((a, b) => REGIONS.indexOf(a.key) - REGIONS.indexOf(b.key))
+    const byCohort = slice((b) => b.cohortId, COHORT_FACTOR).sort((a, b) => a.key.localeCompare(b.key))
     return {
+      overdueStart, collected, fCollected, collectionPct: collected / overdueStart,
+      avgPerDay: collected / d, trend, byRegion, byCohort,
       spend, replies, rpr, frpr, lift: rpr / frpr - 1, fSpend, fReplies,
       reach: A.reach[d - 1], fReach: F.reach[d - 1],
       payments: sumTo(A.payments, d) + (state.hero.loans[0].status === 'PAID' ? 1 : 0),

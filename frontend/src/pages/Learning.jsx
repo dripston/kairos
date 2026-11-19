@@ -1,117 +1,59 @@
 import { useState } from 'react'
-import {
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine, BarChart, Bar as RBar,
-} from 'recharts'
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine } from 'recharts'
 import { Check, Lock, ArrowRight } from 'lucide-react'
 import { useKairos, useDerived } from '../lib/store'
-import { BANDS, CAMPAIGN_DAYS, CHANNEL_META, ESTIMATES, SERIES, SWITCH_DAY, UNCERTAINTY, sumTo } from '../lib/mock'
-import { Button, Card, CardHead, ChannelTag, Chip, KpiStrip, PageHeader, Td, Th, cx, inr, pct } from '../components/ui'
+import { CAMPAIGN_DAYS, CHANNEL_META, ESTIMATES, LEARNING, SERIES, UNCERTAINTY, bestByDay, sumTo } from '../lib/mock'
+import { Button, Card, CardHead, ChannelTag, Chip, KpiStrip, PageHeader, Segmented, Td, Th, cx, inr, pct } from '../components/ui'
 
 const TT = { contentStyle: { background: '#1c1c1c', border: '1px solid #333', borderRadius: 8, fontSize: 12 }, cursor: { stroke: '#333' } }
+const CH = ['whatsapp', 'sms', 'ivr']
 const THRESHOLD = 0.1
 
 export default function Learning() {
   const { state } = useKairos()
   const d = useDerived()
-  const day = state.day
-  const [view, setView] = useState('rate')
+  const [lens, setLens] = useState('cohort')
 
-  const est = Array.from({ length: CAMPAIGN_DAYS }, (_, i) => {
-    const row = { day: `D${i + 1}` }
-    if (i < day) ['whatsapp', 'sms', 'ivr', 'email'].forEach((c) => (row[CHANNEL_META[c].label] = view === 'rate' ? +(ESTIMATES[c][i] * 100).toFixed(1) : +(ESTIMATES[c][i] / CHANNEL_META[c].cost).toFixed(3)))
-    return row
-  })
-  const today = ['whatsapp', 'sms', 'ivr', 'email'].map((c) => {
-    const p = ESTIMATES[c][day - 1]
-    return { c, p, cost: CHANNEL_META[c].cost, rpr: p / CHANNEL_META[c].cost }
-  }).sort((a, b) => b.rpr - a.rpr)
-  const day1 = ['whatsapp', 'sms'].map((c) => ({ c, rpr: ESTIMATES[c][0] / CHANNEL_META[c].cost }))
-
-  const cum = Array.from({ length: day }, (_, i) => ({
+  const cum = Array.from({ length: state.day }, (_, i) => ({
     day: `D${i + 1}`,
     Kairos: +(sumTo(SERIES.adaptive.replies, i + 1) / sumTo(SERIES.adaptive.spend, i + 1)).toFixed(3),
     'Fixed cadence': +(sumTo(SERIES.fixed.replies, i + 1) / sumTo(SERIES.fixed.spend, i + 1)).toFixed(3),
   }))
 
-  const mix = BANDS.map((b, i) => {
-    const after = day >= SWITCH_DAY
-    const base = [[0.38, 0.45, 0.1, 0.07], [0.3, 0.48, 0.12, 0.1], [0.28, 0.32, 0.2, 0.2], [0.25, 0.2, 0.25, 0.3]][i]
-    const shifted = after ? [base[0] + 0.15, base[1] - 0.18, base[2] + 0.03, base[3]] : base
-    return { band: `${b} DPD`, SMS: +(shifted[0] * 100).toFixed(0), WhatsApp: +(shifted[1] * 100).toFixed(0), IVR: +(shifted[2] * 100).toFixed(0), WAIT: +(shifted[3] * 100).toFixed(0) }
-  })
-
   return (
     <>
-      <PageHeader title="Learning & Proof" sub="Kairos learns inside the campaign — and beats fixed cadence on the same seed, budget and caps."
+      <PageHeader title="Learning & Proof" sub="What Aladdin learned, where, and why — and the proof that it beats fixed cadence on the same seed, budget and caps."
         chip={<Chip tone="warn">Simulated · placeholder until the measured run</Chip>}
-        right={<div className="flex items-center gap-2 text-[12.5px] text-muted"><Chip>Run R-0007</Chip><Chip>Seed 42</Chip><Chip>Baseline v1</Chip><Chip>Policy v3</Chip></div>} />
+        right={<div className="flex items-center gap-2"><Chip>Run R-0007</Chip><Chip>Seed 42</Chip><Chip>Baseline v1</Chip><Chip>Policy v1.1.0</Chip></div>} />
 
       <div className="space-y-5">
         <KpiStrip items={[
-          { label: 'Replies per ₹ · Kairos', value: d.rpr.toFixed(3), sub: `${d.replies} replies / ${inr(d.spend)}` },
-          { label: 'Replies per ₹ · fixed cadence', value: d.frpr.toFixed(3), sub: `${d.fReplies} replies / ${inr(d.fSpend)}` },
-          { label: 'Lift', value: `+${pct(d.lift, 1)}`, valueClass: d.lift >= 0.2 ? 'text-ok' : 'text-warn', sub: d.lift >= 0.2 ? 'Above the 20% target' : 'Target: ≥ 20% on hidden seed', ring: Math.min(1, d.lift / 0.2), ringTone: d.lift >= 0.2 ? 'ok' : 'warn' },
-          { label: 'Spend saved', value: inr(d.fSpend - d.spend), sub: 'vs fixed cadence, same caps' },
+          { label: 'Collected · Kairos', value: inr(d.collected), sub: `fixed cadence ${inr(d.fCollected)}` },
+          { label: 'Collection lift', value: `+${pct(d.collected / d.fCollected - 1)}`, valueClass: 'text-ok', sub: 'same seed, budget and caps' },
+          { label: 'Replies per ₹', value: d.rpr.toFixed(3), sub: `fixed ${d.frpr.toFixed(3)}` },
+          { label: 'Replies/₹ lift', value: `+${pct(d.lift, 1)}`, valueClass: d.lift >= 0.2 ? 'text-ok' : 'text-warn', sub: d.lift >= 0.2 ? 'Above the 20% target' : 'Target ≥ 20% on hidden seed', ring: Math.min(1, d.lift / 0.2), ringTone: d.lift >= 0.2 ? 'ok' : 'warn' },
           { label: 'Cap breaches', value: '0', valueClass: 'text-ok', sub: 'Both policies · every day', ring: 1, ringTone: 'ok' },
         ]} />
 
-        <div className="grid grid-cols-3 gap-5">
-          <Card className="col-span-2">
-            <CardHead title="What Kairos believes, day by day" sub={view === 'rate' ? 'Estimated reply rate per channel (%) — updated once each reply window closes' : 'Expected replies per ₹ per channel — what the ranking actually uses'}
-              right={<div className="inline-flex rounded-lg border border-line bg-bg p-0.5 text-[12px]">
-                {[['rate', 'Reply rate'], ['rpr', 'Replies per ₹']].map(([v, l]) => <button key={v} onClick={() => setView(v)} className={cx('rounded-md px-2.5 py-1', view === v ? 'bg-raised text-fg' : 'text-muted')}>{l}</button>)}
-              </div>} />
-            <div className="h-[300px] px-3 pb-3">
-              <ResponsiveContainer>
-                <LineChart data={est} margin={{ top: 10, right: 20, bottom: 0, left: -10 }}>
-                  <CartesianGrid stroke="#222" vertical={false} />
-                  <XAxis dataKey="day" stroke="#6b6b6b" tickLine={false} axisLine={false} fontSize={12} />
-                  <YAxis stroke="#6b6b6b" tickLine={false} axisLine={false} fontSize={12} />
-                  <Tooltip {...TT} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} iconType="circle" iconSize={8} />
-                  {day >= SWITCH_DAY && <ReferenceLine x={`D${SWITCH_DAY}`} stroke="#ef4444" strokeDasharray="4 4" label={{ value: 'switch → SMS', fill: '#ef4444', fontSize: 11, position: 'insideTopRight' }} />}
-                  {view === 'rpr' && <ReferenceLine y={THRESHOLD} stroke="#6b6b6b" strokeDasharray="2 4" label={{ value: 'WAIT below', fill: '#6b6b6b', fontSize: 11, position: 'insideBottomRight' }} />}
-                  {['whatsapp', 'sms', 'ivr', 'email'].map((c) => (
-                    <Line isAnimationActive={false} key={c} type="monotone" dataKey={CHANNEL_META[c].label} stroke={CHANNEL_META[c].color} strokeWidth={c === 'whatsapp' || c === 'sms' ? 2.5 : 1.5} dot={{ r: 2.5 }} connectNulls={false} />
-                  ))}
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-
-          <Card>
-            <CardHead title="The maths" sub={`Day ${day} · rank = reply rate ÷ cost per attempt`} />
-            <div className="space-y-2 px-5 pb-4">
-              {today.map((t, i) => (
-                <div key={t.c} className={cx('rounded-lg border px-3.5 py-2.5', i === 0 ? 'border-ok/30 bg-ok/5' : 'border-line')}>
-                  <div className="flex items-center justify-between">
-                    <ChannelTag ch={t.c} />
-                    {i === 0 && <Chip tone="ok">Best now</Chip>}
-                    {t.rpr < THRESHOLD && <Chip>Below threshold</Chip>}
-                  </div>
-                  <div className="mt-1 font-mono text-[12.5px] text-muted">{pct(t.p)} ÷ ₹{t.cost.toFixed(2)} = <span className={cx('font-semibold', i === 0 ? 'text-ok' : 'text-fg')}>{t.rpr.toFixed(2)}</span> replies/₹</div>
-                </div>
-              ))}
-              <div className="rounded-lg border border-line bg-bg px-3.5 py-3 text-[12.5px] text-muted">
-                Day 1: WhatsApp {day1[0].rpr.toFixed(2)} vs SMS {day1[1].rpr.toFixed(2)} → WhatsApp first.
-                {day >= SWITCH_DAY ? <> As WhatsApp replies fell to {pct(ESTIMATES.whatsapp[day - 1], 0)}, SMS took over <b className="text-fg">inside the same campaign</b>.</> : <> Advance the clock to see the switch.</>}
-                <div className="mt-1.5">Below {THRESHOLD} replies/₹, Kairos waits instead of spending.</div>
-              </div>
-            </div>
-          </Card>
+        <div className="flex items-center gap-3">
+          <span className="text-[13px] text-muted">Learning by</span>
+          <Segmented value={lens} onChange={setLens} options={[{ value: 'cohort', label: 'Cohort (risk)' }, { value: 'channel', label: 'Channel' }, { value: 'region', label: 'Region' }]} />
+          <span className="text-[12.5px] text-faint">Campaign-level learning isn't shown — a new campaign runs every day, so there is nothing stable to learn on.</span>
         </div>
+
+        {lens === 'channel' ? <ByChannel /> : <BySlice groups={LEARNING[lens]} lens={lens} />}
 
         <div className="grid grid-cols-2 gap-5">
           <Card>
-            <CardHead title="Adaptive vs fixed cadence" sub={`Day 1–${day} · same seed, audience, budget and caps`} />
+            <CardHead title="Adaptive vs fixed cadence" sub={`Day 1–${state.day} · same seed, audience, budget and caps`} />
             <table className="w-full">
               <thead><tr><Th>Metric</Th><Th>Fixed cadence</Th><Th>Kairos</Th><Th>Change</Th></tr></thead>
               <tbody>
                 {[
+                  ['Collected (₹)', inr(d.fCollected), inr(d.collected), d.collected / d.fCollected - 1, true],
                   ['Replies per ₹', d.frpr.toFixed(3), d.rpr.toFixed(3), d.lift, true],
                   ['Replies', d.fReplies, d.replies, d.replies / d.fReplies - 1, true],
                   ['Spend', inr(d.fSpend), inr(d.spend), d.spend / d.fSpend - 1, false],
-                  ['Unique reach', d.fReach, d.reach, d.reach / d.fReach - 1, true],
                   ['Verified payments', d.fPayments, d.payments, d.payments / d.fPayments - 1, true],
                 ].map(([m, f, k, ch, upGood]) => (
                   <tr key={m}><Td className="font-medium">{m}</Td><Td className="tabular text-muted">{f}</Td><Td className="font-semibold tabular">{k}</Td>
@@ -122,7 +64,7 @@ export default function Learning() {
             </table>
           </Card>
           <Card>
-            <CardHead title="Replies per ₹, cumulative" sub="The gap opens after the channel switch" />
+            <CardHead title="Replies per ₹, cumulative" sub="The gap opens once Aladdin starts switching channels" />
             <div className="h-[250px] px-3 pb-3">
               <ResponsiveContainer>
                 <LineChart data={cum} margin={{ top: 10, right: 20, bottom: 0, left: -10 }}>
@@ -131,49 +73,9 @@ export default function Learning() {
                   <YAxis stroke="#6b6b6b" tickLine={false} axisLine={false} fontSize={12} domain={['dataMin - 0.02', 'dataMax + 0.02']} tickFormatter={(v) => v.toFixed(2)} />
                   <Tooltip {...TT} />
                   <Legend wrapperStyle={{ fontSize: 12 }} iconType="circle" iconSize={8} />
-                  <Line isAnimationActive={false} type="monotone" dataKey="Kairos" stroke="#f97316" strokeWidth={2.5} dot={{ r: 3 }} />
-                  <Line isAnimationActive={false} type="monotone" dataKey="Fixed cadence" stroke="#3b82f6" strokeWidth={2} strokeDasharray="5 4" dot={false} />
+                  <Line isAnimationActive={false} type="monotone" dataKey="Kairos" stroke="#22c55e" strokeWidth={2.5} dot={{ r: 3 }} />
+                  <Line isAnimationActive={false} type="monotone" dataKey="Fixed cadence" stroke="#6b6b6b" strokeWidth={2} strokeDasharray="5 4" dot={false} />
                 </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-2 gap-5">
-          <Card>
-            <CardHead title="Learning per segment" sub="Estimates tighten as reply windows close; exploration shrinks" />
-            <table className="w-full">
-              <thead><tr><Th>DPD band</Th><Th>Best channel now</Th><Th>Estimate</Th><Th>Uncertainty</Th><Th>Exploration</Th><Th>Status</Th></tr></thead>
-              <tbody>
-                {BANDS.map((b, i) => {
-                  const best = day >= SWITCH_DAY && i < 2 ? 'sms' : i >= 2 ? 'ivr' : 'whatsapp'
-                  const e = ESTIMATES[best][day - 1] * [1.1, 1, 0.85, 0.6][i]
-                  const u = UNCERTAINTY[day - 1] * [1, 1.1, 1.4, 2][i]
-                  const st = u < 0.03 ? 'Stable' : u < 0.06 ? 'Converging' : 'Exploring'
-                  return (
-                    <tr key={b}><Td className="font-semibold">{b}</Td><Td><ChannelTag ch={best} /></Td><Td className="tabular">{pct(e)}</Td>
-                      <Td className="tabular text-muted">± {pct(u)}</Td><Td className="tabular text-muted">{Math.max(5, 40 - day * 4 + i * 3)}%</Td>
-                      <Td><Chip tone={st === 'Stable' ? 'ok' : st === 'Converging' ? 'info' : 'warn'}>{st}</Chip></Td></tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </Card>
-          <Card>
-            <CardHead title="Channel mix by segment" sub={day >= SWITCH_DAY ? 'Share of decisions today — after the switch' : 'Share of decisions today — before the switch'} />
-            <div className="h-[230px] px-3 pb-3">
-              <ResponsiveContainer>
-                <BarChart data={mix} layout="vertical" margin={{ top: 4, right: 20, bottom: 0, left: 20 }}>
-                  <CartesianGrid stroke="#222" horizontal={false} />
-                  <XAxis type="number" stroke="#6b6b6b" tickLine={false} axisLine={false} fontSize={12} unit="%" domain={[0, 100]} />
-                  <YAxis type="category" dataKey="band" stroke="#6b6b6b" tickLine={false} axisLine={false} fontSize={12} width={80} />
-                  <Tooltip {...TT} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} iconType="circle" iconSize={8} />
-                  <RBar isAnimationActive={false} dataKey="SMS" stackId="a" fill="#f97316" />
-                  <RBar isAnimationActive={false} dataKey="WhatsApp" stackId="a" fill="#22c55e" />
-                  <RBar isAnimationActive={false} dataKey="IVR" stackId="a" fill="#3b82f6" />
-                  <RBar isAnimationActive={false} dataKey="WAIT" stackId="a" fill="#333" radius={[0, 4, 4, 0]} />
-                </BarChart>
               </ResponsiveContainer>
             </div>
           </Card>
@@ -185,18 +87,124 @@ export default function Learning() {
   )
 }
 
+function SliceChart({ est, day, switches }) {
+  const data = Array.from({ length: CAMPAIGN_DAYS }, (_, i) => {
+    const row = { day: `D${i + 1}` }
+    if (i < day) CH.forEach((c) => (row[CHANNEL_META[c].label] = +(est[c][i] / CHANNEL_META[c].cost).toFixed(3)))
+    return row
+  })
+  return (
+    <div className="h-[190px]">
+      <ResponsiveContainer>
+        <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -18 }}>
+          <CartesianGrid stroke="#222" vertical={false} />
+          <XAxis dataKey="day" stroke="#6b6b6b" tickLine={false} axisLine={false} fontSize={11} />
+          <YAxis stroke="#6b6b6b" tickLine={false} axisLine={false} fontSize={11} tickFormatter={(v) => v.toFixed(1)} />
+          <Tooltip {...TT} />
+          {switches.filter((s) => s.day <= day).map((s) => <ReferenceLine key={s.day} x={`D${s.day}`} stroke="#ef4444" strokeDasharray="4 4" />)}
+          <ReferenceLine y={THRESHOLD} stroke="#444" strokeDasharray="2 4" />
+          {CH.map((c) => <Line isAnimationActive={false} key={c} type="monotone" dataKey={CHANNEL_META[c].label} stroke={CHANNEL_META[c].color} strokeWidth={c === 'ivr' ? 1.5 : 2.2} dot={{ r: 2 }} />)}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
+function BySlice({ groups, lens }) {
+  const { state } = useKairos()
+  const day = state.day
+  return (
+    <>
+      <div className="flex gap-4 text-[12px] text-muted">
+        {CH.map((c) => <span key={c} className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full" style={{ background: CHANNEL_META[c].color }} />{CHANNEL_META[c].label}</span>)}
+        <span>· lines = expected replies per ₹ · <span className="text-bad">red dashed</span> = Aladdin switched channel · grey = WAIT threshold</span>
+      </div>
+      <div className="grid grid-cols-2 gap-5">
+        {groups.map((g, gi) => {
+          const { best, switches } = bestByDay(g.est)
+          const seen = switches.filter((s) => s.day <= day)
+          const now = best[day - 1]
+          const u = UNCERTAINTY[day - 1] * (lens === 'region' ? 1.2 : 1 + gi * 0.15)
+          return (
+            <Card key={g.key}>
+              <CardHead title={lens === 'cohort' ? (state.cohorts.find((c) => c.id === g.key)?.name ?? g.label) : `${g.label} region`}
+                sub={`Best now: ${CHANNEL_META[now.c].label} · ${now.rpr.toFixed(2)} replies/₹ · confidence ±${pct(u)}`}
+                right={seen.length ? <Chip tone="warn">{seen.length} switch{seen.length > 1 ? 'es' : ''}</Chip> : <Chip tone="ok">Stable</Chip>} />
+              <div className="px-3"><SliceChart est={g.est} day={day} switches={switches} /></div>
+              <div className="space-y-1.5 border-t border-line px-5 py-3 text-[12.5px]">
+                <div className="text-[11.5px] font-semibold tracking-wide text-faint uppercase">What changed and why</div>
+                {seen.length ? seen.map((s) => (
+                  <div key={s.day}><b>Day {s.day}:</b> {CHANNEL_META[s.from].label} → <b>{CHANNEL_META[s.to].label}</b> <span className="text-muted">({s.rpr.toFixed(2)} replies/₹)</span></div>
+                )) : <div className="text-muted">No switch yet — {CHANNEL_META[now.c].label} has led since Day 1.</div>}
+                <div className="text-muted">{g.why}</div>
+              </div>
+            </Card>
+          )
+        })}
+      </div>
+    </>
+  )
+}
+
+function ByChannel() {
+  const { state } = useKairos()
+  const day = state.day
+  const data = Array.from({ length: CAMPAIGN_DAYS }, (_, i) => {
+    const row = { day: `D${i + 1}` }
+    if (i < day) ['whatsapp', 'sms', 'ivr', 'email'].forEach((c) => (row[CHANNEL_META[c].label] = +(ESTIMATES[c][i] * 100).toFixed(1)))
+    return row
+  })
+  const winsBy = (c) => LEARNING.cohort.filter((g) => bestByDay(g.est).best[day - 1].c === c).length + LEARNING.region.filter((g) => bestByDay(g.est).best[day - 1].c === c).length
+  return (
+    <div className="grid grid-cols-3 gap-5">
+      <Card className="col-span-2">
+        <CardHead title="Reply rate by channel, day by day" sub="Portfolio-wide estimate (%), updated once each 24-hour reply window closes" />
+        <div className="h-[280px] px-3 pb-3">
+          <ResponsiveContainer>
+            <LineChart data={data} margin={{ top: 10, right: 20, bottom: 0, left: -10 }}>
+              <CartesianGrid stroke="#222" vertical={false} />
+              <XAxis dataKey="day" stroke="#6b6b6b" tickLine={false} axisLine={false} fontSize={12} />
+              <YAxis stroke="#6b6b6b" tickLine={false} axisLine={false} fontSize={12} unit="%" />
+              <Tooltip {...TT} />
+              <Legend wrapperStyle={{ fontSize: 12 }} iconType="circle" iconSize={8} />
+              {['whatsapp', 'sms', 'ivr', 'email'].map((c) => <Line isAnimationActive={false} key={c} type="monotone" dataKey={CHANNEL_META[c].label} stroke={CHANNEL_META[c].color} strokeWidth={2} dot={{ r: 2.5 }} />)}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
+      <Card>
+        <CardHead title="The maths today" sub={`Day ${day} · rank = reply rate ÷ cost per attempt`} />
+        <table className="w-full">
+          <thead><tr><Th>Channel</Th><Th>Reply rate</Th><Th>Cost</Th><Th>Replies/₹</Th><Th>Leads in</Th></tr></thead>
+          <tbody>
+            {['whatsapp', 'sms', 'ivr', 'email'].map((c) => ({ c, p: ESTIMATES[c][day - 1], cost: CHANNEL_META[c].cost })).map((x) => ({ ...x, rpr: x.p / x.cost }))
+              .sort((a, b) => b.rpr - a.rpr).map((x, i) => (
+                <tr key={x.c} className={cx(i === 0 && 'bg-ok/5')}>
+                  <Td><ChannelTag ch={x.c} /></Td><Td className="tabular">{pct(x.p)}</Td><Td className="tabular text-muted">₹{x.cost.toFixed(2)}</Td>
+                  <Td className={cx('font-semibold tabular', x.rpr < THRESHOLD && 'text-muted')}>{x.rpr.toFixed(2)}</Td>
+                  <Td className="tabular text-muted">{winsBy(x.c)} slices</Td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+        <div className="px-5 py-3 text-[12px] text-muted">Below {THRESHOLD} replies/₹ Aladdin waits instead of spending. "Leads in" = cohorts + regions where this channel is best today.</div>
+      </Card>
+    </div>
+  )
+}
+
 function CohortReview() {
   const { state, dispatch } = useKairos()
   const [done, setDone] = useState({})
   const policy = state.role === 'policy'
   const items = [
-    { id: 'p1', text: 'Start 1–59 DPD on SMS instead of WhatsApp in the next cohort', why: 'SMS won replies/₹ from Day 4 in both bands', kind: 'Channel prior' },
-    { id: 'p2', text: 'Move WhatsApp sends for Hindi speakers to 18:00–20:00', why: 'Evening reads 2.1× higher than mornings', kind: 'Time prior' },
-    { id: 'p3', text: 'Lower the weekly cap from 3 to 2 for 90+ DPD', why: 'Third contact added cost with no extra replies', kind: 'Cap change · needs policy owner' },
+    { id: 'p1', text: 'Start C2 and C3 cohorts on SMS instead of WhatsApp next cycle', why: 'SMS took over on Day 4 (C3) and Day 6 (C2) on replies/₹', kind: 'Channel prior' },
+    { id: 'p2', text: 'Lead with IVR for the C4 · High Risk cohort and the East region', why: 'Voice reaches borrowers who ignore text', kind: 'Channel prior' },
+    { id: 'p3', text: 'Lower the weekly cap from 3 to 2 for C4 · High Risk', why: 'Third contact added cost with no extra replies', kind: 'Cap change · needs policy owner' },
   ]
   return (
     <Card>
-      <CardHead title="Cohort close · what to carry forward" sub="Kairos proposes; a person approves. Cap, consent and hardship changes need the policy owner." />
+      <CardHead title="Cohort close · what to carry forward" sub="Aladdin proposes; a person approves. Cap, consent and hardship changes need the policy owner." />
       <div className="px-5 pb-4">
         {items.map((it) => {
           const locked = it.kind.includes('policy owner') && !policy
@@ -209,7 +217,7 @@ function CohortReview() {
               </div>
               {done[it.id] ? <Chip tone="ok"><Check size={11} /> Approved</Chip>
                 : <Button size="sm" disabled={locked} icon={locked ? Lock : Check} title={locked ? 'Switch to Policy owner in the sidebar' : ''}
-                  onClick={() => { setDone({ ...done, [it.id]: true }); dispatch({ type: 'LOG', detail: `Approved carry-forward for next cohort: ${it.text}`, toast: 'Carry-forward approved for the next cohort' }) }}>
+                  onClick={() => { setDone({ ...done, [it.id]: true }); dispatch({ type: 'LOG', detail: `Approved carry-forward for next cohort: ${it.text}`, toast: 'Carry-forward approved for the next cycle' }) }}>
                   {locked ? 'Policy owner' : 'Approve'}</Button>}
             </div>
           )

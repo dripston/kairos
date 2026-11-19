@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Shell from './components/Shell'
 import Campaigns from './pages/Campaigns'
+import Cohorts from './pages/Cohorts'
 import ControlRoom from './pages/ControlRoom'
 import Crm from './pages/Crm'
 import CrmAccount from './pages/CrmAccount'
@@ -12,6 +13,7 @@ export default function App() {
       <Route element={<Shell />}>
         <Route index element={<Navigate to="/control" replace />} />
         <Route path="/campaigns" element={<Campaigns />} />
+        <Route path="/cohorts" element={<Cohorts />} />
         <Route path="/control" element={<ControlRoom />} />
         <Route path="/crm" element={<Crm />} />
         <Route path="/crm/:id" element={<CrmAccount />} />
