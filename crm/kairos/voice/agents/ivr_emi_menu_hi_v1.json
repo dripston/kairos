@@ -1,0 +1,69 @@
+{
+  "type": "IVR",
+  "language": "hi-IN",
+  "tts": {
+    "provider": "sarvam",
+    "model": "bulbul:v3"
+  },
+  "prompts": {
+    "greeting": "Namaste. Yeh aapke lender ki taraf se aapke loan ke baare mein ek zaroori call hai.",
+    "menu": "Agar aap EMI pehle hi bhar chuke hain, 1 dabaiye. Agar aapko thoda aur samay chahiye, 2 dabaiye. Hamare pratinidhi se baat karne ke liye 3 dabaiye. Menu dobara sunne ke liye 9 dabaiye.",
+    "invalid": "Maaf kijiye, yeh vikalp sahi nahi hai.",
+    "no_input": "Humein aapka jawab nahi mila.",
+    "ack_paid": "Dhanyavaad. Hum aapka bhugtan verify karke WhatsApp par update denge.",
+    "ack_time": "Dhanyavaad. Hum aapko WhatsApp par bhugtan ki tareekh ke liye sampark karenge.",
+    "ack_callback": "Dhanyavaad. Hamare pratinidhi aapko jald call karenge.",
+    "goodbye_unresolved": "Hum aapse baad mein sampark karenge. Dhanyavaad."
+  },
+  "menu": {
+    "1": {
+      "intent": "CLAIMS_PAID",
+      "ack": "ack_paid"
+    },
+    "2": {
+      "intent": "NEEDS_TIME",
+      "ack": "ack_time"
+    },
+    "3": {
+      "intent": "CALLBACK",
+      "ack": "ack_callback"
+    }
+  },
+  "repeat_digit": "9",
+  "max_attempts": 3,
+  "on_no_answer": "NO_ANSWER, no intent",
+  "on_max_retries": "ANSWERED, exit max_retries_*, no intent",
+  "rules": [
+    "Never speak amounts or loan numbers (no verification on IVR)",
+    "One normalized outcome per call (E10)"
+  ],
+  "callback": {
+    "url": "https://<kairos-host>/webhooks/sarvam",
+    "method": "POST",
+    "body": {
+      "call_id": "string",
+      "flow": "IVR|VOICEBOT",
+      "status": "completed|answered|no-answer|busy|failed|declined",
+      "custom_ref": "Kairos touch_id passed when the call is placed",
+      "ended_at": "ISO-8601 with offset",
+      "duration_s": "int",
+      "attempts": "int",
+      "exit_reason": "string",
+      "dtmf": "digit or null",
+      "transcript": [
+        {
+          "speaker": "bot|borrower",
+          "text": "string"
+        }
+      ],
+      "intent": {
+        "intent": "NEEDS_TIME|CLAIMS_PAID|CALLBACK|HARDSHIP|STOP",
+        "confidence": "0-1",
+        "agreed_date": "ISO-8601 or null",
+        "reason": "string",
+        "loan_id": "string or null"
+      }
+    },
+    "idempotency": "one outcome per call_id; repeated completions are ignored"
+  }
+}
