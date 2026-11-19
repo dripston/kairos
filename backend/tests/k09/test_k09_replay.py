@@ -221,8 +221,9 @@ class KairosOptionsReplay(unittest.TestCase):
 
     def test_replay_default_and_legacy_options(self):
         from replay.k09 import LEGACY_KAIROS_OPTIONS, KairosOptions
-        self.assertEqual((KairosOptions().decay, KairosOptions().value_floor_rel), (0.7, 0.5))
+        self.assertEqual((KairosOptions().decay, KairosOptions().value_floor_rel, KairosOptions().stop_penalty),
+                         (0.7, 0.5, 25.0))
         legacy = KairosOptions.from_dict(LEGACY_KAIROS_OPTIONS)
         self.assertIsNone(legacy.decay)
         self.assertIsNone(legacy.value_floor_rel)
-        self.assertEqual(legacy.changed(), {"decay": None, "value_floor_rel": None})
+        self.assertEqual(legacy.changed(), {"decay": None, "value_floor_rel": None, "stop_penalty": 0.0})

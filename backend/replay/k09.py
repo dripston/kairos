@@ -131,7 +131,8 @@ class KairosOptions:
     BetaBernoulliLearner / BorrowerContextModel / ContextualLearner.
 
     Replay default (k09/optimize, chosen on tune seeds, validated on held-out seeds; README "Multi-seed
-    result"): decay=0.7 and value_floor_rel=0.5. The previous default is LEGACY_KAIROS_OPTIONS."""
+    result"): decay=0.7, value_floor_rel=0.5 and stop_penalty=25 (opt-out risk priced into the value).
+    {"stop_penalty": 0} gives the PR #17 default; LEGACY_KAIROS_OPTIONS the one before k09/optimize."""
     decay: Optional[float] = 0.7               # per-day discount of arm evidence (drift)
     hier_strength: Optional[float] = None      # band x channel x slot shrunk to pooled channel x slot
     affinity_strength: Optional[float] = None  # per-borrower x channel factor (hierarchical)
@@ -140,7 +141,7 @@ class KairosOptions:
     min_replies_per_inr: float = 0.0           # value floor on borrower-adjusted replies per rupee
     payment_lambda: float = 0.0                # fund order by (p_reply + λ·p_pay) per rupee (demo rule)
     value_floor_rel: Optional[float] = 0.5     # WAIT below φ × campaign-to-date realized replies per rupee
-    stop_penalty: float = 0.0                  # value = p_reply − μ·P(STOP) (StopRiskModel from ledger STOPs)
+    stop_penalty: float = 25.0                 # value = p_reply − μ·P(STOP) (StopRiskModel from ledger STOPs)
     stop_max: Optional[float] = None           # WAIT when P(STOP) for the arm exceeds this
     stop_strength: float = 1500.0              # StopRiskModel shrinkage strength
 
@@ -158,7 +159,7 @@ class KairosOptions:
 
 
 # The K09 replay default before k09/optimize (posterior mean + context layer, nothing else).
-LEGACY_KAIROS_OPTIONS = {"decay": None, "value_floor_rel": None}
+LEGACY_KAIROS_OPTIONS = {"decay": None, "value_floor_rel": None, "stop_penalty": 0.0}
 
 
 class DriftSimulator(DevSimulator):
