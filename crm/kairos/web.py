@@ -326,6 +326,44 @@ class Handler(BaseHTTPRequestHandler):
         print(f"[kairos] {self.address_string()} {fmt % args}")
 
 
+class KairosServer(ThreadingHTTPServer):
+    """On shutdown, in-flight requests finish (their per-request DB connection closes in `finally`)."""
+    daemon_threads = False
+    block_on_close = True  # server_close() joins every request thread
+
+
+def close_db(db_path: str) -> None:
+    """Final flush: fold the WAL back into the database file so nothing is left half-written."""
+    if db_path == ":memory:":
+        return
+    conn = sqlite3.connect(db_path, timeout=10)
+    try:
+        conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+    finally:
+        conn.close()
+
+
+def _raise_interrupt(signum, _frame) -> None:
+    raise KeyboardInterrupt(signum)
+
+
+def serve(server: KairosServer, db_path: str, install_signals: bool = True) -> str:
+    """serve_forever until Ctrl-C or SIGTERM, then stop cleanly: no new requests, in-flight ones finish,
+    the DB is checkpointed and closed. Returns why it stopped."""
+    import signal
+    if install_signals:
+        signal.signal(signal.SIGTERM, _raise_interrupt)  # SIGINT is already KeyboardInterrupt
+    why = "stopped"
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt as e:
+        why = "SIGTERM" if e.args and e.args[0] == signal.SIGTERM else "SIGINT"
+    finally:
+        server.server_close()
+        close_db(db_path)
+    return why
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Kairos CRM borrower page + replay")
     parser.add_argument("--host", default="127.0.0.1")
@@ -333,12 +371,10 @@ def main() -> None:
     parser.add_argument("--db", default=str(DEFAULT_DB_PATH))
     args = parser.parse_args()
     Handler.db_path = args.db
-    server = ThreadingHTTPServer((args.host, args.port), Handler)
+    server = KairosServer((args.host, args.port), Handler)
     print(f"Kairos running on http://{args.host}:{args.port}/borrowers/{BORROWER_ID}  (db: {args.db})")
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        pass
+    why = serve(server, args.db)
+    print(f"Kairos CRM stopped cleanly ({why}); database closed.")
 
 
 if __name__ == "__main__":

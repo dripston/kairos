@@ -123,4 +123,5 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    main()
+    from kairos_backend.safeio import interruptible
+    raise SystemExit(interruptible(main, lambda: "CSV sheets are each written atomically; a sheet is either the old or the new one."))

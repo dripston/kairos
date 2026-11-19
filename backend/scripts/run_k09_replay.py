@@ -27,6 +27,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # backend/ (no install needed)
 
+from kairos_backend.safeio import atomic_write_text, interruptible  # noqa: E402
 from replay import settings as S  # noqa: E402
 from replay.k09 import LEGACY_KAIROS_OPTIONS, run_comparison  # noqa: E402
 
@@ -149,11 +150,10 @@ def main() -> int:
 
     os.makedirs("reports", exist_ok=True)
     path = os.path.join("reports", "k09_replay_report.json")
-    with open(path, "w") as f:
-        json.dump(r, f, indent=2, default=str)
+    atomic_write_text(path, json.dumps(r, indent=2, default=str))  # temp file + rename: Ctrl-C safe
     print(f"\nReport: {path}   ledger DBs: {r['dbs']}   ({time.perf_counter() - t0:.0f}s)")
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(interruptible(main, lambda: "Replay arms still running were discarded with their temp DBs."))

@@ -798,10 +798,8 @@ def rows_to_csv(rows: List[dict], columns: Optional[List[str]] = None) -> str:
 def export_csv(rows: List[dict], path: Union[str, Path], columns: Optional[List[str]] = None) -> Path:
     """Write rows to a UTF-8 CSV (header from `columns`, else the first row; an empty sheet keeps its
     header when the sheet's columns are known)."""
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(rows_to_csv(rows, columns), encoding="utf-8")
-    return path
+    from .safeio import atomic_write_text
+    return atomic_write_text(path, rows_to_csv(rows, columns))  # temp file + rename: Ctrl-C safe
 
 
 def export_pack(reports: Dict[str, List[dict]], folder: Union[str, Path]) -> List[Path]:

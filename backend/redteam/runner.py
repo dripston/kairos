@@ -123,7 +123,5 @@ def utcnow() -> datetime:
 
 
 def write_report(report: dict, path: Path) -> Path:
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(report, indent=2, default=str, ensure_ascii=False), encoding="utf-8")
-    return path
+    from kairos_backend.safeio import atomic_write_text
+    return atomic_write_text(path, json.dumps(report, indent=2, default=str, ensure_ascii=False))

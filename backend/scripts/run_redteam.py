@@ -73,4 +73,5 @@ def main(argv=None) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    from kairos_backend.safeio import interruptible
+    sys.exit(interruptible(main))

@@ -164,6 +164,11 @@ class Ledger:
         # transaction only after the Gate allowed the touch: (c, ins, decision) -> (status, decision).
         # It may only make things stricter: hold the touch as PENDING_APPROVAL, or veto it.
         self.reserve_hook = None
+        # every connection this Ledger opens, in any thread, so close_all() can flush and close them
+        # (graceful shutdown); a bumped generation makes threads reopen lazily afterwards.
+        self._all_conns: list = []
+        self._conns_lock = threading.Lock()
+        self._gen = 0
         create_spine_schema(self._spine())   # K03 tables
         self._conn().executescript(K06_SCHEMA)  # K06 tables
 
@@ -171,6 +176,8 @@ class Ledger:
     def _conn(self) -> sqlite3.Connection:
         """K06 connection: autocommit; every write goes through tx()."""
         conn = getattr(self._local, "conn", None)
+        if conn is not None and getattr(self._local, "conn_gen", None) != self._gen:
+            conn = None  # closed by close_all(): reopen
         if conn is None:
             conn = sqlite3.connect(self.path, timeout=30, isolation_level=None, check_same_thread=False)
             conn.row_factory = sqlite3.Row
@@ -179,16 +186,24 @@ class Ledger:
             conn.execute("PRAGMA busy_timeout=30000")
             conn.execute("PRAGMA foreign_keys=ON")
             self._local.conn = conn
+            self._local.conn_gen = self._gen
+            with self._conns_lock:
+                self._all_conns.append(conn)
         return conn
 
     def _spine(self) -> sqlite3.Connection:
         """K03-style connection for calling spine functions, which manage their own
         transactions with `with conn:` (so they must not run inside tx())."""
         conn = getattr(self._local, "spine", None)
+        if conn is not None and getattr(self._local, "spine_gen", None) != self._gen:
+            conn = None  # closed by close_all(): reopen
         if conn is None:
             conn = spine_connection(self.path)
             conn.execute("PRAGMA busy_timeout=30000")
             self._local.spine = conn
+            self._local.spine_gen = self._gen
+            with self._conns_lock:
+                self._all_conns.append(conn)
         return conn
 
     @contextmanager
@@ -210,6 +225,43 @@ class Ledger:
             if conn is not None:
                 conn.close()
                 setattr(self._local, name, None)
+                with self._conns_lock:
+                    self._all_conns = [x for x in self._all_conns if x is not conn]
+
+    def close_all(self) -> int:
+        """Graceful shutdown: checkpoint the WAL into the main file, then close every connection this
+        Ledger opened in any thread. Threads that use the Ledger afterwards reopen lazily. Returns
+        how many connections were closed."""
+        try:
+            self._conn().execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        except sqlite3.Error:
+            pass  # a busy reader may hold the WAL; closing still persists every committed tx
+        with self._conns_lock:
+            conns, self._all_conns = self._all_conns, []
+            self._gen += 1
+        n = 0
+        for conn in conns:
+            try:
+                conn.close()
+                n += 1
+            except sqlite3.Error:  # e.g. a spine connection bound to another thread
+                pass
+        self._local.conn = self._local.spine = None
+        return n
+
+    def mark_inflight_uncertain(self, reason: str = "SHUTDOWN_GRACE_EXPIRED") -> list[str]:
+        """Touches still DISPATCHING (handed to a provider, no answer recorded) become UNCERTAIN: they keep
+        their cap slot and cost, are never dispatched again (begin_dispatch takes RESERVED only), and
+        Executor.resolve_uncertain asks the provider what happened. A late provider answer still upgrades
+        UNCERTAIN to SENT (ledger.RANK)."""
+        with self.tx() as c:
+            rows = c.execute("SELECT instruction_id, borrower_id FROM touches WHERE status='DISPATCHING'").fetchall()
+            now = self._iso(self.policy.now())
+            for r in rows:
+                c.execute("UPDATE touches SET status='UNCERTAIN', reason=?, updated_at=? WHERE instruction_id=?"
+                          " AND status='DISPATCHING'", (reason, now, r["instruction_id"]))
+                self._audit(c, "system", "DISPATCH_UNCERTAIN", r["borrower_id"], r["instruction_id"], reason=reason)
+            return [r["instruction_id"] for r in rows]
 
     # ---------- helpers ----------
     def _loc(self, dt: datetime) -> datetime:
