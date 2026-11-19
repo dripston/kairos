@@ -43,8 +43,9 @@ BRANCHES=(
   k26/report-pack              # 13
   redteam/guardrail-suite      # 14
   redteam/fix-high             # 16
-  redteam/fix-med              # MED fixes (skipped while missing / already contained)
+  redteam/fix-med              # 19 MED fixes (after fix-high)
   k07-k08/channel-adapters     # 10
+  k07-k08/android-sms          # 18 Android SMS adapter (stacked on 10)
   k22/template-selector        # 8
   feat/k05-k14-crm-voice       # 6
   k20/email-channel            # K20 email adapter
@@ -53,7 +54,7 @@ BRANCHES=(
   k27/auto-churn               # auto-churn cohort engine (journey uses it when present)
   k06/deterministic-states     # K06 deterministic states
   frontend/live-api            # frontend wired to the live API
-  k07-k08/android-sms          # Android SMS adapter (if not pushed into k07-k08/channel-adapters)
+  k09/rl-v2                    # K09 learner v2
 )
 
 BASE="origin/main"
