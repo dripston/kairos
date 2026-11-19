@@ -47,7 +47,11 @@ spine, policy learning, replay, metrics).
   callbacks never change state; unresolved provider outcomes stay out of learning.
 - **No PII** in logs, prompts or commits (mask phones; the PL_Dummy CSV is never committed).
 - **LLM use is narrow**: `gpt-6-luna` only for ambiguous free-text intent + a short summary,
-  reasoning effort `none`, strict JSON schema, no tools, redacted input. Everything else is deterministic.
+  reasoning effort `none`, strict JSON schema, no tools, redacted input. Optional Sarvam models (only with a
+  key; see backend/README.md "Sarvam models"): `sarvam-prism` classifies (intent tier, low-confidence voice),
+  `sarvam-105b-conversations` rewords an approved CM-03 line behind a validator, `deepseekv4.1-flash-1017`
+  writes operator narratives labelled AI-generated. None of them chooses a transition, guardrail, money or
+  consent; the key lives in `.env` / `~/.kairos`, never in the repo. Everything else is deterministic.
 - Python code must run on **3.9** (`from __future__ import annotations`), stdlib-first.
 
 ## Run and test

@@ -549,6 +549,24 @@ marker, `@` or `+<digit>`; only `call_date`, `overdue_days` and `touch_id` have 
 | other (PAY_NOW_LINK, NEEDS_TIME_NO_DATE, REFUSED_TO_PAY, LANGUAGE_BARRIER) | 0.6 | intent recorded (LANGUAGE_BARRIER stores the observed language) | UNCLEAR → review |
 | unknown enum | — | UNCLEAR, confidence 0 → review, no automated action | |
 
+**Low-confidence re-classification with `sarvam-prism` (optional, only with a Sarvam key).** When a
+call's `disposition_confidence` is below its `accept_at` above and a `call_summary` exists, Kairos asks
+prism to re-classify the (PII-scrubbed, digit-masked) summary into the 16 dispositions, with a confidence
+score and yes / no / unknown on stop, hardship, self-harm and abuse. The bot's disposition is **never
+changed** and a confidence is **never lowered**; `thresholds.json` is untouched. What prism may do
+(`sarvam/prism.py: voice_rule`, pure):
+
+| Prism says | Effect |
+|---|---|
+| same disposition, prism confidence ≥ 0.8, bot confidence ≥ 0.4 | confidence raised to min(prism, bot + 0.25); the thresholds above then decide as usual (PTP still needs a date within max days, a callback a future in-window time) |
+| same disposition, but it is STOP_REQUESTED, WRONG_PERSON, THIRD_PARTY or NO_RESPONSE | nothing: a low-confidence STOP keeps its supervisor hold + review; consent is never withdrawn on a model's word |
+| a different disposition | human review ticket (`VOICE_REVIEW_MODEL_REVIEW`) unless the threshold already routes to a person |
+| yes on stop / hardship / self-harm / abuse that the bot did not report | human review ticket, same rule |
+| error, timeout, schema violation, open circuit breaker | nothing (deterministic path) |
+
+Every use is recorded on the envelope as `payload.model_assist` (model, version, latency, cached, bot
+confidence, prism's answers, action, reason).
+
 Learner reward: `OutcomeFinalizer.record_reply(meaningful=True)` only for PTP, PARTIAL_PTP,
 PAY_NOW_LINK, ALREADY_PAID, NEEDS_TIME_NO_DATE, CALLBACK_REQUESTED, HARDSHIP, DISPUTE,
 HUMAN_REQUESTED at ≥ 0.6 (after any downgrade). Reach (call connected → touch DELIVERED,
@@ -815,6 +833,7 @@ It **only classifies**. What a label does stays with Kairos code (K13 `exception
 | 1 `rules` | Regexes in English, Devanagari Hindi and Hinglish after typo / transliteration canonicalisation (`nhi→nahi`, `pymnt→payment`, `pleeease→please`, Devanagari digits). Dates: `kal`, `parso`, `25 tareekh`, `next Monday`, `कल`, `२५ तारीख`, `2 din me`, `month end`; hints `after_salary`, `after_festival`, `next_week`, `next_month`; amount type FULL / PARTIAL. | Always first | Pure functions |
 | — safety | STOP (any language, plus legacy `is_stop`), HARDSHIP incl. **self-harm** (`needs_human`, flag `self_harm`), ABUSIVE. Precedence STOP > self-harm > hardship > abuse. | Before anything else | A safety hit returns at once: **no lower tier runs, so none can override it** |
 | 2 `small_model` | Multinomial Naive Bayes, word 1–2-grams + char 2–4-grams, pure Python. Weights `kairos_backend/data/intent_nb_v1.json` (183 KB: version, training seed 1729, calibration seed, temperature, sha). Temperature fitted on *held-out templates* (4 template folds) so it is not over-confident on new phrasing. When rules found several candidates, the model only picks **among them**. | No rule answered with ≥ 0.85 | Seeded corpus, fixed weights |
+| 2b `prism` | Optional `sarvam-prism` (see [Sarvam models](#sarvam-models-prism--sarvam-105b--deepseek)): intent choice + stop / hardship / self-harm / abuse yes-no-unknown + confidence, on masked input. Accepted at ≥ 0.70 (among rule candidates if any); a safety yes only adds `needs_human`; a prism-only STOP is returned as `UNKNOWN`. | Tier 2 unsure **and** a Sarvam key is configured | Cache + temperature-free decision model; never after a rule safety hit |
 | 3 `local_llm` | Ollama `/api/chat`, `temperature 0`, fixed `seed`, `top_k 1`, `format` = strict JSON schema `{label, confidence}`, 4 s timeout, input with every digit, phone, e-mail, id and name masked (`redact_for_llm`). Schema violation / timeout / HTTP error → falls through. | Tier 2's top real-label probability < 0.70, and the server + model answer `GET /api/tags` | temperature 0 + seed + cache |
 | 4 `cloud_llm` | The existing `intent.LunaClient` (`gpt-6-luna`, reasoning `none`, strict JSON schema, no tools, `store: false`) on the same masked text. OTHER or `ambiguous: true` → not accepted. | Tiers 1–3 still unsure **and** `OPENAI_API_KEY` set | Strict schema + cache |
 | 5 `abstain` | `UNKNOWN`, `needs_human: true`, evidence lists what each tier said. | Every tier unsure | Never a guess |
@@ -918,6 +937,126 @@ probes `GET /api/tags` once; if the server or the model is missing, tier 3 is si
 * Open follow-ups: a real LLM-tier eval (needs Ollama or a key; the report counts how many messages
   would reach one), a held-out half of the gold set for future rule tuning, and wiring
   `record_text_reply` into the CM-03 inbound webhook once that lands.
+
+## Sarvam models (prism / sarvam-105b / deepseek)
+
+Three Sarvam-hosted models, each used only where it improves a result and **never** for a transition,
+a guardrail, money or consent (see STATES.md, "Deterministic AI in Kairos"). Code: `kairos_backend/sarvam/`.
+**Without a key everything below is off** and Kairos is exactly the deterministic system: the full suite,
+the red team and the journey hash are unchanged.
+
+| Model | Where | What it may do | Why |
+|---|---|---|---|
+| `sarvam-prism` (`POST /v2/systemone`) | Intent stack tier **2b** (`intent_stack.py`), after rules + small model, before the local / cloud LLM | Answer `intent` (choice over the 17 labels, plain-language criteria), `stop_request` / `hardship` / `self_harm` / `abusive` (noul = yes / no / unknown) and `confidence` (score). Accepted only at ≥ 0.70 (reported confidence capped at 0.85) and, when rules found candidates, only among them | A decision model is built for "pick one of these, and how sure are you"; it reads Hinglish / Hindi; the questions double as a safety screen |
+| `sarvam-prism` | Voice ingest (`voice/ingest.py`), low-confidence calls only | Raise the bot's confidence for the same disposition within limits, or add a human review (rule table in "Voice engine" above) | A second opinion exactly where the bot is unsure |
+| `sarvam-105b-conversations` (`POST /v2/chat/completions`) | CM-03 `_reply`, after the engine chose state, action and reply key | Rephrase an approved small-talk / clarification / empathy line (`CLARIFY`, `GOODBYE`, `HARDSHIP`, `HANDOFF_HOLD`, `CALLBACK`, …) into natural English / Hinglish / Hindi; before verification only the identity prompts (`GREET_VERIFY`, `OTP_PROMPT`, `ASK_NAME`) | Borrowers write Hinglish; a fixed template reads robotic |
+| `deepseekv4.1-flash-1017` (`POST /v2/chat/completions`, `reasoning_effort: low`) | `sarvam/narrate.py`: K05 two-line summary, hand-off case summary (hardship / dispute / fraud), "explain this decision" (`GET /ai/explain`, `GET /ai/case-summary/{ticket_id}`), K26 daily ops paragraph (`/reports/daily-segment?narrative=true`) | Write text **for people**, next to the deterministic record, labelled `AI-generated (…) from the recorded facts; not a decision` | Operators read prose faster than audit rows |
+
+### Guardrails (all of them, every call)
+
+* **Input:** `pii.scrub()` (phones, e-mails) then `redact_for_llm` (ids, amounts, names, **every digit**
+  masked) for prism; narratives get scrubbed facts only; phrasing gets the approved line and the target
+  style only — never the borrower's text (no prompt-injection path, no account data).
+* **Output schema:** prism answers are parsed defensively and must name an allowed label and a confidence;
+  chat replies must carry `choices[0].message.content`. Anything else → the deterministic path.
+* **Safety precedence (prism):** a rule safety hit (STOP, self-harm, hardship, abuse) returns before prism
+  is ever called. A prism **yes** on stop / hardship / self-harm / abuse only adds a person: `needs_human`,
+  flag `<kind>_unconfirmed`, `evidence.safety_unconfirmed_by_rules`. A prism-only STOP is returned as
+  `UNKNOWN` (never the label `STOP`), so **no caller can auto-STOP on a model**.
+* **CM-03 output validator** (`sarvam/phrasing.py: validate`), any failure → the approved line verbatim:
+  no digits / links / amounts / dates that were not in the approved line (and every approved digit, link,
+  upper-case keyword such as `RESEND` / `NOC` and the lender name kept); no account words before
+  verification; no threat, misleading-consequence or third-party words (the `template_compliance`
+  vocabulary); no promises (waiver, discount, guarantee, settle, maaf, chhoot, …); no collection ask in a
+  hardship line; per-key intent markers (a hardship line still says sorry / paused / team); right script;
+  length 0.4–1.8× the approved line and ≤ 480 chars.
+* **Narrative fact check** (`sarvam/narrate.py: fact_check`), any failure → the deterministic text: no PII;
+  every number must appear in the input facts; key fields present (ids, decision, rule, intent label);
+  no advice / decision language; length limit.
+* **Runtime:** timeouts 5 s (prism) / 6 s (LLMs); circuit breaker opens after 3 consecutive failures for
+  60 s; results cached by request hash (a transient failure is not cached in the intent stack); temperature
+  0; every use recorded with model, version, adapter, latency and cache flag (`evidence.prism`,
+  `payload.model_assist`, the CM-03 `REPLY` envelope's `phrasing`, `Narrative.meta`).
+* **Key:** read at runtime, sent only in the `api-subscription-key` header, masked (`sk_***`) in every
+  error string and `repr`; never logged, never in a command line. Tests force `KAIROS_SARVAM_MODELS=off`.
+
+### Enable it
+
+The key is looked up in this order (first non-empty wins): `SARVAM_API_KEY` in the environment → the
+`.env` file named by `KAIROS_DOTENV` → `backend/.env` → repo-root `.env` → `~/.kairos/sarvam_api_key`.
+`.env` and `**/.env` are git-ignored; `backend/.env.example` shows the variable. From `backend/`, store
+the key without echoing it:
+
+```bash
+read -s "k?Sarvam API key: " && printf 'SARVAM_API_KEY=%s\n' "$k" >> .env && chmod 600 .env && unset k
+```
+
+(or, outside the repo: `mkdir -p ~/.kairos && read -s "k?Sarvam API key: " && printf %s "$k" > ~/.kairos/sarvam_api_key && chmod 600 ~/.kairos/sarvam_api_key && unset k`).
+With a key the API turns on all four uses. Switches: `KAIROS_SARVAM_MODELS=off` (everything off),
+`KAIROS_SARVAM_FEATURES=prism,voice,phrasing,narrative` (a subset).
+
+### Evaluation (`scripts/eval_models.py` → `reports/models_eval.json`)
+
+```bash
+python scripts/eval_models.py                         # offline: recorded fixtures or the STAND-IN -> "LIVE NOT RUN"
+python scripts/eval_models.py --live                  # real calls if a key is found (caps: 400 prism + 100 LLM)
+python scripts/eval_models.py --live --record         # ... and save responses to tests/data/sarvam_recorded.json
+KAIROS_DOTENV=/path/to/backend/.env python scripts/eval_models.py --live
+python scripts/run_cm03_eval.py --phrasing live       # full CM-03 bars (incl. 500 concurrent) with phrasing on
+```
+
+Without a key the eval uses `sarvam/fixtures.py`: recorded live responses when present, else a
+deterministic **STAND-IN** (Naive Bayes in prism's JSON shape, the approved line for phrasing, fact
+sentences for deepseek) that also **injects bad outputs** (malformed prism JSON; amounts, threats,
+promises, links and over-long lines in phrasing; invented numbers, phones and advice in narratives).
+Stand-in numbers measure the plumbing and the guardrails, **not** the models.
+
+**Result, 2026-11-19: LIVE NOT RUN (no key yet).** Offline run (`--live` with `KAIROS_DOTENV` set to the
+demo worktree's `backend/.env`, which did not exist yet), so prism / sarvam-105b / deepseek answers are
+the STAND-IN. Read the model columns as "the plumbing works and the guardrails hold", not as model quality.
+
+| Intent (reference day 2026-11-19) | Current stack | + prism tier (STAND-IN) |
+|---|---|---|
+| Gold n = 160: accuracy / macro-F1 | 95.0% / 95.6% | 94.4% / 94.7% |
+| Gold: STOP / HARDSHIP recall | 100% / 100% | 100% / 100% |
+| Gold: abstain rate | 9.4% | 8.7% (1 message answered by the prism tier) |
+| Held-out n = 80 (new, hand-written): accuracy / macro-F1 | 88.7% / 90.3% | 88.7% / 90.3% |
+| Held-out: STOP / HARDSHIP recall | 100% / 100% | 100% / 100% |
+| Held-out: abstain rate | 15.0% | 15.0% |
+| Latency p50 / p95 (offline; a live prism call adds its network time, capped by the 5 s timeout) | 0.25 / 0.51 ms | 0.27 / 0.60 ms |
+
+The held-out set first scored 86.3% with **HARDSHIP recall 75%**: the rules missed a self-harm message
+("main ab jeena nahi chahta, sab khatam karna hai") and a job loss ("company ne nikaal diya"). Those two
+phrasings were added to the safety rules (safety rules only grow; gold results unchanged); every other
+held-out miss was left as is so the set stays held out. This is exactly the gap prism's `self_harm` /
+`hardship` questions are there to catch live.
+
+| Other sections (STAND-IN) | Result |
+|---|---|
+| Voice, 30 synthetic low-confidence summaries | prism answer usable 25 / 30 (5 malformed on purpose → no change); re-classification accuracy 84%; 12 upgrades, **0 wrong upgrades**, **0 confidences lowered**, 0 dispositions changed; the 6 cases where the bot was wrong all went to review |
+| CM-03, n = 1,000 + 500 concurrent (engine + HTTP), phrasing OFF vs ON | every acceptance bar PASS both ways: 73.2% resolved without a human, 127 / 127 fakes caught, **0 disclosures before verification**, first reply p95 0.5 / 1.2 ms, 0 errors and 0 cross-talk at 500; outcome digest identical ON and OFF (`e839b536ca56e4fc`) |
+| CM-03 validator | 29 distinct model answers, 4 rejected = the 4 injected bad ones (amount, threat, promise, link), 25 / 25 faithful ones accepted. Per reply sent: 1,563 of 4,076 (38.4%) went out verbatim, because two of the injected bad answers were for frequent lines and the cache served them again; each time the validator rejected them again |
+| Narratives, 22 samples on journey / CM-03 / crm facts | daily ops 6 / 6 accepted, case summaries 8 / 9, explain-decision 1 / 2, K05 3 / 5; every fallback was an injected bad answer (phone, advice, invented number; one repeated by the cache); an independent re-check of the accepted text found 0 PII, 0 numbers outside the facts, 0 missing key fields |
+
+Full suite with the models off: 2,995 passed (2,932 before + 63 new); red team 49 / 49; journey hash
+`06b5d81e1da85e18` unchanged.
+
+### Context for Claude / how to continue
+
+* Files: `sarvam/config.py` (key, switches, masking), `sarvam/client.py` (transport, cache, breaker,
+  budget), `sarvam/prism.py` (questions, defensive parsing, voice rule), `sarvam/phrasing.py`
+  (validator, phraser), `sarvam/narrate.py` (narratives, fact check), `sarvam/fixtures.py`,
+  `scripts/eval_models.py`, `tests/test_sarvam_models.py`, `tests/data/intent_heldout.jsonl` (80
+  hand-written, never used for tuning except the two safety phrases noted below),
+  `tests/data/voice_lowconf_summaries.jsonl` (30 synthetic).
+* **The prism response shape is not documented to us.** `prism.parse_answers` accepts answers under
+  `answers / results / outputs / output / data / response`, as a dict keyed by question name or a list of
+  `{name|question|id, answer|value|label|choice|score}`; `noul` maps yes / true / likely → yes, no / false /
+  unlikely → no, anything else → unknown; `score` accepts 0–1, 0–10, 0–100, a percentage or one of our
+  ordered labels. Run `--live --record` once and look at `tests/data/sarvam_recorded.json`; tighten the
+  parser to the real shape and add it to `test_parse_answers_shapes`.
+* Never let a model choose a transition, an action, a hold, a STOP, a payment or consent. New uses go in
+  STATES.md first.
 
 ## Auto-churn engine (K27)
 

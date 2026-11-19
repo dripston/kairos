@@ -18,3 +18,4 @@ kairos/
 | Backend | [`backend/README.md`](backend/README.md) — `pip install -e ".[dev]" && pytest` |
 | CRM + voice | [`crm/README.md`](crm/README.md) — `cd crm && python3 -m kairos.web` (stdlib only) |
 | Policy | [`policy/README.md`](policy/README.md) |
+| Sarvam models (optional) | [`backend/README.md` → Sarvam models](backend/README.md#sarvam-models-prism--sarvam-105b--deepseek) — prism / sarvam-105b / deepseek, off without a key |
