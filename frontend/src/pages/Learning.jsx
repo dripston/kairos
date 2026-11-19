@@ -5,6 +5,7 @@ import {
 import { Check, Lock, ArrowRight } from 'lucide-react'
 import { useKairos, useDerived } from '../lib/store'
 import { BANDS, CAMPAIGN_DAYS, CHANNEL_META, ESTIMATES, SERIES, SWITCH_DAY, UNCERTAINTY, sumTo } from '../lib/mock'
+import { ArmScores, ChannelSwitches, DailySegmentTable, ProofCard } from '../components/LiveLearning'
 import { Button, Card, CardHead, ChannelTag, Chip, KpiStrip, PageHeader, Td, Th, cx, inr, pct } from '../components/ui'
 
 const TT = { contentStyle: { background: '#1c1c1c', border: '1px solid #333', borderRadius: 8, fontSize: 12 }, cursor: { stroke: '#333' } }
@@ -47,6 +48,13 @@ export default function Learning() {
         right={<div className="flex items-center gap-2 text-[12.5px] text-muted"><Chip>Run R-0007</Chip><Chip>Seed 42</Chip><Chip>Baseline v1</Chip><Chip>Policy v3</Chip></div>} />
 
       <div className="space-y-5">
+        <ProofCard />
+        <div className="grid grid-cols-3 gap-5">
+          <div className="col-span-2"><ArmScores /></div>
+          <ChannelSwitches />
+        </div>
+        <DailySegmentTable />
+        <div className="flex items-center gap-3 pt-2 text-[12.5px] text-muted"><span className="h-px flex-1 bg-line" />Campaign walkthrough below is the built-in demo series (SIMULATED)<span className="h-px flex-1 bg-line" /></div>
         <KpiStrip items={[
           { label: 'Replies per ₹ · Kairos', value: d.rpr.toFixed(3), sub: `${d.replies} replies / ${inr(d.spend)}` },
           { label: 'Replies per ₹ · fixed cadence', value: d.frpr.toFixed(3), sub: `${d.fReplies} replies / ${inr(d.fSpend)}` },
