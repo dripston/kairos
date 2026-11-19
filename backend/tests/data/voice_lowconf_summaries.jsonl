@@ -1,0 +1,30 @@
+{"id": "v001", "call_summary": "Borrower said he will pay the full EMI on Saturday after salary.", "true_disposition": "PTP", "bot_disposition": "PTP", "bot_confidence": 0.62}
+{"id": "v002", "call_summary": "Customer agreed to pay on the 25th, sounded sure.", "true_disposition": "PTP", "bot_disposition": "PTP", "bot_confidence": 0.7}
+{"id": "v003", "call_summary": "Borrower kal tak payment karne ka bola, pakka.", "true_disposition": "PTP", "bot_disposition": "PTP", "bot_confidence": 0.55}
+{"id": "v004", "call_summary": "Borrower promised to pay but did not give a date.", "true_disposition": "NEEDS_TIME_NO_DATE", "bot_disposition": "PTP", "bot_confidence": 0.6}
+{"id": "v005", "call_summary": "Borrower can pay only half now and rest next week, promised half by Monday.", "true_disposition": "PARTIAL_PTP", "bot_disposition": "PARTIAL_PTP", "bot_confidence": 0.66}
+{"id": "v006", "call_summary": "Customer says the EMI was already deducted from the account last week.", "true_disposition": "ALREADY_PAID", "bot_disposition": "ALREADY_PAID", "bot_confidence": 0.5}
+{"id": "v007", "call_summary": "Borrower claims payment done through UPI yesterday.", "true_disposition": "ALREADY_PAID", "bot_disposition": "ALREADY_PAID", "bot_confidence": 0.45}
+{"id": "v008", "call_summary": "Borrower is driving, asked to call back in the evening after six.", "true_disposition": "CALLBACK_REQUESTED", "bot_disposition": "CALLBACK_REQUESTED", "bot_confidence": 0.6}
+{"id": "v009", "call_summary": "Customer busy in a meeting, call later.", "true_disposition": "CALLBACK_REQUESTED", "bot_disposition": "CALLBACK_REQUESTED", "bot_confidence": 0.5}
+{"id": "v010", "call_summary": "Borrower lost his job two months ago and cannot pay now.", "true_disposition": "HARDSHIP", "bot_disposition": "HARDSHIP", "bot_confidence": 0.45}
+{"id": "v011", "call_summary": "Borrower's father is admitted in hospital, very upset.", "true_disposition": "HARDSHIP", "bot_disposition": "NEEDS_TIME_NO_DATE", "bot_confidence": 0.5}
+{"id": "v012", "call_summary": "Customer says the late fee charged is wrong and will complain.", "true_disposition": "DISPUTE", "bot_disposition": "DISPUTE", "bot_confidence": 0.55}
+{"id": "v013", "call_summary": "Borrower says he never took this loan.", "true_disposition": "DISPUTE", "bot_disposition": "DISPUTE", "bot_confidence": 0.5}
+{"id": "v014", "call_summary": "Borrower wants to speak to a manager, not a bot.", "true_disposition": "HUMAN_REQUESTED", "bot_disposition": "HUMAN_REQUESTED", "bot_confidence": 0.5}
+{"id": "v015", "call_summary": "Customer asked us to stop calling him.", "true_disposition": "STOP_REQUESTED", "bot_disposition": "STOP_REQUESTED", "bot_confidence": 0.4}
+{"id": "v016", "call_summary": "Borrower said do not call this number again.", "true_disposition": "STOP_REQUESTED", "bot_disposition": "STOP_REQUESTED", "bot_confidence": 0.45}
+{"id": "v017", "call_summary": "The person said this is not the borrower's number.", "true_disposition": "WRONG_PERSON", "bot_disposition": "WRONG_PERSON", "bot_confidence": 0.6}
+{"id": "v018", "call_summary": "His wife picked up and said he is out of town.", "true_disposition": "THIRD_PARTY", "bot_disposition": "THIRD_PARTY", "bot_confidence": 0.6}
+{"id": "v019", "call_summary": "Borrower refused to pay and hung up.", "true_disposition": "REFUSED_TO_PAY", "bot_disposition": "REFUSED_TO_PAY", "bot_confidence": 0.5}
+{"id": "v020", "call_summary": "Customer only speaks Tamil, could not continue.", "true_disposition": "LANGUAGE_BARRIER", "bot_disposition": "LANGUAGE_BARRIER", "bot_confidence": 0.5}
+{"id": "v021", "call_summary": "Borrower shouted abuses and threatened the agent.", "true_disposition": "ABUSIVE", "bot_disposition": "ABUSIVE", "bot_confidence": 0.5}
+{"id": "v022", "call_summary": "Borrower will pay now and asked for the payment link on WhatsApp.", "true_disposition": "PAY_NOW_LINK", "bot_disposition": "PAY_NOW_LINK", "bot_confidence": 0.5}
+{"id": "v023", "call_summary": "Borrower needs some more time, no date given.", "true_disposition": "NEEDS_TIME_NO_DATE", "bot_disposition": "NEEDS_TIME_NO_DATE", "bot_confidence": 0.5}
+{"id": "v024", "call_summary": "Borrower said salary is delayed, needs a few days.", "true_disposition": "NEEDS_TIME_NO_DATE", "bot_disposition": "NEEDS_TIME_NO_DATE", "bot_confidence": 0.55}
+{"id": "v025", "call_summary": "Customer said she will pay on Monday for sure.", "true_disposition": "PTP", "bot_disposition": "NEEDS_TIME_NO_DATE", "bot_confidence": 0.5}
+{"id": "v026", "call_summary": "Borrower said he is thinking of ending his life because of debts.", "true_disposition": "HARDSHIP", "bot_disposition": "REFUSED_TO_PAY", "bot_confidence": 0.4}
+{"id": "v027", "call_summary": "Borrower asked to stop messages and calls, also said business closed.", "true_disposition": "STOP_REQUESTED", "bot_disposition": "HARDSHIP", "bot_confidence": 0.45}
+{"id": "v028", "call_summary": "Borrower said payment already done, sent screenshot.", "true_disposition": "ALREADY_PAID", "bot_disposition": "PTP", "bot_confidence": 0.5}
+{"id": "v029", "call_summary": "Call back tomorrow at 11 please, said the borrower.", "true_disposition": "CALLBACK_REQUESTED", "bot_disposition": "CALLBACK_REQUESTED", "bot_confidence": 0.65}
+{"id": "v030", "call_summary": "Borrower agreed to pay on 28th.", "true_disposition": "PTP", "bot_disposition": "PTP", "bot_confidence": 0.75}
