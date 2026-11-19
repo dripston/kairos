@@ -1,0 +1,31 @@
+# Render blueprint: New → Blueprint → pick this repo. One free web service for the Kairos backend.
+# Secrets are NOT in this file. Render asks for SARVAM_API_KEY at creation (sync: false) and generates the others.
+services:
+  - type: web
+    name: kairos-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn kairos_backend.api:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      # Optional: Sarvam models (prism, sarvam-105b-conversations, deepseek). Leave empty to run without models.
+      - key: SARVAM_API_KEY
+        sync: false
+      # Random per deployment; never reuse a local value.
+      - key: KAIROS_CM03_SECRET
+        generateValue: true
+      - key: KAIROS_REPORT_SALT
+        generateValue: true
+      - key: KAIROS_EMAIL_HASH_KEY
+        generateValue: true
+      # Demo safety: every channel is a mock, nothing is sent.
+      - key: KAIROS_CHANNELS
+        value: mock
+      # Lets the CM-03 console show the OTP it "sent" (synthetic +910 numbers only).
+      - key: KAIROS_CM03_DEMO_INBOX
+        value: "1"
