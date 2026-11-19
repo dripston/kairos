@@ -3,7 +3,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Search, ChevronLeft, ChevronRight, Star } from 'lucide-react'
 import { useKairos, decideHero } from '../lib/store'
 import { BANDS } from '../lib/mock'
-import { Card, ChannelTag, Chip, Input, PageHeader, Segmented, Select, StatusChip, Td, Th, inr } from '../components/ui'
+import { useApi, useApiStatus } from '../api/hooks'
+import { getAudit } from '../api/kairos'
+import { SourceBadge } from '../components/live'
+import { Button, Card, ChannelTag, Chip, Input, PageHeader, Segmented, Select, StatusChip, Td, Th, inr } from '../components/ui'
 
 const PAGE = 15
 
@@ -40,6 +43,7 @@ export default function Crm() {
     <>
       <PageHeader title="Smart CRM" sub="One record per borrower — every agent reads it, the Supervisor decides from it."
         chip={<Chip tone="warn">Synthetic data</Chip>} />
+      <SpineLookup />
       <Card>
         <div className="flex flex-wrap items-center gap-3 border-b border-line px-5 py-3.5">
           <div className="relative w-72">
@@ -101,4 +105,29 @@ function decideLabel(h, day) {
   if (h.flags.stop) return 'STOP'
   if (h.loans.every((l) => l.status === 'PAID')) return 'DONE'
   return decideHero(h, day).action
+}
+
+// The backend has no borrower list endpoint: open any spine borrower by id, or pick one seen in the K06 audit.
+function SpineLookup() {
+  const nav = useNavigate()
+  const status = useApiStatus()
+  const res = useApi((o) => getAudit({ limit: 1000 }, o), { deps: [status.state] })
+  const [id, setId] = useState('')
+  const recent = [...new Set((res.data || []).map((r) => r.borrower_id).filter(Boolean))].slice(0, 14)
+  return (
+    <Card className="mb-4 flex flex-wrap items-center gap-3 px-5 py-3.5">
+      <span className="text-[13px] font-semibold">K03 spine borrower</span>
+      <form onSubmit={(e) => { e.preventDefault(); if (id.trim()) nav(`/crm/${encodeURIComponent(id.trim())}`) }} className="flex items-center gap-2">
+        <div className="w-56"><Input value={id} onChange={(e) => setId(e.target.value)} placeholder="Borrower id, e.g. BRW-…" /></div>
+        <Button type="submit" size="md">Open</Button>
+      </form>
+      <SourceBadge res={res} />
+      <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
+        {res.source === 'live' ? (recent.length ? recent.map((b) => (
+          <button key={b} onClick={() => nav(`/crm/${b}`)} className="rounded-full border border-line px-2 py-0.5 font-mono text-[11.5px] text-muted hover:text-fg">{b}</button>
+        )) : <span className="text-[12px] text-muted">No borrowers in the audit yet.</span>)
+          : <span className="text-[12px] text-muted">API offline — the table below is the built-in mock (SIMULATED).</span>}
+      </div>
+    </Card>
+  )
 }

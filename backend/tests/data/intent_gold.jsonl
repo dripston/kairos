@@ -1,0 +1,160 @@
+{"id": "g001", "text": "ok ok paying right now, dont call again today", "label": "PAY_NOW", "lang": "en", "date": "2026-11-19"}
+{"id": "g002", "text": "abhi kar rha hu payment 2 min ruko", "label": "PAY_NOW", "lang": "hing", "date": "2026-11-19"}
+{"id": "g003", "text": "haan bhai abhi bhejta hu paise", "label": "PAY_NOW", "lang": "hing", "date": "2026-11-19"}
+{"id": "g004", "text": "Making the payment as we speak", "label": "PAY_NOW", "lang": "en", "date": "2026-11-19"}
+{"id": "g005", "text": "अभी पेमेंट कर रहा हूं, लिंक खुल गया", "label": "PAY_NOW", "lang": "hi", "date": "2026-11-19"}
+{"id": "g006", "text": "turant jama kar raha hu sir", "label": "PAY_NOW", "lang": "hing", "date": "2026-11-19"}
+{"id": "g007", "text": "transfering now, wait", "label": "PAY_NOW", "lang": "en", "date": "2026-11-19"}
+{"id": "g008", "text": "bhai kal pakka kar dunga", "label": "PTP", "lang": "hing", "date": "2026-11-20"}
+{"id": "g009", "text": "25 tareekh ko salary aayegi usi din bhar dunga", "label": "PTP", "lang": "hing", "date": "2026-11-25"}
+{"id": "g010", "text": "I'll settle it by next Monday", "label": "PTP", "lang": "en", "date": "2026-11-23"}
+{"id": "g011", "text": "parso tak ho jayega sir 🙏", "label": "PTP", "lang": "hing", "date": "2026-11-21"}
+{"id": "g012", "text": "1 tarikh ko de dunga promise", "label": "PTP", "lang": "hing", "date": "2026-12-01"}
+{"id": "g013", "text": "will pay on 5th dec without fail", "label": "PTP", "lang": "en", "date": "2026-12-05"}
+{"id": "g014", "text": "Saturday ko jama kar dungi", "label": "PTP", "lang": "hing", "date": "2026-11-21"}
+{"id": "g015", "text": "कल शाम तक भर दूंगा", "label": "PTP", "lang": "hi", "date": "2026-11-20"}
+{"id": "g016", "text": "28 तारीख को पक्का पेमेंट कर दूंगा", "label": "PTP", "lang": "hi", "date": "2026-11-28"}
+{"id": "g017", "text": "month end tak clear kar dunga pura", "label": "PTP", "lang": "hing", "date": "2026-11-30"}
+{"id": "g018", "text": "2 din me kar dunga bas", "label": "PTP", "lang": "hing", "date": "2026-11-21"}
+{"id": "g019", "text": "tmrw evening i will transfer", "label": "PTP", "lang": "en", "date": "2026-11-20"}
+{"id": "g020", "text": "Customer committed to pay the EMI on 27th November", "label": "PTP", "lang": "voice", "date": "2026-11-27"}
+{"id": "g021", "text": "Borrower agreed to pay half the amount on Friday", "label": "PTP", "lang": "voice", "date": "2026-11-20"}
+{"id": "g022", "text": "thoda time chahiye tha but 30 ko kar dunga", "label": "PTP", "lang": "hing", "date": "2026-11-30"}
+{"id": "g023", "text": "abhi haath tang hai thoda ruk jao", "label": "NEEDS_TIME", "lang": "hing", "date": null}
+{"id": "g024", "text": "salary late aa rahi is baar, aate hi bhar dunga", "label": "NEEDS_TIME", "lang": "hing", "date": null}
+{"id": "g025", "text": "Not this week. Will try after payday", "label": "NEEDS_TIME", "lang": "en", "date": null}
+{"id": "g026", "text": "can u give me few more days pls", "label": "NEEDS_TIME", "lang": "en", "date": null}
+{"id": "g027", "text": "abhi possible nahi hai sir", "label": "NEEDS_TIME", "lang": "hing", "date": null}
+{"id": "g028", "text": "अभी पैसे नहीं है, बाद में देंगे", "label": "NEEDS_TIME", "lang": "hi", "date": null}
+{"id": "g029", "text": "thodi mohlat de do bhaiya", "label": "NEEDS_TIME", "lang": "hing", "date": null}
+{"id": "g030", "text": "diwali ke baad dekh lunga payment", "label": "NEEDS_TIME", "lang": "hing", "date": null}
+{"id": "g031", "text": "Customer asked for more time to arrange money", "label": "NEEDS_TIME", "lang": "voice", "date": null}
+{"id": "g032", "text": "cant pay rn, tight month", "label": "NEEDS_TIME", "lang": "en", "date": null}
+{"id": "g033", "text": "agle mahine pakka", "label": "NEEDS_TIME", "lang": "hing", "date": null}
+{"id": "g034", "text": "is mahine nhi ho payega", "label": "NEEDS_TIME", "lang": "hing", "date": null}
+{"id": "g035", "text": "bhai paid hai kal hi, check karo apna system", "label": "ALREADY_PAID", "lang": "hing", "date": null}
+{"id": "g036", "text": "Already done yesterday via gpay", "label": "ALREADY_PAID", "lang": "en", "date": null}
+{"id": "g037", "text": "maine to 15 ko hi bhar diya tha", "label": "ALREADY_PAID", "lang": "hing", "date": null}
+{"id": "g038", "text": "emi auto debit se kat chuki hai", "label": "ALREADY_PAID", "lang": "hing", "date": null}
+{"id": "g039", "text": "payment ho chuka hai screenshot bhej diya", "label": "ALREADY_PAID", "lang": "hing", "date": null}
+{"id": "g040", "text": "मैंने कल ही जमा कर दिया था", "label": "ALREADY_PAID", "lang": "hi", "date": null}
+{"id": "g041", "text": "I have paid the full amount, why still reminders?", "label": "ALREADY_PAID", "lang": "en", "date": null}
+{"id": "g042", "text": "paisa transfer kr diya h", "label": "ALREADY_PAID", "lang": "hing", "date": null}
+{"id": "g043", "text": "Borrower stated the EMI was paid last week at the branch", "label": "ALREADY_PAID", "lang": "voice", "date": null}
+{"id": "g044", "text": "done. paid.", "label": "ALREADY_PAID", "lang": "en", "date": null}
+{"id": "g045", "text": "office me hu, shaam 7 baje ke baad call karo", "label": "CALLBACK", "lang": "hing", "date": null}
+{"id": "g046", "text": "can you call me tomorrow around 11", "label": "CALLBACK", "lang": "en", "date": "2026-11-20"}
+{"id": "g047", "text": "driving rn, call later", "label": "CALLBACK", "lang": "en", "date": null}
+{"id": "g048", "text": "कल सुबह फोन कीजिए", "label": "CALLBACK", "lang": "hi", "date": "2026-11-20"}
+{"id": "g049", "text": "baad me phone karna abhi busy hu", "label": "CALLBACK", "lang": "hing", "date": null}
+{"id": "g050", "text": "pls ring me after lunch", "label": "CALLBACK", "lang": "en", "date": null}
+{"id": "g051", "text": "Customer requested a callback after 5 pm", "label": "CALLBACK", "lang": "voice", "date": null}
+{"id": "g052", "text": "mere husband ka accident ho gaya hai, ICU me hain", "label": "HARDSHIP", "lang": "hing", "date": null}
+{"id": "g053", "text": "job chali gayi pichle mahine, kuch nahi hai abhi", "label": "HARDSHIP", "lang": "hing", "date": null}
+{"id": "g054", "text": "Lost my father last week. Please give me some time", "label": "HARDSHIP", "lang": "en", "date": null}
+{"id": "g055", "text": "bahut bimar hu, dawai ke paise bhi nahi", "label": "HARDSHIP", "lang": "hing", "date": null}
+{"id": "g056", "text": "dukaan band ho gayi lockdown jaisa haal hai", "label": "HARDSHIP", "lang": "hing", "date": null}
+{"id": "g057", "text": "माँ अस्पताल में भर्ती हैं", "label": "HARDSHIP", "lang": "hi", "date": null}
+{"id": "g058", "text": "company ne layoff kar diya", "label": "HARDSHIP", "lang": "hing", "date": null}
+{"id": "g059", "text": "ghar me aag lag gayi thi sab khatam", "label": "HARDSHIP", "lang": "hing", "date": null}
+{"id": "g060", "text": "I am undergoing chemo, can't work", "label": "HARDSHIP", "lang": "en", "date": null}
+{"id": "g061", "text": "Borrower disclosed job loss and medical bills", "label": "HARDSHIP", "lang": "voice", "date": null}
+{"id": "g062", "text": "sach bolu to ab jeene ka mann nahi karta", "label": "HARDSHIP", "lang": "hing", "date": null}
+{"id": "g063", "text": "itna pressure hai ki suicide kar lunga", "label": "HARDSHIP", "lang": "hing", "date": null}
+{"id": "g064", "text": "मैं आत्महत्या कर लूंगा अगर फिर फोन आया", "label": "HARDSHIP", "lang": "hi", "date": null}
+{"id": "g065", "text": "I want to end my life, nothing left", "label": "HARDSHIP", "lang": "en", "date": null}
+{"id": "g066", "text": "2 mahine se salary nahi mili", "label": "HARDSHIP", "lang": "hing", "date": null}
+{"id": "g067", "text": "ye loan maine kabhi liya hi nahi", "label": "DISPUTE", "lang": "hing", "date": null}
+{"id": "g068", "text": "why is there 1200 extra penalty?? I paid on time", "label": "DISPUTE", "lang": "en", "date": null}
+{"id": "g069", "text": "loan foreclose ho chuka hai, NOC bhi hai mere paas", "label": "DISPUTE", "lang": "hing", "date": null}
+{"id": "g070", "text": "aap log galat charges laga rahe ho", "label": "DISPUTE", "lang": "hing", "date": null}
+{"id": "g071", "text": "this is a scam message", "label": "DISPUTE", "lang": "en", "date": null}
+{"id": "g072", "text": "RBI ombudsman ko complaint karunga", "label": "DISPUTE", "lang": "hing", "date": null}
+{"id": "g073", "text": "मैंने ये लोन नहीं लिया है", "label": "DISPUTE", "lang": "hi", "date": null}
+{"id": "g074", "text": "Customer disputes the bounce charges", "label": "DISPUTE", "lang": "voice", "date": null}
+{"id": "g075", "text": "emi amount galat hai, 3200 thi 4100 kaise ho gayi", "label": "DISPUTE", "lang": "hing", "date": null}
+{"id": "g076", "text": "STOP", "label": "STOP", "lang": "en", "date": null}
+{"id": "g077", "text": "Stop", "label": "STOP", "lang": "en", "date": null}
+{"id": "g078", "text": "pls stop msging me", "label": "STOP", "lang": "en", "date": null}
+{"id": "g079", "text": "mujhe dobara message mat karna", "label": "STOP", "lang": "hing", "date": null}
+{"id": "g080", "text": "bar bar call karke pareshan mat karo", "label": "STOP", "lang": "hing", "date": null}
+{"id": "g081", "text": "UNSUBSCRIBE", "label": "STOP", "lang": "en", "date": null}
+{"id": "g082", "text": "मुझे मैसेज मत भेजो", "label": "STOP", "lang": "hi", "date": null}
+{"id": "g083", "text": "do not contact me on whatsapp again", "label": "STOP", "lang": "en", "date": null}
+{"id": "g084", "text": "remove my number from your list", "label": "STOP", "lang": "en", "date": null}
+{"id": "g085", "text": "call band karo yaar", "label": "STOP", "lang": "hing", "date": null}
+{"id": "g086", "text": "stop it", "label": "STOP", "lang": "en", "date": null}
+{"id": "g087", "text": "Customer asked to stop all calls and messages", "label": "STOP", "lang": "voice", "date": null}
+{"id": "g088", "text": "no more reminders please", "label": "STOP", "lang": "en", "date": null}
+{"id": "g089", "text": "फोन मत करो बार बार", "label": "STOP", "lang": "hi", "date": null}
+{"id": "g090", "text": "aap galat number pe msg kar rahe ho", "label": "WRONG_NUMBER", "lang": "hing", "date": null}
+{"id": "g091", "text": "I'm not Rakesh, wrong no.", "label": "WRONG_NUMBER", "lang": "en", "date": null}
+{"id": "g092", "text": "ye number ab mera hai, pehle kisi aur ka tha", "label": "WRONG_NUMBER", "lang": "hing", "date": null}
+{"id": "g093", "text": "इस नाम का कोई यहाँ नहीं रहता", "label": "WRONG_NUMBER", "lang": "hi", "date": null}
+{"id": "g094", "text": "who is suresh? dont know any such person", "label": "WRONG_NUMBER", "lang": "en", "date": null}
+{"id": "g095", "text": "main unko nahi jaanta", "label": "WRONG_NUMBER", "lang": "hing", "date": null}
+{"id": "g096", "text": "kya main kisi asli insaan se baat kar sakta hu?", "label": "HUMAN", "lang": "hing", "date": null}
+{"id": "g097", "text": "is this a bot? connect me to an executive", "label": "HUMAN", "lang": "en", "date": null}
+{"id": "g098", "text": "manager se baat karwao abhi", "label": "HUMAN", "lang": "hing", "date": null}
+{"id": "g099", "text": "मुझे किसी अधिकारी से बात करनी है", "label": "HUMAN", "lang": "hi", "date": null}
+{"id": "g100", "text": "I want to speak with someone from customer support", "label": "HUMAN", "lang": "en", "date": null}
+{"id": "g101", "text": "Borrower insisted on talking to a human agent", "label": "HUMAN", "lang": "voice", "date": null}
+{"id": "g102", "text": "total kitna banta hai abhi tak?", "label": "BALANCE_QUERY", "lang": "hing", "date": null}
+{"id": "g103", "text": "whats my outstanding", "label": "BALANCE_QUERY", "lang": "en", "date": null}
+{"id": "g104", "text": "kitni emi baki hai meri", "label": "BALANCE_QUERY", "lang": "hing", "date": null}
+{"id": "g105", "text": "कुल बकाया कितना है", "label": "BALANCE_QUERY", "lang": "hi", "date": null}
+{"id": "g106", "text": "how much do i need to pay to close the loan", "label": "BALANCE_QUERY", "lang": "en", "date": null}
+{"id": "g107", "text": "amount kitna hai bata do", "label": "BALANCE_QUERY", "lang": "hing", "date": null}
+{"id": "g108", "text": "link bhejo pay karta hu", "label": "LINK_REQUEST", "lang": "hing", "date": null}
+{"id": "g109", "text": "payment link expired, send again", "label": "LINK_REQUEST", "lang": "en", "date": null}
+{"id": "g110", "text": "upi id kya hai aapki", "label": "LINK_REQUEST", "lang": "hing", "date": null}
+{"id": "g111", "text": "kahan pay karna hai? koi link?", "label": "LINK_REQUEST", "lang": "hing", "date": null}
+{"id": "g112", "text": "लिंक नहीं खुल रहा", "label": "LINK_REQUEST", "lang": "hi", "date": null}
+{"id": "g113", "text": "how do i make the payment online", "label": "LINK_REQUEST", "lang": "en", "date": null}
+{"id": "g114", "text": "QR code bhej do", "label": "LINK_REQUEST", "lang": "hing", "date": null}
+{"id": "g115", "text": "mujhe last 6 mahine ka statement chahiye", "label": "STATEMENT_REQUEST", "lang": "hing", "date": null}
+{"id": "g116", "text": "pls email the loan account statement", "label": "STATEMENT_REQUEST", "lang": "en", "date": null}
+{"id": "g117", "text": "NOC kab milega? chahiye jaldi", "label": "STATEMENT_REQUEST", "lang": "hing", "date": null}
+{"id": "g118", "text": "रसीद भेज दो पिछले पेमेंट की", "label": "STATEMENT_REQUEST", "lang": "hi", "date": null}
+{"id": "g119", "text": "need repayment schedule for tax purpose", "label": "STATEMENT_REQUEST", "lang": "en", "date": null}
+{"id": "g120", "text": "send me the interest certificate", "label": "STATEMENT_REQUEST", "lang": "en", "date": null}
+{"id": "g121", "text": "hindi me samjhao please", "label": "LANGUAGE_CHANGE", "lang": "hing", "date": null}
+{"id": "g122", "text": "English please, I can't read Hindi", "label": "LANGUAGE_CHANGE", "lang": "en", "date": null}
+{"id": "g123", "text": "marathi madhe bola? marathi me bolo", "label": "LANGUAGE_CHANGE", "lang": "hing", "date": null}
+{"id": "g124", "text": "कृपया हिंदी में बात करें", "label": "LANGUAGE_CHANGE", "lang": "hi", "date": null}
+{"id": "g125", "text": "tamil la pesunga, tamil please", "label": "LANGUAGE_CHANGE", "lang": "en", "date": null}
+{"id": "g126", "text": "tum log chor ho saale", "label": "ABUSIVE", "lang": "hing", "date": null}
+{"id": "g127", "text": "f*** off you loan sharks", "label": "ABUSIVE", "lang": "en", "date": null}
+{"id": "g128", "text": "kamine log raat ko bhi msg karte ho", "label": "ABUSIVE", "lang": "hing", "date": null}
+{"id": "g129", "text": "bloody idiots stop harassing", "label": "STOP", "lang": "en", "date": null}
+{"id": "g130", "text": "तुम लोग चोर हो", "label": "ABUSIVE", "lang": "hi", "date": null}
+{"id": "g131", "text": "bsdk dimag kharab mat kar", "label": "ABUSIVE", "lang": "hing", "date": null}
+{"id": "g132", "text": "Good morning sir", "label": "GREETING", "lang": "en", "date": null}
+{"id": "g133", "text": "ji namaste", "label": "GREETING", "lang": "hing", "date": null}
+{"id": "g134", "text": "thank u", "label": "GREETING", "lang": "en", "date": null}
+{"id": "g135", "text": "ok ji", "label": "GREETING", "lang": "hing", "date": null}
+{"id": "g136", "text": "धन्यवाद जी", "label": "GREETING", "lang": "hi", "date": null}
+{"id": "g137", "text": "hello?", "label": "GREETING", "lang": "en", "date": null}
+{"id": "g138", "text": "👍", "label": "GREETING", "lang": "en", "date": null}
+{"id": "g139", "text": "haan ji bataiye", "label": "GREETING", "lang": "hing", "date": null}
+{"id": "g140", "text": "hmm dekhte hain kya hota hai", "label": "UNKNOWN", "lang": "hing", "date": null}
+{"id": "g141", "text": "wow great service 🙄", "label": "UNKNOWN", "lang": "en", "date": null}
+{"id": "g142", "text": "haan pata hai mujhe", "label": "UNKNOWN", "lang": "hing", "date": null}
+{"id": "g143", "text": "kya bakwas hai ye", "label": "UNKNOWN", "lang": "hing", "date": null}
+{"id": "g144", "text": "?", "label": "UNKNOWN", "lang": "en", "date": null}
+{"id": "g145", "text": "sochunga", "label": "UNKNOWN", "lang": "hing", "date": null}
+{"id": "g146", "text": "ये क्या है", "label": "UNKNOWN", "lang": "hi", "date": null}
+{"id": "g147", "text": "lol", "label": "UNKNOWN", "lang": "en", "date": null}
+{"id": "g148", "text": "Call disconnected before the customer responded", "label": "UNKNOWN", "lang": "voice", "date": null}
+{"id": "g149", "text": "yeah right, as if", "label": "UNKNOWN", "lang": "en", "date": null}
+{"id": "g150", "text": "plz send d lnk i wil pay tday", "label": "LINK_REQUEST", "lang": "en", "date": null}
+{"id": "g151", "text": "sirr alredy paymnt kr diya hai", "label": "ALREADY_PAID", "lang": "hing", "date": null}
+{"id": "g152", "text": "kl tk de dunga pkka", "label": "PTP", "lang": "hing", "date": "2026-11-20"}
+{"id": "g153", "text": "papa ki tabiyat kharab hai hospital me hai abhi", "label": "HARDSHIP", "lang": "hing", "date": null}
+{"id": "g154", "text": "STOP sending these msgs!!", "label": "STOP", "lang": "en", "date": null}
+{"id": "g155", "text": "bhaiya salary aane do 7 ko, uske baad", "label": "NEEDS_TIME", "lang": "hing", "date": null}
+{"id": "g156", "text": "मेरा नंबर नहीं है ये, गलत जगह भेजा", "label": "WRONG_NUMBER", "lang": "hi", "date": null}
+{"id": "g157", "text": "ek baar call kar lo mujhe, baat karni hai", "label": "CALLBACK", "lang": "hing", "date": null}
+{"id": "g158", "text": "kitna dena hai total? aur link bhi bhejo", "label": "LINK_REQUEST", "lang": "hing", "date": null}
+{"id": "g159", "text": "pehle statement bhejo fir pay karunga", "label": "STATEMENT_REQUEST", "lang": "hing", "date": null}
+{"id": "g160", "text": "sir maine pay kiya tha phir bhi paise kat gaye do baar", "label": "DISPUTE", "lang": "hing", "date": null}

@@ -61,6 +61,18 @@ Done when: every event joins to the right obligation, and clearing one loan leav
 DPD bands in spine/config.py are placeholders until K01 is approved.
 Replace TEST_PHONE in spine/config.py with an approved sandbox number before any real send.
 
+## Bank references are compared normalised (red-team RT-F06)
+
+`apply_payment` refuses a bank reference that was already used. Since RT-F06 it compares
+`reference_key(reference)`, not the raw text: NFKC (full-width -> ASCII), all whitespace and
+invisible format characters (zero-width space/joiners, BOM, bidi marks) removed, casefolded. So
+` UTR-7731`, `utr-7731`, `UTR-7731` + zero-width space and `ＵＴＲ-７７３１` are all the reference
+already used, and a reference that is empty after normalising is refused. `payments.reference`
+keeps the raw value; `payments.reference_key` holds the key (unique index). `create_schema()` adds
+and fills the column on older databases; if one already holds two variants of a reference, that
+fails loudly (a duplicate payment to look at). Not covered: look-alike letters from other scripts
+(Cyrillic `С` for Latin `C`) and other dash characters (`‐`, `–`) are still different references.
+
 ---
 
 # K15 – Safety, load and story replay

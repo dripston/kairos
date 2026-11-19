@@ -1,0 +1,123 @@
+{
+  "type": "VOICEBOT",
+  "language": "hi-IN",
+  "tts": {
+    "provider": "sarvam",
+    "model": "bulbul:v3"
+  },
+  "stt": {
+    "provider": "sarvam",
+    "model": "saaras:v4"
+  },
+  "precondition": "Borrower has voice consent on file; otherwise the executor blocks the call (no dial)",
+  "prompts": {
+    "greeting": "Namaste, main aapke lender ki taraf se Kairos assistant bol rahi hoon. Yeh call record ho rahi hai.",
+    "permission": "Kya abhi aapke EMI ke baare mein do minute baat kar sakte hain?",
+    "declined": "Koi baat nahi. Hum aapko WhatsApp par sampark karenge. Dhanyavaad.",
+    "ask_intent": "Aap apni EMI ke baare mein kya batana chahenge?",
+    "unclear": "Maaf kijiye, main samajh nahi paayi. Kya aap dobara bata sakte hain?",
+    "ask_date": "Samajh gayi. Aap kis tareekh tak bhugtan kar payenge?",
+    "confirm_date": "Theek hai, {date} tak. Hum tab tak reminder nahi bhejenge aur us din bhugtan check karenge.",
+    "no_date": "Koi baat nahi. Hum do din baad WhatsApp par tareekh poochhenge.",
+    "ack_paid": "Dhanyavaad. Hum aapka bhugtan verify karke WhatsApp par update denge.",
+    "ack_hardship": "Mujhe sunkar dukh hua. Main aapka maamla ek senior sahyogi ko de rahi hoon, woh aapse sampark karenge.",
+    "ack_callback": "Zaroor. Hamare pratinidhi aapko jald call karenge.",
+    "ack_stop": "Theek hai, hum aapko is vishay par aur call nahi karenge.",
+    "goodbye": "Dhanyavaad, aapka din shubh ho.",
+    "goodbye_unresolved": "Hum aapse WhatsApp par sampark karenge. Dhanyavaad."
+  },
+  "steps": [
+    "greeting",
+    "permission → declined ends call (DECLINED, no intent)",
+    "ask_intent (max 2 tries; unclear ends with no intent)",
+    "NEEDS_TIME → ask_date once → confirm_date | no_date",
+    "CLAIMS_PAID → ack_paid (no confirmation of payment)",
+    "HARDSHIP → neutral ack + handoff, reason restricted",
+    "CALLBACK → ack_callback",
+    "STOP → ack_stop",
+    "goodbye"
+  ],
+  "intents": {
+    "STOP": [
+      "call mat",
+      "call na kare",
+      "band karo",
+      "stop",
+      "pareshan mat"
+    ],
+    "HARDSHIP": [
+      "accident",
+      "hospital",
+      "naukri chali",
+      "job chali",
+      "job gayi",
+      "bimar",
+      "death",
+      "guzar",
+      "medical",
+      "emergency"
+    ],
+    "CLAIMS_PAID": [
+      "pay kar di",
+      "pay kar diya",
+      "bhar di",
+      "bhar diya",
+      "paid",
+      "payment kar di",
+      "jama kar"
+    ],
+    "CALLBACK": [
+      "insaan se",
+      "agent se",
+      "kisi se baat",
+      "manager",
+      "callback",
+      "baad mein call"
+    ],
+    "NEEDS_TIME": [
+      "time chahiye",
+      "samay chahiye",
+      "thoda time",
+      "salary",
+      "tankhwah",
+      "agle hafte",
+      "baad mein pay",
+      "abhi nahi",
+      "paise nahi"
+    ]
+  },
+  "rules": [
+    "Never speak amounts or loan numbers",
+    "Do not confirm a payment; D7/LMS decide",
+    "Do not repeat hardship details back"
+  ],
+  "callback": {
+    "url": "https://<kairos-host>/webhooks/sarvam",
+    "method": "POST",
+    "body": {
+      "call_id": "string",
+      "flow": "IVR|VOICEBOT",
+      "status": "completed|answered|no-answer|busy|failed|declined",
+      "custom_ref": "Kairos touch_id passed when the call is placed",
+      "ended_at": "ISO-8601 with offset",
+      "duration_s": "int",
+      "attempts": "int",
+      "exit_reason": "string",
+      "dtmf": "digit or null",
+      "transcript": [
+        {
+          "speaker": "bot|borrower",
+          "text": "string"
+        }
+      ],
+      "intent": {
+        "intent": "NEEDS_TIME|CLAIMS_PAID|CALLBACK|HARDSHIP|STOP",
+        "confidence": "0-1",
+        "agreed_date": "ISO-8601 or null",
+        "reason": "string",
+        "loan_id": "string or null"
+      }
+    },
+    "idempotency": "one outcome per call_id; repeated completions are ignored"
+  }
+}

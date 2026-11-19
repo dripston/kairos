@@ -1,0 +1,21 @@
+case_id,description,band,ontime_6m,broken_ptp,paid_30d,partial_cycle,responded_7d,response_channels,wa_read_7d,clicked_7d,call_answered_7d,sms_delivered_7d,unreachable_14d,intent,bounce_reason,aa_ncf,dti,aa_flags,override,expected_score,expected_intensity
+K21-T01,Pre-due good payer - likely self-cure,PRE_DUE,6,0,Y,N,N,0,Y,N,N,Y,N,SILENT,,,,0,,89,LOW
+K21-T02,B1 replied but needs time,B1,3,0,N,N,Y,1,Y,N,N,N,N,NEEDS_TIME,,,,0,,69,STANDARD
+K21-T03,B2 technical bounce with healthy cash flow - persuadable,B2,2,1,N,N,N,0,N,Y,N,N,N,SILENT,TECHNICAL,POSITIVE,0.30,0,,59,HIGH
+K21-T04,B3 refuser with weak finances - clamps to 0,B3,1,2,N,N,N,0,N,N,N,N,Y,REFUSED,INSUFFICIENT_FUNDS,NEGATIVE,0.80,4,,0,LOW
+K21-T05,B4 silent and unreachable,B4,0,0,N,N,N,0,N,N,N,Y,Y,SILENT,,,,0,,8,LOW
+K21-T06,B1 baseline without SMS delivery (low evidence -> STANDARD),B1,3,0,N,N,N,0,N,N,N,N,N,SILENT,,,,0,,55,STANDARD
+K21-T07,Same as T06 with SMS delivered - SMS adds 0 (low evidence -> STANDARD),B1,3,0,N,N,N,0,N,N,N,Y,N,SILENT,,,,0,,55,STANDARD
+K21-T08,B2 willing and responsive on 2 channels,B2,4,0,N,N,Y,2,N,N,Y,N,N,WILLING,,,,0,,90,LOW
+K21-T09,Same as T08 but STOP - forced WAIT,B2,4,0,N,N,Y,2,N,N,Y,N,N,WILLING,,,,0,STOP_OPT_OUT,90,WAIT
+K21-T10,Persuadable under hardship hold - forced WAIT,B2,2,1,N,N,N,0,N,Y,N,N,N,SILENT,TECHNICAL,POSITIVE,0.30,0,HARDSHIP_HOLD,59,WAIT
+K21-T11,Persuadable under PTP hold - forced WAIT,B1,3,0,N,N,N,0,N,N,N,N,N,SILENT,,,,0,PTP_HOLD,55,WAIT
+K21-T12,Boundary 70 is LOW,B1,3,0,N,N,Y,1,N,N,N,N,N,SILENT,,,,0,,70,LOW
+K21-T13,Boundary 60 is STANDARD,B1,3,0,N,N,N,0,Y,N,Y,N,N,NEEDS_TIME,,,,0,,60,STANDARD
+K21-T14,Boundary 40 is HIGH (low evidence -> STANDARD),B2,3,0,N,N,N,0,N,N,N,N,N,NEEDS_TIME,,,,0,,40,STANDARD
+K21-T15,38 is STANDARD,B3,3,0,N,N,N,0,N,N,N,N,N,SILENT,,,,0,,38,STANDARD
+K21-T16,Boundary 25 is STANDARD,B2,1,1,N,N,N,0,N,N,N,N,N,SILENT,,,,0,,25,STANDARD
+K21-T17,20 is LOW,B3,1,0,N,N,N,0,N,N,N,N,Y,SILENT,,,,0,,20,LOW
+K21-T18,No AA consent is neutral (same as T06) (low evidence -> STANDARD),B1,3,0,N,N,N,0,N,N,N,N,N,SILENT,,,,,,55,STANDARD
+K21-T19,Dispute lowers score,B2,3,0,N,N,N,0,N,N,N,N,N,DISPUTE,,,,0,,35,STANDARD
+K21-T20,Score 54 with 3 of 4 signal groups keeps HIGH,B1,3,0,N,N,N,0,Y,N,N,N,N,NEEDS_TIME,,,,0,,54,HIGH

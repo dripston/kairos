@@ -16,5 +16,10 @@ Thumbs.db
 
 # K03 / K15 generated data — may contain phone numbers, never commit
 backend/data/
-backend/reports/
+backend/reports/*
+!backend/reports/intent_eval.json
 backend/*.csv
+
+# demo recipients entered at runtime — personal phone numbers, never commit
+backend/.demo/
+.env*.local

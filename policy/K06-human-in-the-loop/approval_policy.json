@@ -1,0 +1,87 @@
+{
+  "policy_id": "kairos-hitl-approval-policy",
+  "policy_version": "0.1.0",
+  "status": "DRAFT-pending-Ojas",
+  "owner": "Ojas (Product)",
+  "approved_on": null,
+  "depends_on": { "kairos-outreach-policy": "1.1.0", "kairos-exceptions-policy": "1.0.0" },
+  "environment": "SIMULATED",
+
+  "approval_rules": {
+    "description": "A send that passed every K01 guardrail is still held as PENDING_APPROVAL when ANY rule below matches. Approval can only make outreach stricter: it never overrides a guardrail, and the Gate runs again at approval time and at send time.",
+    "rules": [
+      { "id": "VOICE_CHANNEL", "enabled": true, "channels": ["ivr", "voicebot"],
+        "why": "Calls are intrusive and costly; a person signs off each one." },
+      { "id": "STANDARD_INTENSITY_HIGH_DPD", "enabled": true, "template_intensity": ["STANDARD"], "dpd_above": 60,
+        "why": "Firmer wording for borrowers more than 60 days past due (Control Room: 'High-intensity nudges (60+ DPD)')." },
+      { "id": "FIRST_SEND_AFTER_HARDSHIP", "enabled": true,
+        "why": "The first outreach after a hardship hold ends is checked by a person before it goes." },
+      { "id": "MANUAL_DISPATCH", "enabled": true, "origins": ["manual"],
+        "why": "Ad-hoc sends from the manual scheduler need a second person (maker-checker)." }
+    ],
+    "unknown_template_intensity": "STANDARD"
+  },
+
+  "approval": {
+    "expiry": "END_OF_CONTACT_WINDOW",
+    "expiry_note": "A pending send expires at the end of the K01 contact window on its scheduled day and is canceled automatically; its cap slot and budget are released.",
+    "maker_checker": true,
+    "maker_checker_note": "The person who scheduled a manual send cannot approve it."
+  },
+
+  "manual_scheduler": {
+    "dedupe_scope": "obligation_channel_day",
+    "dedupe_note": "A manual send is refused when a live send (automated or manual) already exists for the same EMI, channel and day. K01 caps and the same-channel gap apply on top, across all campaigns.",
+    "max_borrowers_per_request": 200
+  },
+
+  "cases": {
+    "extra_queues": ["HARDSHIP_DESK", "DISPUTES", "COMPLAINTS"],
+    "sla_hours_by_type": { "HUMAN_HANDOFF": 4 },
+    "resolution_codes": ["CONTACTED_RESOLVED", "PTP_CAPTURED", "PAYMENT_VERIFIED", "HARDSHIP_CONFIRMED",
+                         "REFERRED_TO_LENDER", "NO_ACTION_NEEDED", "DUPLICATE", "UNREACHABLE"],
+    "lift_hold_note": "Resolving a case never lifts a hold by itself. The resolver must ask for it explicitly (lift_hold=true) and hold the lift_hold permission."
+  },
+
+  "roles": ["viewer", "operator", "supervisor", "policy_owner"],
+  "permissions": {
+    "view":                  ["viewer", "operator", "supervisor", "policy_owner"],
+    "approve":               ["supervisor", "policy_owner"],
+    "reject":                ["operator", "supervisor", "policy_owner"],
+    "pause":                 ["operator", "supervisor", "policy_owner"],
+    "resume":                ["operator", "supervisor", "policy_owner"],
+    "clear_supervisor_hold": ["supervisor", "policy_owner"],
+    "hold":                  ["operator", "supervisor", "policy_owner"],
+    "cancel_next":           ["operator", "supervisor", "policy_owner"],
+    "handoff":               ["operator", "supervisor", "policy_owner"],
+    "assign":                ["operator", "supervisor", "policy_owner"],
+    "dnc":                   ["operator", "supervisor", "policy_owner"],
+    "record_opt_in":         ["supervisor", "policy_owner"],
+    "schedule_manual":       ["operator", "supervisor", "policy_owner"],
+    "cancel_scheduled":      ["operator", "supervisor", "policy_owner"],
+    "reschedule":            ["operator", "supervisor", "policy_owner"],
+    "case_claim":            ["operator", "supervisor", "policy_owner"],
+    "case_resolve":          ["operator", "supervisor", "policy_owner"],
+    "case_reopen":           ["supervisor", "policy_owner"],
+    "lift_hold":             ["supervisor", "policy_owner"],
+    "register_template":     ["policy_owner"]
+  },
+
+  "locked_by_guardrails": {
+    "description": "Nobody — operator, supervisor or policy owner — can do these. Every attempt is refused and audited as HUMAN_ACTION_REFUSED.",
+    "actions": ["override_stop", "override_consent", "exceed_cap", "bypass_quiet_hours", "bypass_contact_window",
+                "send_unregistered_template", "force_send", "undo_dnc"],
+    "gate_reasons_refused_for_humans": ["STOP_OPT_OUT", "NO_CONSENT", "CHANNEL_CAP", "PRE_DUE_TOTAL_CAP", "ALL_CHANNEL_DAY_CAP",
+                                        "WEEKLY_CAP", "SAME_CHANNEL_GAP", "QUIET_DAY", "CONTACT_WINDOW", "NO_APPROVED_TEMPLATE",
+                                        "BUDGET_EXHAUSTED", "DPD_INVALID", "CHANNEL_NOT_ALLOWED", "PURPOSE_NOT_ALLOWED",
+                                        "OVERDUE_NOT_VERIFIED"]
+  },
+
+  "masking": {
+    "description": "What each role sees of borrower PII in HITL responses. Audit rows never store raw PII (borrower ids only; free-text reasons are scrubbed of phone numbers and emails).",
+    "viewer":       { "phone": "last2", "name": "initials", "email": "hidden", "amount": "hidden" },
+    "operator":     { "phone": "last4", "name": "full",     "email": "domain", "amount": "full" },
+    "supervisor":   { "phone": "last4", "name": "full",     "email": "domain", "amount": "full" },
+    "policy_owner": { "phone": "last4", "name": "full",     "email": "domain", "amount": "full" }
+  }
+}

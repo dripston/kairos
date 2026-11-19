@@ -1,0 +1,81 @@
+{
+  "registry_id": "kairos-voice-bot-registry",
+  "registry_version": "0.2.0",
+  "status": "DRAFT",
+  "owner": "Yuval (K17/K18) — use-case wording pending Ojas (Product)",
+  "provider": "sarvam",
+  "note": "Which Sarvam voice agent, voice and language Kairos uses per call. select_bot() reads only this file and thresholds.json; it never decides WHETHER to call (that is the K01 Gate via the Supervisor).",
+
+  "voices": {
+    "Ritu":   { "internal_id": "01a0cf16-5817-79d0-bf32-972e399087db", "gender": "female" },
+    "Advait": { "internal_id": "01a0cf16-73d4-78aa-a416-c593287484db", "gender": "male" }
+  },
+
+  "supported_languages": ["Hindi", "English", "Marathi", "Tamil", "Telugu", "Kannada", "Bengali", "Gujarati"],
+  "default_language": "Hindi",
+  "language_codes": {
+    "Hindi": "hi", "English": "en", "Marathi": "mr", "Tamil": "ta", "Telugu": "te", "Kannada": "kn",
+    "Bengali": "bn", "Gujarati": "gu", "Malayalam": "ml", "Odia": "or", "Punjabi": "pa", "Assamese": "as",
+    "Urdu": "ur"
+  },
+  "spine_default_language_code": "en",
+  "spine_default_language_note": "K03 writes language='en' for every imported/seeded borrower (schema default), so 'en' in borrowers.language is NOT treated as an English opt-in. English is used only on an explicit preference (voice_preferences row or context.preferred_language).",
+
+  "state_language": {
+    "MH": "Marathi", "TN": "Tamil", "KA": "Kannada", "AP": "Telugu", "TG": "Telugu", "WB": "Bengali",
+    "GJ": "Gujarati", "KL": "Malayalam", "OD": "Odia", "PB": "Punjabi", "AS": "Assamese"
+  },
+  "state_names": {
+    "MAHARASHTRA": "MH", "TAMIL NADU": "TN", "KARNATAKA": "KA", "ANDHRA PRADESH": "AP", "TELANGANA": "TG",
+    "WEST BENGAL": "WB", "GUJARAT": "GJ", "KERALA": "KL", "ODISHA": "OD", "ORISSA": "OD", "PUNJAB": "PB",
+    "ASSAM": "AS", "TS": "TG", "OR": "OD"
+  },
+
+  "use_cases": {
+    "PRE_DUE_REMINDER": {
+      "bands": ["PRE_DUE"], "agent_id": "Kairos---Pr-0282af37-ef9d", "voice": "Ritu",
+      "requires_human_approval": false, "extras": []
+    },
+    "EMI_REMINDER_EARLY": {
+      "bands": ["B1"], "agent_id": "Kairos---EM-15f2766f-4eba", "voice": "Ritu",
+      "requires_human_approval": false, "extras": []
+    },
+    "CALLBACK": {
+      "bands": "*", "agent_id": "Kairos---Ca-f080ffa8-2d1d", "voice": "Advait",
+      "requires_human_approval": false, "extras": ["callback_reason"],
+      "gate_template_id": "VB_KAIROS_CALLBACK",
+      "default_callback_reason": "you asked us to call you back"
+    },
+    "MID_BUCKET_RESOLUTION": {
+      "bands": ["B2", "B3"], "agent_id": "Kairos---Mi-edcd3099-61a2", "voice": "Advait",
+      "requires_human_approval": false, "extras": ["overdue_days"]
+    },
+    "PTP_FOLLOW_UP": {
+      "bands": "*", "agent_id": "Kairos---PT-07a93e21-1a9b", "voice": "Ritu",
+      "requires_human_approval": false, "extras": ["promise_date"]
+    },
+    "HARDSHIP_TRIAGE": {
+      "bands": "*", "agent_id": "Kairos---Ha-1f02cd05-dfa0", "voice": "Advait",
+      "requires_human_approval": true, "extras": [], "no_max_ptp_date": true
+    }
+  },
+  "selection_order": ["HARDSHIP_TRIAGE", "CALLBACK", "PTP_FOLLOW_UP", "BAND"],
+  "unmapped_bands_note": "B4 (91+ DPD) has no voice bot: select_bot returns use_case=null (reason NO_USE_CASE_FOR_BAND); B4 stays with human / lender desk.",
+
+  "default_lender_name": "your lender",
+  "lender_overrides": {},
+  "lender_overrides_example": {
+    "LENDER-EXAMPLE": { "display_name": "Example Finance", "voices": { "EMI_REMINDER_EARLY": "Advait" }, "default_voice": null }
+  },
+
+  "experiment": {
+    "enabled": false,
+    "experiment_id": "voice-ab-001",
+    "use_cases": ["PRE_DUE_REMINDER", "EMI_REMINDER_EARLY"],
+    "arms": ["Ritu", "Advait"],
+    "note": "Deterministic: arm = sha256(borrower_id|experiment_id) mod 2. Off by default. A lender override or a borrower preference always wins over the experiment."
+  },
+
+  "call_start_variables": ["user_name", "lender_name", "emi_due_date", "touch_id", "preferred_language", "call_date", "max_ptp_date"],
+  "forbidden_variable_content": "amounts, loan/account numbers, phone numbers, emails, any PII beyond first name"
+}

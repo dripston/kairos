@@ -1,0 +1,1548 @@
+{
+ "policy_id": "kairos-auto-churn-journeys",
+ "policy_version": "0.1.0-draft",
+ "status": "DRAFT",
+ "owner": "Ojas (Product) — proposed by K27, not signed off",
+ "source": "CN PRD v3 §5.4 (one journey per cohort, multi-day, multi-channel steps) + CN10 calendars (default) + behaviour journeys the PRD implies.",
+ "cohort_journey_override": {
+  "UNASSIGNED": "DEFAULT_LIGHT"
+ },
+ "step_semantics": "A step names channel OPTIONS, a message purpose/tier and an intensity. It produces CANDIDATES: K09 (Rechurn / RL) ranks channel x slot among the allowed channels; the K06 Supervisor gates every send (consent, caps, holds, budget). A day with no step = no automated contact.",
+ "anchor_semantics": {
+  "dpd_cycle": "day = CN10 cycle day from live DPD ((dpd-1) % 10 + 1), so a CONTINUE move keeps the calendar position",
+  "entry": "day = days since the borrower entered the journey + 1 (RESTART)"
+ },
+ "layers": {
+  "L1": {
+   "name": "cheap digital",
+   "channels": [
+    "sms",
+    "email"
+   ]
+  },
+  "L2": {
+   "name": "rich digital (WhatsApp link / buttons)",
+   "channels": [
+    "whatsapp"
+   ]
+  },
+  "L3": {
+   "name": "voice (IVR blast / voicebot)",
+   "channels": [
+    "ivr",
+    "voicebot"
+   ]
+  },
+  "L4": {
+   "name": "human (HITL / agent call)",
+   "channels": [],
+   "automated": false
+  }
+ },
+ "layer_semantics": "DRAFT. layer_mode 'ceiling' (default): the borrower's current layer is the highest layer automation may use; allowed channels on a step day = journey channels in layers <= current layer (step channels first, as the preferred order). If no step channel is allowed, the step is SUBSTITUTED with the allowed channels (recorded). 'exact': only the current layer's channels. 'off': step channels as written (exact CN10 reproduction). L4 = no automated channel; hand to a person.",
+ "layer_rules_evaluation": "After the cohort engine, on every event and tick: first matching rule moves the layer (clamped into the journey's layers; L4 always allowed). Safety rules bypass the cooldown.",
+ "layer_move_cooldown_hours": 24,
+ "layer_rules": [
+  {
+   "id": "LAYER.HARDSHIP_TO_L4",
+   "from": "*",
+   "to": "L4",
+   "when": {
+    "field": "hardship",
+    "op": "eq",
+    "value": true
+   },
+   "bypass_cooldown": true,
+   "description": "Hardship -> human (L4)."
+  },
+  {
+   "id": "LAYER.HUMAN_REQUEST_TO_L4",
+   "from": "*",
+   "to": "L4",
+   "when": {
+    "field": "k13.hold",
+    "op": "in",
+    "value": [
+     "CALLBACK_PENDING",
+     "SUPERVISOR_HOLD",
+     "ABUSIVE",
+     "LEGAL_THREAT",
+     "FRAUD_CLAIM"
+    ]
+   },
+   "bypass_cooldown": true,
+   "description": "Callback / routed exception -> human (L4)."
+  },
+  {
+   "id": "LAYER.L4_RELEASE",
+   "from": [
+    "L4"
+   ],
+   "to": "journey.start",
+   "when": {
+    "all": [
+     {
+      "field": "hardship",
+      "op": "eq",
+      "value": false
+     },
+     {
+      "field": "k13.hold",
+      "op": "eq",
+      "value": ""
+     }
+    ]
+   },
+   "bypass_cooldown": true,
+   "description": "Hold cleared -> back to the journey's start layer."
+  },
+  {
+   "id": "LAYER.REPLY_HOMES_DOWN",
+   "from": "*",
+   "to": "event.layer",
+   "on": [
+    "reply",
+    "intent"
+   ],
+   "when": {
+    "field": "event.layer",
+    "op": "exists",
+    "value": true
+   },
+   "only_down": true,
+   "description": "A reply on a cheaper layer moves the ceiling down to where the borrower answers."
+  },
+  {
+   "id": "LAYER.L3_NO_ANSWER_X2_TO_L2",
+   "from": [
+    "L3"
+   ],
+   "to": "L2",
+   "when": {
+    "field": "voice.no_answer_streak",
+    "op": "ge",
+    "value": 2
+   },
+   "slot_shift": true,
+   "description": "No answer x2 on voice -> back to L2 at a different slot."
+  },
+  {
+   "id": "LAYER.L2_NOT_ON_WHATSAPP_TO_L1",
+   "from": [
+    "L2"
+   ],
+   "to": "L1",
+   "when": {
+    "field": "whatsapp.failed_14d",
+    "op": "ge",
+    "value": 2
+   },
+   "description": "WhatsApp failed x2 (not on WhatsApp / undeliverable) -> L1."
+  },
+  {
+   "id": "LAYER.L1_READ_NO_REPLY_X2_TO_L2",
+   "from": [
+    "L1"
+   ],
+   "to": "L2",
+   "when": {
+    "field": "L1.read_no_reply_14d",
+    "op": "ge",
+    "value": 2
+   },
+   "description": "Read (email opened) but no reply twice on L1 -> L2."
+  },
+  {
+   "id": "LAYER.L1_DELIVERED_NO_REPLY_X3_TO_L2",
+   "from": [
+    "L1"
+   ],
+   "to": "L2",
+   "when": {
+    "field": "L1.delivered_no_reply_14d",
+    "op": "ge",
+    "value": 3
+   },
+   "description": "Delivered, no reply x3 on L1 (SMS read is never tracked) -> L2."
+  },
+  {
+   "id": "LAYER.L2_READ_NO_REPLY_X2_TO_L3",
+   "from": [
+    "L2"
+   ],
+   "to": "L3",
+   "when": {
+    "all": [
+     {
+      "field": "whatsapp.read_no_reply_7d",
+      "op": "ge",
+      "value": 2
+     },
+     {
+      "field": "risk_rank",
+      "op": "ge",
+      "value": 1
+     }
+    ]
+   },
+   "description": "WhatsApp read twice, no reply, risk MEDIUM+ -> voice (L3)."
+  }
+ ],
+ "layer_recommendation": {
+  "description": "recommend_layer(borrower, rec, evidence): the K09 RL v2 policy may recommend a layer change; K27 accepts or rejects it by rule (first matching):",
+  "min_evidence_obs_for_up": 20,
+  "min_expected_lift_for_up": 1.1,
+  "rules": [
+   "REC.NOT_ACTIVE: lifecycle must be ACTIVE",
+   "REC.L4_HUMAN_ONLY: RL never moves into or out of L4",
+   "REC.UNKNOWN_LAYER",
+   "REC.SAME_LAYER",
+   "REC.OUT_OF_JOURNEY: target must be in the journey's layers",
+   "REC.COOLDOWN: layer_move_cooldown_hours since the last move",
+   "REC.ACCEPT_DOWN: down (cheaper) moves are accepted",
+   "REC.L3_RISK_TOO_LOW: up to L3 needs risk MEDIUM+",
+   "REC.UP_INSUFFICIENT_EVIDENCE: up needs evidence.n_obs >= 20 and evidence.expected_lift >= 1.10",
+   "REC.ACCEPT_UP"
+  ]
+ },
+ "stop_rules_evaluation": "Lifecycle state = first matching stop rule (else ACTIVE), then checked against the transition table (churn/fsm.py): terminal states only exit on their own trigger.",
+ "stop_rules": [
+  {
+   "id": "STOP.OPT_OUT",
+   "state": "STOPPED_OPT_OUT",
+   "when": {
+    "field": "stop",
+    "op": "eq",
+    "value": true
+   },
+   "exit": "opt_in event on a channel (consent version recorded)"
+  },
+  {
+   "id": "STOP.PAID",
+   "state": "PAID_EXIT",
+   "when": {
+    "field": "payment.cleared",
+    "op": "eq",
+    "value": true
+   },
+   "exit": "payment REVERSED"
+  },
+  {
+   "id": "STOP.HARDSHIP",
+   "state": "HARDSHIP_HUMAN",
+   "when": {
+    "field": "hardship",
+    "op": "eq",
+    "value": true
+   },
+   "until": "hardship_until",
+   "exit": "hardship hold expires (K01 default 2 days) and no supervisor flag, or a person clears it"
+  },
+  {
+   "id": "STOP.K13_HOLD",
+   "state": "PAUSED_HOLD",
+   "when": {
+    "field": "k13.hold",
+    "op": "ne",
+    "value": ""
+   },
+   "exit": "supervisor clears / callback closed (hold event active=false)"
+  },
+  {
+   "id": "STOP.CLAIM",
+   "state": "PAUSED_CLAIM",
+   "when": {
+    "all": [
+     {
+      "field": "payment.claimed",
+      "op": "eq",
+      "value": true
+     },
+     {
+      "field": "payment.claim_hours",
+      "op": "lt",
+      "value": 48
+     }
+    ]
+   },
+   "until": "claim_at + 48 h",
+   "exit": "verified -> PAID_EXIT; 48 h without verification -> ACTIVE (CLAIMED_PAID journey follow-up)"
+  },
+  {
+   "id": "STOP.PTP",
+   "state": "PAUSED_PTP",
+   "when": {
+    "all": [
+     {
+      "field": "ptp.status",
+      "op": "eq",
+      "value": "OPEN"
+     },
+     {
+      "field": "ptp.days_to_date",
+      "op": "ge",
+      "value": 0
+     }
+    ]
+   },
+   "until": "ptp_date + 1",
+   "exit": "tick on date + 1: verified -> KEPT/PAID_EXIT, else BROKEN -> ACTIVE (BROKEN_PTP)"
+  },
+  {
+   "id": "STOP.EXHAUSTED",
+   "state": "EXHAUSTED_CAMPAIGN",
+   "when": {
+    "all": [
+     {
+      "field": "campaign.replies",
+      "op": "eq",
+      "value": 0
+     },
+     {
+      "field": "campaign.no_response_budget_left",
+      "op": "le",
+      "value": 0
+     }
+    ]
+   },
+   "budget": "journey no_response_budget.attempts (configured) unless the stop_policy hook (K09 RL learned stopping threshold) returns one",
+   "on_exhausted": "handoff",
+   "exit": "start_campaign() for the next campaign, or a person"
+  }
+ ],
+ "default_no_response_budget": {
+  "attempts": 10
+ },
+ "journeys": {
+  "CN10_C1": {
+   "name": "CN10 C1 10-day calendar",
+   "source": "CN 10-day post-due strategy (replay/cn10.py CALENDAR, verbatim)",
+   "anchor": "dpd_cycle",
+   "length": 10,
+   "repeat": true,
+   "entry": "continue",
+   "automated": true,
+   "channels": [
+    "sms",
+    "whatsapp"
+   ],
+   "layers": [
+    "L1",
+    "L2"
+   ],
+   "start_layer": "L2",
+   "layer_mode": "ceiling",
+   "k09_free_within_layer": true,
+   "no_response_budget": {
+    "attempts": 10
+   },
+   "days": [
+    {
+     "day": 1,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 1,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 3,
+     "steps": [
+      {
+       "channels": [
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 1,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 5,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 2,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 7,
+     "steps": [
+      {
+       "channels": [
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 2,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 9,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 3,
+       "intensity": "STANDARD"
+      }
+     ]
+    },
+    {
+     "day": 10,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 4,
+       "intensity": "STANDARD"
+      }
+     ]
+    }
+   ]
+  },
+  "CN10_C2": {
+   "name": "CN10 C2 10-day calendar",
+   "source": "CN 10-day post-due strategy (replay/cn10.py CALENDAR, verbatim)",
+   "anchor": "dpd_cycle",
+   "length": 10,
+   "repeat": true,
+   "entry": "continue",
+   "automated": true,
+   "channels": [
+    "sms",
+    "whatsapp"
+   ],
+   "layers": [
+    "L1",
+    "L2"
+   ],
+   "start_layer": "L2",
+   "layer_mode": "ceiling",
+   "k09_free_within_layer": true,
+   "no_response_budget": {
+    "attempts": 10
+   },
+   "days": [
+    {
+     "day": 1,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 1,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 4,
+     "steps": [
+      {
+       "channels": [
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 1,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 7,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 2,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 10,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 3,
+       "intensity": "STANDARD"
+      },
+      {
+       "channels": [
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 3,
+       "intensity": "STANDARD"
+      }
+     ]
+    }
+   ]
+  },
+  "CN10_C3": {
+   "name": "CN10 C3 10-day calendar",
+   "source": "CN 10-day post-due strategy (replay/cn10.py CALENDAR, verbatim)",
+   "anchor": "dpd_cycle",
+   "length": 10,
+   "repeat": true,
+   "entry": "continue",
+   "automated": true,
+   "channels": [
+    "ivr",
+    "sms",
+    "whatsapp"
+   ],
+   "layers": [
+    "L1",
+    "L2",
+    "L3"
+   ],
+   "start_layer": "L3",
+   "layer_mode": "ceiling",
+   "k09_free_within_layer": true,
+   "no_response_budget": {
+    "attempts": 10
+   },
+   "days": [
+    {
+     "day": 1,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 1,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 3,
+     "steps": [
+      {
+       "channels": [
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 1,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 5,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 2,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 6,
+     "steps": [
+      {
+       "channels": [
+        "ivr"
+       ],
+       "purpose": "REMINDER",
+       "tier": 2,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 8,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 3,
+       "intensity": "STANDARD"
+      }
+     ]
+    },
+    {
+     "day": 9,
+     "steps": [
+      {
+       "channels": [
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 3,
+       "intensity": "STANDARD"
+      }
+     ]
+    },
+    {
+     "day": 10,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 4,
+       "intensity": "STANDARD"
+      },
+      {
+       "channels": [
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 4,
+       "intensity": "STANDARD"
+      }
+     ]
+    }
+   ]
+  },
+  "CN10_C4": {
+   "name": "CN10 C4 10-day calendar",
+   "source": "CN 10-day post-due strategy (replay/cn10.py CALENDAR, verbatim)",
+   "anchor": "dpd_cycle",
+   "length": 10,
+   "repeat": true,
+   "entry": "continue",
+   "automated": true,
+   "channels": [
+    "ivr",
+    "sms",
+    "whatsapp"
+   ],
+   "layers": [
+    "L1",
+    "L2",
+    "L3"
+   ],
+   "start_layer": "L3",
+   "layer_mode": "ceiling",
+   "k09_free_within_layer": true,
+   "no_response_budget": {
+    "attempts": 10
+   },
+   "days": [
+    {
+     "day": 1,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 1,
+       "intensity": "LOW"
+      },
+      {
+       "channels": [
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 1,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 2,
+     "steps": [
+      {
+       "channels": [
+        "ivr"
+       ],
+       "purpose": "REMINDER",
+       "tier": 1,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 3,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 2,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 4,
+     "steps": [
+      {
+       "channels": [
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 2,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 5,
+     "steps": [
+      {
+       "channels": [
+        "ivr"
+       ],
+       "purpose": "REMINDER",
+       "tier": 2,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 6,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 3,
+       "intensity": "STANDARD"
+      },
+      {
+       "channels": [
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 3,
+       "intensity": "STANDARD"
+      }
+     ]
+    },
+    {
+     "day": 7,
+     "steps": [
+      {
+       "channels": [
+        "ivr"
+       ],
+       "purpose": "REMINDER",
+       "tier": 3,
+       "intensity": "STANDARD"
+      }
+     ]
+    },
+    {
+     "day": 8,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 3,
+       "intensity": "STANDARD",
+       "nach_notice_if_represent_eligible": true
+      }
+     ]
+    },
+    {
+     "day": 9,
+     "steps": [
+      {
+       "channels": [
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 4,
+       "intensity": "STANDARD"
+      },
+      {
+       "channels": [
+        "ivr"
+       ],
+       "purpose": "REMINDER",
+       "tier": 4,
+       "intensity": "STANDARD"
+      }
+     ]
+    },
+    {
+     "day": 10,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 4,
+       "intensity": "STANDARD"
+      },
+      {
+       "channels": [
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 4,
+       "intensity": "STANDARD"
+      },
+      {
+       "channels": [
+        "ivr"
+       ],
+       "purpose": "REMINDER",
+       "tier": 4,
+       "intensity": "STANDARD"
+      }
+     ]
+    }
+   ]
+  },
+  "CN10_C5": {
+   "name": "CN10 C5 10-day calendar",
+   "source": "CN 10-day post-due strategy (replay/cn10.py CALENDAR, verbatim)",
+   "anchor": "dpd_cycle",
+   "length": 10,
+   "repeat": true,
+   "entry": "continue",
+   "automated": true,
+   "channels": [
+    "ivr",
+    "sms",
+    "whatsapp"
+   ],
+   "layers": [
+    "L1",
+    "L2",
+    "L3"
+   ],
+   "start_layer": "L3",
+   "layer_mode": "ceiling",
+   "k09_free_within_layer": true,
+   "no_response_budget": {
+    "attempts": 10
+   },
+   "days": [
+    {
+     "day": 1,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 1,
+       "intensity": "LOW"
+      },
+      {
+       "channels": [
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 1,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 2,
+     "steps": [
+      {
+       "channels": [
+        "ivr"
+       ],
+       "purpose": "REMINDER",
+       "tier": 1,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 3,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 2,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 4,
+     "steps": [
+      {
+       "channels": [
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 2,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 5,
+     "steps": [
+      {
+       "channels": [
+        "ivr"
+       ],
+       "purpose": "REMINDER",
+       "tier": 2,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 6,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 3,
+       "intensity": "STANDARD"
+      },
+      {
+       "channels": [
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 3,
+       "intensity": "STANDARD"
+      }
+     ]
+    },
+    {
+     "day": 7,
+     "steps": [
+      {
+       "channels": [
+        "ivr"
+       ],
+       "purpose": "REMINDER",
+       "tier": 3,
+       "intensity": "STANDARD"
+      }
+     ]
+    },
+    {
+     "day": 8,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 3,
+       "intensity": "STANDARD",
+       "nach_notice_if_represent_eligible": true
+      }
+     ]
+    },
+    {
+     "day": 9,
+     "steps": [
+      {
+       "channels": [
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 4,
+       "intensity": "STANDARD"
+      },
+      {
+       "channels": [
+        "ivr"
+       ],
+       "purpose": "REMINDER",
+       "tier": 4,
+       "intensity": "STANDARD"
+      }
+     ]
+    },
+    {
+     "day": 10,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 4,
+       "intensity": "STANDARD"
+      },
+      {
+       "channels": [
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 4,
+       "intensity": "STANDARD"
+      },
+      {
+       "channels": [
+        "ivr"
+       ],
+       "purpose": "REMINDER",
+       "tier": 4,
+       "intensity": "STANDARD"
+      }
+     ]
+    }
+   ]
+  },
+  "NONE": {
+   "name": "No automated contact",
+   "anchor": "entry",
+   "length": 1,
+   "repeat": false,
+   "entry": "restart",
+   "automated": false,
+   "channels": [],
+   "layers": [
+    "L1",
+    "L2",
+    "L3",
+    "L4"
+   ],
+   "start_layer": "L2",
+   "layer_mode": "ceiling",
+   "days": []
+  },
+  "HUMAN_ONLY": {
+   "name": "Human only (L4)",
+   "anchor": "entry",
+   "length": 1,
+   "repeat": false,
+   "entry": "restart",
+   "automated": false,
+   "handoff": true,
+   "channels": [],
+   "layers": [
+    "L4"
+   ],
+   "start_layer": "L4",
+   "layer_mode": "exact",
+   "days": [],
+   "note": "Hardship: neutral acknowledgement only via CM-03; any contact is a person's decision (HITL). The K17 HARDSHIP_TRIAGE bot needs human approval."
+  },
+  "PTP_HOLD": {
+   "name": "Promise-to-pay hold",
+   "anchor": "entry",
+   "length": 1,
+   "repeat": false,
+   "entry": "restart",
+   "automated": false,
+   "channels": [],
+   "layers": [
+    "L1",
+    "L2",
+    "L3"
+   ],
+   "start_layer": "L2",
+   "layer_mode": "ceiling",
+   "days": [],
+   "note": "K01 holds.PROMISE_TO_PAY: no outbound on any channel until the PTP date; the tick on date+1 checks verified payment (KEPT -> exit, else BROKEN -> BROKEN_PTP journey)."
+  },
+  "CLAIM_PENDING": {
+   "name": "Payment claimed: wait for verification",
+   "anchor": "entry",
+   "length": 3,
+   "repeat": false,
+   "entry": "restart",
+   "automated": true,
+   "channels": [
+    "whatsapp",
+    "sms"
+   ],
+   "layers": [
+    "L1",
+    "L2"
+   ],
+   "start_layer": "L2",
+   "layer_mode": "ceiling",
+   "k09_free_within_layer": true,
+   "no_response_budget": {
+    "attempts": 3
+   },
+   "days": [
+    {
+     "day": 3,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp",
+        "sms"
+       ],
+       "purpose": "ASK_PAYMENT_DATE",
+       "tier": 1,
+       "intensity": "LOW",
+       "note": "verification follow-up: share UTR / receipt; never confirms the payment"
+      }
+     ]
+    }
+   ],
+   "note": "48 h pause (K17 payment_claim.pause_hours), then one verification follow-up. Only D7/LMS verification exits."
+  },
+  "DISPUTE_SOFT": {
+   "name": "Dispute: soft reminders, no escalation",
+   "anchor": "entry",
+   "length": 7,
+   "repeat": true,
+   "entry": "restart",
+   "automated": true,
+   "channels": [
+    "sms",
+    "email",
+    "whatsapp"
+   ],
+   "layers": [
+    "L1",
+    "L2"
+   ],
+   "start_layer": "L1",
+   "layer_mode": "ceiling",
+   "k09_free_within_layer": true,
+   "no_response_budget": {
+    "attempts": 6
+   },
+   "days": [
+    {
+     "day": 1,
+     "steps": [
+      {
+       "channels": [
+        "sms",
+        "email"
+       ],
+       "purpose": "REMINDER",
+       "tier": 1,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 4,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp",
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 1,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 7,
+     "steps": [
+      {
+       "channels": [
+        "sms",
+        "email"
+       ],
+       "purpose": "REMINDER",
+       "tier": 1,
+       "intensity": "LOW"
+      }
+     ]
+    }
+   ],
+   "note": "K13 DISPUTE: ticket + outreach continues; DRAFT: tier-1 digital only, no voice, no collection escalation until the dispute ticket is resolved."
+  },
+  "BROKEN_PTP": {
+   "name": "Broken PTP follow-up",
+   "anchor": "entry",
+   "length": 7,
+   "repeat": true,
+   "entry": "restart",
+   "automated": true,
+   "channels": [
+    "voicebot",
+    "whatsapp",
+    "sms"
+   ],
+   "layers": [
+    "L1",
+    "L2",
+    "L3"
+   ],
+   "start_layer": "L3",
+   "layer_mode": "ceiling",
+   "k09_free_within_layer": true,
+   "no_response_budget": {
+    "attempts": 8
+   },
+   "days": [
+    {
+     "day": 1,
+     "steps": [
+      {
+       "channels": [
+        "voicebot"
+       ],
+       "purpose": "PTP_FOLLOW_UP",
+       "tier": 2,
+       "intensity": "STANDARD",
+       "voice_use_case": "PTP_FOLLOW_UP"
+      },
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "ASK_PAYMENT_DATE",
+       "tier": 2,
+       "intensity": "STANDARD"
+      }
+     ]
+    },
+    {
+     "day": 2,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "ASK_PAYMENT_DATE",
+       "tier": 2,
+       "intensity": "STANDARD"
+      }
+     ]
+    },
+    {
+     "day": 4,
+     "steps": [
+      {
+       "channels": [
+        "voicebot",
+        "whatsapp"
+       ],
+       "purpose": "PTP_FOLLOW_UP",
+       "tier": 3,
+       "intensity": "STANDARD",
+       "voice_use_case": "PTP_FOLLOW_UP"
+      }
+     ]
+    },
+    {
+     "day": 6,
+     "steps": [
+      {
+       "channels": [
+        "sms",
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 3,
+       "intensity": "STANDARD"
+      }
+     ]
+    }
+   ],
+   "note": "K13 broken_ptp: at >= 2 broken promises do not solicit a new PTP; push for payment now with a link."
+  },
+  "DIGITAL_FIRST": {
+   "name": "Unreachable on voice: digital first",
+   "anchor": "entry",
+   "length": 7,
+   "repeat": true,
+   "entry": "restart",
+   "automated": true,
+   "channels": [
+    "whatsapp",
+    "sms",
+    "email"
+   ],
+   "layers": [
+    "L1",
+    "L2"
+   ],
+   "start_layer": "L2",
+   "layer_mode": "ceiling",
+   "k09_free_within_layer": true,
+   "no_response_budget": {
+    "attempts": 8
+   },
+   "days": [
+    {
+     "day": 1,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp",
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 1,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 3,
+     "steps": [
+      {
+       "channels": [
+        "sms",
+        "email"
+       ],
+       "purpose": "REMINDER",
+       "tier": 1,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 5,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp",
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 2,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 7,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp",
+        "sms",
+        "email"
+       ],
+       "purpose": "REMINDER",
+       "tier": 3,
+       "intensity": "STANDARD"
+      }
+     ]
+    }
+   ]
+  },
+  "WA_FIRST": {
+   "name": "WhatsApp-responsive",
+   "anchor": "entry",
+   "length": 7,
+   "repeat": true,
+   "entry": "restart",
+   "automated": true,
+   "channels": [
+    "whatsapp",
+    "sms"
+   ],
+   "layers": [
+    "L1",
+    "L2"
+   ],
+   "start_layer": "L2",
+   "layer_mode": "ceiling",
+   "k09_free_within_layer": true,
+   "no_response_budget": {
+    "attempts": 8
+   },
+   "days": [
+    {
+     "day": 1,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "ASK_PAYMENT_DATE",
+       "tier": 1,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 3,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp"
+       ],
+       "purpose": "REMINDER",
+       "tier": 2,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 5,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp",
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 2,
+       "intensity": "LOW"
+      }
+     ]
+    }
+   ]
+  },
+  "ENGAGED": {
+   "name": "Engaged, no promise: ask for a date",
+   "anchor": "entry",
+   "length": 7,
+   "repeat": true,
+   "entry": "restart",
+   "automated": true,
+   "channels": [
+    "whatsapp",
+    "sms",
+    "voicebot"
+   ],
+   "layers": [
+    "L1",
+    "L2",
+    "L3"
+   ],
+   "start_layer": "L2",
+   "layer_mode": "ceiling",
+   "k09_free_within_layer": true,
+   "no_response_budget": {
+    "attempts": 8
+   },
+   "days": [
+    {
+     "day": 1,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp",
+        "sms"
+       ],
+       "purpose": "ASK_PAYMENT_DATE",
+       "tier": 1,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 3,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp",
+        "sms"
+       ],
+       "purpose": "ASK_PAYMENT_DATE",
+       "tier": 2,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 5,
+     "steps": [
+      {
+       "channels": [
+        "voicebot",
+        "whatsapp"
+       ],
+       "purpose": "ASK_PAYMENT_DATE",
+       "tier": 2,
+       "intensity": "LOW",
+       "voice_use_case": "EMI_REMINDER_EARLY"
+      }
+     ]
+    }
+   ]
+  },
+  "DEFAULT_LIGHT": {
+   "name": "Unassigned: light digital cadence",
+   "anchor": "entry",
+   "length": 6,
+   "repeat": true,
+   "entry": "restart",
+   "automated": true,
+   "channels": [
+    "whatsapp",
+    "sms",
+    "email"
+   ],
+   "layers": [
+    "L1",
+    "L2"
+   ],
+   "start_layer": "L2",
+   "layer_mode": "ceiling",
+   "k09_free_within_layer": true,
+   "no_response_budget": {
+    "attempts": 6
+   },
+   "days": [
+    {
+     "day": 1,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp",
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 1,
+       "intensity": "LOW"
+      }
+     ]
+    },
+    {
+     "day": 4,
+     "steps": [
+      {
+       "channels": [
+        "whatsapp",
+        "sms"
+       ],
+       "purpose": "REMINDER",
+       "tier": 2,
+       "intensity": "LOW"
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

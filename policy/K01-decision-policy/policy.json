@@ -1,6 +1,6 @@
 {
   "policy_id": "kairos-outreach-policy",
-  "policy_version": "1.1.0",
+  "policy_version": "1.1.1",
   "status": "draft-for-signoff",
   "owner": "Ojas (Product)",
   "approved_on": null,
@@ -222,7 +222,7 @@
       "budget_per_case_inr": "REQUIRED_INPUT",
       "collection_target": "REQUIRED_INPUT"
     },
-    "campaign_pool_inr": "budget_per_case_inr * allocated_cases",
+    "campaign_pool_inr": "budget_per_case_inr * count(budgeted loans) - a case is one loan account; the budgeted set is explicitly selected at intake (see K24 budget_scope)",
     "period": "allocation_start_date to allocation_end_date",
     "per_case_spend": "flexible; individual cases may spend below or above budget_per_case",
     "daily_pacing": "remaining_pool / remaining_contact_days, recomputed each contact day; unspent carries forward",

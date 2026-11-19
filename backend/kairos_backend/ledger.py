@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import operator
 import sqlite3
 import threading
 import uuid
@@ -34,14 +35,43 @@ from spine.ledger import PaymentError, apply_payment, record_event, reverse_paym
 
 from .exceptions import ExceptionEvent, handle
 from .gate import SEND, WAIT, Decision, Facts, evaluate
+from .pii import scrub
 from .policy import Policy
 
-__all__ = ["Ledger", "Instruction", "ReserveResult", "PaymentError", "stable_instruction_id"]
+__all__ = ["Ledger", "Instruction", "ReserveResult", "PaymentError", "stable_instruction_id", "MAX_PAISE", "check_paise",
+           "CONFLICT_INSTRUCTION_ID"]
 
-# statuses that may reach (or already reached) the borrower -> count toward caps and budget
-LIVE = ("RESERVED", "DISPATCHING", "UNCERTAIN", "SENT", "DELIVERED")
+CONFLICT_INSTRUCTION_ID = "CONFLICT_INSTRUCTION_ID"  # instruction id reused for a different touch (RT-F07)
+
+# statuses that may reach (or already reached) the borrower -> count toward caps and budget.
+# PENDING_APPROVAL (K06 HITL, hitl.py): reserved but held until a person approves it. It holds its
+# cap slot and budget exactly like RESERVED, so approvals can never overbook; it is never dispatched.
+LIVE = ("RESERVED", "PENDING_APPROVAL", "DISPATCHING", "UNCERTAIN", "SENT", "DELIVERED")
+# not yet handed to a provider -> canceled (and budget released) by holds, STOP, pauses, payments
+QUEUED = ("RESERVED", "PENDING_APPROVAL")
 # provider status ranks: an older/lower status never overwrites a newer one (E04)
 RANK = {"RESERVED": 0, "DISPATCHING": 1, "UNCERTAIN": 2, "SENT": 3, "DELIVERED": 4}
+# Ceiling for any single money value (budget per case, cost estimate, actual charge): 10^12 paise = Rs.1,000 crore.
+# Far above any real figure, far below SQLite's INTEGER limit (2^63 - 1), so sums never overflow (RT-F01).
+MAX_PAISE = 10 ** 12
+# Clock skew tolerated between the LMS feed and us before a sync stamp counts as "from the future" (RT-F05).
+SYNC_SKEW = timedelta(minutes=5)
+
+
+def check_paise(value, field: str, positive: bool = False) -> int:
+    """Money guard (RT-F01): a whole number of paise in [0, MAX_PAISE] ([1, MAX_PAISE] when positive).
+    Anything else (negative, fractional, bool, text, overflowing) raises ValueError -> 422 at the API,
+    so a bad charge can never mint budget or reach SQLite as an overflow."""
+    if isinstance(value, bool):
+        raise ValueError(f"{field} must be a whole number of paise, got bool")
+    try:
+        v = operator.index(value)
+    except TypeError:
+        raise ValueError(f"{field} must be a whole number of paise, got {type(value).__name__}") from None
+    lo = 1 if positive else 0
+    if not lo <= v <= MAX_PAISE:
+        raise ValueError(f"{field} must be between {lo} and {MAX_PAISE} paise, got {v}")
+    return v
 
 K06_SCHEMA = """
 CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);
@@ -103,6 +133,7 @@ class Instruction:
     purpose: Optional[str] = None
     instruction_id: Optional[str] = None  # None -> stable id derived from the touch itself
     version: int = 1
+    origin: str = "auto"  # "auto" (Supervisor) | "manual" (HITL manual scheduler) — read by reserve_hook
 
 
 def stable_instruction_id(borrower_id: str, obligation_id: str, channel: str, at: datetime, version: int = 1) -> str:
@@ -129,13 +160,26 @@ class Ledger:
         self.policy = policy
         self.path = str(path)
         self._local = threading.local()
+        # Optional human-in-the-loop hook (hitl.HITL installs it). Called inside reserve()'s write
+        # transaction only after the Gate allowed the touch: (c, ins, decision) -> (status, decision).
+        # It may only make things stricter: hold the touch as PENDING_APPROVAL, or veto it.
+        self.reserve_hook = None
+        # every connection this Ledger opens, in any thread, so close_all() can flush and close them
+        # (graceful shutdown); a bumped generation makes threads reopen lazily afterwards.
+        self._all_conns: list = []
+        self._conns_lock = threading.Lock()
+        self._gen = 0
         create_spine_schema(self._spine())   # K03 tables
         self._conn().executescript(K06_SCHEMA)  # K06 tables
+        from .fsm_strict import sync_strict_mode  # KAIROS_FSM_STRICT=1: only declared touch transitions (STATES.md)
+        sync_strict_mode(self)
 
     # ---------- connections ----------
     def _conn(self) -> sqlite3.Connection:
         """K06 connection: autocommit; every write goes through tx()."""
         conn = getattr(self._local, "conn", None)
+        if conn is not None and getattr(self._local, "conn_gen", None) != self._gen:
+            conn = None  # closed by close_all(): reopen
         if conn is None:
             conn = sqlite3.connect(self.path, timeout=30, isolation_level=None, check_same_thread=False)
             conn.row_factory = sqlite3.Row
@@ -144,16 +188,24 @@ class Ledger:
             conn.execute("PRAGMA busy_timeout=30000")
             conn.execute("PRAGMA foreign_keys=ON")
             self._local.conn = conn
+            self._local.conn_gen = self._gen
+            with self._conns_lock:
+                self._all_conns.append(conn)
         return conn
 
     def _spine(self) -> sqlite3.Connection:
         """K03-style connection for calling spine functions, which manage their own
         transactions with `with conn:` (so they must not run inside tx())."""
         conn = getattr(self._local, "spine", None)
+        if conn is not None and getattr(self._local, "spine_gen", None) != self._gen:
+            conn = None  # closed by close_all(): reopen
         if conn is None:
             conn = spine_connection(self.path)
             conn.execute("PRAGMA busy_timeout=30000")
             self._local.spine = conn
+            self._local.spine_gen = self._gen
+            with self._conns_lock:
+                self._all_conns.append(conn)
         return conn
 
     @contextmanager
@@ -175,6 +227,43 @@ class Ledger:
             if conn is not None:
                 conn.close()
                 setattr(self._local, name, None)
+                with self._conns_lock:
+                    self._all_conns = [x for x in self._all_conns if x is not conn]
+
+    def close_all(self) -> int:
+        """Graceful shutdown: checkpoint the WAL into the main file, then close every connection this
+        Ledger opened in any thread. Threads that use the Ledger afterwards reopen lazily. Returns
+        how many connections were closed."""
+        try:
+            self._conn().execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        except sqlite3.Error:
+            pass  # a busy reader may hold the WAL; closing still persists every committed tx
+        with self._conns_lock:
+            conns, self._all_conns = self._all_conns, []
+            self._gen += 1
+        n = 0
+        for conn in conns:
+            try:
+                conn.close()
+                n += 1
+            except sqlite3.Error:  # e.g. a spine connection bound to another thread
+                pass
+        self._local.conn = self._local.spine = None
+        return n
+
+    def mark_inflight_uncertain(self, reason: str = "SHUTDOWN_GRACE_EXPIRED") -> list[str]:
+        """Touches still DISPATCHING (handed to a provider, no answer recorded) become UNCERTAIN: they keep
+        their cap slot and cost, are never dispatched again (begin_dispatch takes RESERVED only), and
+        Executor.resolve_uncertain asks the provider what happened. A late provider answer still upgrades
+        UNCERTAIN to SENT (ledger.RANK)."""
+        with self.tx() as c:
+            rows = c.execute("SELECT instruction_id, borrower_id FROM touches WHERE status='DISPATCHING'").fetchall()
+            now = self._iso(self.policy.now())
+            for r in rows:
+                c.execute("UPDATE touches SET status='UNCERTAIN', reason=?, updated_at=? WHERE instruction_id=?"
+                          " AND status='DISPATCHING'", (reason, now, r["instruction_id"]))
+                self._audit(c, "system", "DISPATCH_UNCERTAIN", r["borrower_id"], r["instruction_id"], reason=reason)
+            return [r["instruction_id"] for r in rows]
 
     # ---------- helpers ----------
     def _loc(self, dt: datetime) -> datetime:
@@ -194,6 +283,18 @@ class Ledger:
              decision.decision if decision else None, decision.reason if decision else detail.pop("reason", None),
              decision.rule if decision else None, self.policy.version, json.dumps(detail, default=str)),
         )
+
+    def _require_borrower(self, c, borrower_id: str) -> None:
+        """Borrower-scoped writes need a borrower in the K03 spine: KeyError (404) and nothing written (RT-F02)."""
+        if c.execute("SELECT 1 FROM borrowers WHERE borrower_id=?", (borrower_id,)).fetchone() is None:
+            raise KeyError(f"unknown borrower {borrower_id}")
+
+    def _scrub(self, c, borrower_id: Optional[str], text) -> str:
+        """Free text stored at rest: the borrower's name becomes their id, phones and e-mails are masked
+        (kairos_backend.pii.scrub; RT-F08 tickets, RT-F09 audit / events / payments)."""
+        b = c.execute("SELECT full_name, phone FROM borrowers WHERE borrower_id=?", (borrower_id,)).fetchone()
+        return scrub(None if text is None else str(text), name=b["full_name"] if b else None,
+                     phone=b["phone"] if b else None, name_as=borrower_id or "[name]")
 
     def _state(self, c, borrower_id: str) -> dict:
         r = c.execute("SELECT * FROM borrower_state WHERE borrower_id=?", (borrower_id,)).fetchone()
@@ -221,21 +322,36 @@ class Ledger:
                       (ob["loan_id"],)).fetchone()
         return (day - date.fromisoformat(r["d"])).days if r["d"] else 0
 
+    def _dpd_stamps(self, ob) -> list[datetime]:
+        return [self._dt(s) for s in (self.setting("spine_synced_at"), ob["dpd_as_of"]) if s]
+
     def _dpd_age_hours(self, ob, at: datetime) -> float:
         """K01 stale rule: how old the LMS data behind this DPD is. Fresh = the spine was synced
-        (mark_spine_synced / start_day) or the loan's own dpd_as_of, whichever is newer."""
-        stamps = [s for s in (self.setting("spine_synced_at"), ob["dpd_as_of"]) if s]
-        if not stamps:
+        (mark_spine_synced / start_day) or the loan's own dpd_as_of, whichever is newer.
+        A stamp later than the decision time (+ SYNC_SKEW) proves nothing about freshness — a skewed
+        feed clock or a bad call wrote it — so it counts as stale (age = inf -> DPD_INVALID HOLD),
+        never as age 0 (RT-F05)."""
+        stamps = self._dpd_stamps(ob)
+        if not stamps or any(s > at + SYNC_SKEW for s in stamps):
             return float("inf")
-        latest = max(self._dt(s) for s in stamps)
-        return max(0.0, (at - latest).total_seconds() / 3600)
+        return max(0.0, (at - max(stamps)).total_seconds() / 3600)
 
     def _loan_cured(self, c, loan_id: str, day: date) -> bool:
         return c.execute("SELECT 1 FROM obligations WHERE loan_id=? AND due_date<=? AND amount_paid_paise<amount_due_paise",
                          (loan_id, day.isoformat())).fetchone() is None
 
-    def mark_spine_synced(self, at: datetime) -> None:
-        """Call after each LMS/payment feed refresh. In simulations, start_day() does it."""
+    def mark_spine_synced(self, at: datetime, now: Optional[datetime] = None) -> None:
+        """Call after each LMS/payment feed refresh. In simulations, start_day() does it.
+        `now` is the real clock of whoever reports the sync (POST /spine/synced passes it): a stamp later
+        than now + SYNC_SKEW is refused (RT-F05) — audited as SPINE_SYNC_REJECTED, ValueError raised, the
+        previous stamp kept. start_day() drives the simulation clock and passes no `now`; whatever is
+        stored, _dpd_age_hours treats a stamp later than the decision time as stale."""
+        if now is not None and self._loc(at) > self._loc(now) + SYNC_SKEW:
+            with self.tx() as c:
+                self._audit(c, "system", "SPINE_SYNC_REJECTED", at=now, reason="FUTURE_SYNC_STAMP",
+                            stamp=self._iso(at), skew_minutes=SYNC_SKEW.total_seconds() / 60)
+            raise ValueError(f"sync stamp {self._iso(at)} is later than now ({self._iso(now)}) "
+                             f"+ {SYNC_SKEW.total_seconds() / 60:.0f} min")
         self.set_setting("spine_synced_at", self._iso(at))
 
     # ---------- settings / setup ----------
@@ -253,6 +369,7 @@ class Ledger:
                         name: str = "", status: str = "RUNNING") -> None:
         """budget_per_case and the collection targets are K01 REQUIRED_INPUTs — the caller supplies them.
         The pool is budget_per_case x enrolled cases (see enroll())."""
+        budget_per_case_paise = check_paise(budget_per_case_paise, "budget_per_case_paise", positive=True)
         with self.tx() as c:
             c.execute(
                 "INSERT INTO campaigns (id, name, status, budget_per_case_paise, start_date, end_date,"
@@ -261,7 +378,7 @@ class Ledger:
                 " budget_per_case_paise=excluded.budget_per_case_paise, start_date=excluded.start_date,"
                 " end_date=excluded.end_date, target_amount_pct=excluded.target_amount_pct,"
                 " target_count_pct=excluded.target_count_pct",
-                (id, name, status, int(budget_per_case_paise), start_date.isoformat(), end_date.isoformat(),
+                (id, name, status, budget_per_case_paise, start_date.isoformat(), end_date.isoformat(),
                  target_amount_pct, target_count_pct),
             )
 
@@ -291,6 +408,29 @@ class Ledger:
             self._audit(c, "system", "ENROLLED", reason=f"campaign {campaign_id}", added=added)
             return added
 
+    def unenroll(self, campaign_id: str, loan_ids: list[str], reason: str = "REMOVED_BY_LENDER") -> int:
+        """K24 budget_scope: take loans out of the budgeted set (e.g. REMOVED_BY_LENDER on re-upload).
+        The pool recomputes on the remaining cases; spend already committed stays counted; queued
+        touches for those loans are canceled and their budget released. History is kept.
+        Returns how many loans left the set."""
+        with self.tx() as c:
+            if c.execute("SELECT 1 FROM campaigns WHERE id=?", (campaign_id,)).fetchone() is None:
+                raise KeyError(f"unknown campaign {campaign_id}")
+            removed, overdue_total = 0, 0
+            for loan_id in loan_ids:
+                e = c.execute("SELECT overdue_at_start_paise FROM enrollments WHERE campaign_id=? AND loan_id=?",
+                              (campaign_id, loan_id)).fetchone()
+                if e is None:
+                    continue
+                c.execute("DELETE FROM enrollments WHERE campaign_id=? AND loan_id=?", (campaign_id, loan_id))
+                self._cancel_queued(c, "campaign_id=? AND loan_id=?", (campaign_id, loan_id), reason)
+                removed += 1
+                overdue_total += e["overdue_at_start_paise"]
+            c.execute("UPDATE campaigns SET allocated_cases = MAX(0, allocated_cases - ?), overdue_at_start_paise ="
+                      " MAX(0, overdue_at_start_paise - ?) WHERE id=?", (removed, overdue_total, campaign_id))
+            self._audit(c, "system", "UNENROLLED", reason=f"campaign {campaign_id}: {reason}", removed=removed)
+            return removed
+
     def set_campaign_status(self, campaign_id: str, status: str, actor: str = "human") -> int:
         """PAUSED / STOPPED cancel queued work for the campaign; returns how many touches were canceled."""
         with self.tx() as c:
@@ -304,6 +444,7 @@ class Ledger:
 
     def set_lender(self, borrower_id: str, lender_id: Optional[str]) -> None:
         with self.tx() as c:
+            self._require_borrower(c, borrower_id)
             self._set_state(c, borrower_id, lender_id=lender_id)
 
     def upsert_template(self, id: str, channel: str, lang: str, approved: bool = True) -> None:
@@ -366,6 +507,7 @@ class Ledger:
         consent = c.execute("SELECT consented, opted_out FROM consents WHERE borrower_id=? AND channel=?",
                             (ins.borrower_id, ins.channel)).fetchone()
         dpd = self._loan_dpd(c, ob, day)
+        dpd_age = self._dpd_age_hours(ob, at)
         outstanding = ob["amount_due_paise"] - ob["amount_paid_paise"]
         ex = exclude or ""
         live = ",".join("?" * len(LIVE))
@@ -385,7 +527,7 @@ class Ledger:
             at=at,
             channel=ins.channel,
             dpd=dpd,
-            dpd_age_hours=self._dpd_age_hours(ob, at),
+            dpd_age_hours=dpd_age,
             consent=bool(consent and consent["consented"] and not consent["opted_out"]),
             opted_out=bool(st["stopped"] or (consent and consent["opted_out"])),
             hardship_until=self._dt(st["hardship_until"]),
@@ -409,7 +551,10 @@ class Ledger:
             purpose=ins.purpose,
             verified_overdue=outstanding > 0 and ob["due_date"] < day.isoformat(),
         )
-        return facts, {"budget": budget_detail, "loan_id": ob["loan_id"], "dpd": dpd}
+        extra = {"budget": budget_detail, "loan_id": ob["loan_id"], "dpd": dpd}
+        if dpd_age == float("inf") and self._dpd_stamps(ob):
+            extra["dpd_stamp_after_decision"] = True  # RT-F05: the HOLD comes from a future stamp; audited
+        return facts, extra
 
     def _pre_gate(self, c, ins: Instruction) -> Optional[Decision]:
         """Operational stops outside the policy rulebook: a person paused everything, the campaign
@@ -431,26 +576,54 @@ class Ledger:
         return None
 
     # ---------- the atomic core ----------
-    def preview(self, ins: Instruction) -> Decision:
-        """Approval-time check (no reservation)."""
+    def preview(self, ins: Instruction, exclude: Optional[str] = None) -> Decision:
+        """Approval-time check (no reservation).
+
+        `exclude` (optional, used by the K06 SupervisorFSM) names one existing live touch to leave
+        out, exactly as begin_dispatch leaves out its own touch: it is not counted toward caps or
+        the same-channel gap (facts_for's exclude), and its reserved cost is given back to the
+        budget it was committed against (same campaign and day). Re-planning the identical
+        stable-id touch then sees the world the first plan saw, and reserve() turns it into an
+        idempotent replay instead of a second reservation."""
+        check_paise(ins.est_cost_paise, "est_cost_paise")
         with self.tx() as c:  # write tx because pacing rows may be initialised
+            self._require_borrower(c, ins.borrower_id)
             pre = self._pre_gate(c, ins)
             if pre:
                 return pre
-            facts, extra = self.facts_for(c, ins)
+            facts, extra = self.facts_for(c, ins, exclude=exclude)
+            if exclude:
+                own = c.execute("SELECT * FROM touches WHERE instruction_id=?", (exclude,)).fetchone()
+                if (own is not None and own["status"] in LIVE and own["campaign_id"] == ins.campaign_id
+                        and own["day"] == self._loc(ins.at).date().isoformat()):
+                    cost = own["actual_cost_paise"] if own["reconciled"] else own["est_cost_paise"]
+                    b = extra["budget"]
+                    left = min(b["pool_left_paise"], b["today_left_paise"])  # what facts_for used, in paise
+                    facts.budget_remaining_inr = (left + (cost or 0)) / 100  # exact: one int division
             d = evaluate(self.policy, facts)
             d.detail.update(extra)
             return d
 
     def reserve(self, ins: Instruction, actor: str = "supervisor") -> ReserveResult:
         """Check every rule and, if allowed, reserve the touch and its cost — atomically.
-        Re-submitting the same instruction_id never creates a second reservation."""
+        Re-submitting the same instruction_id never creates a second reservation. A caller-supplied id
+        that is already reserved for another borrower, EMI, channel or campaign is CONFLICT_INSTRUCTION_ID,
+        reserved=False (RT-F07). A derived id has no campaign in it, so two campaigns proposing the same
+        slot still collapse onto one touch (E03)."""
+        ins.est_cost_paise = check_paise(ins.est_cost_paise, "est_cost_paise")
+        explicit_id = ins.instruction_id is not None
         if ins.instruction_id is None:
             ins.instruction_id = stable_instruction_id(ins.borrower_id, ins.obligation_id, ins.channel,
                                                        self._loc(ins.at), ins.version)
         with self.tx() as c:
+            self._require_borrower(c, ins.borrower_id)
             prior = c.execute("SELECT * FROM touches WHERE instruction_id=?", (ins.instruction_id,)).fetchone()
             if prior is not None:
+                same = ["borrower_id", "obligation_id", "channel"] + (["campaign_id"] if explicit_id else [])
+                clash = [k for k in same if prior[k] != getattr(ins, k)]
+                if clash:
+                    d = Decision(WAIT, CONFLICT_INSTRUCTION_ID, "IDEMPOTENCY", self.policy.version, detail={"differs": clash})
+                    return ReserveResult(d, ins.instruction_id, False)
                 ok = prior["status"] in LIVE
                 d = Decision(SEND if ok else WAIT, "ALREADY_RESERVED" if ok else (prior["reason"] or prior["status"]),
                              "IDEMPOTENCY", self.policy.version)
@@ -462,6 +635,9 @@ class Ledger:
                 loan_id = extra["loan_id"]
                 d = evaluate(self.policy, facts)
                 d.detail.update(extra)
+            status = "RESERVED"
+            if d.allowed and self.reserve_hook is not None:
+                status, d = self.reserve_hook(c, ins, d)  # HITL: PENDING_APPROVAL or a veto, never looser
             self._audit(c, actor, "DECISION", ins.borrower_id, ins.instruction_id, d, at=ins.at,
                         channel=ins.channel, obligation_id=ins.obligation_id, campaign_id=ins.campaign_id,
                         est_cost_paise=ins.est_cost_paise, **d.detail)
@@ -472,11 +648,12 @@ class Ledger:
             c.execute(
                 "INSERT INTO touches (instruction_id, borrower_id, loan_id, obligation_id, campaign_id, channel, template_id,"
                 " scheduled_at, day, status, reason, est_cost_paise, created_at, updated_at)"
-                " VALUES (?,?,?,?,?,?,?,?,?,'RESERVED','ELIGIBLE',?,?,?)",
+                " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (ins.instruction_id, ins.borrower_id, loan_id, ins.obligation_id, ins.campaign_id, ins.channel,
-                 ins.template_id, self._iso(at), at.date().isoformat(), int(ins.est_cost_paise), now, now),
+                 ins.template_id, self._iso(at), at.date().isoformat(), status,
+                 "ELIGIBLE" if status == "RESERVED" else "APPROVAL_REQUIRED", ins.est_cost_paise, now, now),
             )
-            self._commit_cost(c, ins.campaign_id, at.date().isoformat(), int(ins.est_cost_paise))
+            self._commit_cost(c, ins.campaign_id, at.date().isoformat(), ins.est_cost_paise)
             return ReserveResult(d, ins.instruction_id, True)
 
     def _commit_cost(self, c, campaign_id: str, day: str, delta: int) -> None:
@@ -561,27 +738,32 @@ class Ledger:
             return new
 
     def reconcile(self, instruction_id: str, actual_cost_paise: int) -> bool:
-        """Replace the estimate with the actual charge — exactly once. Returns False on a repeat."""
+        """Replace the estimate with the actual charge — exactly once. Returns False on a repeat.
+        The charge must be a whole, non-negative number of paise (<= MAX_PAISE): a negative 'charge'
+        would hand budget back to the campaign (RT-F01)."""
+        actual_cost_paise = check_paise(actual_cost_paise, "actual_cost_paise")
         with self.tx() as c:
             t = c.execute("SELECT * FROM touches WHERE instruction_id=?", (instruction_id,)).fetchone()
             if t is None:
                 raise KeyError(instruction_id)
             if t["reconciled"] or t["status"] not in LIVE:
                 return False
-            self._commit_cost(c, t["campaign_id"], t["day"], int(actual_cost_paise) - t["est_cost_paise"])
+            self._commit_cost(c, t["campaign_id"], t["day"], actual_cost_paise - t["est_cost_paise"])
             c.execute("UPDATE touches SET actual_cost_paise=?, reconciled=1, updated_at=? WHERE instruction_id=?",
-                      (int(actual_cost_paise), self._iso(self.policy.now()), instruction_id))
+                      (actual_cost_paise, self._iso(self.policy.now()), instruction_id))
             self._audit(c, "executor", "RECONCILED", t["borrower_id"], instruction_id,
                         estimate_paise=t["est_cost_paise"], actual_paise=actual_cost_paise)
             return True
 
     # ---------- cancellations ----------
     def _cancel_queued(self, c, where: str, args: tuple, reason: str) -> int:
-        rows = c.execute(f"SELECT * FROM touches WHERE status='RESERVED' AND {where}", args).fetchall()
+        """Cancel every not-yet-dispatched touch in scope (RESERVED and PENDING_APPROVAL) and release its budget."""
+        q = f"status IN ({','.join('?' * len(QUEUED))}) AND {where}"
+        rows = c.execute(f"SELECT * FROM touches WHERE {q}", (*QUEUED, *args)).fetchall()
         for t in rows:
             self._release(c, t)
-        c.execute(f"UPDATE touches SET status='CANCELED', reason=?, updated_at=? WHERE status='RESERVED' AND {where}",
-                  (reason, self._iso(self.policy.now()), *args))
+        c.execute(f"UPDATE touches SET status='CANCELED', reason=?, updated_at=? WHERE {q}",
+                  (reason, self._iso(self.policy.now()), *QUEUED, *args))
         return len(rows)
 
     # ---------- borrower events ----------
@@ -606,17 +788,19 @@ class Ledger:
         """Any reply or borrower-behaviour disposition on any channel -> stop for the day (K01 §5).
         Also written to the K03 spine as 'reply_received' against the EMI it relates to."""
         with self.tx() as c:
+            self._require_borrower(c, borrower_id)
             n = self._stop_for_day(c, borrower_id, at, "BORROWER_RESPONSE")
             ob = self._event_obligation(c, borrower_id, channel)
             if ob:
                 record_event(c, f"EV-REPLY-{borrower_id}-{self._iso(at)}-{channel}", borrower_id, "reply_received",
                              self._iso(at), channel=channel, loan_id=ob["loan_id"], obligation_id=ob["obligation_id"],
-                             details=details or kind)
+                             details=self._scrub(c, borrower_id, details or kind))
             self._audit(c, "borrower", "RESPONSE", borrower_id, at=at, reason=kind, channel=channel, canceled=n)
             return n
 
     def record_call(self, borrower_id: str, at: datetime, answered_seconds: float, channel: str = "ivr") -> int:
         with self.tx() as c:
+            self._require_borrower(c, borrower_id)
             n = 0
             if answered_seconds > self.policy.call_pickup_threshold_s:
                 n = self._stop_for_day(c, borrower_id, at, "CALL_PICKUP")
@@ -628,6 +812,7 @@ class Ledger:
         """STOP on any channel suppresses ALL channels and cancels every queued send (K01 holds.STOP_OPT_OUT).
         The K03 consents table is updated too, so every reader of the spine sees the opt-out."""
         with self.tx() as c:
+            self._require_borrower(c, borrower_id)
             self._set_state(c, borrower_id, stopped=1)
             c.execute("UPDATE consents SET opted_out=1, updated_at=? WHERE borrower_id=?", (self._iso(at), borrower_id))
             record_event(c, f"EV-STOP-{borrower_id}-{self._iso(at)}", borrower_id, "consent_changed", self._iso(at),
@@ -639,6 +824,7 @@ class Ledger:
     def opt_in(self, borrower_id: str, channel: str, consent_version: str, at: datetime) -> None:
         """Re-entry is per channel with the consent version recorded; other channels stay opted out."""
         with self.tx() as c:
+            self._require_borrower(c, borrower_id)
             c.execute("INSERT INTO consents (borrower_id, channel, consented, opted_out, updated_at, source)"
                       " VALUES (?,?,1,0,?,'provided') ON CONFLICT (borrower_id, channel) DO UPDATE SET consented=1,"
                       " opted_out=0, updated_at=excluded.updated_at, source='provided'", (borrower_id, channel, self._iso(at)))
@@ -690,14 +876,17 @@ class Ledger:
         """The bank reversed a payment (E15): K03 makes that EMI due again; collection progress is
         rolled back. The Supervisor replans the EMI on its next pass."""
         at = self._loc(at)
-        p = self._conn().execute("SELECT * FROM payments WHERE payment_id=?", (payment_id,)).fetchone()
+        c = self._conn()
+        p = c.execute("SELECT * FROM payments WHERE payment_id=?", (payment_id,)).fetchone()
         if p is None:
             raise KeyError(payment_id)
+        # K03 stores the reason in payments.reversal_reason and events.details: scrub it first (RT-F09)
+        borrower = c.execute("SELECT borrower_id FROM loans WHERE loan_id=?", (p["loan_id"],)).fetchone()[0]
+        reason = self._scrub(c, borrower, reason)
         done = reverse_payment(self._spine(), payment_id, at.date().isoformat(), reason)
         if done:
             with self.tx() as c:
                 self._refresh_progress(c, p["loan_id"], at.date(), -p["amount_paise"])
-                borrower = c.execute("SELECT borrower_id FROM loans WHERE loan_id=?", (p["loan_id"],)).fetchone()[0]
                 self._audit(c, "tool:d7", "PAYMENT_REVERSED", borrower, at=at, obligation_id=p["obligation_id"],
                             amount_paise=p["amount_paise"], reason=reason)
         return done
@@ -729,9 +918,14 @@ class Ledger:
             return existing["ticket_id"]  # repeat requests attach to the same open task
         tid = "TKT-" + uuid.uuid4().hex[:10]
         sla = self._iso(self._loc(at) + timedelta(hours=sla_hours)) if sla_hours else None
+        # Tickets are read by human queues: never store the borrower's name, number or an e-mail (RT-F08).
+        def red(text) -> str:
+            return self._scrub(c, borrower_id, text)
+
         c.execute("INSERT INTO tickets (ticket_id, idempotency_key, queue, borrower_id, obligation_id, type, summary_line_1,"
                   " summary_line_2, evidence_ids, created_at, sla_due_at, policy_version) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                  (tid, key, queue, borrower_id, obligation_id, type_, summary[0], summary[1], json.dumps(list(evidence_ids)),
+                  (tid, key, queue, borrower_id, obligation_id, type_, red(summary[0]), red(summary[1]),
+                   json.dumps([red(e) for e in evidence_ids]),
                    self._iso(at), sla, self.policy.exceptions_version or self.policy.version))
         return tid
 
@@ -743,6 +937,7 @@ class Ledger:
         out = handle(self.policy, event)
         at = self._loc(at)
         with self.tx() as c:
+            self._require_borrower(c, borrower_id)
             canceled, ticket = 0, None
             if out.hold == "STOP_FOR_DAY":
                 canceled = self._stop_for_day(c, borrower_id, at, "BORROWER_RESPONSE")
@@ -774,6 +969,7 @@ class Ledger:
 
     def clear_supervisor_hold(self, borrower_id: str, actor: str = "human:supervisor") -> None:
         with self.tx() as c:
+            self._require_borrower(c, borrower_id)
             self._set_state(c, borrower_id, supervisor_hold=0, hardship_supervisor=0)
             self._audit(c, actor, "SUPERVISOR_CLEARED", borrower_id)
 
@@ -784,7 +980,7 @@ class Ledger:
             c.execute("INSERT INTO settings VALUES ('outbound_paused', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
                       (json.dumps(paused),))
             n = self._cancel_queued(c, "1=1", (), "OUTBOUND_PAUSED") if paused else 0
-            self._audit(c, actor, "OUTBOUND_PAUSED" if paused else "OUTBOUND_RESUMED", reason=reason, canceled=n)
+            self._audit(c, actor, "OUTBOUND_PAUSED" if paused else "OUTBOUND_RESUMED", reason=scrub(reason), canceled=n)
             return n
 
     # ---------- reads ----------

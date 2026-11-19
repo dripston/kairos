@@ -10,6 +10,9 @@ import pytest
 from kairos_backend.exceptions import ExceptionEvent
 from kairos_backend.executor import Executor, FakeProvider, Supervisor
 from kairos_backend.ledger import Instruction, Ledger, PaymentError
+from spine.policy import policy_version as _k01_version
+
+K01_VERSION = _k01_version()  # read from policy/K01-decision-policy/policy.json, never pinned
 
 D = date(2026, 11, 20)  # a Friday — a contact day
 CH_TPL = {"sms": "SMS_EN", "whatsapp": "WA_HI", "email": "EM_EN", "ivr": "IVR_HI"}
@@ -110,6 +113,30 @@ def test_stable_id_collapses_identical_proposals(ledger):
     a = ledger.reserve(ins(t=at(11)))
     b = ledger.reserve(ins(t=at(11)))
     assert a.instruction_id == b.instruction_id and b.idempotent_replay
+
+
+def test_reused_instruction_id_for_another_touch_is_a_conflict(ledger):
+    """RT-F07: an explicit id already reserved for another borrower / EMI / channel / campaign is not 'reserved'."""
+    lg = ledger
+    lg.enroll("C1", [add_loan(lg, "B2")])
+    lg.enroll("C1", [add_loan(lg, "B1", loan="B")])
+    assert lg.reserve(ins(iid="SHARED-1")).reserved
+    for other in (ins("B2", t=at(12), iid="SHARED-1"), ins(loan="B", iid="SHARED-1"),
+                  ins(ch="whatsapp", iid="SHARED-1"), ins(camp="C2", iid="SHARED-1"),
+                  ins(camp="NO-SUCH-CAMPAIGN", iid="SHARED-1")):
+        r = lg.reserve(other)
+        assert (r.decision.decision, r.decision.reason, r.reserved) == ("WAIT", "CONFLICT_INSTRUCTION_ID", False)
+    again = lg.reserve(ins(iid="SHARED-1"))  # same payload is still an idempotent replay
+    assert again.reserved and again.idempotent_replay and again.decision.reason == "ALREADY_RESERVED"
+    assert [t["instruction_id"] for t in lg.borrower_state("B1")["touches"]] == ["SHARED-1"]
+    assert lg.borrower_state("B2")["touches"] == []
+
+
+def test_derived_id_still_collapses_two_campaigns_on_one_slot(ledger):
+    """E03 is unchanged: without an explicit id, C2's proposal of C1's slot is a replay, not a conflict."""
+    a = ledger.reserve(ins(t=at(11), camp="C1"))
+    b = ledger.reserve(ins(t=at(11), camp="C2"))
+    assert a.instruction_id == b.instruction_id and b.idempotent_replay and b.decision.reason == "ALREADY_RESERVED"
 
 
 def test_caps_count_across_campaigns(ledger):
@@ -304,7 +331,7 @@ def test_reconcile_exactly_once(ledger):
 
 def test_supervisor_instruction_carries_reason_version_and_expiry(ledger):
     si = Supervisor(ledger).decide(ins(t=at(10)))
-    assert si.action == "SEND" and si.reserved and si.policy_version == "1.1.0"
+    assert si.action == "SEND" and si.reserved and si.policy_version == K01_VERSION
     assert si.expires_at.startswith("2026-11-20T19:00")
     blocked = Supervisor(ledger).decide(ins(t=at(19, 30)))
     assert (blocked.action, blocked.reason) == ("WAIT", "CONTACT_WINDOW")
@@ -396,7 +423,7 @@ def test_audit_records_every_decision_with_policy_version(ledger):
     ledger.reserve(ins(t=at(19, 30)))
     log = ledger.audit_log()
     assert {e["reason"] for e in log if e["type"] == "DECISION"} == {"ELIGIBLE", "CONTACT_WINDOW"}
-    assert all(e["policy_version"] == "1.1.0" for e in log)
+    assert all(e["policy_version"] == K01_VERSION for e in log)
 
 
 # ---------- end to end on K03's own synthetic dataset ----------
@@ -424,3 +451,40 @@ def test_k03_synthetic_dataset_runs_through_k06(policy, tmp_path):
     assert set(reasons) <= {"ELIGIBLE", "NO_CONSENT", "STOP_OPT_OUT"}  # the only reasons this data can produce
     assert lg.cap_breaches() == []
     lg.close()
+
+
+
+# ---------- money guard (red-team RT-F01; the API side is RT-API-01) ----------
+def test_ledger_rejects_bad_paise_and_mints_no_budget(ledger):
+    r = ledger.reserve(ins(t=at(10)))
+    for bad in (-1, -100_000, 1.5, "20", None, True, 2 ** 63, 10 ** 12 + 1):
+        with pytest.raises(ValueError):
+            ledger.reconcile(r.instruction_id, bad)
+        with pytest.raises(ValueError):
+            ledger.reserve(ins(t=at(12), cost=bad))
+    for bad in (0, -5, 2 ** 63):
+        with pytest.raises(ValueError):
+            ledger.upsert_campaign("CX", budget_per_case_paise=bad, start_date=D, end_date=D)
+    assert ledger.campaign_state("C1")["committed_paise"] == 20  # still only the reserved estimate
+    assert ledger.touch(r.instruction_id)["reconciled"] == 0
+    assert ledger.reconcile(r.instruction_id, 0) is True  # a free send is valid
+    assert ledger.campaign_state("C1")["committed_paise"] == 0
+
+
+# ---------- future sync stamps (red-team RT-F05) ----------
+def test_future_sync_stamp_is_stale_and_refused(ledger):
+    later = at(10, day=D + timedelta(days=5))  # Wed, 5 days after the last real sync
+    ledger.mark_spine_synced(datetime(2030, 1, 1))  # stored as-is by the simulation path...
+    r = ledger.reserve(ins(t=later))
+    assert (r.decision.decision, r.decision.reason) == ("WAIT", "DPD_INVALID")  # ...but never counts as fresh
+    assert ledger.audit_log(1)[0]["detail"]["dpd_stamp_after_decision"] is True
+    ledger.mark_spine_synced(later + timedelta(minutes=4))  # within the 5-min skew -> fresh
+    assert ledger.preview(ins(t=later)).decision == "SEND"
+
+    now = later
+    with pytest.raises(ValueError):  # the real-clock path (POST /spine/synced) refuses it outright
+        ledger.mark_spine_synced(now + timedelta(minutes=6), now=now)
+    assert ledger.setting("spine_synced_at") == ledger._iso(later + timedelta(minutes=4))  # previous stamp kept
+    rej = ledger.audit_log(1)[0]
+    assert (rej["type"], rej["reason"]) == ("SPINE_SYNC_REJECTED", "FUTURE_SYNC_STAMP")
+    ledger.mark_spine_synced(now + timedelta(minutes=5), now=now)  # skew boundary is accepted

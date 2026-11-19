@@ -1,0 +1,70 @@
+{
+  "catalog_id": "kairos-outbound-templates",
+  "catalog_version": "1.0.0",
+  "status": "draft-for-signoff",
+  "owner": "Ojas (Product)",
+  "approved_on": null,
+  "demo_lender_name": "Nirvana Finance",
+  "angles": {
+    "A": "PLAIN - straightforward reminder",
+    "B": "EASE - how quick/easy paying is",
+    "C": "CONSEQUENCE - factual effect (pre-due: keep balance for auto-debit; 1-60: late charges; 61-90: credit record; 91+: per loan agreement)",
+    "D": "HELP - offer of help / a person",
+    "E": "DATE_ASK - ask for a payment date",
+    "F": "CREDIT / PART PAYMENT - credit-record benefit (61-90: part payment)"
+  },
+  "angle_cta": { "A": "pay", "B": "pay", "C": "pay", "D": "help", "E": "date", "F": "pay" },
+  "cores": {
+    "PRE_DUE": {
+      "A": ["Your EMI of Rs {emi} for loan xx{loan_last4} is due on {due_date}.", "आपके लोन xx{loan_last4} की ₹{emi} की EMI {due_date} को देय है।"],
+      "B": ["You can pay your EMI of Rs {emi} in under a minute by UPI before {due_date}.", "आप {due_date} से पहले ₹{emi} की EMI UPI से एक मिनट में भर सकते हैं।"],
+      "C": ["Please keep Rs {emi} in your bank account before {due_date} so your auto-debit goes through.", "कृपया {due_date} से पहले अपने बैंक खाते में ₹{emi} रखें ताकि ऑटो-डेबिट सफल हो।"],
+      "D": ["If you expect any difficulty with your EMI of Rs {emi} due on {due_date}, we are here to help.", "अगर {due_date} को देय ₹{emi} की EMI में कोई कठिनाई लगे, तो हम मदद के लिए हैं।"],
+      "E": ["Planning ahead? Let us know when you will pay your EMI of Rs {emi} due on {due_date}.", "पहले से योजना बनाएँ - बताइए आप {due_date} को देय ₹{emi} की EMI कब भरेंगे।"],
+      "F": ["On-time EMIs build a strong credit record. Your EMI of Rs {emi} is due on {due_date}.", "समय पर EMI से आपका क्रेडिट रिकॉर्ड मज़बूत बनता है। ₹{emi} की EMI {due_date} को देय है।"]
+    },
+    "B1": {
+      "A": ["Your EMI of Rs {amount} for loan xx{loan_last4} is overdue. Please pay at the earliest.", "आपके लोन xx{loan_last4} की ₹{amount} की EMI बकाया है। कृपया जल्द भुगतान करें।"],
+      "B": ["You can clear your overdue Rs {amount} in a minute by UPI.", "आप अपनी बकाया ₹{amount} की राशि UPI से एक मिनट में चुका सकते हैं।"],
+      "C": ["Paying your overdue Rs {amount} now stops further late charges.", "बकाया ₹{amount} अभी चुकाने से आगे विलंब शुल्क नहीं लगेगा।"],
+      "D": ["If something has delayed your EMI of Rs {amount}, we are here to help.", "अगर किसी कारण ₹{amount} की EMI में देरी हुई है, तो हम मदद के लिए हैं।"],
+      "E": ["Please let us know when you can pay your overdue Rs {amount}.", "कृपया बताइए आप बकाया ₹{amount} कब चुका पाएँगे।"],
+      "F": ["Paying Rs {amount} now keeps your credit record on track.", "अभी ₹{amount} चुकाने से आपका क्रेडिट रिकॉर्ड ठीक रहेगा।"]
+    },
+    "B2": {
+      "A": ["Your loan xx{loan_last4} is overdue by over a month. Rs {amount} is pending - please pay today.", "आपका लोन xx{loan_last4} एक महीने से अधिक से बकाया है। ₹{amount} लंबित है - कृपया आज भुगतान करें।"],
+      "B": ["Rs {amount} is overdue on your loan. Pay securely by UPI, card or net banking.", "आपके लोन पर ₹{amount} बकाया है। UPI, कार्ड या नेट बैंकिंग से सुरक्षित भुगतान करें।"],
+      "C": ["Late charges are adding to your overdue Rs {amount}. Paying now stops them growing.", "आपकी बकाया ₹{amount} राशि पर विलंब शुल्क जुड़ रहा है। अभी भुगतान करने से यह बढ़ना रुकेगा।"],
+      "D": ["We understand things can be difficult. Let us find a way to clear your overdue Rs {amount}.", "हम समझते हैं कि परिस्थितियाँ कठिन हो सकती हैं। आइए बकाया ₹{amount} चुकाने का रास्ता निकालें।"],
+      "E": ["Please confirm a payment date for your overdue Rs {amount}.", "कृपया बकाया ₹{amount} के भुगतान की तारीख की पुष्टि करें।"],
+      "F": ["Overdue EMIs are reported to credit bureaus. Paying Rs {amount} now protects your credit score.", "बकाया EMI की जानकारी क्रेडिट ब्यूरो को दी जाती है। अभी ₹{amount} चुकाने से आपका क्रेडिट स्कोर सुरक्षित रहेगा।"]
+    },
+    "B3": {
+      "A": ["Your loan xx{loan_last4} has been overdue for over two months. Rs {amount} needs your urgent attention.", "आपका लोन xx{loan_last4} दो महीने से अधिक से बकाया है। ₹{amount} पर तुरंत ध्यान देना ज़रूरी है।"],
+      "B": ["Settle your overdue Rs {amount} today with a secure online payment.", "सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया ₹{amount} राशि चुकाएँ।"],
+      "C": ["Your overdue of Rs {amount} is affecting your credit record. Paying now limits the impact.", "₹{amount} की बकाया राशि आपके क्रेडिट रिकॉर्ड को प्रभावित कर रही है। अभी भुगतान करने से असर सीमित रहेगा।"],
+      "D": ["Our team can help you plan the payment of your overdue Rs {amount}.", "हमारी टीम बकाया ₹{amount} के भुगतान की योजना बनाने में आपकी मदद कर सकती है।"],
+      "E": ["To bring your account back on track, please share a payment date for Rs {amount} today.", "अपने खाते को फिर से सही करने के लिए, कृपया आज ₹{amount} के भुगतान की तारीख बताएँ।"],
+      "F": ["Even a part payment towards Rs {amount} today helps your account.", "₹{amount} में से आज आंशिक भुगतान भी आपके खाते के लिए मददगार है।"]
+    },
+    "B4": {
+      "A": ["Formal reminder: Rs {amount} on loan xx{loan_last4} has been overdue for over 90 days.", "औपचारिक सूचना: लोन xx{loan_last4} पर ₹{amount} 90 दिनों से अधिक से बकाया है।"],
+      "B": ["Resolve your overdue Rs {amount} today with a secure online payment.", "सुरक्षित ऑनलाइन भुगतान से आज ही अपनी बकाया ₹{amount} राशि का समाधान करें।"],
+      "C": ["As per your loan agreement, continued non-payment of Rs {amount} may lead to further recovery steps.", "आपके लोन अनुबंध के अनुसार, ₹{amount} का भुगतान न होने पर आगे की वसूली प्रक्रिया हो सकती है।"],
+      "D": ["We want to help you resolve your overdue Rs {amount}. A senior officer is available to speak with you.", "हम बकाया ₹{amount} के समाधान में आपकी मदद करना चाहते हैं। एक वरिष्ठ अधिकारी आपसे बात करने के लिए उपलब्ध हैं।"],
+      "E": ["Please share a firm payment date for your overdue Rs {amount}.", "कृपया बकाया ₹{amount} के भुगतान की पक्की तारीख बताएँ।"],
+      "F": ["Clearing Rs {amount} now stops further impact on your credit record and closes this overdue.", "अभी ₹{amount} चुकाने से आपके क्रेडिट रिकॉर्ड पर आगे असर नहीं होगा और यह बकाया बंद होगा।"]
+    }
+  },
+  "email_subjects": {
+    "A": { "PRE_DUE": ["EMI of Rs {emi} due on {due_date}", "₹{emi} की EMI {due_date} को देय"], "B4": ["Formal reminder: overdue on loan xx{loan_last4}", "औपचारिक सूचना: लोन xx{loan_last4} पर बकाया"], "*": ["Overdue EMI on loan xx{loan_last4}", "लोन xx{loan_last4} पर बकाया EMI"] },
+    "B": { "PRE_DUE": ["Pay your EMI in under a minute", "एक मिनट में EMI भरें"], "*": ["Clear your overdue in a minute", "एक मिनट में बकाया चुकाएँ"] },
+    "C": { "PRE_DUE": ["Keep your auto-debit on track", "अपना ऑटो-डेबिट सफल रखें"], "B1": ["Avoid further late charges", "आगे के विलंब शुल्क से बचें"], "B2": ["Late charges are adding up", "विलंब शुल्क बढ़ रहा है"], "B3": ["Important: your credit record", "महत्वपूर्ण: आपका क्रेडिट रिकॉर्ड"], "B4": ["Important information about your loan", "आपके लोन के बारे में महत्वपूर्ण जानकारी"] },
+    "D": { "*": ["We are here to help with your EMI", "आपकी EMI में हम मदद के लिए हैं"] },
+    "E": { "*": ["Please share your payment date", "कृपया भुगतान की तारीख बताएँ"] },
+    "F": { "PRE_DUE": ["Build a strong credit record", "मज़बूत क्रेडिट रिकॉर्ड बनाएँ"], "B3": ["A part payment helps", "आंशिक भुगतान भी मददगार है"], "*": ["Protect your credit score", "अपना क्रेडिट स्कोर सुरक्षित रखें"] }
+  },
+  "forbidden_words": ["police", "jail", "arrest", "court case", "fir", "shame", "family", "relative", "neighbour", "employer", "office colleagues", "पुलिस", "जेल", "गिरफ्तार", "शर्म", "परिवार", "रिश्तेदार", "पड़ोसी"],
+  "allowed_placeholders": ["name", "lender_name", "emi", "amount", "due_date", "link", "loan_last4", "helpline", "unsubscribe_link"],
+  "sample_values": { "name": "Ravi", "lender_name": "Nirvana Finance", "emi": "8,500", "amount": "8,500", "due_date": "05-Dec", "link": "nfin.in/p/Ab12Cd", "loan_last4": "4321", "helpline": "1800-123-4567", "unsubscribe_link": "nfin.in/u/Ab12" }
+}

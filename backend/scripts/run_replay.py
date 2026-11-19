@@ -12,6 +12,7 @@ import json
 import os
 import time
 
+from kairos_backend.safeio import atomic_write_text, interruptible  # noqa: E402
 from replay import settings as S
 from replay.campaign import run_campaign
 from replay.chat_load import PlaceholderChatHandler, run_load_test, run_safety_scenarios
@@ -105,10 +106,10 @@ def main():
 
     os.makedirs("reports", exist_ok=True)
     path = os.path.join("reports", "replay_report.json")
-    with open(path, "w") as f:
-        json.dump({"baseline": base, "kairos": kai, "chat_load": load, "chat_safety": safety_chat}, f, indent=2)
+    atomic_write_text(path, json.dumps({"baseline": base, "kairos": kai, "chat_load": load,
+                                        "chat_safety": safety_chat}, indent=2))  # temp file + rename
     print(f"\nFull report saved to {path}  (total time {time.perf_counter() - started:.1f}s)")
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(interruptible(main))
