@@ -14,6 +14,8 @@ import {
   Button, Card, CardHead, ChannelTag, Chip, Dot, Empty, Input, KpiStrip, PageHeader, ReasonDialog, Segmented, Select,
   StatusChip, Td, Th, Toggle, cx, inr, pct,
 } from '../components/ui'
+import { ApprovalsQueue, BudgetCaps, Cm03Console, DemoRecipients, LiveDecisions } from '../components/LiveControl'
+import LiveFeed from '../components/LiveFeed'
 
 const ACTIVE = ['RESERVED', 'SCHEDULED', 'NEEDS_APPROVAL', 'APPROVED']
 
@@ -67,6 +69,21 @@ export default function ControlRoom() {
           { label: 'Opt-outs', value: d.optOuts, sub: 'All channels suppressed' },
           { label: 'Cap breaches', value: '0', valueClass: 'text-ok', sub: 'Accepted violations', ring: 1, ringTone: 'ok' },
         ]} />
+
+        <div className="grid grid-cols-3 gap-5">
+          <LiveDecisions className="col-span-2" />
+          <LiveFeed height={560} />
+        </div>
+
+        <div className="grid grid-cols-3 gap-5">
+          <ApprovalsQueue className="col-span-2" />
+          <BudgetCaps campId={campId} />
+        </div>
+
+        <div className="grid grid-cols-3 gap-5">
+          <Cm03Console className="col-span-2" />
+          <DemoRecipients />
+        </div>
 
         <div className="grid grid-cols-3 gap-5">
           <Card className="col-span-2">

@@ -5,6 +5,7 @@ import {
 } from './mock'
 
 const Ctx = createContext(null)
+const ROLE_NAME = { operator: 'Operator', supervisor: 'Supervisor', policy: 'Policy owner' }
 
 // ---------- helpers ----------
 export const fmtClock = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
@@ -212,7 +213,7 @@ function toast(state, text, tone = 'ok') {
   return { ...state, toasts: [...state.toasts, { id: state.seq + Math.random(), text, tone }] }
 }
 function human(state, detail, borrowerId = null) {
-  return push(state, { type: 'HUMAN_ACTION', actor: `human:${state.role === 'operator' ? 'Operator' : 'Policy owner'}`, detail, borrowerId, channel: null })
+  return push(state, { type: 'HUMAN_ACTION', actor: `human:${ROLE_NAME[state.role] || state.role}`, detail, borrowerId, channel: null })
 }
 const ACTIVE = ['RESERVED', 'SCHEDULED', 'NEEDS_APPROVAL', 'APPROVED']
 
@@ -231,7 +232,7 @@ function reducer(state, a) {
     case 'DISMISS_TOAST':
       return { ...state, toasts: state.toasts.filter((t) => t.id !== a.id) }
     case 'SET_ROLE':
-      return toast({ ...state, role: a.role }, `Acting as ${a.role === 'operator' ? 'Operator' : 'Policy owner'}`, 'info')
+      return toast({ ...state, role: a.role }, `Acting as ${ROLE_NAME[a.role] || a.role} · sent to the API as X-Kairos-Role`, 'info')
     case 'SET_ENV':
       return { ...state, env: a.env }
 
@@ -404,6 +405,9 @@ function reducer(state, a) {
 
     case 'SIM':
       return sim(state, a.kind)
+
+    case 'TOAST':
+      return toast(state, a.text, a.tone || 'ok')
 
     case 'LOG':
       return toast(human(state, a.detail, a.borrowerId ?? null), a.toast || a.detail)
