@@ -127,7 +127,7 @@
         "<div>Yancey &amp; Settles · KDD 2020</div><div>Alshiekh et al. · AAAI 2018</div>" +
         "<div>Angelopoulos et al. · Learn then Test</div><div>Dudík, Langford &amp; Li · ICML 2011</div></div>", sub: " " },
     // 12 · hard stop → lockup in silence
-    { kind: "logo", t0: HARD_STOP - 0.1, t1: END, y: 360, line: "Built to be trusted with every rupee.", lineSize: 60, stagger: 0.08, enterDur: 0.22,
+    { kind: "logo", z: 400, t0: HARD_STOP, t1: END, opa0: 1, enterDur2: 0, y: 360, line: "Built to be trusted with every rupee.", lineSize: 60, stagger: 0.08, enterDur: 0.22,
       credits: "Music: “Inspiring Technology” by The_Mountain (Pixabay licence) · Voice: Sarvam bulbul:v3 (Neha), AI-generated<br>Every screen and terminal run is the real software · All data SIMULATED", creditsY: 900, exit: { dur: 0 } }
   ];
 

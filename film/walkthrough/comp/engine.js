@@ -518,7 +518,7 @@
     parts.forEach(function (e, i) {
       var t0 = L.t0 + i * (L.stagger != null ? L.stagger : 0.12);
       var p = E.enter(clamp((t - t0) / (L.enterDur || 0.5), 0, 1)), q = E.enter(env.q);
-      e.style.opacity = p * q;
+      e.style.opacity = lerp(L.opa0 || 0, 1, p) * q;
       var y = (1 - p) * (L.kind === "logo" ? 14 : 10) - 8 * clamp((t - L.t0) / Math.max(1, L.t1 - L.t0), 0, 1);
       var s = lerp(0.96, 1, p);
       e.style.transform = (e === L.box && L.pos === "c" && L.y == null ? "translateY(-50%) " : "") + "translateY(" + y + "px) scale(" + s + ")";

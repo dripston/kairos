@@ -121,7 +121,7 @@
     { kind: "callout", t0: 105.4, t1: 109.8, pos: "tl", text: "People decide the hard cases." },
 
     // ---- 16 · hard stop → lockup in silence
-    { kind: "logo", t0: HARD_STOP - 0.1, t1: END, y: 360, line: "The right message, at the right time. Or none at all.", lineSize: 56, stagger: 0.08, enterDur: 0.22,
+    { kind: "logo", t0: HARD_STOP, t1: END, opa0: 1, y: 360, line: "The right message, at the right time. Or none at all.", lineSize: 56, stagger: 0.08, enterDur: 0.22,
       credits: "Music: “Corporate Inspirational” by AtlasAudio (Pixabay licence) · Voice: Sarvam bulbul:v3 (Neha), AI-generated<br>Opening shot: Pexels · Every product screen is the real software · All data SIMULATED", creditsY: 900, exit: { dur: 0 } }
   ];
 
