@@ -9,7 +9,7 @@ import { Button, Chip, Dot, cx, Segmented } from './ui'
 import { ApiStatusPill } from './live'
 import { toggleTheme, useTheme } from '../lib/theme'
 import { useApi, useApiStatus, useHealthPoll } from '../api/hooks'
-import { CM03_CONSOLE_URL, getRoutes } from '../api/kairos'
+import { CM03_CONSOLE_URL, LIVE_COLLECTIONS_URL, getRoutes } from '../api/kairos'
 import { ROLE_ACTOR, ROLE_LABEL } from '../api/config'
 
 // Run the day → set it up → prove it works. Demo-only pages sit at the bottom.
@@ -70,6 +70,13 @@ function Sidebar() {
             ))}
           </div>
         ))}
+        <div className="mb-4">
+          <div className="px-2.5 pb-2 text-[11px] font-semibold uppercase tracking-wider text-faint">Show</div>
+          <a href={LIVE_COLLECTIONS_URL} target="_blank" rel="noreferrer"
+            className="mb-0.5 flex items-center gap-3 rounded-lg border border-transparent px-2.5 py-2 text-[14.5px] text-fg/85 hover:bg-raised">
+            <Play size={16} strokeWidth={1.8} /> Live collections <ExternalLink size={12} className="ml-auto text-faint" />
+          </a>
+        </div>
         {cm03 && (
           <div className="mb-4">
             <div className="px-2.5 pb-2 text-[11px] font-semibold uppercase tracking-wider text-faint">CM-03</div>

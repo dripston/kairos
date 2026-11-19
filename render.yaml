@@ -1,16 +1,38 @@
-# Render blueprint for the Kairos API (Docker). Create it from the dashboard ("New → Blueprint") or the CLI.
-# The image ships a demo DB seeded from the SIMULATED journey; every number it serves is SIMULATED.
+# Render blueprint: New → Blueprint → pick this repo. One free web service for the Kairos backend.
+# Secrets are NOT in this file. Render asks for SARVAM_API_KEY at creation (sync: false) and generates the others.
 services:
   - type: web
-    name: kairos-api
-    runtime: docker
+    name: kairos-backend
+    runtime: python
     plan: free
-    dockerfilePath: ./deploy/backend.Dockerfile
-    dockerContext: .
+    rootDir: backend
+    # Build also seeds the demo database from the SIMULATED journey (40 synthetic borrowers, campaign
+    # CMP-JOURNEY) so the Control Room's live panels have data. Restarts reset the disk; the build re-seeds.
+    buildCommand: >-
+      pip install -r requirements.txt &&
+      mkdir -p data &&
+      python -c "from replay.journey import run; run(seed=42, quick=True, echo=False, db_path='data/kairos_demo.db', cohort_size=40)"
+    startCommand: uvicorn kairos_backend.api:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     autoDeploy: true
     envVars:
-      - key: SARVAM_API_KEY      # set the value in the Render dashboard; never in this file
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: KAIROS_DB
+        value: data/kairos_demo.db
+      # Optional: Sarvam models (prism, sarvam-105b-conversations, deepseek). Leave empty to run without models.
+      - key: SARVAM_API_KEY
         sync: false
+      # Random per deployment; never reuse a local value.
+      - key: KAIROS_CM03_SECRET
+        generateValue: true
+      - key: KAIROS_REPORT_SALT
+        generateValue: true
+      - key: KAIROS_EMAIL_HASH_KEY
+        generateValue: true
+      # Demo safety: every channel is a mock, nothing is sent.
+      - key: KAIROS_CHANNELS
+        value: mock
+      # Lets the CM-03 console show the OTP it "sent" (synthetic +910 numbers only).
       - key: KAIROS_CM03_DEMO_INBOX
-        value: "1"               # simulated inbox for synthetic +910 numbers only (CM-03 console demo)
+        value: "1"

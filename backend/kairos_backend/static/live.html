@@ -1,0 +1,1079 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kairos Live Collections</title>
+<style>
+/* A lender operations console: slim sidebar, quiet top bar, one page at a time.
+   Light by default, dark on the toggle. One accent (muted teal), semantic colours only where they mean something. */
+:root {
+  --bg: #fafaf9; --surface: #ffffff; --sunk: #f5f5f4; --hover: #f5f5f4;
+  --line: #e7e5e4; --line-2: #d6d3d1;
+  --ink: #1c1917; --ink-2: #57534e; --ink-3: #78716c;
+  --accent: #0f766e; --accent-ink: #ffffff; --accent-soft: #f0fdfa; --accent-line: #99d5cd;
+  --fixed: #a8a29e;
+  --good: #15803d; --good-soft: #f0fdf4; --good-line: #bbf7d0;
+  --wait: #b45309; --wait-soft: #fffbeb; --wait-line: #fde68a;
+  --bad: #b91c1c; --bad-soft: #fef2f2; --bad-line: #fecaca;
+  --shadow: 0 1px 2px rgba(28, 25, 23, .04), 0 1px 3px rgba(28, 25, 23, .04);
+  --shadow-lg: 0 12px 32px -12px rgba(28, 25, 23, .18);
+  --focus: #0f766e;
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --r: 12px;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #0f0e0d; --surface: #1a1918; --sunk: #141312; --hover: #23211f;
+  --line: #2b2826; --line-2: #3a3633;
+  --ink: #f5f5f4; --ink-2: #d6d3d1; --ink-3: #a8a29e;
+  --accent: #5eb8ad; --accent-ink: #0f1a19; --accent-soft: #15302d; --accent-line: #2e5f59;
+  --fixed: #78716c;
+  --good: #7cc796; --good-soft: #142a1c; --good-line: #24452f;
+  --wait: #d9a85a; --wait-soft: #2b2212; --wait-line: #4a3a1c;
+  --bad: #e58c86; --bad-soft: #2d1716; --bad-line: #4d2624;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3); --shadow-lg: 0 16px 40px -16px rgba(0, 0, 0, .6);
+  --focus: #5eb8ad;
+  color-scheme: dark;
+}
+html { font-size: 15px; }
+@media (max-width: 1360px) { html { font-size: 14px; } }
+html.presenter { font-size: clamp(15px, .95vw, 19px); }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 400 1rem/1.5 var(--sans); -webkit-font-smoothing: antialiased; font-feature-settings: "tnum" 1, "cv11" 1; }
+svg.i { width: 1.05rem; height: 1.05rem; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+[hidden] { display: none !important; }
+
+/* ---------- shell ---------- */
+.app { display: grid; grid-template-columns: 13.5rem minmax(0, 1fr); height: 100%; }
+.side { background: var(--surface); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 1rem .75rem; gap: 1.25rem; min-height: 0; }
+.logo { display: flex; align-items: center; gap: .6rem; padding: .25rem .5rem; font-weight: 650; font-size: 1.05rem; letter-spacing: -.01em; }
+.logo .mk { width: 1.75rem; height: 1.75rem; border-radius: 7px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; }
+.logo .mk svg { width: 1rem; height: 1rem; stroke-width: 2; }
+.nav { display: flex; flex-direction: column; gap: 2px; }
+.nav a { display: flex; align-items: center; gap: .65rem; padding: .5rem .6rem; border-radius: 8px; color: var(--ink-2); text-decoration: none; font-size: .93rem; font-weight: 500; }
+.nav a:hover { background: var(--hover); color: var(--ink); }
+.nav a[aria-current="page"] { background: var(--sunk); color: var(--ink); font-weight: 600; box-shadow: inset 0 0 0 1px var(--line); }
+.nav a[aria-current="page"] svg { color: var(--accent); }
+.nav .cnt { margin-left: auto; min-width: 1.35rem; padding: 0 .4rem; height: 1.35rem; border-radius: 999px; background: var(--wait-soft); color: var(--wait);
+  border: 1px solid var(--wait-line); font-size: .75rem; font-weight: 600; display: grid; place-items: center; }
+.side .foot { margin-top: auto; font-size: .78rem; color: var(--ink-3); padding: .5rem; line-height: 1.45; }
+
+.mainwrap { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.topbar { display: flex; align-items: center; gap: 1rem; padding: .65rem max(16px, 1.5rem); border-bottom: 1px solid var(--line); background: var(--surface); flex-wrap: wrap; }
+.org { display: flex; align-items: center; gap: .5rem; font-weight: 600; white-space: nowrap; }
+.org .ob { width: 1.6rem; height: 1.6rem; border-radius: 6px; background: var(--sunk); border: 1px solid var(--line); display: grid; place-items: center; color: var(--ink-2); }
+.vbar { width: 1px; height: 1.25rem; background: var(--line); }
+.picker { display: inline-flex; align-items: center; height: 2rem; padding: 0 .45rem; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-size: .9rem; }
+.picker select { border: 0; background: transparent; padding: 0; font-weight: 500; cursor: pointer; }
+.when { font-size: .9rem; color: var(--ink-2); white-space: nowrap; }
+.when b { color: var(--ink); font-weight: 600; }
+.tag { display: inline-flex; align-items: center; height: 1.4rem; padding: 0 .5rem; border-radius: 6px; background: var(--sunk); border: 1px solid var(--line); color: var(--ink-3);
+  font-size: .7rem; font-weight: 600; letter-spacing: .06em; white-space: nowrap; }
+.sp { flex: 1; }
+.demo { display: flex; align-items: center; gap: .4rem; padding: .25rem .35rem .25rem .6rem; border: 1px dashed var(--line-2); border-radius: 10px; flex-wrap: wrap; }
+.demo .dl { font-size: .72rem; color: var(--ink-3); font-weight: 500; margin-right: .2rem; white-space: nowrap; }
+.btn { display: inline-flex; align-items: center; gap: .4rem; height: 1.9rem; padding: 0 .7rem; border-radius: 7px; border: 1px solid var(--line); background: var(--surface);
+  font-size: .85rem; font-weight: 500; cursor: pointer; white-space: nowrap; color: var(--ink); }
+.btn:hover { background: var(--hover); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.05); background: var(--accent); }
+.btn.icon { width: 1.9rem; padding: 0; justify-content: center; }
+.btn.sm { height: 1.75rem; font-size: .8rem; }
+.btn.good { color: var(--good); } .btn.bad { color: var(--bad); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+.seg button { height: 1.75rem; padding: 0 .55rem; border: 0; background: var(--surface); font-size: .8rem; color: var(--ink-2); cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--sunk); color: var(--ink); font-weight: 600; }
+.demo select { height: 1.75rem; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); font-size: .8rem; padding: 0 .35rem; }
+.avatar { display: flex; align-items: center; gap: .5rem; }
+.avatar .av { width: 1.9rem; height: 1.9rem; border-radius: 50%; background: #e7e5e4; color: #44403c; display: grid; place-items: center; font-size: .75rem; font-weight: 600; }
+:root[data-theme="dark"] .avatar .av { background: #3a3633; color: #e7e5e4; }
+.avatar .who { font-size: .8rem; line-height: 1.2; } .avatar .who span { display: block; color: var(--ink-3); }
+
+main { flex: 1; overflow: auto; padding: 1.5rem max(16px, 1.75rem) 2rem; min-height: 0; }
+.page { display: none; flex-direction: column; gap: 1.25rem; max-width: 92rem; margin: 0 auto; min-height: 100%; }
+.page.on { display: flex; }
+.ph { display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap; }
+.ph h1 { margin: 0; font-size: 1.4rem; font-weight: 650; letter-spacing: -.015em; }
+.ph p { margin: .2rem 0 0; color: var(--ink-3); font-size: .92rem; max-width: 62rem; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 1.1rem 1.25rem; min-width: 0; display: flex; flex-direction: column; }
+.ch { display: flex; align-items: center; gap: .75rem; margin-bottom: .9rem; flex-wrap: wrap; }
+.ch h2 { margin: 0; font-size: .98rem; font-weight: 600; }
+.ch .note { font-size: .82rem; color: var(--ink-3); }
+.ch .sp { flex: 1; }
+.ch a.more { font-size: .85rem; color: var(--accent); text-decoration: none; font-weight: 500; }
+.ch a.more:hover { text-decoration: underline; }
+.legend { display: flex; gap: 1rem; font-size: .82rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: .4rem; }
+.legend i { width: 1rem; height: 0; border-top: 2px solid var(--accent); display: inline-block; }
+.legend i.f { border-top: 2px dashed var(--fixed); }
+
+/* KPI row */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+.kpi { padding: 1rem 1.15rem 1.05rem; }
+.kpi .l { font-size: .85rem; color: var(--ink-2); font-weight: 500; }
+.kpi .v { font-size: 1.85rem; font-weight: 650; letter-spacing: -.02em; margin-top: .3rem; line-height: 1.15; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.kpi .s { font-size: .82rem; color: var(--ink-3); margin-top: .15rem; }
+.kpi .d { margin-top: .7rem; padding-top: .65rem; border-top: 1px solid var(--line); font-size: .82rem; color: var(--ink-2); }
+.kpi .d b { font-weight: 600; color: var(--good); }
+.kpi .d.neutral b { color: var(--ink); }
+
+/* overview grid */
+.ov { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(20rem, 1fr); grid-template-rows: minmax(15rem, 1fr) auto; gap: 1rem; flex: 1; min-height: 0; }
+.ov .c-chart { grid-column: 1; grid-row: 1; } .ov .c-needs { grid-column: 1; grid-row: 2; } .ov .c-act { grid-column: 2; grid-row: 1 / span 2; min-height: 0; }
+.chartbox { position: relative; flex: 1; min-height: 11rem; }
+.chartbox svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; display: block; }
+.spend { display: flex; align-items: center; gap: 1rem; margin-top: .8rem; padding-top: .8rem; border-top: 1px solid var(--line); }
+.spend .t { font-size: .82rem; color: var(--ink-2); white-space: nowrap; }
+.spend .sb { position: relative; flex: 1; height: 2.25rem; }
+.spend .sb svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.spend .sv { font-size: .82rem; color: var(--ink-3); white-space: nowrap; display: flex; gap: .9rem; }
+.spend .sv b { color: var(--ink); font-weight: 600; }
+svg text { font-family: var(--sans); fill: var(--ink-3); font-size: 11.5px; }
+.gl { stroke: var(--line); stroke-width: 1; }
+.ln-k { stroke: var(--accent); stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.ln-f { stroke: var(--fixed); stroke-width: 1.75; fill: none; stroke-dasharray: 5 4; stroke-linejoin: round; }
+.dot-k { fill: var(--accent); stroke: var(--surface); stroke-width: 2; } .dot-f { fill: var(--fixed); stroke: var(--surface); stroke-width: 2; }
+.lab { fill: var(--ink); font-size: 12px; font-weight: 600; } .lab .v { fill: var(--ink-2); font-weight: 400; }
+.ann { stroke: var(--line-2); stroke-width: 1; stroke-dasharray: 2 3; } .ann-t { fill: var(--ink-3); font-size: 11px; }
+.cross { stroke: var(--line-2); stroke-width: 1; }
+.ctip { position: absolute; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: .45rem .6rem; font-size: .8rem;
+  line-height: 1.5; white-space: nowrap; opacity: 0; transition: opacity .15s; z-index: 4; box-shadow: var(--shadow-lg); }
+.ctip.on { opacity: 1; } .ctip b { font-weight: 600; }
+
+/* activity feed */
+.feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; overflow: hidden; flex: 1; min-height: 0; }
+.feed li { display: grid; grid-template-columns: 4.1rem minmax(0, 1fr); gap: .1rem .75rem; padding: .7rem .1rem; border-bottom: 1px solid var(--line); animation: fadein .3s ease-out; flex: none; }
+.feed li:last-child { border-bottom: 0; }
+.feed li[data-bid] { cursor: pointer; } .feed li[data-bid]:hover .nm { text-decoration: underline; }
+.feed time { font-size: .78rem; color: var(--ink-3); padding-top: .1rem; white-space: nowrap; line-height: 1.35; }
+.feed .ln { font-size: .9rem; line-height: 1.4; min-width: 0; }
+.feed .nm { font-weight: 600; }
+.feed .nt { display: block; color: var(--ink-3); font-size: .82rem; }
+.feed .dt { display: inline-block; width: .45rem; height: .45rem; border-radius: 50%; background: var(--line-2); margin-right: .45rem; vertical-align: .1rem; }
+.feed .good .dt { background: var(--good); } .feed .wait .dt { background: var(--wait); } .feed .bad .dt { background: var(--bad); } .feed .acc .dt { background: var(--accent); }
+.amt { color: var(--good); font-weight: 600; }
+@keyframes fadein { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
+.empty { color: var(--ink-3); font-size: .9rem; padding: 1rem 0; }
+.empty b { color: var(--ink-2); font-weight: 600; display: block; margin-bottom: .2rem; }
+
+/* needs you */
+.needs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+.ap { border: 1px solid var(--line); border-radius: 10px; padding: .8rem .9rem; display: flex; flex-direction: column; gap: .35rem; background: var(--surface); }
+.ap .at { display: flex; align-items: center; gap: .5rem; font-size: .88rem; font-weight: 600; }
+.ap .at .pill { margin-left: auto; }
+.ap p { margin: 0; font-size: .85rem; color: var(--ink-2); line-height: 1.45; }
+.ap .nt { color: var(--ink-3); font-size: .8rem; }
+.ap .acts { display: flex; gap: .4rem; margin-top: .3rem; }
+.ap.done { background: var(--sunk); }
+.pill { display: inline-flex; align-items: center; gap: .3rem; height: 1.35rem; padding: 0 .5rem; border-radius: 999px; font-size: .74rem; font-weight: 600; white-space: nowrap; border: 1px solid var(--line); color: var(--ink-2); background: var(--sunk); }
+.pill.wait { background: var(--wait-soft); color: var(--wait); border-color: var(--wait-line); }
+.pill.good { background: var(--good-soft); color: var(--good); border-color: var(--good-line); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); border-color: var(--bad-line); }
+.pill.acc { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+.held { display: flex; align-items: center; gap: .75rem; margin-top: .85rem; padding: .7rem .85rem; border-radius: 10px; background: var(--sunk); border: 1px solid var(--line); font-size: .88rem; }
+.held svg { color: var(--ink-2); }
+.held a { margin-left: auto; color: var(--accent); font-weight: 500; text-decoration: none; white-space: nowrap; }
+.held a:hover { text-decoration: underline; }
+
+/* activity page */
+.ac-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(19rem, 1fr); gap: 1rem; align-items: start; }
+.filters { display: flex; gap: .35rem; flex-wrap: wrap; }
+.filters button { height: 1.75rem; padding: 0 .65rem; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: .8rem; color: var(--ink-2); cursor: pointer; }
+.filters button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+#feedAll { max-height: 34rem; overflow: auto; }
+.flow { position: relative; height: 19rem; }
+.flow > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.rib { fill: var(--accent); opacity: .12; } .rib.f { fill: var(--fixed); opacity: .22; } .rib.p { fill: var(--good); opacity: .22; }
+.nb { fill: var(--accent); } .nb.f { fill: var(--fixed); } .nb.p { fill: var(--good); } .nb.z { fill: var(--line-2); }
+.stl { position: absolute; top: 0; transform: translateX(-50%); text-align: center; white-space: nowrap; }
+.stl.first { transform: none; text-align: left; } .stl.last { transform: translateX(-100%); text-align: right; }
+.stl b { display: block; font-size: 1.2rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+.stl span { display: block; font-size: .78rem; color: var(--ink-2); }
+.stl i { display: block; font-style: normal; font-size: .74rem; color: var(--ink-3); }
+.lanel { position: absolute; transform: translateY(-50%); display: inline-flex; align-items: center; gap: .3rem; padding: .1rem .45rem; border-radius: 6px; background: var(--surface);
+  border: 1px solid var(--line); font-size: .76rem; white-space: nowrap; color: var(--ink-2); }
+.lanel b { color: var(--ink); font-weight: 600; }
+.heldbox { position: absolute; bottom: 0; display: flex; align-items: center; gap: .4rem 1rem; flex-wrap: wrap; font-size: .8rem; color: var(--ink-2); }
+.heldbox b { color: var(--ink); font-weight: 600; }
+.heldbox .ht { color: var(--bad); font-weight: 600; display: inline-flex; align-items: center; gap: .35rem; }
+.bars { display: flex; flex-direction: column; gap: .75rem; }
+.bar { display: grid; grid-template-columns: 6.5rem 1fr 8.5rem; gap: .75rem; align-items: center; font-size: .86rem; }
+.bar .name { display: flex; align-items: center; gap: .4rem; white-space: nowrap; color: var(--ink-2); }
+.bar .track { height: .45rem; border-radius: 999px; background: var(--sunk); overflow: hidden; }
+.bar .track i { display: block; height: 100%; width: 100%; background: var(--accent); opacity: .5; border-radius: 999px; transform-origin: left; transition: transform .4s ease-out; }
+.bar.best .track i { opacity: 1; }
+.bar .val { text-align: right; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; font-size: .82rem; }
+.bar .val em { font-style: normal; color: var(--ink-3); font-size: .74rem; margin-left: .25rem; }
+.callout { margin-top: 1rem; padding: .7rem .85rem; border-radius: 10px; background: var(--accent-soft); border: 1px solid var(--accent-line); font-size: .86rem; color: var(--ink); gap: .6rem; display: none; }
+.callout.on { display: flex; } .callout svg { color: var(--accent); margin-top: .15rem; }
+
+/* tables */
+.tbl { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.tbl th { text-align: left; font-weight: 500; color: var(--ink-3); font-size: .8rem; padding: .55rem .75rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.tbl td { padding: .6rem .75rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl tbody tr[data-bid] { cursor: pointer; } .tbl tbody tr[data-bid]:hover { background: var(--hover); }
+.tbl .r { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tbl .mono { color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.tblwrap { overflow-x: auto; margin: 0 -1.25rem -1.1rem; }
+.tblwrap .tbl th:first-child, .tblwrap .tbl td:first-child { padding-left: 1.25rem; }
+.tblwrap .tbl th:last-child, .tblwrap .tbl td:last-child { padding-right: 1.25rem; }
+.search { height: 2rem; border: 1px solid var(--line); border-radius: 8px; padding: 0 .65rem; background: var(--surface); min-width: 14rem; font-size: .88rem; }
+.stats4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+.rules-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
+.rl { list-style: none; margin: 0; padding: 0; }
+.rl li { display: flex; gap: .75rem; padding: .7rem 0; border-bottom: 1px solid var(--line); font-size: .88rem; }
+.rl li:last-child { border-bottom: 0; }
+.rl li svg { color: var(--ink-3); margin-top: .15rem; }
+.rl b { display: block; font-weight: 600; } .rl span { color: var(--ink-3); }
+.mini { display: inline-block; width: 5rem; height: .4rem; border-radius: 999px; background: var(--sunk); overflow: hidden; vertical-align: middle; margin-right: .5rem; }
+.mini i { display: block; height: 100%; background: var(--accent); opacity: .7; }
+.mini.f i { background: var(--fixed); opacity: 1; }
+
+/* system map */
+.map { position: relative; min-height: 34rem; flex: 1; }
+.map > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.mcols { position: relative; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2rem; height: 100%; padding-bottom: 2.5rem; }
+.mcol { display: flex; flex-direction: column; gap: .75rem; min-width: 0; }
+.mcol h3 { margin: 0; font-size: .76rem; font-weight: 600; color: var(--ink-3); text-align: center; padding-bottom: .5rem; border-bottom: 1px solid var(--line); }
+.mcol .stack { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 2.25rem; }
+.node { text-align: left; display: flex; flex-direction: column; gap: .5rem; padding: .75rem .85rem; border-radius: 10px; background: var(--surface); border: 1px solid var(--line);
+  cursor: pointer; transition: border-color .3s; width: 100%; box-shadow: var(--shadow); }
+.node:hover { border-color: var(--line-2); }
+.node.lit { border-color: var(--accent); }
+.node .nh { display: flex; align-items: center; gap: .55rem; min-width: 0; }
+.node .ni { width: 1.85rem; height: 1.85rem; border-radius: 7px; display: grid; place-items: center; background: var(--sunk); color: var(--ink-2); flex: none; }
+.node.aladdin .ni, .node.learner .ni { background: var(--accent-soft); color: var(--accent); }
+.node .nt b { display: block; font-size: .9rem; font-weight: 600; line-height: 1.25; }
+.node .nt span { display: block; font-size: .74rem; color: var(--ink-3); line-height: 1.3; }
+.node .nc { display: flex; flex-wrap: wrap; gap: .15rem .7rem; }
+.node .nc span { font-size: .74rem; color: var(--ink-3); white-space: nowrap; }
+.node .nc b { font-size: .92rem; color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; margin-right: .2rem; }
+.edge { fill: none; stroke: var(--line-2); stroke-width: 1.25; }
+.edge.loop { stroke-dasharray: 3 4; }
+.edge-t { fill: var(--ink-3); font-size: 11px; }
+.pulse { fill: var(--accent); }
+.banner { display: flex; align-items: center; gap: .75rem; padding: .65rem .85rem; border-radius: 10px; background: var(--sunk); border: 1px solid var(--line); font-size: .88rem; color: var(--ink-2); flex-wrap: wrap; }
+.banner .sp { flex: 1; }
+
+/* skeleton + idle */
+.skel .v, .skel .s, .skel .d { color: transparent !important; border-radius: 6px; background: linear-gradient(90deg, var(--sunk), var(--hover), var(--sunk)); background-size: 200% 100%; animation: sh 1.2s linear infinite; }
+.skel .v { width: 60%; } .skel .s { width: 80%; } .skel .d b { color: transparent; }
+@keyframes sh { to { background-position: -200% 0; } }
+.idlecard { align-items: flex-start; gap: .5rem; padding: 1.25rem 1.4rem; }
+.idlecard h2 { margin: 0; font-size: 1.05rem; } .idlecard p { margin: 0 0 .5rem; color: var(--ink-2); font-size: .92rem; max-width: 52rem; }
+
+/* drawer */
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(28rem, 100vw); background: var(--surface); border-left: 1px solid var(--line); box-shadow: var(--shadow-lg);
+  z-index: 60; transform: translateX(105%); transition: transform .25s ease-out; display: flex; flex-direction: column; visibility: hidden; }
+.drawer.on { transform: none; visibility: visible; }
+.drawer header { display: flex; align-items: flex-start; gap: .75rem; padding: 1.1rem 1.25rem; border-bottom: 1px solid var(--line); }
+.drawer header h2 { margin: 0; font-size: 1.05rem; } .drawer header p { margin: .15rem 0 0; font-size: .82rem; color: var(--ink-3); }
+.drawer header .btn { margin-left: auto; }
+.drawer .db { overflow: auto; padding: 1rem 1.25rem 1.5rem; flex: 1; }
+.tl { list-style: none; margin: 0; padding: 0; }
+.tl li { position: relative; padding: 0 0 1rem 1.25rem; font-size: .88rem; }
+.tl li::before { content: ""; position: absolute; left: .25rem; top: .5rem; bottom: -.1rem; width: 1px; background: var(--line); }
+.tl li:last-child::before { display: none; }
+.tl li::after { content: ""; position: absolute; left: 0; top: .35rem; width: .5rem; height: .5rem; border-radius: 50%; background: var(--surface); border: 1.5px solid var(--ink-3); }
+.tl li.good::after { border-color: var(--good); background: var(--good); } .tl li.bad::after { border-color: var(--bad); } .tl li.wait::after { border-color: var(--wait); }
+.tl .tm { font-size: .76rem; color: var(--ink-3); }
+.tl p { margin: .1rem 0 0; }
+.linkish { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font-size: inherit; font-weight: 500; }
+.linkish:hover { text-decoration: underline; }
+
+/* presenter: no demo controls */
+html.presenter .demo { display: none; }
+
+/* responsive */
+@media (max-height: 820px) and (min-width: 1101px) {
+  main { padding-top: 1rem; padding-bottom: 1rem; } .page { gap: .85rem; }
+  .kpi { padding: .7rem 1rem .75rem; } .kpi .v { font-size: 1.5rem; margin-top: .15rem; } .kpi .d { margin-top: .45rem; padding-top: .45rem; }
+  .ov { grid-template-rows: minmax(12rem, 1fr) auto; gap: .85rem; } .card { padding: .85rem 1.05rem; } .ch { margin-bottom: .55rem; }
+  .ph p { display: none; } .ph h1 { font-size: 1.2rem; }
+  .feed li { padding: .5rem .1rem; } .spend { margin-top: .5rem; padding-top: .5rem; } .held { margin-top: .55rem; padding: .5rem .7rem; }
+  .ap { padding: .6rem .75rem; gap: .25rem; } .chartbox { min-height: 8rem; }
+}
+@media (max-width: 1640px) { .avatar .who, .demo .dl { display: none; } .topbar { gap: .75rem; } }
+@media (max-width: 1300px) { #seed { display: none; } }
+@media (max-width: 1600px) { .mcols { gap: 1.1rem; } .node .ni { display: none; } }
+@media (max-width: 1100px) {
+  html, body { height: auto; }
+  .app { grid-template-columns: minmax(0, 1fr); height: auto; }
+  .side { flex-direction: row; align-items: center; padding: .5rem max(16px, 1rem); border-right: 0; border-bottom: 1px solid var(--line); overflow-x: auto; gap: .75rem; }
+  .side .foot { display: none; } .nav { flex-direction: row; } .nav a { white-space: nowrap; padding: .4rem .55rem; }
+  .kpis, .stats4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ov, .ac-grid, .rules-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; }
+  .ov .c-chart, .ov .c-needs, .ov .c-act { grid-column: auto; grid-row: auto; }
+  .ov .c-chart { min-height: 20rem; } .ov .c-act { height: 30rem; }
+  .needs { grid-template-columns: minmax(0, 1fr); }
+  .mcols { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-bottom: 0; } .map > svg { display: none; } .map { min-height: 0; }
+  main { overflow: visible; }
+}
+@media (max-width: 640px) {
+  .topbar { gap: .5rem .6rem; } .vbar, .avatar { display: none; }
+  .kpis, .stats4 { grid-template-columns: minmax(0, 1fr); }
+  .kpi .v { font-size: 1.6rem; }
+  .flow { height: 17rem; } .stl span, .stl i { display: none; } .stl b { font-size: .95rem; }
+  .mcols { grid-template-columns: minmax(0, 1fr); }
+  .bar { grid-template-columns: 5.5rem 1fr 5.5rem; }
+  .search { min-width: 0; width: 100%; }
+  .legend { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-logo" viewBox="0 0 24 24"><path d="M7 4v16M7 12l9-8M10.5 9l7 11"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5L12 4l8 6.5V20h-5.5v-6h-5v6H4z"/></symbol>
+  <symbol id="i-activity" viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6H21"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 12.2l2.4 2.4 4.6-5"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.25"/><path d="M3 19.5a6 6 0 0 1 12 0M15.5 5.5a3.25 3.25 0 0 1 0 6.3M18 19.5a6 6 0 0 0-2.5-4.9"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7.5 2.8v5.7c0 4.6-3.2 7.8-7.5 9.5-4.3-1.7-7.5-4.9-7.5-9.5V5.8z"/><path d="M8.8 12.1l2.2 2.2 4.2-4.5"/></symbol>
+  <symbol id="i-system" viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="6" rx="1.5"/><rect x="14" y="4" width="7" height="6" rx="1.5"/><rect x="8.5" y="14" width="7" height="6" rx="1.5"/><path d="M6.5 10v2h11v-2M12 12v2"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><path d="M4 20V6l8-3 8 3v14M4 20h16M9 9h.01M15 9h.01M9 13h.01M15 13h.01M10 20v-3h4v3"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7.5 5v14l11-7z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8.5 5.5v13M15.5 5.5v13"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-sms" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+  <symbol id="i-whatsapp" viewBox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 0 0-7.4 12.7L3.5 20.5l4.4-1.1A8.5 8.5 0 1 0 12 3.5z"/></symbol>
+  <symbol id="i-email" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7.5l8 5.5 8-5.5"/></symbol>
+  <symbol id="i-ivr" viewBox="0 0 24 24"><path d="M5.5 3.5h3l1.8 4.5-2.3 1.5a11 11 0 0 0 6.5 6.5l1.5-2.3 4.5 1.8v3a2 2 0 0 1-2 2A16.5 16.5 0 0 1 3.5 5.5a2 2 0 0 1 2-2z"/></symbol>
+  <symbol id="i-voicebot" viewBox="0 0 24 24"><rect x="4.5" y="8" width="15" height="11" rx="3.5"/><path d="M12 4.5V8M9.5 13v1M14.5 13v1"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M7 11V6.5a1.5 1.5 0 0 1 3 0V11M10 10V5a1.5 1.5 0 0 1 3 0v5M13 10V6a1.5 1.5 0 0 1 3 0v6M16 9.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-.5a6.5 6.5 0 0 1-5.4-2.9L4 15a1.6 1.6 0 0 1 2.6-1.8L7 14"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M4 7.5h14.5a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18z"/><path d="M4 7.5l11-3v3M16 13.5h.01"/></symbol>
+  <symbol id="i-switch" viewBox="0 0 24 24"><path d="M4 8h13l-3.5-3.5M20 16H7l3.5 3.5"/></symbol>
+  <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.5" ry="2.75"/><path d="M4.5 6v12c0 1.5 3.4 2.75 7.5 2.75s7.5-1.25 7.5-2.75V6M4.5 12c0 1.5 3.4 2.75 7.5 2.75s7.5-1.25 7.5-2.75"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3.5l8.5 4.5-8.5 4.5L3.5 8z"/><path d="M3.5 12l8.5 4.5 8.5-4.5M3.5 16l8.5 4.5 8.5-4.5"/></symbol>
+  <symbol id="i-brain" viewBox="0 0 24 24"><circle cx="6" cy="7" r="2"/><circle cx="18" cy="7" r="2"/><circle cx="12" cy="17" r="2"/><path d="M7.8 7.6L11 12M16.2 7.6L13 12M12 12v3"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M20.5 3.5L3.5 10.5l7 2.8 2.8 7z"/><path d="M10.5 13.3l10-9.8"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5.5h11v8H8.5L4 17z"/><path d="M15 9.5h5v8l-3-2.5h-6v-1.5"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.75"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></symbol>
+  <symbol id="i-intent" viewBox="0 0 24 24"><path d="M4 6h6M4 12h10M4 18h16"/><circle cx="14" cy="6" r="2"/><circle cx="18" cy="12" r="2"/></symbol>
+  <symbol id="i-wave" viewBox="0 0 24 24"><path d="M3 12h2M7 8v8M11 5v14M15 8v8M19 10.5v3"/></symbol>
+  <symbol id="i-usercheck" viewBox="0 0 24 24"><circle cx="9.5" cy="8" r="3.5"/><path d="M3 20a6.5 6.5 0 0 1 13 0M15.5 11.5l2 2 3.5-4"/></symbol>
+  <symbol id="i-rupee" viewBox="0 0 24 24"><path d="M7 4.5h10M7 9h10M8 4.5h2.5a4.5 4.5 0 0 1 0 9H8l7.5 7"/></symbol>
+  <symbol id="i-circlecheck" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.3 12.2l2.6 2.6 4.8-5"/></symbol>
+  <symbol id="i-report" viewBox="0 0 24 24"><path d="M6 3.5h8.5l3.5 3.5v13.5H6z"/><path d="M9 17v-3M12 17v-6M15 17v-4"/></symbol>
+</svg>
+
+<div class="app">
+  <aside class="side" aria-label="Main">
+    <div class="logo"><span class="mk"><svg class="i"><use href="#i-logo"/></svg></span>Kairos</div>
+    <nav class="nav">
+      <a href="#overview" data-page="overview"><svg class="i"><use href="#i-home"/></svg>Overview</a>
+      <a href="#activity" data-page="activity"><svg class="i"><use href="#i-activity"/></svg>Live activity</a>
+      <a href="#approvals" data-page="approvals"><svg class="i"><use href="#i-check"/></svg>Approvals<span class="cnt" id="navCnt" hidden>0</span></a>
+      <a href="#borrowers" data-page="borrowers"><svg class="i"><use href="#i-users"/></svg>Borrowers</a>
+      <a href="#rules" data-page="rules"><svg class="i"><use href="#i-shield"/></svg>Rules (Aladdin)</a>
+      <a href="#system" data-page="system"><svg class="i"><use href="#i-system"/></svg>System</a>
+    </nav>
+    <div class="foot">SIMULATED data: synthetic borrowers, a reply simulator and placeholder costs. No real person is contacted.</div>
+  </aside>
+
+  <div class="mainwrap">
+    <header class="topbar">
+      <span class="org"><span class="ob"><svg class="i"><use href="#i-building"/></svg></span>Demo Finance</span>
+      <span class="vbar" aria-hidden="true"></span>
+      <span class="picker"><select id="campaign" aria-label="Campaign"><option>November · 1–30 DPD</option></select></span>
+      <span class="when" id="when"><b>Not started</b></span>
+      <span class="tag" title="Synthetic borrowers, a reply simulator, placeholder costs and caps">SIMULATED</span>
+      <span class="sp"></span>
+      <div class="demo" role="group" aria-label="Demo controls">
+        <span class="dl">Demo controls</span>
+        <select id="mode" aria-label="Run type" title="Run type"><option value="race">vs fixed schedule</option><option value="full">Full system trace</option></select>
+        <select id="seed" aria-label="Seed" title="Seed"><option>42</option><option>7</option><option>11</option><option>2026</option></select>
+        <button class="btn primary sm" id="startBtn"><svg class="i"><use href="#i-play"/></svg>Start</button>
+        <span class="seg" role="group" aria-label="Speed"><button data-speed="1" aria-pressed="false">1×</button><button data-speed="2" aria-pressed="false">2×</button><button data-speed="4" aria-pressed="true">4×</button></span>
+        <button class="btn icon sm" id="pauseBtn" aria-pressed="false" aria-label="Pause" title="Pause (Space)"><svg class="i"><use href="#i-pause"/></svg></button>
+        <button class="btn icon sm" id="stopBtn" aria-label="Stop" title="Stop"><svg class="i"><use href="#i-stop"/></svg></button>
+        <button class="btn icon sm" id="themeBtn" aria-label="Switch light or dark theme" title="Light / dark"><svg class="i"><use id="themeIcon" href="#i-moon"/></svg></button>
+      </div>
+      <span class="avatar"><span class="av" aria-hidden="true">AK</span><span class="who">Asha K.<span>Collections lead</span></span></span>
+    </header>
+    <span id="status" class="sr" role="status">idle</span>
+
+    <main>
+      <!-- OVERVIEW -->
+      <section class="page" id="p-overview" aria-label="Overview">
+        <div class="ph"><div><h1>Overview</h1><p id="ovSub">Kairos and the fixed schedule work the same 300 borrowers with the same budget and rules. Aladdin checks every message before it goes out.</p></div></div>
+        <div class="card idlecard" id="idleCard" hidden>
+          <h2>No campaign running</h2>
+          <p>Start the demo campaign to watch 14 days of collections: who Kairos contacts, when and on which channel, and what it recovers compared with the usual fixed schedule.</p>
+          <button class="btn primary" id="idleStart"><svg class="i"><use href="#i-play"/></svg>Start demo campaign</button>
+        </div>
+        <div class="kpis" id="kpis">
+          <div class="card kpi"><div class="l">Recovered</div><div class="v" id="kRec">₹0</div><div class="s">confirmed by the bank</div><div class="d" id="kRecD">Fixed schedule <b>₹0</b></div></div>
+          <div class="card kpi"><div class="l">Collection cost</div><div class="v" id="kCost">₹0</div><div class="s" id="kCostS">messages and calls</div><div class="d neutral" id="kCostD">Fixed schedule <b>₹0</b></div></div>
+          <div class="card kpi"><div class="l">Promises to pay</div><div class="v" id="kProm">0</div><div class="s" id="kPromS">waiting for the bank</div><div class="d" id="kPromD">Fixed schedule <b>0</b></div></div>
+          <div class="card kpi"><div class="l">STOP requests honoured</div><div class="v" id="kStop">0</div><div class="s">every channel paused for them</div><div class="d neutral" id="kStopD">Rule breaches <b>0</b></div></div>
+        </div>
+        <div class="ov">
+          <div class="card c-chart">
+            <div class="ch"><h2 id="chartTitle">Recovered: Kairos vs fixed schedule</h2><span class="sp"></span>
+              <span class="legend"><span><i></i>Kairos</span><span id="legF"><i class="f"></i>Fixed schedule</span></span></div>
+            <div class="chartbox"><svg id="chartRec" role="img" aria-label="Rupees recovered by day, Kairos and the fixed schedule"></svg><div class="ctip" id="recTip"></div></div>
+            <div class="spend"><span class="t">Collection cost</span><div class="sb"><svg id="chartSpent" role="img" aria-label="Rupees spent by day"></svg></div>
+              <span class="sv"><span>Kairos <b id="spK">₹0</b></span><span>Fixed <b id="spF">₹0</b></span></span></div>
+          </div>
+          <div class="card c-needs">
+            <div class="ch"><h2>Needs you</h2><span class="sp"></span><a class="more" href="#approvals">All approvals</a></div>
+            <div class="needs" id="needsList"><div class="empty">Nothing waiting for you.</div></div>
+            <div class="held"><svg class="i"><use href="#i-shield"/></svg><span id="heldText">Aladdin has not held back any messages yet.</span><a href="#rules">See why</a></div>
+          </div>
+          <div class="card c-act">
+            <div class="ch"><h2>Live activity</h2><span class="sp"></span><a class="more" href="#activity">View all</a></div>
+            <ol class="feed" id="feedOv" aria-live="polite"><li class="empty-li"><div></div><div class="empty"><b>Quiet for now</b>Messages, replies and payments appear here as the campaign runs.</div></li></ol>
+          </div>
+        </div>
+      </section>
+
+      <!-- LIVE ACTIVITY -->
+      <section class="page" id="p-activity" aria-label="Live activity">
+        <div class="ph"><div><h1>Live activity</h1><p>Every decision, message, reply and payment, in plain language. Click a row to see that borrower's journey.</p></div></div>
+        <div class="card">
+          <div class="ch"><h2>Flow</h2><span class="note">borrowers at each stage so far</span><span class="sp"></span>
+            <span class="seg" role="group" aria-label="Flow for"><button id="flowK" aria-pressed="true">Kairos</button><button id="flowF" aria-pressed="false">Fixed schedule</button></span></div>
+          <div class="flow" id="flow"><svg id="flowSvg" aria-hidden="true"></svg><div id="flowLabels"></div></div>
+        </div>
+        <div class="ac-grid">
+          <div class="card">
+            <div class="ch"><h2>Activity</h2><span class="sp"></span>
+              <span class="filters" id="filters" role="group" aria-label="Filter">
+                <button data-f="all" aria-pressed="true">All</button><button data-f="msg" aria-pressed="false">Messages</button><button data-f="reply" aria-pressed="false">Replies</button>
+                <button data-f="pay" aria-pressed="false">Payments</button><button data-f="held" aria-pressed="false">Held back</button><button data-f="rest" aria-pressed="false">Not contacted</button></span></div>
+            <ol class="feed" id="feedAll"><li class="empty-li"><div></div><div class="empty">No activity yet.</div></li></ol>
+          </div>
+          <div class="card">
+            <div class="ch"><h2>What Kairos is learning</h2><span class="sp"></span><span class="note">chance of a reply, by channel</span></div>
+            <div class="bars" id="bars"></div>
+            <div class="callout" id="callout" role="status"><svg class="i"><use href="#i-switch"/></svg><div><b>Channel mix changed.</b> <span id="calloutText"></span></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- APPROVALS -->
+      <section class="page" id="p-approvals" aria-label="Approvals">
+        <div class="ph"><div><h1>Approvals</h1><p>Only the big calls come to a person: payment claims the bank has not confirmed, voice calls and first contact after a hardship hold.</p></div></div>
+        <div class="card"><div class="ch"><h2>Waiting</h2><span class="note" id="apprNote"></span></div><div class="needs" id="apprPending"><div class="empty">Nothing waiting.</div></div></div>
+        <div class="card"><div class="ch"><h2>Decided</h2></div><div class="tblwrap"><table class="tbl"><thead><tr><th>Borrower</th><th>Request</th><th>Decision</th><th>By</th><th>Day</th></tr></thead><tbody id="apprDone"><tr><td colspan="5" class="mono">No decisions yet.</td></tr></tbody></table></div></div>
+      </section>
+
+      <!-- BORROWERS -->
+      <section class="page" id="p-borrowers" aria-label="Borrowers">
+        <div class="ph"><div><h1>Borrowers</h1><p>Synthetic borrowers in this campaign, most recent activity first. Names are masked.</p></div><span class="sp"></span>
+          <input class="search" id="bSearch" type="search" placeholder="Search by name" aria-label="Search borrowers"></div>
+        <div class="card"><div class="tblwrap"><table class="tbl"><thead><tr><th>Borrower</th><th>Loan</th><th>Status</th><th>Last activity</th><th class="r">Paid</th></tr></thead>
+          <tbody id="bRows"><tr><td colspan="5" class="mono">Borrowers appear once the campaign starts.</td></tr></tbody></table></div></div>
+      </section>
+
+      <!-- RULES (ALADDIN) -->
+      <section class="page" id="p-rules" aria-label="Rules">
+        <div class="ph"><div><h1>Rules (Aladdin)</h1><p>Aladdin is the supervisor. It checks every planned message against the lender's rules, and checks again just before sending. If a rule says no, the message does not go.</p></div></div>
+        <div class="stats4">
+          <div class="card kpi"><div class="l">Messages sent</div><div class="v" id="rSent">0</div><div class="s">passed both checks</div></div>
+          <div class="card kpi"><div class="l">Held back</div><div class="v" id="rHeld">0</div><div class="s">a rule said not now</div></div>
+          <div class="card kpi"><div class="l">Rule breaches</div><div class="v" id="rBr">0</div><div class="s">messages over a lender limit</div></div>
+          <div class="card kpi"><div class="l">STOP requests honoured</div><div class="v" id="rStop">0</div><div class="s">no message after a STOP</div></div>
+        </div>
+        <div class="rules-grid">
+          <div class="card"><div class="ch"><h2>Why messages were held back</h2><span class="sp"></span><span class="note">whole campaign so far</span></div>
+            <div class="tblwrap"><table class="tbl"><thead><tr><th>Reason</th><th class="r">Kairos</th><th class="r" id="rFixH">Fixed schedule</th></tr></thead><tbody id="rRows"><tr><td colspan="3" class="mono">Nothing held back yet.</td></tr></tbody></table></div></div>
+          <div class="card"><div class="ch"><h2>Rules Aladdin checks</h2></div>
+            <ul class="rl">
+              <li><svg class="i"><use href="#i-calendar"/></svg><div><b>Quiet days and hours</b><span>No contact on Sundays or outside the allowed hours.</span></div></li>
+              <li><svg class="i"><use href="#i-clock"/></svg><div><b>Daily and weekly limits</b><span>A cap on messages per person, per channel and per week, set by the lender.</span></div></li>
+              <li><svg class="i"><use href="#i-hand"/></svg><div><b>Consent and STOP</b><span>Only channels the borrower agreed to. After a STOP, every channel goes quiet.</span></div></li>
+              <li><svg class="i"><use href="#i-wallet"/></svg><div><b>Budget</b><span>Spending is paced across the campaign. When today's budget is used up, the rest wait.</span></div></li>
+              <li><svg class="i"><use href="#i-usercheck"/></svg><div><b>Holds and approvals</b><span>Promises, hardship and disputed payments pause contact until a person decides.</span></div></li>
+            </ul></div>
+        </div>
+      </section>
+
+      <!-- SYSTEM -->
+      <section class="page" id="p-system" aria-label="System">
+        <div class="ph"><div><h1>System</h1><p>Every Kairos component, end to end. Counters update as events pass through. Click a component for its recent events.</p></div></div>
+        <div class="banner"><svg class="i"><use href="#i-system"/></svg><span id="sysText">Start a full system trace to follow one campaign through every component.</span><span class="sp"></span>
+          <button class="btn sm" id="sysStart"><svg class="i"><use href="#i-play"/></svg>Start full system trace</button></div>
+        <div class="card"><div class="map" id="map"><svg id="mapSvg" aria-hidden="true"></svg><div class="mcols" id="mcols"></div></div></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<aside class="drawer" id="drawer" aria-label="Details" aria-hidden="true">
+  <header><div><h2 id="dTitle">Details</h2><p id="dSub"></p></div><button class="btn icon" id="dClose" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button></header>
+  <div class="db" id="dBody"></div>
+</aside>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var CH = { whatsapp: "WhatsApp", sms: "SMS", email: "Email", ivr: "Voice call", voicebot: "Voice bot", human: "Person" };
+  var LANES = ["whatsapp", "sms", "email", "ivr", "voicebot"];
+  var REASON = { "budget used": "Today's budget used up", "quiet day": "Quiet day (Sunday)", "quiet hours": "Outside contact hours", "weekly limit": "Weekly limit reached",
+    "daily limit": "Daily limit reached", "said STOP": "Borrower asked to stop", "no consent": "No consent for that channel", "too soon": "Contacted too recently",
+    "resting today": "Already replied today", "pre-due limit": "Pre-due reminder limit", "promised to pay": "Promise to pay pending", "hardship hold": "Hardship hold",
+    "held by a person": "Held by a person", "safety rule": "Other safety rule" };
+  var PAGES = ["overview", "activity", "approvals", "borrowers", "rules", "system"];
+
+  var cursor = 0, status = "idle", speed = 4, paused = false, flowArm = "kairos", last = null, page = "overview", mode = "race";
+  var gen = 0, pollTimer = null;
+  var feedQ = [], allRows = [], byBorrower = {}, held = {}, approvals = [], promisesFull = 0;
+
+  // ---------- formatting ----------
+  function indian(n) { var s = String(Math.abs(Math.round(n)));
+    if (s.length > 3) { var h = s.slice(0, -3), t = s.slice(-3), p = []; while (h.length > 2) { p.unshift(h.slice(-2)); h = h.slice(0, -2); } if (h) p.unshift(h); s = p.join(",") + "," + t; }
+    return (n < 0 ? "-" : "") + s; }
+  function inr(paise) { var r = Math.round(paise / 100); return (r < 0 ? "-₹" : "₹") + indian(Math.abs(r)); }
+  function inr2(paise) { return "₹" + (paise / 100).toFixed(2); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function amt(s) { return esc(s).replace(/₹[\d,]+(\.\d+)?/g, function (m) { return '<span class="amt">' + m + "</span>"; }); }
+  function icon(n) { return '<svg class="i" aria-hidden="true"><use href="#i-' + n + '"/></svg>'; }
+  function hh(t) { if (!t) return ""; t = String(t); if (t.indexOf("T") >= 0) t = t.split("T")[1]; var p = t.split(":"), h = +p[0], m = p[1] || "00";
+    return ((h % 12) || 12) + (m === "00" ? "" : ":" + m) + (h < 12 ? " am" : " pm"); }
+  function hash(s) { s = String(s); var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return h >>> 0; }
+  var INIT = "ABDGJKMNPRSTVY";
+  function masked(name, bid) { if (!name) return "A borrower"; return name + " " + INIT[hash(bid || name) % INIT.length] + "."; }
+  function loanRef(bid) { return bid ? "…" + String(bid).slice(-4) : "–"; }
+  function api(path, body) {
+    return fetch(path, body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(typeof j.detail === "string" ? j.detail : String(r.status)); return j; }); });
+  }
+  // gentle count-up, under 400 ms, no overshoot
+  function roll(el, value, fmt) {
+    if (!el) return; var from = el._v == null ? value : el._v; el._v = value;
+    if (REDUCED || from === value || document.hidden) { el.textContent = fmt(value); return; }
+    var t0 = performance.now(), dur = 380; cancelAnimationFrame(el._raf);
+    (function step(now) { var k = Math.min(1, Math.max(0, (now - t0) / dur)), e = 1 - Math.pow(1 - k, 3); el.textContent = fmt(from + (value - from) * e); if (k < 1) el._raf = requestAnimationFrame(step); })(t0);
+  }
+  var fInr = function (v) { return inr(v); }, fInt = function (v) { return indian(v); };
+
+  // ---------- theme (light default, dark on the toggle) ----------
+  var root = document.documentElement;
+  (function () { var q = /[?&]theme=(light|dark)/.exec(location.search), t = q && q[1];
+    if (!t) try { t = localStorage.getItem("kairos-ops-theme"); } catch (e) {}
+    if (t === "dark") root.setAttribute("data-theme", "dark"); })();
+  function syncTheme() { $("themeIcon").setAttribute("href", root.getAttribute("data-theme") === "dark" ? "#i-sun" : "#i-moon"); }
+  $("themeBtn").onclick = function () { var d = root.getAttribute("data-theme") !== "dark"; if (d) root.setAttribute("data-theme", "dark"); else root.removeAttribute("data-theme");
+    try { localStorage.setItem("kairos-ops-theme", d ? "dark" : "light"); } catch (e) {} syncTheme(); };
+
+  // ---------- routing ----------
+  function go(p) { if (PAGES.indexOf(p) < 0) p = "overview"; page = p;
+    PAGES.forEach(function (x) { $("p-" + x).classList.toggle("on", x === p); });
+    document.querySelectorAll(".nav a").forEach(function (a) { if (a.dataset.page === p) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+    requestAnimationFrame(function () { layoutMap(); if (last) render(last); else { renderCharts(); renderFlow(); } });
+  }
+  window.addEventListener("hashchange", function () { go(location.hash.slice(1)); });
+
+  // ---------- controls ----------
+  function setPressed(sel, on) { document.querySelectorAll(sel).forEach(function (b) { b.setAttribute("aria-pressed", String(on(b))); }); }
+  function setPause(p) { $("pauseBtn").setAttribute("aria-pressed", String(p)); $("pauseBtn").innerHTML = icon(p ? "play" : "pause"); $("pauseBtn").setAttribute("aria-label", p ? "Resume" : "Pause"); }
+  function start(forceMode) {
+    var m = forceMode || $("mode").value; $("mode").value = m;
+    paused = false; setPause(false); reset(); $("idleCard").hidden = true; skeleton(true); $("when").innerHTML = "<b>Starting</b>";
+    var body = { seed: +$("seed").value, borrowers: 300, days: 14, speed: speed };
+    if (m === "full") { body.mode = "full"; body.interactive_approvals = /[?&]interactive=1/.test(location.search); }
+    var send = function () { return api("/demo/live/start", body); };
+    api("/demo/live/stop", {}).catch(function () {}).then(send).catch(function (e) {
+      if (m === "full" && /422/.test(e.message)) { delete body.mode; delete body.interactive_approvals; $("mode").value = "race"; return send(); } throw e; })
+      .then(function () { status = "preparing"; poll(); })
+      .catch(function (e) { skeleton(false); $("when").innerHTML = "<b>Could not start</b> · " + esc(e.message); });
+  }
+  $("startBtn").onclick = function () { start(); }; $("idleStart").onclick = function () { start("race"); }; $("sysStart").onclick = function () { start("full"); };
+  $("stopBtn").onclick = function () { api("/demo/live/stop", {}).then(function () { poll(); }); };
+  $("pauseBtn").onclick = function () { paused = !paused; api("/demo/live/control", { paused: paused }); setPause(paused); };
+  document.querySelectorAll("[data-speed]").forEach(function (b) { b.onclick = function () { speed = +b.dataset.speed; setPressed("[data-speed]", function (x) { return x === b; });
+    if (status === "running" || status === "preparing") api("/demo/live/control", { speed: speed }); }; });
+  function presenter(on) { root.classList.toggle("presenter", on); setTimeout(function () { renderCharts(); renderFlow(); layoutMap(); }, 60); }
+  document.addEventListener("keydown", function (e) {
+    if (/SELECT|INPUT|TEXTAREA/.test(e.target.tagName) || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === "p" || e.key === "P") presenter(!root.classList.contains("presenter"));
+    else if (e.key === "s" || e.key === "S") { var order = ["overview", "activity", "system"], i = order.indexOf(page); location.hash = order[(i + 1) % order.length]; }
+    else if (e.key === "Escape") closeDrawer();
+    else if (e.key === " " && e.target.tagName !== "BUTTON") { e.preventDefault(); $("pauseBtn").click(); }
+  });
+  $("flowK").onclick = function () { flowArm = "kairos"; setPressed("#flowK,#flowF", function (b) { return b.id === "flowK"; }); renderFlow(); };
+  $("flowF").onclick = function () { flowArm = "cn10"; setPressed("#flowK,#flowF", function (b) { return b.id === "flowF"; }); renderFlow(); };
+
+  function reset() {
+    gen++; clearTimeout(pollTimer); cursor = 0; last = null; feedQ = []; allRows = []; byBorrower = {}; held = {}; approvals = []; promisesFull = 0;
+    compEvents = {}; mockC = newMock();
+    $("feedOv").innerHTML = ""; $("feedAll").innerHTML = ""; $("feedAll").dataset.key = ""; $("bars").innerHTML = ""; $("bars").dataset.key = ""; $("callout").classList.remove("on");
+    ["kRec", "kCost", "kProm", "kStop", "rSent", "rHeld", "rStop"].forEach(function (id) { $(id)._v = null; });
+    renderApprovals();
+  }
+  function skeleton(on) { $("kpis").classList.toggle("skel", on); }
+
+  // ---------- polling ----------
+  function poll() {
+    clearTimeout(pollTimer); var g = gen;
+    api("/demo/live/state?cursor=" + cursor + "&limit=3000").then(function (st) {
+      if (g !== gen) return;
+      var catchup = st.events.length > 500;
+      cursor = st.cursor; status = st.status; last = st; mode = st.mode === "full" ? "full" : "race";
+      if (typeof st.speed === "number" && (st.status === "running" || st.status === "preparing")) { speed = st.speed; setPressed("[data-speed]", function (b) { return +b.dataset.speed === speed; }); }
+      st.events.forEach(function (e) { onEvent(e, catchup); });
+      if (st.events.length < 3000 && !$("feedOv").querySelector("li:not(.empty-li)")) { feedQ = []; var act = allRows.filter(function (r) { return r.f === "reply" || r.f === "pay" || /scheduled/.test(r.action); }).slice(-4), kai = allRows.filter(function (r) { return r.name === "Kairos"; }).slice(-1);
+        act.concat(kai).sort(function (a, b) { return a.seq - b.seq; }).forEach(function (r) { pushRow($("feedOv"), r, 6); }); }
+      render(st);
+      var more = st.events.length >= 3000, live = st.status === "running" || st.status === "preparing";
+      pollTimer = setTimeout(poll, more ? 30 : live ? 450 : 2500);
+    }).catch(function () { if (g !== gen) return; $("status").textContent = "reconnecting"; pollTimer = setTimeout(poll, 1500); });
+  }
+
+  // ---------- events → plain rows: { t, day, bid, name, action, note, tone, f } ----------
+  function rowFor(e) {
+    var n = masked(e.name || e.first_name, e.borrower_id), ch = CH[e.channel] || (e.detail && CH[e.detail.channel]) || "", m;
+    var base = { t: e.time || e.t, day: e.day, bid: e.borrower_id, name: n, seq: e.seq || e.id };
+    function r(action, note, tone, f) { base.action = action; base.note = note || ""; base.tone = tone || ""; base.f = f || ""; return base; }
+    if (e.component) return rowFull(e, base, r);
+    switch (e.kind) {
+      case "decision": m = /about (\d+) in 100/.exec(e.text || "");
+        return r(ch + " scheduled for " + hh(e.send_time), m ? "about " + m[1] + " in 100 people like them reply" : "", "acc", "msg");
+      case "wait": return r("Not contacted today", e.rule === "REST" ? "resting after a recent message" : e.rule === "JOURNEY" ? "no step planned today" : "low chance of a reply today; budget kept for others", "", "rest");
+      case "blocked": return r("Held back by Aladdin", REASON[e.label] || e.label || "a rule said not now", "bad", "held");
+      case "sent": return r(ch + " sent", "", "", "msg");
+      case "reply": return r("Replied on " + ch, "", "acc", "reply");
+      case "promise": return r("Promised to pay", "waiting for the bank to confirm", "wait", "reply");
+      case "paid": return r("Paid " + inr(e.amount_paise), "confirmed by the bank", "good", "pay");
+      case "stop": return r("Asked us to stop", "every channel paused for them", "bad", "reply");
+      case "handoff": return r("Payment claim sent for review", "the bank has no matching payment yet", "wait", "pay");
+      case "switch": base.name = "Kairos"; return r("Changed its main channel", (e.text || "").replace(/^.*?moved (its main channel )?/, "moved "), "acc", "msg");
+      case "world": base.name = "Note"; return r("WhatsApp reply rates dropped from today", "Kairos is not told; it has to notice", "", "msg");
+      case "learner": base.name = "Kairos";
+        m = /^Learning: (.+?) is working (better|worse) for people (.+?) \(([\d.]+) → ([\d.]+)/.exec(e.text || "");
+        return m ? r((m[2] === "better" ? "More" : "Less") + " weight on " + m[1], "people " + m[3] + ": reply chance " + m[4] + " → " + m[5] + " in 100", "", "msg") : null;
+    }
+    return null;
+  }
+  var QUIET = /^(allowed|rechecked|delivered|read|duplicate_ignored|assigned|moved|day_start|finalized|posterior|bot_selected|message|portfolio_loaded|budget_scope|day_end)$/;
+  function rowFull(e, base, r) {
+    if (QUIET.test(e.kind)) return null;
+    var s = String(e.summary || "");
+    if (e.first_name) { s = s.split(e.first_name + "'s ").join("").split(e.first_name + " ").join("").split(e.first_name).join(base.name); }
+    else base.name = e.component === "reports" ? "Report" : "Kairos";
+    s = s.replace(/^[a-z]/, function (c) { return c.toUpperCase(); });
+    var tone = e.component === "payments" && /verified|kept/.test(e.kind) ? "good" : /blocked|stop|fraud|rejected|broken/.test(e.kind) ? "bad" : /pending|case_opened/.test(e.kind) ? "wait" : "";
+    var f = e.component === "payments" ? "pay" : e.component === "aladdin" ? "held" : /replied|stop|inbound|classified|call_ended/.test(e.kind) ? "reply" : "msg";
+    return r(s, "", tone, f);
+  }
+  var PRIO = { paid: 9, verified: 9, "switch": 8, world: 8, world_change: 8, stop: 8, handoff: 7, approval_pending: 7, promise: 6, reply: 6, replied: 6, learner: 5, decision: 4, contact: 4, blocked: 3, wait: 2 };
+  function onEvent(e, catchup) {
+    var full = !!e.component;
+    if (e.borrower_id) (byBorrower[e.borrower_id] = byBorrower[e.borrower_id] || []).push(e);
+    if (full) { e2eEvent(e, catchup); fullTrack(e); }
+    else { mockFrom(e, catchup); raceTrack(e); }
+    if (!full && e.arm !== "kairos") return;
+    var row = rowFor(e); if (!row) return;
+    if (e.kind !== "sent") { allRows.push(row); if (allRows.length > 3000) allRows.splice(0, 500); }
+    if (catchup || e.kind === "sent") return;
+    if (/^(wait|blocked)$/.test(e.kind)) return;
+    if (/^(decision|contact)$/.test(e.kind) && hash((e.borrower_id || "") + e.day) % 100 > 10) return;
+    feedQ.push({ p: PRIO[e.kind] || 1, r: row });
+    feedQ = feedQ.filter(function (x) { return x.r.day >= row.day; });
+    if (feedQ.length > 12) { feedQ.sort(function (a, b) { return b.p - a.p || b.r.seq - a.r.seq; }); feedQ.length = 12; }
+  }
+  function addHeld(day, label) { var h = held[day] = held[day] || { n: 0, r: {} }; h.n++; h.r[label] = (h.r[label] || 0) + 1; }
+  function raceTrack(e) {
+    if (e.arm !== "kairos") return;
+    if (e.kind === "blocked") addHeld(e.day, e.label);
+    if (e.kind === "handoff") addApproval({ id: "claim-" + e.seq, bid: e.borrower_id, name: masked(e.name, e.borrower_id), title: "Payment claim to review",
+      text: "Says they paid, but the bank has no matching payment yet.", day: e.day, interactive: true, local: true });
+    if (e.kind === "switch") { $("calloutText").textContent = e.text; $("callout").classList.add("on"); }
+  }
+  function fullTrack(e) {
+    var d = e.detail || {};
+    if (e.component === "aladdin" && e.kind === "blocked") addHeld(e.day, d.label);
+    if (e.component === "intent" && d.label === "PTP") promisesFull++;
+    if (e.component === "hitl" && e.kind === "approval_pending") addApproval({ id: d.approval_id, bid: e.borrower_id, name: masked(e.first_name, e.borrower_id),
+      title: (CH[d.channel] || "Contact") + " needs approval", text: ruleText(d.rules) + (d.send_time ? " Planned for " + hh(d.send_time) + "." : ""), day: e.day, interactive: !!d.interactive });
+    if (e.component === "hitl" && /^(approved|rejected|expired|blocked_at_recheck)$/.test(e.kind)) resolveApproval(d.approval_id, e.kind.replace(/_/g, " "), d.by || "system", e.day);
+    if (e.component === "learner" && e.kind === "switch") { $("calloutText").textContent = e.summary; $("callout").classList.add("on"); }
+  }
+  function ruleText(rules) { var m = { VOICE_CHANNEL: "Voice calls need a person's approval.", FIRST_SEND_AFTER_HARDSHIP: "First contact after a hardship hold." };
+    return (rules || []).map(function (x) { return m[x] || x.replace(/_/g, " ").toLowerCase() + "."; }).join(" "); }
+
+  // feed: one new row every ~1.5–1.8 s, newest on top, at most 6 on the overview
+  function feedRowHtml(r) {
+    return "<time>Day " + r.day + "<br>" + hh(r.t) + '</time><div class="ln ' + r.tone + '"><span class="dt"></span><span class="nm">' + esc(r.name) + "</span> · " + amt(r.action) +
+      (r.note ? '<span class="nt">' + esc(r.note) + "</span>" : "") + "</div>";
+  }
+  function pushRow(list, r, max) {
+    var ph = list.querySelector(".empty-li"); if (ph) ph.remove();
+    var li = document.createElement("li"); li.innerHTML = feedRowHtml(r); if (r.bid) { li.dataset.bid = r.bid; li.tabIndex = 0; }
+    list.insertBefore(li, list.firstChild);
+    while (list.children.length > max) list.lastChild.remove();
+    while (list.children.length > 1 && list.clientHeight && list.scrollHeight > list.clientHeight + 1) list.lastChild.remove();
+  }
+  (function tick() {
+    if (feedQ.length && !paused) { feedQ.sort(function (a, b) { return b.p - a.p || b.r.seq - a.r.seq; }); pushRow($("feedOv"), feedQ.shift().r, 6); }
+    setTimeout(tick, speed >= 4 ? 1500 : 1800);
+  })();
+  var filt = "all";
+  document.querySelectorAll("#filters button").forEach(function (b) { b.onclick = function () { filt = b.dataset.f; setPressed("#filters button", function (x) { return x === b; }); renderAll(); }; });
+  function renderAll() {
+    var rows = allRows.filter(function (r) { return filt === "all" ? r.f !== "rest" : r.f === filt; }).slice(-40).reverse();
+    var key = filt + allRows.length; if ($("feedAll").dataset.key === key) return; $("feedAll").dataset.key = key;
+    $("feedAll").innerHTML = rows.length ? rows.map(function (r) { return "<li" + (r.bid ? ' data-bid="' + esc(r.bid) + '" tabindex="0"' : "") + ' style="animation:none">' + feedRowHtml(r) + "</li>"; }).join("")
+      : '<li class="empty-li"><div></div><div class="empty">No activity of this kind yet.</div></li>';
+  }
+  document.addEventListener("click", function (ev) { var el = ev.target.closest && ev.target.closest("[data-bid]"); if (el && el.dataset.bid) openJourney(el.dataset.bid); });
+  document.addEventListener("keydown", function (ev) { if (ev.key === "Enter" && ev.target.dataset && ev.target.dataset.bid) openJourney(ev.target.dataset.bid); });
+
+  // ---------- approvals ----------
+  function addApproval(a) { if (!a.id || approvals.some(function (x) { return x.id === a.id; })) return; a.state = "pending"; approvals.push(a); renderApprovals(); }
+  function resolveApproval(id, state, by, day) { var a = approvals.filter(function (x) { return x.id === id; })[0]; if (!a || a.state !== "pending") return; a.state = state; a.by = by; a.dday = day; renderApprovals(); }
+  function decide(id, verb) {
+    var a = approvals.filter(function (x) { return x.id === id; })[0]; if (!a) return;
+    var done = function () { resolveApproval(id, verb === "approve" ? "approved" : "rejected", "you", last && last.day); };
+    if (a.local) { done(); return; }
+    api("/demo/live/approvals/" + encodeURIComponent(id) + "/" + verb, {}).then(done).catch(function (e) { a.err = e.message; renderApprovals(); });
+  }
+  function apCard(a) {
+    var pending = a.state === "pending";
+    return '<div class="ap' + (pending ? "" : " done") + '"><div class="at">' + icon(pending ? "clock" : "circlecheck") + esc(a.title) +
+      '<span class="pill ' + (pending ? "wait" : /approved/.test(a.state) ? "good" : "") + '">' + (pending ? "Waiting" : esc(a.state.charAt(0).toUpperCase() + a.state.slice(1))) + "</span></div>" +
+      '<p><button class="linkish" data-bid="' + esc(a.bid) + '">' + esc(a.name) + "</button> · " + esc(a.text) + "</p>" +
+      (pending ? (a.interactive ? '<div class="acts"><button class="btn sm good" data-ap="' + esc(a.id) + '" data-v="approve">Approve</button><button class="btn sm bad" data-ap="' + esc(a.id) + '" data-v="reject">Reject</button></div>'
+        : '<p class="nt">A supervisor decides this in the simulation.</p>') : '<p class="nt">' + (a.by === "you" ? "Decided by you" + (a.local ? " · recorded in this demo" : "") : "Decided by " + esc(a.by)) + "</p>") +
+      (a.err ? '<p class="nt">Could not record: ' + esc(a.err) + "</p>" : "") + "</div>";
+  }
+  function renderApprovals() {
+    var pend = approvals.filter(function (a) { return a.state === "pending"; }), done = approvals.filter(function (a) { return a.state !== "pending"; });
+    $("navCnt").textContent = pend.length; $("navCnt").hidden = !pend.length;
+    var top = pend.slice(-2).reverse(); if (top.length < 2) top = top.concat(done.slice(-(2 - top.length)).reverse());
+    $("needsList").innerHTML = top.length ? top.map(apCard).join("") : '<div class="empty">Nothing waiting for you.</div>';
+    $("apprPending").innerHTML = pend.length ? pend.slice().reverse().map(apCard).join("") : '<div class="empty">Nothing waiting.</div>';
+    $("apprNote").textContent = pend.length ? pend.length + " waiting" : "";
+    $("apprDone").innerHTML = done.length ? done.slice(-30).reverse().map(function (a) { return '<tr data-bid="' + esc(a.bid) + '"><td>' + esc(a.name) + "</td><td>" + esc(a.title) + '</td><td><span class="pill ' + (/approved/.test(a.state) ? "good" : "") + '">' + esc(a.state) + "</span></td><td>" + esc(a.by) + '</td><td class="mono">' + (a.dday || a.day) + "</td></tr>"; }).join("")
+      : '<tr><td colspan="5" class="mono">No decisions yet.</td></tr>';
+  }
+  document.addEventListener("click", function (ev) { var b = ev.target.closest && ev.target.closest("[data-ap]"); if (b) { ev.stopPropagation(); decide(b.dataset.ap, b.dataset.v); } }, true);
+
+  // ---------- render ----------
+  function render(st) {
+    var c = st.counters || {}, k = c.kairos, f = c.cn10, live = st.status === "running" || st.status === "preparing";
+    $("status").textContent = st.status;
+    $("idleCard").hidden = st.status !== "idle";
+    $("when").innerHTML = st.day ? "<b>Day " + st.day + " of " + st.days + "</b> · " + hh(st.clock) + (st.status === "finished" ? " · campaign complete" : paused ? " · paused" : st.status === "stopped" ? " · stopped" : "")
+      : st.status === "preparing" ? "<b>Preparing</b> · matching the budget" : st.status === "idle" ? "<b>Not started</b>" : "<b>" + esc(st.status) + "</b>";
+    skeleton(st.status === "preparing" || (live && !k));
+    if (k) {
+      roll($("kRec"), k.recovered_paise, fInr); roll($("kCost"), k.spent_paise, fInr);
+      $("kCostS").textContent = k.recovered_paise ? "about " + inr2(k.spent_paise / k.recovered_paise * 10000) + " per ₹100 recovered" : "messages and calls";
+      var prom = st.mode === "full" ? promisesFull : (k.stages ? k.stages.promised : k.promises || 0);
+      roll($("kProm"), prom, fInt); $("kPromS").textContent = f ? indian(k.verified_payments) + " paid, confirmed by the bank" : "made in replies and calls";
+      $("chartTitle").textContent = f ? "Recovered: Kairos vs fixed schedule" : "Recovered by day"; $("legF").hidden = !f;
+      $("ovSub").textContent = f ? "Kairos and the fixed schedule work the same 300 borrowers with the same budget and rules. Aladdin checks every message before it goes out."
+        : "One SIMULATED campaign traced through every Kairos component. Aladdin checks every message before it goes out.";
+      roll($("kStop"), k.stop_opt_outs, fInt);
+      $("kStopD").innerHTML = "Rule breaches <b>" + (k.cap_breaches + (f ? f.cap_breaches : 0)) + "</b> · checked by Aladdin";
+      $("spK").textContent = inr(k.spent_paise);
+      if (f) {
+        $("kRecD").innerHTML = f.recovered_paise > 0 && k.recovered_paise >= f.recovered_paise ? "<b>" + (k.recovered_paise / f.recovered_paise).toFixed(1) + "×</b> the fixed schedule (" + inr(f.recovered_paise) + ")"
+          : "<b>" + (k.recovered_paise - f.recovered_paise >= 0 ? "+" : "") + inr(k.recovered_paise - f.recovered_paise) + "</b> vs fixed schedule";
+        var dc = f.spent_paise - k.spent_paise;
+        $("kCostD").innerHTML = Math.abs(dc) <= f.spent_paise * .03 ? "Same budget as the fixed schedule (" + inr(f.spent_paise) + ")" : dc > 0 ? "<b>" + inr(dc) + " less</b> than the fixed schedule" : "<b>" + inr(-dc) + " more</b> than the fixed schedule";
+        var fp = f.stages ? f.stages.promised : f.promises || 0;
+        $("kPromD").innerHTML = "<b>" + (prom - fp >= 0 ? "+" : "") + indian(prom - fp) + "</b> vs fixed schedule (" + indian(fp) + ")";
+        $("spF").textContent = inr(f.spent_paise);
+      } else {
+        $("kRecD").innerHTML = "Full system trace · no fixed-schedule comparison";
+        $("kCostD").innerHTML = "Budget for the campaign <b>" + (st.budget && st.budget.pool_paise ? inr(st.budget.pool_paise) : "–") + "</b>";
+        $("kPromD").innerHTML = "Kept so far <b>" + indian((st.components && st.components.payments && st.components.payments.promises_kept) || 0) + "</b>"; $("spF").textContent = "–";
+      }
+    }
+    var h = held[st.day], reasons = h ? Object.keys(h.r).sort(function (a, b) { return h.r[b] - h.r[a]; }).slice(0, 3).map(function (x) { return (REASON[x] || x || "other").toLowerCase(); }) : [];
+    $("heldText").innerHTML = h ? "Aladdin held back <b>" + indian(h.n) + " message" + (h.n === 1 ? "" : "s") + "</b> today (" + esc(reasons.join(", ")) + ")." : st.day ? "Aladdin has not held back any messages today." : "Aladdin has not held back any messages yet.";
+    if (page === "overview") renderCharts();
+    if (page === "activity") { renderFlow(); renderBars(st.learning); renderAll(); }
+    if (page === "borrowers") renderBorrowers();
+    if (page === "rules") renderRules(st);
+    if (page === "system") renderMap(st);
+  }
+
+  // ---------- charts ----------
+  function niceStep(max, n) { var raw = max / n, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; }
+  function pts(arm, field) { var s = (last && last.series) || {};
+    return [[0, 0]].concat((s[arm] || []).map(function (p) { return [p.day - (p.partial ? 1 - ((last && last.day_progress) || 0) : 0), p[field]]; })); }
+  function compact(paise) { var r = paise / 100; return r >= 100000 ? "₹" + (r / 100000).toFixed(r % 100000 ? 1 : 0) + "L" : r >= 1000 ? "₹" + Math.round(r / 1000) + "k" : "₹" + Math.round(r); }
+  function lineChart(svg, field, spark, tip) {
+    if (!svg || !svg.clientWidth) return;
+    var days = (last && last.days) || 14, w = svg.clientWidth, h = svg.clientHeight, K = pts("kairos", field), F = pts("cn10", field), hasF = F.length > 1;
+    var max = 1; K.concat(F).forEach(function (p) { max = Math.max(max, p[1]); });
+    var step = niceStep(max / 100, 3) * 100, top = Math.ceil(max / step) * step;
+    var L = spark ? 2 : 46, R = spark ? 4 : 118, T = spark ? 3 : 10, B = spark ? 3 : 22;
+    var x = function (d) { return L + (w - L - R) * d / days; }, y = function (v) { return T + (h - T - B) * (1 - v / top); };
+    var g = "";
+    if (!spark) {
+      for (var v = 0; v <= top + 1; v += step) g += '<line class="gl" x1="' + L + '" x2="' + (w - R + 6) + '" y1="' + y(v) + '" y2="' + y(v) + '"/><text x="' + (L - 8) + '" y="' + (y(v) + 4) + '" text-anchor="end">' + compact(v) + "</text>";
+      [1, 7, days].forEach(function (d) { g += '<text x="' + x(d) + '" y="' + (h - 4) + '" text-anchor="middle">Day ' + d + "</text>"; });
+      if (days >= 7 && last && last.series) { var left = K[K.length - 1][0] > 6.4 && x(6.5) - L > 190; g += '<line class="ann" x1="' + x(6.5) + '" x2="' + x(6.5) + '" y1="' + T + '" y2="' + (h - B) + '"/><text class="ann-t" x="' + (x(6.5) + (left ? -6 : 6)) + '" y="' + (T + 10) + '" text-anchor="' + (left ? "end" : "start") + '">Day 7: WhatsApp replies drop</text>'; }
+    }
+    function path(P) { return P.map(function (p, i) { return (i ? "L" : "M") + x(p[0]).toFixed(1) + "," + y(p[1]).toFixed(1); }).join(""); }
+    if (hasF) g += '<path class="ln-f" d="' + path(F) + '"' + (spark ? ' style="stroke-width:1.25"' : "") + "/>";
+    if (K.length > 1) g += '<path class="ln-k" d="' + path(K) + '"' + (spark ? ' style="stroke-width:1.5"' : "") + "/>";
+    var lk = K[K.length - 1], lf = F[F.length - 1];
+    if (hasF) g += '<circle class="dot-f" cx="' + x(lf[0]) + '" cy="' + y(lf[1]) + '" r="' + (spark ? 2 : 3.5) + '"/>';
+    if (K.length > 1) g += '<circle class="dot-k" cx="' + x(lk[0]) + '" cy="' + y(lk[1]) + '" r="' + (spark ? 2.5 : 4) + '"/>';
+    if (!spark && K.length > 1) {
+      var yk = y(lk[1]), yf = hasF ? y(lf[1]) : 1e9;
+      if (hasF && Math.abs(yk - yf) < 32) { if (yk <= yf) yf = yk + 32; else yk = yf + 32; }
+      g += '<text class="lab" x="' + (x(lk[0]) + 10) + '" y="' + (yk - 2) + '">Kairos<tspan class="v" x="' + (x(lk[0]) + 10) + '" dy="15">' + inr(lk[1]) + "</tspan></text>";
+      if (hasF) g += '<text class="lab" x="' + (x(lf[0]) + 10) + '" y="' + (yf - 2) + '">Fixed schedule<tspan class="v" x="' + (x(lf[0]) + 10) + '" dy="15">' + inr(lf[1]) + "</tspan></text>";
+      g += '<line class="cross" id="cx' + svg.id + '" y1="' + T + '" y2="' + (h - B) + '" x1="-10" x2="-10" style="opacity:0"/>';
+    }
+    if (!spark && K.length <= 1) g += '<text x="' + (L + (w - L - R) / 2) + '" y="' + (h / 2) + '" text-anchor="middle">The lines start when the campaign starts.</text>';
+    svg.innerHTML = g;
+    if (tip) { svg.onmousemove = function (ev) {
+        var rr = svg.getBoundingClientRect(), dd = Math.round((ev.clientX - rr.left - L) / (w - L - R) * days), s = (last && last.series) || {};
+        var pk = (s.kairos || []).filter(function (p) { return p.day === dd; })[0], pf = (s.cn10 || []).filter(function (p) { return p.day === dd; })[0], t = $(tip), cl = $("cx" + svg.id);
+        if (!pk || dd < 1) { t.classList.remove("on"); if (cl) cl.style.opacity = 0; return; }
+        if (cl) { cl.setAttribute("x1", x(dd)); cl.setAttribute("x2", x(dd)); cl.style.opacity = 1; }
+        t.innerHTML = "<b>Day " + dd + "</b><br>Kairos " + inr(pk[field]) + (pf ? "<br>Fixed schedule " + inr(pf[field]) : "");
+        t.style.left = Math.min(x(dd) + 12, rr.width - t.offsetWidth - 4) + "px"; t.style.top = "6px"; t.classList.add("on"); };
+      svg.onmouseleave = function () { $(tip).classList.remove("on"); var cl = $("cx" + svg.id); if (cl) cl.style.opacity = 0; }; }
+  }
+  function renderCharts() { if (page !== "overview") return; lineChart($("chartRec"), "recovered_paise", false, "recTip"); lineChart($("chartSpent"), "spent_paise", true); }
+  window.addEventListener("resize", function () { renderCharts(); renderFlow(); layoutMap(); });
+
+  // ---------- flow (live activity page) ----------
+  var FX = { due: .02, decide: .15, check: .28, chan: .43, reached: .64, replied: .765, promised: .88, paid: .985 };
+  function renderFlow() {
+    if (page !== "activity") return;
+    var box = $("flow"), W = box.clientWidth, H = box.clientHeight; if (!W) return;
+    var c = last && last.counters && last.counters[flowArm];
+    if (!c || !c.stages) { $("flowSvg").innerHTML = ""; $("flowLabels").innerHTML = '<div class="empty" style="padding-top:7rem;text-align:center">' + (last && last.mode === "full" ? "The flow compares Kairos with the fixed schedule. Start a “Kairos vs fixed schedule” run to see it." : "The flow fills in once the campaign starts.") + "</div>"; return; }
+    var s = c.stages, rem = parseFloat(getComputedStyle(root).fontSize), top = 4.4 * rem, bot = 2.6 * rem, hMax = H - top - bot, yc = top + hMax / 2, k = hMax * .55 / Math.max(1, s.due);
+    var x = function (st) { return FX[st] * W; }, hz = function (n) { return n > 0 ? Math.max(2, n * k) : 0; };
+    var sent = c.sent_by_channel || {}, tot = 0; LANES.forEach(function (l) { tot += sent[l] || 0; });
+    var cH = hz(s.contacted), rH = hz(s.reached), lanes = {}, sumH = 0;
+    LANES.forEach(function (l) { var sh = tot ? (sent[l] || 0) / tot : 0; lanes[l] = { sh: sh, h: sh ? Math.max(1.5, cH * sh) : 0, n: sent[l] || 0 }; sumH += lanes[l].h; });
+    var gap = Math.max(0, Math.min(2.4 * rem, (hMax - sumH) / 4)), acc = 0, accC = yc - cH / 2, accR = yc - rH / 2, prevY = null, prevH = 0, y0 = yc - (sumH + gap * 4) / 2;
+    LANES.forEach(function (l) { var L = lanes[l]; L.y = y0 + acc + L.h / 2; acc += L.h + gap; if (prevY != null) L.y = Math.max(L.y, prevY + Math.max(1.45 * rem, (prevH + L.h) / 2 + 3)); prevY = L.y; prevH = L.h;
+      L.cy = accC + L.h / 2; accC += L.h; L.rh = rH * L.sh; L.ry = accR + L.rh / 2; accR += L.rh; });
+    var fl = lanes[LANES[0]], ll = lanes[LANES[4]], shift = yc - ((fl.y - fl.h / 2) + (ll.y + ll.h / 2)) / 2; LANES.forEach(function (l) { lanes[l].y += shift; });
+    var a = flowArm === "kairos" ? "" : "f", n = { due: hz(s.due), decide: hz(s.decided), check: cH, reached: rH, replied: hz(s.replied), promised: hz(s.promised), paid: hz(s.paid) };
+    function rib(x1, a1, a2, x2, b1, b2, cls) { var m = (x1 + x2) / 2; return '<path class="rib ' + cls + '" d="M' + x1 + "," + a1 + "C" + m + "," + a1 + " " + m + "," + b1 + " " + x2 + "," + b1 + "L" + x2 + "," + b2 + "C" + m + "," + b2 + " " + m + "," + a2 + " " + x1 + "," + a2 + 'Z"/>'; }
+    function bar(xx, cy, hgt, cls) { return '<rect class="nb ' + cls + '" x="' + (xx - 3) + '" y="' + (cy - Math.max(hgt, 2) / 2) + '" width="6" height="' + Math.max(hgt, 2) + '" rx="2"/>'; }
+    function mid(s1, s2, nn, cls) { return nn ? rib(x(s1) + 3, yc - nn / 2, yc + nn / 2, x(s2) - 3, yc - nn / 2, yc + nn / 2, cls) : ""; }
+    var o = mid("due", "decide", n.decide, a) + mid("decide", "check", n.check, a);
+    LANES.forEach(function (l) { var L = lanes[l]; if (!L.h) return; o += rib(x("check") + 3, L.cy - L.h / 2, L.cy + L.h / 2, x("chan") - 3, L.y - L.h / 2, L.y + L.h / 2, a);
+      if (L.rh) o += rib(x("chan") + 3, L.y - L.h / 2, L.y + L.h / 2, x("reached") - 3, L.ry - L.rh / 2, L.ry + L.rh / 2, a); });
+    o += mid("reached", "replied", n.replied, a) + mid("replied", "promised", n.promised, a) + mid("promised", "paid", n.paid, "p");
+    ["due", "decide", "check", "reached", "replied", "promised"].forEach(function (st) { o += bar(x(st), yc, n[st], a); }); o += bar(x("paid"), yc, n.paid, "p");
+    LANES.forEach(function (l) { o += bar(x("chan"), lanes[l].y, lanes[l].h, lanes[l].h ? a : "z"); });
+    $("flowSvg").innerHTML = o;
+    var pc = function (v) { return s.due ? Math.round(v / s.due * 100) + "%" : ""; };
+    var labs = [["due", s.due, "Due", "borrowers", "first"], ["decide", s.decided, flowArm === "kairos" ? "Kairos decided" : "Schedule decided", pc(s.decided)], ["check", s.contacted, "Passed Aladdin", pc(s.contacted)],
+      ["chan", c.sent, "Messages sent", "by channel"], ["reached", s.reached, "Reached", pc(s.reached)], ["replied", s.replied, "Replied", pc(s.replied)], ["promised", s.promised, "Promised", pc(s.promised)], ["paid", s.paid, "Paid", inr(c.recovered_paise), "last"]];
+    var hl = labs.map(function (L) { return '<div class="stl ' + (L[4] || "") + '" style="left:' + x(L[0]) + 'px"><b>' + indian(L[1]) + "</b><span>" + L[2] + "</span><i>" + esc(L[3]) + "</i></div>"; }).join("");
+    LANES.forEach(function (l) { hl += '<div class="lanel" style="left:' + (x("chan") + 8) + "px;top:" + lanes[l].y + 'px">' + icon(l) + CH[l] + " <b>" + indian(lanes[l].n) + "</b></div>"; });
+    var bb = c.blocked_by || {}, keys = Object.keys(bb).sort(function (p, q) { return bb[q] - bb[p]; });
+    hl += '<div class="heldbox" style="left:' + x("due") + 'px"><span class="ht">' + icon("shield") + "Held back by Aladdin: " + indian(c.blocked || 0) + "</span>" +
+      keys.slice(0, 5).map(function (r) { return "<span>" + esc(REASON[r] || r) + " <b>" + indian(bb[r]) + "</b></span>"; }).join("") + "</div>";
+    $("flowLabels").innerHTML = hl;
+  }
+
+  // ---------- learning ----------
+  function renderBars(L) {
+    if (!L || !L.channels) { if (!$("bars").children.length) $("bars").innerHTML = '<div class="empty">' + (last && last.mode === "full" ? "Shown when the run finishes." : "Appears after the first day of replies.") + "</div>"; return; }
+    var key = JSON.stringify(L.channels); if ($("bars").dataset.key === key) return;
+    var max = Math.max.apply(null, L.channels.map(function (c) { return c.reply_chance; }).concat([.05]));
+    var best = L.channels.reduce(function (a, c) { return c.outcomes > 0 && (!a || c.reply_chance > a.reply_chance) ? c : a; }, null);
+    if (!$("bars").querySelector(".bar")) $("bars").innerHTML = L.channels.map(function (c) { return '<div class="bar" data-ch="' + c.channel + '"><span class="name">' + icon(c.channel) + esc(c.label) + '</span><span class="track"><i style="transform:scaleX(0)"></i></span><span class="val"></span></div>'; }).join("");
+    L.channels.forEach(function (c) { var row = $("bars").querySelector('[data-ch="' + c.channel + '"]'); if (!row) return;
+      row.className = "bar" + (c === best ? " best" : "");
+      var v = c.reply_chance * 100; row.querySelector(".val").innerHTML = (v < 10 ? v.toFixed(1) : Math.round(v)) + " in 100" + (!c.outcomes ? "<em>no data</em>" : "");
+      var i = row.querySelector("i"); requestAnimationFrame(function () { i.style.transform = "scaleX(" + (c.reply_chance / max).toFixed(3) + ")"; }); });
+    $("bars").dataset.key = key;
+  }
+
+  // ---------- borrowers ----------
+  function statusOf(evs) {
+    var st = { t: "Not contacted", c: "" }, paid = 0, lastE = null;
+    evs.forEach(function (e) { if (e.arm && e.arm !== "kairos") return; if (e.kind !== "wait" || !lastE) lastE = e; var k = e.component ? e.component + "." + e.kind : e.kind;
+      if (k === "paid" || k === "payments.verified") { st = { t: "Paid", c: "good" }; paid += e.amount_paise || (e.detail && e.detail.amount_paise) || 0; return; }
+      if (st.t === "Paid") return;
+      if (/stop/.test(k)) st = { t: "Asked to stop", c: "bad" };
+      else if (/promise/.test(k)) st = { t: "Promised", c: "wait" };
+      else if (/reply|replied/.test(k) && st.c !== "bad" && st.t !== "Promised") st = { t: "Replied", c: "acc" };
+      else if (/sent|dispatched|decision|contact/.test(k) && st.t === "Not contacted") st = { t: "Contacted", c: "" }; });
+    return { st: st, paid: paid, last: lastE };
+  }
+  function renderBorrowers() {
+    var q = $("bSearch").value.trim().toLowerCase(), list = [];
+    Object.keys(byBorrower).forEach(function (bid) { var evs = byBorrower[bid], nm = evs[0].name || evs[0].first_name; if (q && String(nm).toLowerCase().indexOf(q) < 0) return;
+      var s = statusOf(evs); if (!s.last) return; list.push({ bid: bid, name: masked(nm, bid), s: s, seq: s.last.seq || s.last.id }); });
+    list.sort(function (a, b) { return b.seq - a.seq; });
+    $("bRows").innerHTML = list.length ? list.slice(0, 60).map(function (b) { var evs = byBorrower[b.bid], r = null;
+        r = rowFor(b.s.last);
+        return '<tr data-bid="' + esc(b.bid) + '"><td><b>' + esc(b.name) + '</b></td><td class="mono">' + loanRef(b.bid) + '</td><td><span class="pill ' + b.s.st.c + '">' + b.s.st.t + "</span></td><td>" + (r ? amt(r.action) + (r.f === "held" && r.note ? " (" + esc(r.note.toLowerCase()) + ")" : "") + ' <span class="mono">· day ' + r.day + "</span>" : "–") + '</td><td class="r">' + (b.s.paid ? inr(b.s.paid) : "–") + "</td></tr>"; }).join("")
+      : '<tr><td colspan="5" class="mono">' + (q ? "No borrower matches “" + esc(q) + "”." : "Borrowers appear once the campaign starts.") + "</td></tr>";
+  }
+  $("bSearch").addEventListener("input", renderBorrowers);
+
+  // ---------- rules ----------
+  function renderRules(st) {
+    var c = st.counters || {}, k = c.kairos, f = c.cn10; if (!k) return;
+    roll($("rSent"), k.sent, fInt); roll($("rStop"), k.stop_opt_outs, fInt); $("rBr").textContent = indian(k.cap_breaches + (f ? f.cap_breaches : 0));
+    var kb = k.blocked_by, fb = f ? f.blocked_by || {} : {};
+    if (!kb) { kb = {}; Object.keys(held).forEach(function (d) { var r = held[d].r; Object.keys(r).forEach(function (x) { kb[x] = (kb[x] || 0) + r[x]; }); }); }
+    var kh = k.blocked != null ? k.blocked : Object.keys(kb).reduce(function (s2, x) { return s2 + kb[x]; }, 0); roll($("rHeld"), kh, fInt);
+    $("rFixH").textContent = f ? "Fixed schedule" : "";
+    var keys = Object.keys(kb).concat(Object.keys(fb)).filter(function (x, i, a) { return a.indexOf(x) === i; }), mx = 1;
+    keys.forEach(function (x) { mx = Math.max(mx, kb[x] || 0, fb[x] || 0); });
+    keys.sort(function (a, b) { return ((kb[b] || 0) + (fb[b] || 0)) - ((kb[a] || 0) + (fb[a] || 0)); });
+    $("rRows").innerHTML = keys.length ? keys.map(function (x) { return "<tr><td>" + esc(REASON[x] || x) + '</td><td class="r"><span class="mini"><i style="width:' + Math.round((kb[x] || 0) / mx * 100) + '%"></i></span>' + indian(kb[x] || 0) +
+      '</td><td class="r">' + (f ? '<span class="mini f"><i style="width:' + Math.round((fb[x] || 0) / mx * 100) + '%"></i></span>' + indian(fb[x] || 0) : "") + "</td></tr>"; }).join("")
+      : '<tr><td colspan="3" class="mono">Nothing held back yet.</td></tr>';
+  }
+
+  // ---------- system map ----------
+  var COMPS = [
+    { id: "spine", col: 0, name: "Portfolio", sub: "loans due in this campaign", icon: "db" }, { id: "churn", col: 0, name: "Auto-churn", sub: "cohort, risk and layer", icon: "layers" },
+    { id: "learner", col: 1, name: "K09 learner", sub: "who, when, which channel", icon: "brain" }, { id: "aladdin", col: 1, name: "Aladdin", sub: "lender rules, checked twice", icon: "shield" },
+    { id: "executor", col: 2, name: "Executor", sub: "sends on time", icon: "send" }, { id: "channel", col: 2, name: "Channels", sub: "SMS, WhatsApp, email, IVR, voice bots", icon: "chat" },
+    { id: "borrower", col: 3, name: "Borrower", sub: "synthetic, name masked", icon: "user" },
+    { id: "intent", col: 4, name: "Intent", sub: "rules, small model, LLM", icon: "intent" }, { id: "voice", col: 4, name: "Voice outcomes", sub: "disposition and confidence", icon: "wave" },
+    { id: "cm03", col: 4, name: "WhatsApp agent", sub: "OTP and fraud checks", icon: "whatsapp" },
+    { id: "hitl", col: 5, name: "Approvals", sub: "a person decides", icon: "usercheck" }, { id: "payments", col: 5, name: "Payments", sub: "bank-verified only", icon: "rupee" },
+    { id: "outcomes", col: 6, name: "Outcomes", sub: "what really happened", icon: "circlecheck" }, { id: "reports", col: 6, name: "Daily reports", sub: "K26, audit-ready", icon: "report" } ];
+  var GROUPS = ["Data", "Decide", "Act", "Borrower", "Understand", "People and money", "Learn and report"];
+  var EDGES = [["spine", "churn"], ["churn", "learner"], ["learner", "aladdin"], ["aladdin", "executor"], ["executor", "channel"], ["channel", "borrower"], ["borrower", "intent"], ["borrower", "voice"], ["borrower", "cm03"],
+    ["intent", "outcomes"], ["voice", "outcomes"], ["intent", "hitl"], ["cm03", "hitl"], ["cm03", "payments"], ["hitl", "payments"], ["borrower", "payments"], ["payments", "outcomes"], ["outcomes", "reports"], ["outcomes", "learner"]];
+  var compEvents = {}, rects = {}, paths = {};
+  $("mcols").innerHTML = GROUPS.map(function (gname, i) { return '<div class="mcol"><h3>' + gname + '</h3><div class="stack">' + COMPS.filter(function (c) { return c.col === i; }).map(function (c) {
+    return '<button class="node ' + c.id + '" id="n-' + c.id + '" data-comp="' + c.id + '"><span class="nh"><span class="ni">' + icon(c.icon) + '</span><span class="nt"><b>' + c.name + "</b><span>" + c.sub + '</span></span></span><span class="nc" id="nc-' + c.id + '"></span></button>'; }).join("") + "</div></div>"; }).join("");
+  document.querySelectorAll(".node").forEach(function (b) { b.onclick = function () { openComp(b.dataset.comp); }; });
+  function colOf(id) { return COMPS.filter(function (c) { return c.id === id; })[0].col; }
+  function layoutMap() {
+    if (page !== "system") return; var mr = $("map").getBoundingClientRect(); if (!mr.width) return;
+    COMPS.forEach(function (c) { var r = $("n-" + c.id).getBoundingClientRect(); rects[c.id] = { l: r.left - mr.left, r: r.right - mr.left, t: r.top - mr.top, b: r.bottom - mr.top, cx: (r.left + r.right) / 2 - mr.left, cy: (r.top + r.bottom) / 2 - mr.top }; });
+    var o = ""; paths = {};
+    EDGES.forEach(function (e) { var d = edgeD(e[0], e[1]); paths[e[0] + ">" + e[1]] = d; o += '<path class="edge' + (e[1] === "learner" && e[0] === "outcomes" ? " loop" : "") + '" d="' + d + '"/>'; });
+    o += '<text class="edge-t" x="' + ((rects.outcomes.cx + rects.learner.cx) / 2) + '" y="' + (mr.height - 6) + '" text-anchor="middle">every outcome updates the learner</text><g id="pulses"></g>';
+    $("mapSvg").innerHTML = o;
+  }
+  function edgeD(f, t) { var a = rects[f], b = rects[t]; if (!a || !b) return ""; var ca = colOf(f), cb = colOf(t), H = $("map").clientHeight;
+    if (cb > ca) { var m = (a.r + b.l) / 2; return "M" + a.r + "," + a.cy + "C" + m + "," + a.cy + " " + m + "," + b.cy + " " + b.l + "," + b.cy; }
+    if (cb === ca) return b.t > a.b ? "M" + a.cx + "," + a.b + "L" + b.cx + "," + b.t : "M" + a.cx + "," + a.t + "L" + b.cx + "," + b.b;
+    return "M" + a.cx + "," + a.b + "C" + a.cx + "," + (H - 16) + " " + b.cx + "," + (H - 16) + " " + b.cx + "," + b.b; }
+  var pulsesOn = 0;
+  function pulse(f, t, delay) {
+    if (page !== "system" || REDUCED || document.hidden || pulsesOn > 20) return;
+    setTimeout(function () { var d = paths[f + ">" + t] || edgeD(f, t), g = $("pulses"); if (!d || !g) return;
+      var p = document.createElementNS("http://www.w3.org/2000/svg", "path"); p.setAttribute("d", d); var len = p.getTotalLength();
+      var c = document.createElementNS("http://www.w3.org/2000/svg", "circle"); c.setAttribute("r", 3); c.setAttribute("class", "pulse"); g.appendChild(c); pulsesOn++; light(f);
+      var t0 = performance.now(), dur = Math.max(700, Math.min(1500, len * 2.8)) / Math.max(1, speed / 2);
+      (function step(now) { var k = Math.min(1, Math.max(0, (now - t0) / dur)), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2, q = p.getPointAtLength(e * len);
+        c.setAttribute("transform", "translate(" + q.x.toFixed(1) + "," + q.y.toFixed(1) + ")"); if (k < 1) requestAnimationFrame(step); else { c.remove(); pulsesOn--; light(t); } })(t0); }, delay || 0);
+  }
+  function light(id) { var n = $("n-" + id); if (!n) return; n.classList.add("lit"); clearTimeout(n._t); n._t = setTimeout(function () { n.classList.remove("lit"); }, 700); }
+  function store(ev) { [ev.component, ev.to].forEach(function (c, i) { if (!c || (i && c === ev.component)) return; var l = compEvents[c] = compEvents[c] || []; l.push(ev); if (l.length > 60) l.shift(); }); }
+  function e2eEvent(e, catchup) {
+    var links = Array.isArray(e.links) ? e.links : e.links ? [e.links] : [];
+    store({ t: e.t, day: e.day, component: e.component, kind: e.kind, bid: e.borrower_id, name: e.first_name, summary: e.summary, to: links.length && links[links.length - 1].to_component });
+    if (!catchup && page === "system") { var hop = 450 / Math.max(1, speed / 2);
+      if (links.length && (Math.random() < .35 || /verified|blocked|stop|approval/.test(e.kind))) links.forEach(function (l, i) { pulse(l.from_component, l.to_component, i * hop); }); else light(e.component); }
+  }
+  // Comparison runs have no component events: derive the system view from the race events (the page says so).
+  function newMock() { return { spine: { due: 0 }, churn: { scored: 0 }, learner: { contact: 0, rest: 0, updates: 0 }, aladdin: { checked: 0, "held back": 0, breaches: 0 },
+    executor: { sent: 0 }, channel: {}, borrower: { reached: 0, replied: 0, "asked to stop": 0 }, intent: { classified: 0 }, voice: { calls: 0, answered: 0 }, cm03: { chats: 0, "claims checked": 0 },
+    hitl: { "to review": 0 }, payments: { verified_paise: 0, payments: 0 }, outcomes: { finalized: 0 }, reports: { daily: 0, breaches: 0 } }; }
+  var mockC = newMock();
+  function mockFrom(e, catchup) {
+    if (e.arm !== "kairos") return; var M = mockC, n = masked(e.name, e.borrower_id), ch = CH[e.channel] || "", hops = [];
+    function ev(comp, from, to, s) { store({ t: e.time, day: e.day, component: comp, kind: e.kind, bid: e.borrower_id, name: e.name, summary: s, to: to }); if (from) hops.push([from, to]); }
+    var sample = hash((e.borrower_id || "") + e.day + e.kind) % 100;
+    switch (e.kind) {
+      case "decision": M.churn.scored++; M.learner.contact++; M.aladdin.checked++; if (sample < 10) { ev("learner", "churn", "learner", n + ": " + ch + " planned for " + hh(e.send_time) + "."); ev("aladdin", "learner", "aladdin", "Aladdin checked " + n + "'s " + ch + ": allowed."); } break;
+      case "wait": M.churn.scored++; M.learner.rest++; break;
+      case "blocked": M.aladdin.checked++; M.aladdin["held back"]++; if (sample < 20) ev("aladdin", "learner", "aladdin", "Held back " + n + ": " + (REASON[e.label] || e.label || "a rule").toLowerCase() + "."); break;
+      case "sent": M.executor.sent++; M.channel[ch] = (M.channel[ch] || 0) + 1; if (e.channel === "ivr" || e.channel === "voicebot") M.voice.calls++; if (sample < 8) { ev("executor", "aladdin", "executor", ch + " sent to " + n + "."); ev("channel", "executor", "channel", ch + " on its way to " + n + "."); } break;
+      case "delivered": M.borrower.reached++; M.outcomes.finalized++; if (e.channel === "ivr" || e.channel === "voicebot") M.voice.answered++; break;
+      case "not_delivered": M.outcomes.finalized++; break;
+      case "reply": M.borrower.replied++; M.intent.classified++; if (e.channel === "whatsapp") M.cm03.chats++; ev("intent", "borrower", "intent", n + " replied on " + ch + "; the intent stack read it."); break;
+      case "promise": ev("intent", "borrower", "intent", n + " promised to pay."); break;
+      case "paid": M.payments.payments++; M.payments.verified_paise += e.amount_paise || 0; ev("payments", "borrower", "payments", n + " paid " + inr(e.amount_paise) + ", confirmed by the bank."); hops.push(["payments", "outcomes"]); break;
+      case "stop": M.borrower["asked to stop"]++; ev("aladdin", "intent", "aladdin", n + " asked us to stop: every channel paused."); break;
+      case "handoff": M.cm03["claims checked"]++; M.hitl["to review"]++; ev("hitl", "cm03", "hitl", n + "'s payment claim goes to a person."); break;
+      case "learner": M.learner.updates++; ev("learner", "outcomes", "learner", e.text); break;
+      case "day_end": M.reports.daily++; ev("reports", "outcomes", "reports", "Day " + e.day + " report: rule breaches " + (e.cap_breaches || 0) + "."); break;
+    }
+    if (!catchup && page === "system") hops.forEach(function (h2, i) { pulse(h2[0], h2[1], i * 400 / Math.max(1, speed / 2)); });
+  }
+  var SPEC = { spine: [["borrowers", "borrowers"], ["pool_paise", "budget", "inr"]], churn: [["cohort_sizes", "cohorts", "size"], ["moves", "moves"]], learner: [["contact", "contact"], ["wait", "rest"]],
+    aladdin: [["checked", "checked"], ["blocked", "held back"], ["cap_breaches", "breaches"]], executor: [["dispatched", "sent"], ["spend_paise", "spent", "inr"]], channel: [["delivered", "delivered"], ["failed", "failed"]],
+    borrower: [["replies", "replies"], ["stops", "asked to stop"]], intent: [["classified", "classified"], ["needs_human", "to a person"]], voice: [["calls", "calls"], ["connected", "connected"]],
+    cm03: [["conversations", "chats"], ["otp_verified", "OTP verified"], ["fakes_caught", "fakes caught"]], hitl: [["pending", "waiting"], ["approved", "approved"], ["rejected", "rejected"]],
+    payments: [["recovered_paise", "verified", "inr"], ["verified", "payments"]], outcomes: [["finalized", "finalized"]], reports: [["daily_reports", "daily reports"]] };
+  function nodeHtml(id, o, real) {
+    var out = [];
+    if (real && SPEC[id]) SPEC[id].forEach(function (s) { var v = o && o[s[0]]; if (v == null) return; out.push([s[1], s[2] === "inr" ? inr(v) : s[2] === "size" ? indian(typeof v === "object" ? Object.keys(v).length : v) : indian(v)]); });
+    else Object.keys(o || {}).forEach(function (k) { var v = o[k]; if (typeof v !== "number") return; out.push(/_paise$/.test(k) ? [k.replace(/_paise$/, ""), inr(v)] : [k, indian(v)]); });
+    return out.slice(0, 3).map(function (p) { return "<span><b>" + p[1] + "</b>" + esc(p[0]) + "</span>"; }).join("");
+  }
+  function renderMap(st) {
+    var real = !!st.components, C = st.components;
+    $("sysText").textContent = real ? "Full system trace: one SIMULATED campaign through every component." : st.status === "idle" ? "Start a full system trace to follow one campaign through every component."
+      : "Derived from the comparison run. Start a full system trace to see each component's own events.";
+    $("sysStart").hidden = real && (st.status === "running" || st.status === "preparing");
+    if (!real) { var k = st.counters && st.counters.kairos; mockC.spine.due = k && k.stages ? k.stages.due : 0; C = {}; Object.keys(mockC).forEach(function (x) { C[x] = mockC[x]; });
+      var ch = mockC.channel, t3 = {}; Object.keys(ch).sort(function (a, b) { return ch[b] - ch[a]; }).slice(0, 3).forEach(function (x) { t3[x] = ch[x]; }); C.channel = t3; }
+    COMPS.forEach(function (c) { var el = $("nc-" + c.id), h = nodeHtml(c.id, C[c.id], real); if (el._h !== h) { el.innerHTML = h; el._h = h; } });
+    if (!$("pulses")) layoutMap();
+  }
+
+  // ---------- drawer ----------
+  function openDrawer(t, s, html) { $("dTitle").textContent = t; $("dSub").textContent = s; $("dBody").innerHTML = html; $("drawer").classList.add("on"); $("drawer").setAttribute("aria-hidden", "false"); $("dClose").focus(); }
+  function closeDrawer() { $("drawer").classList.remove("on"); $("drawer").setAttribute("aria-hidden", "true"); }
+  $("dClose").onclick = closeDrawer;
+  function tone(k) { return /paid|verified/.test(k) ? "good" : /block|stop|fraud|reject/.test(k) ? "bad" : /pending|promise|handoff/.test(k) ? "wait" : ""; }
+  function openComp(id) {
+    var c = COMPS.filter(function (x) { return x.id === id; })[0], list = (compEvents[id] || []).slice(-30).reverse();
+    openDrawer(c.name, c.sub + " · recent events", list.length ? '<ol class="tl">' + list.map(function (ev) {
+      var s = String(ev.summary || ""); if (ev.name) s = s.split(ev.name).join(masked(ev.name, ev.bid));
+      return '<li class="' + tone(ev.kind) + '"><div class="tm">Day ' + ev.day + " · " + hh(ev.t) + (ev.bid ? ' · <button class="linkish" data-bid="' + esc(ev.bid) + '">' + esc(masked(ev.name, ev.bid)) + "</button>" : "") + "</div><p>" + amt(s) + "</p></li>"; }).join("") + "</ol>"
+      : '<div class="empty">No events yet.</div>');
+  }
+  function openJourney(bid) {
+    var local = (byBorrower[bid] || []).filter(function (e) { return !e.arm || e.arm === "kairos"; }), nm = local[0] ? (local[0].name || local[0].first_name) : "";
+    var draw = function (evs, src) {
+      var rows = evs.map(function (e) { var r = rowFor(e); return r ? { e: e, r: r } : null; }).filter(Boolean);
+      openDrawer(masked(nm, bid), "Loan " + loanRef(bid) + " · synthetic borrower · " + src, rows.length ? '<ol class="tl">' + rows.map(function (x) {
+        return '<li class="' + x.r.tone.replace("acc", "") + '"><div class="tm">Day ' + x.e.day + " · " + hh(x.e.time || x.e.t) + "</div><p>" + amt(x.r.action) + (x.r.note ? ' <span class="tm">· ' + esc(x.r.note) + "</span>" : "") + "</p></li>"; }).join("") + "</ol>"
+        : '<div class="empty">No activity yet.</div>');
+    };
+    if (last && last.mode === "full") fetch("/demo/live/borrower/" + encodeURIComponent(bid)).then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (j) { var evs = Array.isArray(j) ? j : j.events || []; if (!evs.length) throw 0; draw(evs, "full trace"); })
+      .catch(function () { draw(local, "events on this page"); });
+    else draw(local, "events on this page");
+  }
+
+  // ---------- boot ----------
+  syncTheme();
+  if (/[?&]presenter=1/.test(location.search)) presenter(true);
+  go(location.hash.slice(1) || (/[?&]view=e2e/.test(location.search) ? "system" : "overview"));
+  api("/demo/live/state?cursor=0&limit=1").then(function (st) {
+    if (st.status && st.status !== "idle") { if (st.mode === "full") $("mode").value = "full"; poll(); } else { last = null; $("idleCard").hidden = false; render(st); }
+  }).catch(function () { $("idleCard").hidden = false; });
+})();
+</script>
+</body>
+</html>

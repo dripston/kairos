@@ -19,7 +19,7 @@ build-backend = "setuptools.build_meta"
 include = ["kairos_backend*", "spine*", "replay*", "redteam*"]
 
 [tool.setuptools.package-data]
-kairos_backend = ["data/*.json"]
+kairos_backend = ["data/*.json", "static/*.html"]
 "kairos_backend.voice" = ["*.json"]
 "kairos_backend.cm03" = ["static/*.html"]
 
