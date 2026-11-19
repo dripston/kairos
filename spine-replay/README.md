@@ -77,3 +77,32 @@ Plug-in points (stand-ins are labelled in every report):
 - K10 chat agent: replace PlaceholderChatHandler in replay/chat_load.py (needs async handle)
 - Official simulator / baseline (K02): replace DevSimulator / FixedCadenceBaseline
 - Costs, templates, caps, budget: replay/settings.py (PLACEHOLDER values marked)
+
+---
+
+# K09 replay on the full K06 stack (fixed cadence vs adaptive)
+
+    python3 run_k09_replay.py                          # 5,000 borrowers, 14 days, seed 42 (~5 min)
+    python3 run_k09_replay.py --borrowers 1500         # quicker (~45 s)
+    python3 run_k09_replay.py --check-determinism      # run twice, compare CRM envelope hashes
+    python3 run_k09_replay.py --no-drift               # without the E17 WhatsApp drift scenario
+    python3 -m unittest tests.test_k09_replay -v       # determinism, matched safety, edge cases
+
+Both arms run through the same backend stack (`../backend`, stdlib only): `SupervisorFSM.plan`
+(borrower holds → K01 gate per candidate → rank → atomic reserve) → `dispatch` (gate re-checked at
+send time) → the K15 DEV simulator → `Ledger` (stop-for-day, STOP, verified payment) →
+`OutcomeFinalizer` (one outcome per touch at the end of its 24 h window) → learner update. Only the
+ranker differs: the K15 fixed schedule, or `BetaBernoulliLearner` with seeded Thompson sampling
+(SIMULATOR mode). Matched by construction: same seed and portfolio, same K01 caps plus the K15
+placeholder caps as lender override `REPLAY-K15` (`replay/k15_lender_caps.json`), and the same
+budget pool, set by default to what the fixed cadence spends unconstrained. Costs for ranking and
+charging both come from `replay/settings.py` `COST_PAISE`.
+
+Reports: `reports/k09_replay_report.json` with the funnel, spend, replies per ₹, verified payments,
+K01 cap breaches (independent ledger recount), K15 safety violations, decisions/s, per-arm
+posterior scores before and after, the learner's preferred channel per band per day and the switches
+between them, and a cohort-close carry-forward proposal. Ledger DBs for both arms (decision scores,
+touches, outcomes, audit) are kept for inspection.
+
+All results are SIMULATED: DEV simulator, synthetic priors, placeholder costs, caps and templates
+(K22 stand-in: approved templates for en/hi only, so other languages WAIT per K01).
