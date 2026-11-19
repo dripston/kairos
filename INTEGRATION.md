@@ -58,7 +58,7 @@ scripts/integrate.sh              # full rebuild from origin/main, then replay t
 ## Checks (from `backend/`, Python 3.9 venv)
 
 ```bash
-pytest                                                  # 2374 passed, 6 xfailed (FSM conformance findings, k06/fsm-fixes)
+pytest                                                  # 2880 passed, 6 xfailed (FSM conformance findings, k06/fsm-fixes)
 (cd ../crm && python3 -m pytest tests)                  # 28 passed
 python3 scripts/run_journey.py                          # the journey (below)
 python3 scripts/run_redteam.py                          # 49 attacks: 49 PASS
