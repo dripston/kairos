@@ -58,7 +58,7 @@ scripts/integrate.sh              # full rebuild from origin/main, then replay t
 ## Checks (from `backend/`, Python 3.9 venv)
 
 ```bash
-pytest                                                  # 2373 passed, 6 xfailed (FSM conformance findings, k06/fsm-fixes)
+pytest                                                  # 2374 passed, 6 xfailed (FSM conformance findings, k06/fsm-fixes)
 (cd ../crm && python3 -m pytest tests)                  # 28 passed
 python3 scripts/run_journey.py                          # the journey (below)
 python3 scripts/run_redteam.py                          # 49 attacks: 49 PASS
@@ -183,9 +183,8 @@ hash is identical on every run.
 
 - **`k06/fsm-fixes`**: 7 transition bugs. The 6 strict xfails in `tests/fsm` flip when it lands.
   Merge it last.
-- **`k27/auto-churn` export fix**: the K27 Sarvam export should use the reserved `instruction_id`
-  as `user_identifier`. Re-merge it when it lands; see the note in the voice section of
-  `backend/README.md`.
+- **`k27/auto-churn` export fix**: merged at 361ada1. The K27 Sarvam export now puts the reserved
+  `instruction_id` in `user_identifier`, so K27 voice calls join their touches.
 - **Frontend build**: not verified here (no Node).
 
 ## Decisions for a human
@@ -205,5 +204,8 @@ hash is identical on every run.
    Everything here was run on 3.9.
 5. **`GET /borrowers/{id}`** still returns the full name for every role; only the phone and e-mail
    are masked. Decide whether viewers should see initials.
-6. `frontend/public/journey/` is gitignored on `frontend/live-api`, so the exported `journey.json` is
+6. **Sample data in `policy/K24-portfolio-intake/sample_upload_v*.csv`** (from `policy/ojas-pack`)
+   uses a realistic name and the common "+91 98765 43210" example number. It is not from this
+   branch, but the no-PII rule says to swap it for a synthetic name and a 0-prefixed number.
+7. `frontend/public/journey/` is gitignored on `frontend/live-api`, so the exported `journey.json` is
    not committed. The page falls back to the API, then to its built-in mock.
