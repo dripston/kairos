@@ -274,3 +274,24 @@ def test_end_to_end_learner_moves_with_outcomes(ledger):
     after = {(e["channel"], e["slot"]): e["mean"] for e in lr.estimates("B1")}
     assert after[("whatsapp", "11-14")] > before[("whatsapp", "11-14")]
     assert lr.model_version != v0
+
+
+# ---------- free-text replies through the intent stack ----------
+def test_text_reply_is_classified_then_attributed(ledger, fin, monkeypatch):
+    monkeypatch.delenv("KAIROS_INTENT_STACK", raising=False)
+    send(ledger, fin, "P1")
+    code, res = fin.record_text_reply("P1", at(15), "bhai kal pakka de dunga", channel="whatsapp")
+    assert code == REPLY_ATTRIBUTED and res.label == "PTP" and res.entities["date"] == "2026-11-21"
+    code, res = fin.record_text_reply("P1", at(16), "link bhejo")
+    assert code == DUPLICATE and res.label == "LINK_REQUEST"           # one reward per touch
+
+
+def test_text_reply_stop_and_wrong_number_are_not_meaningful(ledger, fin):
+    send(ledger, fin, "P1")
+    send(ledger, fin, "P2")
+    code, res = fin.record_text_reply("P1", at(15), "STOP")
+    assert (code, res.label) == (REACH_ONLY, "STOP")
+    code, res = fin.record_text_reply("P2", at(15), "galat number hai", use_stack=False)
+    assert (code, res.label, res.tier_used) == (REACH_ONLY, "WRONG_NUMBER", "legacy_rules")
+    assert fin.row(fin.ledger._conn().execute(
+        "SELECT instruction_id FROM touch_outcomes WHERE borrower_id='P1'").fetchone()[0])["reply_at"] is None

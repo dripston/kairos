@@ -4,6 +4,7 @@ One row per executed touch in `touch_outcomes` (same SQLite DB as the ledger):
 
     register_execution()   touch went out           -> PENDING, window_end = executed_at + reply window
     record_reach()         delivered / connected    -> reach only, never a reply
+    record_text_reply()    free text -> intent_stack label -> record_reply(meaningful = not STOP / WRONG_NUMBER)
     record_reply()         meaningful reply         -> attributed to the borrower's most recent executed
                                                        touch whose window contains it (one reward per touch)
                            click / read             -> reach only
@@ -26,7 +27,7 @@ These calls only record outcomes. Ledger side effects of a reply (stop-for-day) 
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import Any, Optional
+from typing import Any, Optional, Sequence, Tuple
 
 from .contracts import Learner, Outcome
 from .ledger import Ledger
@@ -147,6 +148,24 @@ class OutcomeFinalizer:
                 return DUPLICATE
             c.execute("UPDATE touch_outcomes SET late_reply_at=? WHERE instruction_id=?", (at_iso, iid))
             return LATE_REPLY
+
+    def record_text_reply(self, borrower_id: str, at: datetime, text: str, channel: Optional[str] = None,
+                          use_stack: Optional[bool] = None, stack: Any = None,
+                          known_names: Sequence[str] = ()) -> Tuple[str, Any]:
+        """Free-text reply (SMS / WhatsApp / email) -> classify, then record_reply().
+
+        Classification goes through intent_stack.classify_reply(): the tiered stack by default
+        (intent_stack.STACK_DEFAULT_FOR_INGESTION, set from scripts/eval_intent.py), or the legacy
+        rules with use_stack=False / KAIROS_INTENT_STACK=0. A reply is meaningful unless it is STOP or
+        WRONG_NUMBER (K01 reply_attribution: any inbound text reply counts; an opt-out or a stranger
+        is not a borrower response). Returns (record_reply code, StackResult). This records the
+        outcome only: STOP still goes to Ledger.record_stop and K13 events to exceptions.handle --
+        the label never chooses an action by itself."""
+        from .intent_stack import classify_reply, is_meaningful_reply
+        res = classify_reply(text, at, channel or "whatsapp", use_stack=use_stack, stack=stack,
+                             known_names=[borrower_id, *known_names])
+        code = self.record_reply(borrower_id, at, is_meaningful_reply(res.label), channel)
+        return code, res
 
     def record_payment_verified(self, borrower_id: str, at: datetime) -> Optional[str]:
         """Note a verified payment against the borrower's most recent touch whose window contains it.
