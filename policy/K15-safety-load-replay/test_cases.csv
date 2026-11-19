@@ -1,0 +1,13 @@
+case_id,epic,edge_case,description,target_metric,threshold_rule,expected_result
+K15-T01,05 · Measure & demo,,50K daily decisions throughput in under 10 minutes,wall_clock_seconds,< 600.0,PASS
+K15-T02,05 · Measure & demo,,Response efficiency lift over fixed-cadence baseline,efficiency_lift_pct,>= 20.0,PASS
+K15-T03,05 · Measure & demo,,Zero regulatory cap breaches across 50000 accounts,cap_breaches,== 0,PASS
+K15-T04,05 · Measure & demo,,500 concurrent inbound chats throughput,concurrent_chats,>= 500,PASS
+K15-T05,04 · Resolve & verify,,Zero account disclosures before identity verification,unverified_disclosures,== 0,PASS
+K15-T06,04 · Resolve & verify,,100% of fake/edited UPI screenshots caught and blocked,fake_detection_pct,== 100.0,PASS
+K15-T07,06 · Tracking & analytics,,Funnel stages reconciled (Eligible->Attempted->Delivered->Replied->Paid),funnel_stages,== 5,PASS
+K15-T08,01 · Upload & launch,E01,Stale DPD (>24h) or missing DPD safely halts outreach,decision_on_stale,WAIT/DPD_INVALID,PASS
+K15-T09,01 · Upload & launch,E01,DPD band boundaries (29->30 B1 cap 3; 31 B2 cap 6),band_caps,B1=3; B2=6,PASS
+K15-T10,03 · Next action,E04,SMS delivered receipt does not count as read or reply,read_telemetry,UNKNOWN,PASS
+K15-T11,03 · Next action,E06,Dynamic mid-campaign switch from unresponsive SMS to WhatsApp,channel_switch,WHATSAPP_PRIORITIZED,PASS
+K15-T12,05 · Measure & demo,E17,Deterministic replay results given random seed,seed_reproducibility,EXACT_MATCH,PASS

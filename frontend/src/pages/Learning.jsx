@@ -3,6 +3,7 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tool
 import { Check, Lock, ArrowRight } from 'lucide-react'
 import { useKairos, useDerived } from '../lib/store'
 import { CAMPAIGN_DAYS, CHANNEL_META, ESTIMATES, LEARNING, SERIES, UNCERTAINTY, bestByDay, sumTo } from '../lib/mock'
+import { ArmScores, ChannelSwitches, DailySegmentTable, ProofCard } from '../components/LiveLearning'
 import { Button, Card, CardHead, ChannelTag, Chip, KpiStrip, PageHeader, Segmented, Td, Th, cx, inr, pct } from '../components/ui'
 
 const TT = { contentStyle: { background: '#1c1c1c', border: '1px solid #333', borderRadius: 8, fontSize: 12 }, cursor: { stroke: '#333' } }
@@ -27,6 +28,13 @@ export default function Learning() {
         right={<div className="flex items-center gap-2"><Chip>Run R-0007</Chip><Chip>Seed 42</Chip><Chip>Baseline v1</Chip><Chip>Policy v1.1.0</Chip></div>} />
 
       <div className="space-y-5">
+        <ProofCard />
+        <div className="grid grid-cols-3 gap-5">
+          <div className="col-span-2"><ArmScores /></div>
+          <ChannelSwitches />
+        </div>
+        <DailySegmentTable />
+        <div className="flex items-center gap-3 pt-2 text-[12.5px] text-muted"><span className="h-px flex-1 bg-line" />Learning by cohort, channel and region below is the built-in demo series (SIMULATED)<span className="h-px flex-1 bg-line" /></div>
         <KpiStrip items={[
           { label: 'Collected · Kairos', value: inr(d.collected), sub: `fixed cadence ${inr(d.fCollected)}` },
           { label: 'Collection lift', value: `+${pct(d.collected / d.fCollected - 1)}`, valueClass: 'text-ok', sub: 'same seed, budget and caps' },

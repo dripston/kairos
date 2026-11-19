@@ -88,6 +88,36 @@ class SpineTests(unittest.TestCase):
         with self.assertRaises(PaymentError):
             apply_payment(self.conn, "PAY-T9", LOAN_B, "OB-B-1", 100_000, "2026-11-19", "upi", "UPI-TEST-0001")
 
+    def test_reference_variants_are_the_same_reference(self):
+        """Red-team RT-F06: an edited screenshot re-typing a used reference is still that reference."""
+        self.assertTrue(apply_payment(self.conn, "PAY-V0", LOAN_B, "OB-B-1", 100, "2026-11-19", "upi", "UTR-7731"))
+        for i, ref in enumerate((" UTR-7731", "utr-7731\t", "UTR-7731\u200b", "\ufeffUTR\u200d-7731",
+                                 "\uff35\uff34\uff32-\uff17\uff17\uff13\uff11", "UTR - 7731"), 1):
+            with self.assertRaises(PaymentError, msg=repr(ref)):
+                apply_payment(self.conn, f"PAY-V{i}", LOAN_B, "OB-B-1", 100, "2026-11-19", "upi", ref)
+        for blank in ("", " ", "\u200b"):
+            with self.assertRaises(PaymentError):
+                apply_payment(self.conn, "PAY-VB", LOAN_B, "OB-B-1", 100, "2026-11-19", "upi", blank)
+        row = self.conn.execute("SELECT reference, reference_key FROM payments WHERE payment_id = 'PAY-V0'").fetchone()
+        self.assertEqual((row["reference"], row["reference_key"]), ("UTR-7731", "utr-7731"))  # raw kept
+        self.assertEqual(loan_summary(self.conn, LOAN_B)["obligations"][0]["amount_paid_paise"], 100)
+        # a genuinely different reference still goes through
+        self.assertTrue(apply_payment(self.conn, "PAY-V9", LOAN_B, "OB-B-1", 100, "2026-11-19", "upi", "UTR-7732"))
+
+    def test_reference_key_added_to_an_older_database(self):
+        """create_schema() adds and fills payments.reference_key on a database made before RT-F06."""
+        from spine.db import create_schema
+        old = get_connection(":memory:")
+        old.executescript("CREATE TABLE payments (payment_id TEXT PRIMARY KEY, loan_id TEXT NOT NULL,"
+                          " obligation_id TEXT NOT NULL, amount_paise INTEGER NOT NULL, paid_on TEXT NOT NULL,"
+                          " mode TEXT NOT NULL, reference TEXT NOT NULL UNIQUE, reversed_on TEXT, reversal_reason TEXT);"
+                          "INSERT INTO payments VALUES ('P1', 'L1', 'O1', 100, '2026-11-19', 'upi', ' Utr-1', NULL, NULL);")
+        create_schema(old)
+        self.assertEqual(old.execute("SELECT reference_key FROM payments").fetchone()[0], "utr-1")
+        with self.assertRaises(sqlite3.IntegrityError):
+            old.execute("INSERT INTO payments VALUES ('P2', 'L1', 'O1', 100, '2026-11-19', 'upi', 'UTR-1', NULL, NULL, 'utr-1')")
+        old.close()
+
     # ---- DPD ----
 
     def test_loan_b_dpd_and_band(self):

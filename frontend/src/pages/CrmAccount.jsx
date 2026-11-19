@@ -7,6 +7,10 @@ import {
 import { useKairos, decideHero, fmtClock } from '../lib/store'
 import { CHANNELS, CHANNEL_META, HERO_ID, RISK_TAGS, TEMPLATES } from '../lib/mock'
 import { EVENT_META, TONE_BG, TONE_TEXT } from '../lib/events'
+import { useApi, useApiStatus } from '../api/hooks'
+import { getBorrower } from '../api/kairos'
+import { SourceBadge } from '../components/live'
+import CrmLive from './CrmLive'
 import { Bar, Button, Card, CardHead, ChannelTag, Chip, Empty, ReasonDialog, StatusChip, Td, Th, cx, inr, pct } from '../components/ui'
 
 const TABS = ['Journey', 'Overview', 'Payments', 'Cases', 'Audit']
@@ -43,7 +47,17 @@ function genericDecision(b, day) {
   return { ...map[b.nextAction], checks: base, version: 2, expires: `Day ${day} · 20:00` }
 }
 
+// Live spine record when the API has this borrower; otherwise the mock record (labelled SIMULATED).
 export default function CrmAccount() {
+  const { id } = useParams()
+  const status = useApiStatus()
+  const res = useApi((o) => getBorrower(id, o), { deps: [id, status.state] })
+  if (res.loading) return <Empty>Loading {id} from the Kairos API…</Empty>
+  if (res.source === 'live') return <CrmLive b={res.data} res={res} />
+  return <MockAccount res={res} />
+}
+
+function MockAccount({ res }) {
   const { id } = useParams()
   const { state, dispatch } = useKairos()
   const [tab, setTab] = useState('Journey')
@@ -65,6 +79,8 @@ export default function CrmAccount() {
       <div className="mb-4 flex items-center gap-2 text-[13px] text-muted">
         <Link to="/crm" className="inline-flex items-center gap-1 hover:text-fg"><ArrowLeft size={14} /> Smart CRM</Link>
         <span>/</span><span className="text-fg">{b.id}</span>
+        <span className="ml-2"><SourceBadge res={res} /></span>
+        {res?.error && !res.offline && <span className="text-[12px] text-faint">not in the K03 spine — mock record</span>}
       </div>
 
       <div className="grid grid-cols-[290px_minmax(0,1fr)_300px] gap-5">

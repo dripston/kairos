@@ -1,0 +1,47 @@
+[
+  {
+    "case_id": "K26-T01",
+    "passed": true,
+    "detail": "orphan events: 0; activity rows 100,000 = 2 x 50,000 borrowers, unique per policy: True"
+  },
+  {
+    "case_id": "K26-T02",
+    "passed": true,
+    "detail": "22 KPI rows x 12 fields, 0 empty"
+  },
+  {
+    "case_id": "K26-T03",
+    "passed": true,
+    "detail": "22 KPIs rebuilt from raw send/payment events and the portfolio, differences: 0"
+  },
+  {
+    "case_id": "K26-T04",
+    "passed": true,
+    "detail": "each funnel rate's denominator equals the previous stage's numerator, and no rate exceeds 100% (both policies)"
+  },
+  {
+    "case_id": "K26-T05",
+    "passed": true,
+    "detail": "kairos: attempted 49,127=49,127, reached 49,069=49,069, responded 16,943=16,943 | fixed_cadence: attempted 49,154=49,154, reached 49,096=49,096, responded 13,059=13,059"
+  },
+  {
+    "case_id": "K26-T06",
+    "passed": true,
+    "detail": "kairos: events \u20b9244,229.10 / daily \u20b9244,229.10 / KPI \u20b9244,229.10 / activity \u20b9244,229.10 | fixed_cadence: events \u20b9323,496.80 / daily \u20b9323,496.80 / KPI \u20b9323,496.80 / activity \u20b9323,496.80"
+  },
+  {
+    "case_id": "K26-T07",
+    "passed": true,
+    "detail": "labels found {'SIMULATED'} (allowed ('LIVE', 'REPLAY', 'SIMULATED')); invalid label 'TEST' rejected: True"
+  },
+  {
+    "case_id": "K26-T08",
+    "passed": true,
+    "detail": "10 segments x 2 policies add up to the totals"
+  },
+  {
+    "case_id": "K26-T09",
+    "passed": true,
+    "detail": "replies per \u20b9 kairos replies/\u20b9 0.0867, fixed_cadence replies/\u20b9 0.0461 equal K15 summary; paid-after-reply equals the K15 funnel"
+  }
+]

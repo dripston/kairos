@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# optional local data for the Learning / journey views (never commit generated reports)
+public/k09_replay_report.json
+public/journey/

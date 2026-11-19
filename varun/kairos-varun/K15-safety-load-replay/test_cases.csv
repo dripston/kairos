@@ -1,0 +1,16 @@
+case_id,requirement,edge_case,description,how_it_is_checked
+K15-T01,Datasets sheet,,Dev dataset is the verified PL_Dummy_Collections_Data_500 file and every synthetic borrower traces to one of its loans,500 rows; tracker columns present (Loan ID / EMI / POS / TOS / DPD / Bucket); every borrower's source_loan_id is in the file; official datasets marked not used
+K15-T02,Done when: 50K planning throughput,,Daily decisions for 50000 borrowers finish in under 10 minutes on every day,timings.csv: 50000 borrowers per day for both policies; slowest day < 600 s
+K15-T03,Same-seed benchmark (Demo S6),,Both policies ran with the same seed / budget pool / K01 policy / campaign window,summary + manifest + daily_totals pool values are identical for both policies
+K15-T04,Measure the funnel,,Funnel eligible -> attempted -> delivered or connected -> meaningful reply -> verified payment recomputed from raw logs,unique borrowers per stage from sends/payments logs; each stage <= previous; equals funnel.csv
+K15-T05,Done when: compare both policies,,Unique reach / replies per rupee / verified payments compared across both policies,all three computed from raw logs for both policies and present in benchmark.md
+K15-T06,CM-02 acceptance,,Replies per rupee at least 20% above fixed cadence,sum(replied) / sum(actual_cost_inr) from raw sends logs
+K15-T07,CM-02 acceptance,,Zero cap breaches - every send re-checked with Ojas's K01 reference,audit sends_checked equals the number of rows in the sends logs and breaches == 0
+K15-T08,Safety replay,,The breach auditor catches injected breaches (negative test),small run + 5 injected bad sends (gap / window / rejected template / PTP hold / opted out) must all be flagged with the right K01 reason
+K15-T09,Done when: 500 concurrent chats,,500 conversations at once through Ojas's K10 gate with zero leaks and first reply within SLA,chat_load_report: peak concurrency >= 500; 100% first response < 30 s; 0 safety violations
+K15-T10,Safety replay,,The chat safety checker catches a leaking agent (negative test),an agent that answers dues without verification must produce violations
+K15-T11,Safety replay,E01,DPD bands follow K01 at every send and boundary crossings happen in the replay,every logged band equals K01 band for its DPD; 30->31 (B1->B2) and 60->61 (B2->B3) crossings observed; stale DPD blocked (DPD_INVALID)
+K15-T12,Safety replay,E04,SMS read stays UNKNOWN and clicks/reads never count as replies,no SMS row has read=True; rows clicked or read without reply are not counted as replies
+K15-T13,Story replay,E06,No SMS reply + earlier WhatsApp click -> WhatsApp chosen next day; and Kairos moves away from the channel that stopped working,after an unanswered SMS Kairos picks WhatsApp first next day >= 10 points more often when the borrower clicked on WhatsApp before; salaried WhatsApp share change for Kairos is >= 5 points below fixed cadence's change
+K15-T14,Statistical policy,E17,Same seed gives a byte-identical replay and one reward per touch,two Kairos runs have equal SHA-256; touch_id unique; replies only on logged touches
+K15-T15,Proof and fallback,E18,Every result is labelled SIMULATED and linked to run ID / seed / baseline,all sends rows data_mode = SIMULATED; manifest has run_id + seed + baseline + policy file hashes

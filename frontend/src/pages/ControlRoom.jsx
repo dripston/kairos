@@ -12,6 +12,8 @@ import {
   Button, Card, CardHead, ChannelIcons, ChannelTag, Chip, Dot, Empty, Input, KpiStrip, PageHeader, ReasonDialog, Segmented, Select,
   StatusChip, Td, Th, Toggle, cx, inr, pct,
 } from '../components/ui'
+import { ApprovalsQueue, BudgetCaps, Cm03Console, DemoRecipients, LiveDecisions } from '../components/LiveControl'
+import LiveFeed from '../components/LiveFeed'
 
 const ACTIVE = ['RESERVED', 'SCHEDULED', 'NEEDS_APPROVAL', 'APPROVED']
 const RANGES = { Today: 1, '7 days': 7, 'To date': Infinity }
@@ -113,6 +115,20 @@ export default function ControlRoom() {
         ]} />
 
         <Alerts d={d} />
+
+        {/* live from the Kairos API (falls back to labelled mocks when the backend is offline) */}
+        <div className="grid grid-cols-3 gap-5">
+          <LiveDecisions className="col-span-2" />
+          <LiveFeed height={560} />
+        </div>
+        <div className="grid grid-cols-3 gap-5">
+          <ApprovalsQueue className="col-span-2" />
+          <BudgetCaps campId={scope.type === 'campaign' && scope.id !== 'ALL' ? scope.id : 'C-01'} />
+        </div>
+        <div className="grid grid-cols-3 gap-5">
+          <Cm03Console className="col-span-2" />
+          <DemoRecipients />
+        </div>
 
         <div className="grid grid-cols-3 gap-5">
           <CollectionsTrend share={share} scopeLabel={scopeLabel} />

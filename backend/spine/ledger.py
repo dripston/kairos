@@ -1,4 +1,5 @@
 """Business logic: apply payments, record events, calculate loan status and DPD."""
+import unicodedata
 from datetime import date
 
 from spine.config import AS_OF_DATE, REMAINING_EMIS_INCLUDES_OVERDUE
@@ -11,6 +12,19 @@ class PaymentError(ValueError):
 
 def rupees(paise):
     return f"Rs.{paise / 100:,.2f}"
+
+
+def reference_key(reference):
+    """Duplicate-check key for a bank reference (red-team RT-F06).
+
+    An edited screenshot can re-type a used UTR so it no longer matches exactly: ' UTR-7731',
+    'utr-7731', 'UTR-7731' + zero-width space, full-width 'ＵＴＲ-７７３１'. They are the same transfer.
+    Key = NFKC (full-width -> ASCII), drop all whitespace and invisible format characters (Unicode Cf:
+    zero-width space/joiners, BOM, bidi marks), casefold. The raw reference is still stored as given.
+    """
+    text = unicodedata.normalize("NFKC", str(reference))
+    text = "".join(ch for ch in text if not ch.isspace() and unicodedata.category(ch) != "Cf")
+    return unicodedata.normalize("NFKC", text.casefold())
 
 
 def record_event(conn, event_id, borrower_id, event_type, occurred_at,
@@ -34,10 +48,15 @@ def apply_payment(conn, payment_id, loan_id, obligation_id, amount_paise, paid_o
 
     Returns True if applied, False if this payment_id was already applied
     (so re-running a data load never counts the same money twice).
+    A bank reference can be used once: it is compared by reference_key() (case, spaces, zero-width
+    and full-width variants are the same reference) and that key is stored next to the raw value.
     """
+    key = reference_key(reference)
+    if not key:
+        raise PaymentError("Payment reference is empty")
     existing = conn.execute(
-        "SELECT payment_id FROM payments WHERE payment_id = ? OR reference = ?",
-        (payment_id, reference),
+        "SELECT payment_id FROM payments WHERE payment_id = ? OR reference_key = ?",
+        (payment_id, key),
     ).fetchone()
     if existing:
         if existing["payment_id"] == payment_id:
@@ -65,9 +84,10 @@ def apply_payment(conn, payment_id, loan_id, obligation_id, amount_paise, paid_o
 
     with conn:  # all three steps succeed together, or none are saved
         conn.execute(
-            """INSERT INTO payments (payment_id, loan_id, obligation_id, amount_paise, paid_on, mode, reference)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (payment_id, loan_id, obligation_id, amount_paise, paid_on, mode, reference),
+            """INSERT INTO payments (payment_id, loan_id, obligation_id, amount_paise, paid_on, mode, reference,
+                                    reference_key)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (payment_id, loan_id, obligation_id, amount_paise, paid_on, mode, reference, key),
         )
         conn.execute(
             "UPDATE obligations SET amount_paid_paise = amount_paid_paise + ? WHERE obligation_id = ?",

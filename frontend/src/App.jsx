@@ -6,6 +6,8 @@ import ControlRoom from './pages/ControlRoom'
 import Crm from './pages/Crm'
 import CrmAccount from './pages/CrmAccount'
 import Learning from './pages/Learning'
+import Voice from './pages/Voice'
+import Journey from './pages/Journey'
 
 export default function App() {
   return (
@@ -18,6 +20,8 @@ export default function App() {
         <Route path="/crm" element={<Crm />} />
         <Route path="/crm/:id" element={<CrmAccount />} />
         <Route path="/learning" element={<Learning />} />
+        <Route path="/voice" element={<Voice />} />
+        <Route path="/journey" element={<Journey />} />
         <Route path="*" element={<Navigate to="/control" replace />} />
       </Route>
     </Routes>
