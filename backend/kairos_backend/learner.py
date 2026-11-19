@@ -19,6 +19,15 @@ Sparse segments: a (band, channel, slot) with fewer than `min_segment_obs` final
 scored from the pooled channel x slot posterior (prior + every band's observed outcomes) and is
 labeled source="pooled"; with no observations anywhere it is source="prior".
 
+Options (all off by default, so the default model_version / config hash is unchanged):
+    decay=γ              discounted evidence: an outcome executed d days before the decision weighs γ**d
+                         (E17-style drift: old evidence fades instead of anchoring the posterior).
+    hier_strength=k      hierarchical slots: every band x channel x slot posterior is centred on the
+                         pooled channel x slot mean with k pseudo-observations, instead of the hard
+                         min_segment_obs switch between segment and pooled.
+    min_replies_per_inr  a value floor next to the probability floor: an arm whose expected replies
+                         per rupee is below it never qualifies (-> WAIT, the money stays in the pool).
+
 Exploration: seeded Thompson sampling only when mode.allows_exploration (SANDBOX / SIMULATOR) AND
 a random.Random is supplied. PRODUCTION always uses the posterior mean and never touches the rng.
 
@@ -82,7 +91,8 @@ class BetaBernoulliLearner:
 
     def __init__(self, ledger: Ledger, priors: Optional[dict[tuple[str, str], tuple[float, float]]] = None, *,
                  min_segment_obs: int = 30, min_reply_prob: float = DEFAULT_MIN_REPLY_PROB,
-                 default_prior: tuple[float, float] = DEFAULT_PRIOR):
+                 default_prior: tuple[float, float] = DEFAULT_PRIOR, decay: Optional[float] = None,
+                 hier_strength: Optional[float] = None, min_replies_per_inr: float = 0.0):
         self.ledger = ledger
         self.synthetic_priors = priors is None or priors is SIMULATOR_PRIORS
         raw = SIMULATOR_PRIORS if priors is None else priors
@@ -91,14 +101,31 @@ class BetaBernoulliLearner:
         self.default_prior = _validate_prior("default_prior", default_prior)
         self.min_segment_obs = int(min_segment_obs)
         self.min_reply_prob = float(min_reply_prob)
+        if decay is not None and not (0.0 < float(decay) <= 1.0):
+            raise ValueError(f"decay must be in (0, 1], got {decay}")
+        if hier_strength is not None and float(hier_strength) <= 0:
+            raise ValueError(f"hier_strength must be > 0, got {hier_strength}")
+        self.decay = None if decay is None else float(decay)
+        self.hier_strength = None if hier_strength is None else float(hier_strength)
+        self.min_replies_per_inr = float(min_replies_per_inr)
+        self._post_cache: dict = {}
         config = {
             "priors": sorted([ch, slot, m, s] for (ch, slot), (m, s) in self.priors.items()),
             "default_prior": list(self.default_prior),
             "min_segment_obs": self.min_segment_obs,
             "min_reply_prob": self.min_reply_prob,
         }
+        # options join the hash only when set, so the default model keeps its version string
+        for k, v in (("decay", self.decay), ("hier_strength", self.hier_strength),
+                     ("min_replies_per_inr", self.min_replies_per_inr or None)):
+            if v is not None:
+                config[k] = v
         self.config_hash = hashlib.sha1(json.dumps(config, sort_keys=True).encode()).hexdigest()[:8]
-        self.ledger._conn().executescript(SCHEMA)
+        conn = self.ledger._conn()
+        conn.executescript(SCHEMA)
+        # executed_at (decision-time clock of the touch) is what `decay` discounts by; older DBs lack it
+        if "executed_at" not in {r[1] for r in conn.execute("PRAGMA table_info(learner_updates)")}:
+            conn.execute("ALTER TABLE learner_updates ADD COLUMN executed_at TEXT")
 
     # ---------- helpers ----------
     def _now_iso(self) -> str:
@@ -123,9 +150,11 @@ class BetaBernoulliLearner:
     def model_version(self) -> str:
         return f"{MODEL_FAMILY}/{self.config_hash}@{self.n_updates}"
 
-    def _posteriors(self, band: str) -> dict[tuple[str, str], tuple[float, float, int, str]]:
+    def _posteriors(self, band: str, ref: Optional[datetime] = None) -> dict[tuple[str, str], tuple[float, float, int, str]]:
         """(channel, slot) -> (alpha, beta, n_obs, source) for every arm with any observation.
-        Arms missing from the result are at their prior."""
+        Arms missing from the result are at their prior. `ref` is the decision time (for `decay`)."""
+        if self.decay is not None or self.hier_strength is not None:
+            return self._posteriors_weighted(band, ref)
         c = self.ledger._conn()
         seg = {(r["channel"], r["slot"]): (r["alpha"], r["beta"], r["n_obs"])
                for r in c.execute("SELECT channel, slot, alpha, beta, n_obs FROM learner_arms WHERE band=?", (band,))}
@@ -140,6 +169,49 @@ class BetaBernoulliLearner:
             elif key in pooled and pooled[key][1] > 0:
                 s, n = pooled[key]
                 out[key] = (a0 + s, b0 + (n - s), int(n), "pooled")
+        return out
+
+    def _weighted_counts(self, ref_day: Optional[str]) -> tuple[dict, dict]:
+        """(band, channel, slot) -> [succ, fail] and (channel, slot) -> [succ, fail], each outcome
+        weighted decay**(days from its execution day to ref_day). Cached per (updates, ref day)."""
+        key = (self.n_updates, ref_day)
+        hit = self._post_cache.get(key)
+        if hit is not None:
+            return hit
+        seg: dict = {}
+        pooled: dict = {}
+        ref_d = datetime.fromisoformat(ref_day).date() if ref_day else None
+        for r in self.ledger._conn().execute(
+                "SELECT band, channel, slot, substr(executed_at, 1, 10) d, SUM(reward) s, COUNT(*) n"
+                " FROM learner_updates GROUP BY band, channel, slot, d"):
+            w = 1.0
+            if self.decay is not None and ref_d is not None and r["d"]:
+                age = (ref_d - datetime.fromisoformat(r["d"]).date()).days
+                w = self.decay ** max(0, age)
+            s, f = r["s"] * w, (r["n"] - r["s"]) * w
+            for table, k in ((seg, (r["band"], r["channel"], r["slot"])), (pooled, (r["channel"], r["slot"]))):
+                acc = table.setdefault(k, [0.0, 0.0])
+                acc[0] += s
+                acc[1] += f
+        self._post_cache = {key: (seg, pooled)}   # one entry: decisions arrive in time order
+        return seg, pooled
+
+    def _posteriors_weighted(self, band: str, ref: Optional[datetime]) -> dict:
+        ref_day = self._iso(ref)[:10] if ref is not None else None
+        seg, pooled = self._weighted_counts(ref_day)
+        out = {}
+        for (ch, slot), (ps, pf) in pooled.items():
+            a0, b0 = self.prior(ch, slot)
+            pa, pb = a0 + ps, b0 + pf
+            ss, sf = seg.get((band, ch, slot), (0.0, 0.0))
+            n_seg = ss + sf
+            if self.hier_strength is not None:
+                mu, k = pa / (pa + pb), self.hier_strength
+                out[(ch, slot)] = (k * mu + ss, k * (1 - mu) + sf, int(round(n_seg)), "hier")
+            elif n_seg >= self.min_segment_obs:
+                out[(ch, slot)] = (a0 + ss, b0 + sf, int(round(n_seg)), "segment")
+            else:
+                out[(ch, slot)] = (pa, pb, int(round(ps + pf)), "pooled")
         return out
 
     def _arm(self, post: dict, channel: str, slot: str) -> tuple[float, float, int, str]:
@@ -158,7 +230,8 @@ class BetaBernoulliLearner:
         mode = Mode(mode)
         model_version = self.model_version
         explore = mode.allows_exploration and rng is not None  # PRODUCTION never samples
-        post = self._posteriors(band)
+        ref = at or min((c.at for c in candidates), default=None)
+        post = self._posteriors(band, ref)
         # Score in a canonical order so a seeded rng gives the same draws whatever order the
         # Supervisor listed the candidates in.
         ordered = sorted(candidates, key=lambda k: (_CH_ORDER.get(k.channel, len(_CH_ORDER)),
@@ -173,7 +246,8 @@ class BetaBernoulliLearner:
             cost = int(cand.est_cost_paise)
             rpi = replies_per_rupee(p_used, cost)
             known = cand.channel in _CH_ORDER and cand.slot in _SLOT_ORDER
-            qualifies = known and cost > 0 and p_used >= self.min_reply_prob
+            qualifies = (known and cost > 0 and p_used >= self.min_reply_prob
+                         and rpi >= self.min_replies_per_inr)
             basis = f"p={p_used:.4f} ({'thompson' if sampled is not None else 'mean'}, {source} n={n_obs})"
             if not known:
                 reason = f"unknown arm {cand.channel}/{cand.slot}"
@@ -181,6 +255,8 @@ class BetaBernoulliLearner:
                 reason = f"{basis}; no positive cost estimate (est_cost_paise={cost})"
             elif p_used < self.min_reply_prob:
                 reason = f"{basis} below min_reply_prob {self.min_reply_prob}"
+            elif rpi < self.min_replies_per_inr:
+                reason = f"{basis}: {rpi:.4f} replies per INR below min_replies_per_inr {self.min_replies_per_inr}"
             else:
                 reason = f"{basis} / INR {cost / 100:.2f} ({cost} paise) = {rpi:.4f} replies per INR"
             scores.append(ArmScore(band=band, channel=cand.channel, slot=cand.slot, alpha=alpha, beta=beta,
@@ -232,8 +308,9 @@ class BetaBernoulliLearner:
         now = self._now_iso()
         with self.ledger.tx() as c:
             cur = c.execute("INSERT OR IGNORE INTO learner_updates (instruction_id, band, channel, slot, reward,"
-                            " applied_at) VALUES (?,?,?,?,?,?)",
-                            (outcome.instruction_id, outcome.band, outcome.channel, outcome.slot, reward, now))
+                            " applied_at, executed_at) VALUES (?,?,?,?,?,?,?)",
+                            (outcome.instruction_id, outcome.band, outcome.channel, outcome.slot, reward, now,
+                             self._iso(outcome.executed_at) if outcome.executed_at else None))
             if cur.rowcount == 0:
                 return False
             c.execute("INSERT INTO learner_arms (band, channel, slot, alpha, beta, n_obs, updated_at)"
