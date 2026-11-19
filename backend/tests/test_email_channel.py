@@ -11,7 +11,9 @@ from kairos_backend.email_channel import (
     EmailConfigError, EmailEvent, EmailEvents, ReplayEmailProvider, SmtpConfig, SmtpSandboxProvider,
     address_hash, email_eligible, email_provider_from_env, restore_email_consent, suppression_check)
 from kairos_backend.executor import Executor
+from kairos_backend.email_channel import ensure_schema
 from kairos_backend.ledger import Instruction, Ledger
+from tests.spine_helpers import add_loan
 
 D = date(2026, 11, 20)  # a Friday — a contact day
 ADDR = {"B1": "b1@example.test", "B2": "b2@example.test"}
@@ -25,22 +27,40 @@ def at(hh, mm=0, day=D):
 
 @pytest.fixture
 def ledger(policy, tmp_path):
+    # K03 spine: B1 and B2, loan <bid>-A with EMI <bid>-A-1 at 12 DPD, enrolled in C1; email consent version v1.
     lg = Ledger(policy, tmp_path / "k20.db")
-    lg.upsert_campaign("C1", budget_per_case_inr=100, allocated_cases=10, start_date=D, end_date=D + timedelta(days=10))
+    lg.upsert_campaign("C1", budget_per_case_paise=10_000, start_date=D, end_date=D + timedelta(days=10))
     for t, ch, lang in [("SMS_EN", "sms", "en"), ("WA_HI", "whatsapp", "hi"), ("EM_EN", "email", "en")]:
         lg.upsert_template(t, ch, lang)
+    ensure_schema(lg)
     for bid in ("B1", "B2"):
-        lg.upsert_borrower(bid, dpd=12, dpd_updated_at=at(7),
-                           consent={"sms": True, "whatsapp": True, "email": True, "ivr": True, "voicebot": False},
-                           consent_version={"email": "v1", "sms": "v1"})
-        lg.upsert_obligation(f"{bid}-A", bid, "C1", overdue_inr=5000)
+        add_loan(lg, bid, D, dpd=12, consents={"sms": 1, "whatsapp": 1, "email": 1, "ivr": 1, "voicebot": 0},
+                 campaign="C1")
+        with lg.tx() as c:
+            c.execute("INSERT INTO email_consent_versions VALUES (?,?,?)", (bid, "v1", D.isoformat()))
+    lg.start_day(D)  # daily LMS refresh -> DPD is fresh
     yield lg
     lg.close()
 
 
-def ins(bid="B1", ch="email", t=None, cost=0.05):
+def ins(bid="B1", ch="email", t=None, cost=5):
     tpl = {"sms": "SMS_EN", "whatsapp": "WA_HI", "email": "EM_EN"}[ch]
-    return Instruction(bid, f"{bid}-A", "C1", ch, tpl, t or at(10), cost)
+    return Instruction(bid, f"{bid}-A-1", "C1", ch, tpl, t or at(10), cost)
+
+
+def committed(ledger):
+    """Paise committed against C1 across its budget days."""
+    return sum(d["committed_paise"] for d in ledger.campaign_state("C1")["days"])
+
+
+def consent(ledger, bid):
+    """Per-channel consent as the Gate reads it from the K03 spine."""
+    return {r["channel"]: bool(r["consented"] and not r["opted_out"]) for r in ledger.borrower_state(bid)["consents"]}
+
+
+def email_version(ledger, bid):
+    return ledger._conn().execute("SELECT version FROM email_consent_versions WHERE borrower_id=?",
+                                  (bid,)).fetchone()["version"]
 
 
 def send_email(ledger, provider, t=at(10), bid="B1"):
@@ -68,7 +88,7 @@ def test_delivery_is_reach_and_never_a_reply(ledger):
     state = ledger.borrower_state("B1")
     assert state["stop_for_day"] == []  # a reply would stop the day; delivery must not
     assert not [a for a in ledger.audit_log(borrower_id="B1") if a["type"] == "RESPONSE"]
-    assert ledger.reserve(ins(ch="sms", t=at(11), cost=0.2)).reserved
+    assert ledger.reserve(ins(ch="sms", t=at(11), cost=20)).reserved
     assert [a["type"] for a in email_audit(ledger)] == ["EMAIL_DELIVERED"]  # one status event
 
 
@@ -77,9 +97,9 @@ def test_hard_bounce_blocks_address_and_cancels_queued_email_only(ledger):
     prov = ReplayEmailProvider(ADDR, script={"b1@example.test": "hard_bounce"})
     iid, _ = send_email(ledger, prov)
     later_email = ledger.reserve(ins(ch="email", t=at(14))).instruction_id
-    sms = ledger.reserve(ins(ch="sms", t=at(11), cost=0.2)).instruction_id
-    wa = ledger.reserve(ins(ch="whatsapp", t=at(12), cost=0.4)).instruction_id
-    committed = ledger.campaign_state("C1")["committed_inr"]
+    sms = ledger.reserve(ins(ch="sms", t=at(11), cost=20)).instruction_id
+    wa = ledger.reserve(ins(ch="whatsapp", t=at(12), cost=40)).instruction_id
+    before = committed(ledger)
 
     env = EmailEvents(ledger).apply(prov.drain()[0])
     assert env["event_type"] == "provider.delivery" and env["payload"]["status"] == "HARD_BOUNCE"
@@ -89,7 +109,7 @@ def test_hard_bounce_blocks_address_and_cancels_queued_email_only(ledger):
     assert ledger.touch(later_email)["reason"] == "EMAIL_HARD_BOUNCE"
     assert ledger.touch(sms)["status"] == ledger.touch(wa)["status"] == "RESERVED"
     assert ledger.touch(iid)["status"] == "SENT"  # never downgraded; it was attempted
-    assert ledger.campaign_state("C1")["committed_inr"] == pytest.approx(committed - 0.05)
+    assert committed(ledger) == before - 5
 
     # stored as a hash, never the raw address
     conn = ledger._conn()
@@ -101,9 +121,9 @@ def test_hard_bounce_blocks_address_and_cancels_queued_email_only(ledger):
     assert email_eligible(ledger, "B1") == (False, "EMAIL_HARD_BOUNCE")
     d = ledger.reserve(ins(ch="email", t=at(16))).decision
     assert (d.decision, d.reason) == ("WAIT", "NO_CONSENT")
-    assert ledger.reserve(ins(ch="sms", t=at(15), cost=0.2)).reserved
-    assert ledger.reserve(ins(ch="whatsapp", t=at(16), cost=0.4)).reserved
-    assert ledger.borrower_state("B1")["consent_version"]["email"].startswith("hard_bounce@")
+    assert ledger.reserve(ins(ch="sms", t=at(15), cost=20)).reserved
+    assert ledger.reserve(ins(ch="whatsapp", t=at(16), cost=40)).reserved
+    assert email_version(ledger, "B1").startswith("hard_bounce@")
     assert email_eligible(ledger, "B2") == (True, "ELIGIBLE")  # other borrowers unaffected
 
 
@@ -126,7 +146,7 @@ def test_unsubscribe_suppresses_email_only_and_records_consent_version(ledger):
     prov = ReplayEmailProvider(ADDR, script={"b1@example.test": "unsubscribe"})
     iid, _ = send_email(ledger, prov)
     queued_email = ledger.reserve(ins(ch="email", t=at(14))).instruction_id
-    sms = ledger.reserve(ins(ch="sms", t=at(11), cost=0.2)).instruction_id
+    sms = ledger.reserve(ins(ch="sms", t=at(11), cost=20)).instruction_id
 
     delivered, unsub = prov.drain()
     assert (delivered.kind, unsub.kind) == ("delivered", "unsubscribe")
@@ -137,22 +157,21 @@ def test_unsubscribe_suppresses_email_only_and_records_consent_version(ledger):
     assert env["payload"]["scope"] == "email" and env["payload"]["consent"] == {"email": False}
     assert env["payload"]["previous_consent_version"] == "v1"
 
-    state = ledger.borrower_state("B1")
-    assert state["consent"]["email"] is False and state["consent"]["sms"] is True
-    assert state["consent"]["whatsapp"] is True and state["opted_out"] == 0
-    assert state["consent_version"]["email"].startswith("unsubscribed@")
-    assert state["consent_version"]["sms"] == "v1"
+    cons = consent(ledger, "B1")
+    assert cons["email"] is False and cons["sms"] is True
+    assert cons["whatsapp"] is True and ledger.borrower_state("B1")["state"]["stopped"] == 0
+    assert email_version(ledger, "B1").startswith("unsubscribed@")
     assert ledger.touch(queued_email)["status"] == "CANCELED"
     assert ledger.touch(sms)["status"] == "RESERVED"
     assert ledger.touch(iid)["status"] == "DELIVERED"
     assert email_eligible(ledger, "B1") == (False, "EMAIL_UNSUBSCRIBED")
     assert ledger.reserve(ins(ch="email", t=at(16))).decision.reason == "NO_CONSENT"
-    assert ledger.reserve(ins(ch="whatsapp", t=at(12), cost=0.4)).reserved
+    assert ledger.reserve(ins(ch="whatsapp", t=at(12), cost=40)).reserved
     assert [a["type"] for a in reversed(email_audit(ledger))] == ["EMAIL_DELIVERED", "EMAIL_UNSUBSCRIBE"]
 
 
 def test_unsubscribe_scope_all_is_stop(ledger):
-    sms = ledger.reserve(ins(ch="sms", t=at(11), cost=0.2)).instruction_id
+    sms = ledger.reserve(ins(ch="sms", t=at(11), cost=20)).instruction_id
     env = EmailEvents(ledger).apply(EmailEvent("unsubscribe", at(10), borrower_id="B1", scope="all"))
     assert env["payload"]["opted_out"] is True and env["payload"]["canceled_queued"] == 1
     assert ledger.touch(sms)["status"] == "CANCELED"
@@ -192,15 +211,15 @@ def test_duplicate_callbacks_are_noops(ledger):
 
     bounce = prov.drain()[0]
     events.apply(bounce)
-    committed = ledger.campaign_state("C1")["committed_inr"]
+    before = committed(ledger)
     assert events.apply(bounce)["duplicate"]
     unsub = EmailEvent("unsubscribe", at(12), borrower_id="B1")
     events.apply(unsub)
-    version = ledger.borrower_state("B1")["consent_version"]["email"]
+    version = email_version(ledger, "B1")
     assert events.apply(EmailEvent("unsubscribe", at(13), borrower_id="B1"))["duplicate"]  # same key, no event_id
 
-    assert ledger.borrower_state("B1")["consent_version"]["email"] == version
-    assert ledger.campaign_state("C1")["committed_inr"] == pytest.approx(committed)
+    assert email_version(ledger, "B1") == version
+    assert committed(ledger) == before
     assert ledger._conn().execute("SELECT COUNT(*) FROM email_suppression").fetchone()[0] == 1
     assert sorted(a["type"] for a in email_audit(ledger)) == ["EMAIL_DELIVERED", "EMAIL_HARD_BOUNCE", "EMAIL_UNSUBSCRIBE"]
 
@@ -211,7 +230,7 @@ def test_event_validation(ledger):
         events.apply(EmailEvent("opened", at(10), borrower_id="B1"))
     with pytest.raises(ValueError):
         events.apply(EmailEvent("hard_bounce", at(10), borrower_id="B1"))  # no address
-    sms = ledger.reserve(ins(ch="sms", t=at(11), cost=0.2)).instruction_id
+    sms = ledger.reserve(ins(ch="sms", t=at(11), cost=20)).instruction_id
     with pytest.raises(ValueError):
         events.apply(EmailEvent("delivered", at(11), instruction_id=sms))
 
@@ -297,10 +316,10 @@ def test_smtp_connect_error_is_unknown_then_released(ledger):
     prov = SmtpSandboxProvider.from_env(ADDR, env=SMTP_ENV, smtp_factory=FakeSMTP("connect"))
     iid, out = send_email(ledger, prov)
     assert out.outcome == "UNCERTAIN" and ledger.touch(iid)["status"] == "UNCERTAIN"
-    assert ledger.campaign_state("C1")["committed_inr"] == pytest.approx(0.05)  # still counted
+    assert committed(ledger) == 5  # still counted
     ex = Executor(ledger, {"email": prov})
     assert ex.resolve_uncertain(iid) == "FAILED"  # never handed over → release, replan a NEW instruction
-    assert ledger.campaign_state("C1")["committed_inr"] == pytest.approx(0)
+    assert committed(ledger) == 0
 
 
 def test_smtp_error_mid_send_stays_uncertain(ledger):
@@ -312,7 +331,7 @@ def test_smtp_error_mid_send_stays_uncertain(ledger):
     assert ex.resolve_uncertain(iid) == "UNCERTAIN"  # relay may have it: keep cap slot + cost, no resend
     assert ledger.touch(iid)["status"] == "UNCERTAIN"
     assert [c[0] for c in smtp.calls].count("send") == 1
-    assert ledger.campaign_state("C1")["committed_inr"] == pytest.approx(0.05)
+    assert committed(ledger) == 5
 
 
 def test_smtp_auth_failure_is_rejected(ledger):

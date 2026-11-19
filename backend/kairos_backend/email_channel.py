@@ -44,6 +44,8 @@ from email.message import EmailMessage
 from email.utils import parseaddr
 from typing import Callable, Mapping, Optional, Union
 
+from spine.ledger import record_event
+
 from .executor import ProviderResult
 from .ledger import RANK, Ledger
 
@@ -59,6 +61,10 @@ CREATE TABLE IF NOT EXISTS email_suppression (
 CREATE TABLE IF NOT EXISTS email_events (
   event_key TEXT PRIMARY KEY, kind TEXT NOT NULL, borrower_id TEXT NOT NULL, instruction_id TEXT,
   address_hash TEXT, provenance TEXT NOT NULL, at TEXT NOT NULL, envelope TEXT NOT NULL);
+-- K03 consents has no version column: the email consent version (why it was withdrawn / which
+-- re-entry version restored it) is kept here, next to the spine's consents row it describes.
+CREATE TABLE IF NOT EXISTS email_consent_versions (
+  borrower_id TEXT PRIMARY KEY, version TEXT NOT NULL, updated_at TEXT NOT NULL);
 """
 
 AddressResolver = Union[Callable[[str], Optional[str]], Mapping[str, str]]
@@ -104,20 +110,47 @@ def suppression_check(ledger: Ledger) -> Callable[[str, str], bool]:
     return lambda borrower_id, address: is_suppressed(ledger, borrower_id, address)
 
 
+# ---------- consent on the K03 spine ----------
+def _consent(c, borrower_id: str) -> Optional[dict]:
+    """Email consent as the Gate sees it: K03 `consents` (consented / opted_out per channel) plus the
+    K06 STOP flag (`borrower_state.stopped`), and the version kept in `email_consent_versions`.
+    None when the borrower is not on the spine."""
+    if c.execute("SELECT 1 FROM borrowers WHERE borrower_id=?", (borrower_id,)).fetchone() is None:
+        return None
+    row = c.execute("SELECT consented, opted_out FROM consents WHERE borrower_id=? AND channel=?",
+                    (borrower_id, CHANNEL)).fetchone()
+    st = c.execute("SELECT stopped FROM borrower_state WHERE borrower_id=?", (borrower_id,)).fetchone()
+    ver = c.execute("SELECT version FROM email_consent_versions WHERE borrower_id=?", (borrower_id,)).fetchone()
+    return {"stopped": bool((st and st["stopped"]) or (row and row["opted_out"])),
+            "consented": bool(row and row["consented"] and not row["opted_out"]),
+            "version": ver["version"] if ver else None}
+
+
+def _set_email_consent(c, ledger: Ledger, borrower_id: str, consented: bool, version: str, at_iso: str,
+                       details: str) -> None:
+    c.execute("INSERT INTO consents (borrower_id, channel, consented, opted_out, updated_at, source)"
+              " VALUES (?,?,?,0,?,'provided') ON CONFLICT (borrower_id, channel) DO UPDATE SET"
+              " consented=excluded.consented, updated_at=excluded.updated_at",
+              (borrower_id, CHANNEL, int(consented), at_iso))
+    c.execute("INSERT INTO email_consent_versions VALUES (?,?,?) ON CONFLICT (borrower_id) DO UPDATE SET"
+              " version=excluded.version, updated_at=excluded.updated_at", (borrower_id, version, at_iso))
+    record_event(c, f"EV-EMAIL-{borrower_id}-{version}", borrower_id, "consent_changed", at_iso,
+                 channel=CHANNEL, details=details)
+
+
 # ---------- eligibility ----------
 def email_eligible(ledger: Ledger, borrower_id: str, address: Optional[str] = None) -> tuple[bool, str]:
     """(eligible, reason) for the email channel: STOP, then email consent (with the reason the
     consent was withdrawn), then — if an address is given — its suppression. Caps, window,
     holds and budget are the Gate's job at reserve/dispatch time."""
     ensure_schema(ledger)
-    b = ledger._conn().execute("SELECT consent, consent_version, opted_out FROM borrowers WHERE id=?",
-                               (borrower_id,)).fetchone()
+    b = _consent(ledger._conn(), borrower_id)
     if b is None:
         raise KeyError(borrower_id)
-    if b["opted_out"]:
+    if b["stopped"]:
         return False, "STOP_OPT_OUT"
-    if not json.loads(b["consent"]).get(CHANNEL):
-        version = json.loads(b["consent_version"]).get(CHANNEL) or ""
+    if not b["consented"]:
+        version = b["version"] or ""
         if version.startswith("unsubscribed@"):
             return False, "EMAIL_UNSUBSCRIBED"
         if version.startswith("hard_bounce@"):
@@ -136,19 +169,16 @@ def restore_email_consent(ledger: Ledger, borrower_id: str, address: str, consen
     ensure_schema(ledger)
     ahash = address_hash(address)
     with ledger.tx() as c:
-        b = c.execute("SELECT consent, consent_version, opted_out FROM borrowers WHERE id=?", (borrower_id,)).fetchone()
+        b = _consent(c, borrower_id)
         if b is None:
             raise KeyError(borrower_id)
         if c.execute("SELECT 1 FROM email_suppression WHERE borrower_id=? AND address_hash=?",
                      (borrower_id, ahash)).fetchone():
             return False, "EMAIL_ADDRESS_SUPPRESSED"
-        if b["opted_out"]:
+        if b["stopped"]:
             return False, "STOP_OPT_OUT"
-        consent = json.loads(b["consent"])
-        versions = json.loads(b["consent_version"])
-        consent[CHANNEL], versions[CHANNEL] = True, consent_version
-        c.execute("UPDATE borrowers SET consent=?, consent_version=? WHERE id=?",
-                  (json.dumps(consent), json.dumps(versions), borrower_id))
+        _set_email_consent(c, ledger, borrower_id, True, consent_version, ledger._iso(at),
+                           f"email re-entry, consent version {consent_version}")
         ledger._audit(c, actor, "EMAIL_CONSENT_RESTORED", borrower_id, at=at, channel=CHANNEL,
                       consent_version=consent_version, address_hash=ahash)
     return True, "ELIGIBLE"
@@ -218,7 +248,11 @@ class EmailEvents:
                 payload["suppressed"] = True
             elif ev.kind == "unsubscribe":
                 if ev.scope == "all":  # K01 STOP semantics: every channel
-                    c.execute("UPDATE borrowers SET opted_out=1 WHERE id=?", (borrower_id,))
+                    # same writes as Ledger.record_stop (which opens its own transaction)
+                    lg._set_state(c, borrower_id, stopped=1)
+                    c.execute("UPDATE consents SET opted_out=1, updated_at=? WHERE borrower_id=?", (at_iso, borrower_id))
+                    record_event(c, f"EV-STOP-{borrower_id}-{at_iso}", borrower_id, "consent_changed", at_iso,
+                                 channel=CHANNEL, details="STOP: email unsubscribe (scope all), all channels")
                     canceled = lg._cancel_queued(c, "borrower_id=?", (borrower_id,), "STOP_OPT_OUT")
                     payload.update({"opted_out": True})
                 else:
@@ -259,18 +293,15 @@ class EmailEvents:
         return target
 
     def _withdraw_email(self, c, borrower_id: str, version: str, keep_existing: bool = False) -> dict:
-        b = c.execute("SELECT consent, consent_version FROM borrowers WHERE id=?", (borrower_id,)).fetchone()
+        b = _consent(c, borrower_id)
         if b is None:
             raise KeyError(borrower_id)
-        consent, versions = json.loads(b["consent"]), json.loads(b["consent_version"])
-        previous = versions.get(CHANNEL)
+        previous = b["version"]
         # a hard bounce on an already-withdrawn channel keeps the earlier reason (e.g. unsubscribed)
-        if not (keep_existing and not consent.get(CHANNEL) and previous):
-            versions[CHANNEL] = version
-        consent[CHANNEL] = False
-        c.execute("UPDATE borrowers SET consent=?, consent_version=? WHERE id=?",
-                  (json.dumps(consent), json.dumps(versions), borrower_id))
-        return {"consent": {CHANNEL: False}, "consent_version": versions[CHANNEL],
+        new = previous if (keep_existing and not b["consented"] and previous) else version
+        _set_email_consent(c, self.ledger, borrower_id, False, new, version.split("@", 1)[1],
+                           f"email consent withdrawn: {version.split('@', 1)[0]}")
+        return {"consent": {CHANNEL: False}, "consent_version": new,
                 "previous_consent_version": previous}
 
     def _cancel_email(self, c, borrower_id: str, reason: str) -> int:

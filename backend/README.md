@@ -498,7 +498,7 @@ Callback semantics (E19). Each callback that is applied writes exactly one audit
 
 After a hard bounce or an unsubscribe, the Gate's existing CONSENT rule answers `WAIT / NO_CONSENT` for email, while other channels stay eligible. The Supervisor replans at the next allowed touch. To refuse a blocked address at send time as well (for example, when the CRM still returns it), pass `is_suppressed=suppression_check(ledger)` to either provider.
 
-**Ledger change:** none to `ledger.py`. The module adds two tables (`email_suppression` and `email_events`) to the ledger's SQLite file with `CREATE TABLE IF NOT EXISTS`. It runs inside `ledger.tx()` and reuses the ledger's `_audit` and `_cancel_queued` helpers.
+**Ledger change:** none to `ledger.py`. The module adds three tables (`email_suppression`, `email_events` and `email_consent_versions`) to the ledger's SQLite file with `CREATE TABLE IF NOT EXISTS`. On the K03 spine, email consent is the `consents` row for `email` (the Gate's CONSENT rule reads it); STOP is `borrower_state.stopped` plus `consents.opted_out`, as in `Ledger.record_stop`; the spine has no consent-version column, so the email version (`unsubscribed@…`, `hard_bounce@…`, re-entry version) lives in `email_consent_versions`, and every change also writes a spine `consent_changed` event. It runs inside `ledger.tx()` and reuses the ledger's `_audit` and `_cancel_queued` helpers.
 
 Interpretations (flag if wrong):
 
