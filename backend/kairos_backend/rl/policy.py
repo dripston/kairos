@@ -55,6 +55,7 @@ class RL2Options:
     segments: bool = True           # campaign -> cohort -> region levels
     individual: bool = True         # borrower, borrower x channel, borrower x slot levels
     sequencing: bool = True         # channel-transition levels
+    backfit_passes: int = 2         # hierarchy refits (2 = each level refit on all the others)
     arm_decay: float = 0.7
     pop_decay: float = 0.85
     ind_decay: Optional[float] = None
@@ -97,7 +98,7 @@ class RL2Policy:
         self.min_reply_prob = o.min_reply_prob
         self.model = ValueModel(arm_decay=o.arm_decay, pop_decay=o.pop_decay, ind_decay=o.ind_decay,
                                 warm=warm_start, segments=o.segments, individual=o.individual,
-                                sequencing=o.sequencing)
+                                sequencing=o.sequencing, backfit_passes=o.backfit_passes)
         self.warm_started = warm_start is not None
         self.pacer = DualPacer(mode=o.pacing, eta=o.eta, rho=o.rho, phi=o.phi, spend_down_days=o.spend_down_days)
         conn = ledger._conn()
@@ -340,7 +341,7 @@ class RL2Policy:
             best = arms[0]
             ratio, v, p, s, ch, slot, cost = best
             decision, why = "SEND", ""
-            if v - lam * cost <= 0:
+            if v - lam * cost < 0:
                 decision, why = "WAIT", f"V/cost {ratio:.5f} below price {lam:.5f}"
                 if o.stopping and n_final >= self.pacer.warmup and self.history.get(bid):
                     ob, eb, kb = mdl.borrower_evidence(bid) if o.individual else (0.0, 0.0, 1e6)

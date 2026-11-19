@@ -26,10 +26,14 @@ KAPPA_MAX = 1e6
 
 
 def mom_kappa(groups: dict, kappa_min: float = KAPPA_MIN, kappa_max: float = KAPPA_MAX,
-              min_groups: int = 3) -> float:
+              min_groups: int = 3, noise: Optional[dict] = None) -> float:
     """Method-of-moments kappa for {key: (O, E)}: between-group variance of the ratio O/E beyond Poisson
-    noise is tau^2 = 1/kappa. Returns kappa_max when there is no excess spread (full shrinkage)."""
-    gs = [(o, e) for o, e in (groups[k] for k in sorted(groups, key=repr)) if e > 0]
+    noise is tau^2 = 1/kappa. Returns kappa_max when there is no excess spread (full shrinkage).
+    noise: {key: V} with V = sum of w^2 x expected over the group's touches, for decay-weighted counts
+    (a weighted count's Poisson variance is sum w^2 p, not sum w p); default V = E (unweighted)."""
+    keys = [k for k in sorted(groups, key=repr) if groups[k][1] > 0]
+    gs = [groups[k] for k in keys]
+    vs = [(noise or {}).get(k, groups[k][1]) for k in keys]
     if len(gs) < min_groups:
         return kappa_max
     so = sum(o for o, _ in gs)
@@ -42,16 +46,16 @@ def mom_kappa(groups: dict, kappa_min: float = KAPPA_MIN, kappa_max: float = KAP
     denom = se - sum(e * e for _, e in gs) / se
     if denom <= 0:
         return kappa_max
-    tau2 = (q - (len(gs) - 1) * rbar) / denom
+    tau2 = (q - rbar * sum(v / e * (1 - e / se) for (_, e), v in zip(gs, vs))) / denom
     tau2 = tau2 / (rbar * rbar)            # relative (multiplier) scale
     if tau2 <= 0:
         return kappa_max
     return min(kappa_max, max(kappa_min, 1.0 / tau2))
 
 
-def multipliers(groups: dict, kappa: Optional[float] = None) -> tuple[float, dict]:
+def multipliers(groups: dict, kappa: Optional[float] = None, noise: Optional[dict] = None) -> tuple[float, dict]:
     """(kappa, {key: m}) with m = (O + kappa) / (E + kappa). kappa=None -> method of moments."""
-    k = mom_kappa(groups) if kappa is None else float(kappa)
+    k = mom_kappa(groups, noise=noise) if kappa is None else float(kappa)
     return k, {key: (o + k) / (e + k) for key, (o, e) in groups.items()}
 
 
@@ -72,20 +76,25 @@ class Level:
         self.m: dict = {}
         self.counts: dict = {}
 
-    def fit(self, rows: Iterable[tuple[Hashable, float, float]]) -> None:
-        """rows: (key, observed weight, expected weight)."""
+    def fit(self, rows: Iterable[tuple]) -> None:
+        """rows: (key, observed, expected) or (key, observed, expected, noise) with noise = w^2 x expected
+        for a decay weight w (see mom_kappa)."""
         acc: dict = {}
-        for key, o, e in rows:
+        for row in rows:
+            key = row[0]
             if key is None:
                 continue
+            o, e = row[1], row[2]
+            v = row[3] if len(row) > 3 else e
             a = acc.get(key)
             if a is None:
-                acc[key] = [o, e]
+                acc[key] = [o, e, v]
             else:
                 a[0] += o
                 a[1] += e
+                a[2] += v
         self.counts = {k: (v[0], v[1]) for k, v in acc.items()}
-        self.kappa, self.m = multipliers(self.counts, self.fixed_kappa)
+        self.kappa, self.m = multipliers(self.counts, self.fixed_kappa, noise={k: v[2] for k, v in acc.items()})
 
     def get(self, key) -> float:
         return self.m.get(key, 1.0) if key is not None else 1.0
