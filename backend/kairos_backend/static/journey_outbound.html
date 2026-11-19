@@ -1,0 +1,1031 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kairos Outbound Journey</title>
+<style>
+/* Journey 1 — one borrower, every engine, a person in control. Calm light ops console (same palette as /demo/live):
+   #FAFAF9 page, white cards, #E7E5E4 lines, one accent (teal #0F766E); green = paid, amber = waiting, red = STOP / blocked.
+   Sized for a 1920×1080 projector and 1440×900 laptops: the page never scrolls, panels scroll inside. */
+:root {
+  --bg: #fafaf9; --surface: #ffffff; --sunk: #f5f5f4; --hover: #f5f5f4;
+  --line: #e7e5e4; --line-2: #d6d3d1;
+  --ink: #1c1917; --ink-2: #57534e; --ink-3: #78716c; --ink-4: #a8a29e;
+  --accent: #0f766e; --accent-ink: #ffffff; --accent-soft: #f0fdfa; --accent-line: #99d5cd;
+  --good: #15803d; --good-soft: #f0fdf4; --good-line: #bbf7d0;
+  --wait: #b45309; --wait-soft: #fffbeb; --wait-line: #fde68a;
+  --bad: #b91c1c; --bad-soft: #fef2f2; --bad-line: #fecaca;
+  --shadow: 0 1px 2px rgba(28,25,23,.04), 0 1px 3px rgba(28,25,23,.05);
+  --shadow-lg: 0 18px 40px -16px rgba(28,25,23,.25);
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --r: 12px;
+  color-scheme: light;
+}
+html { font-size: clamp(12.5px, min(.86vw, 1.56vh), 18px); }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body { background: var(--bg); color: var(--ink); font: 400 1rem/1.45 var(--sans); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+button, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+[hidden] { display: none !important; }
+svg.i { width: 1.05em; height: 1.05em; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+.app { display: flex; flex-direction: column; height: 100%; padding: .7rem 1rem .6rem; gap: .65rem; }
+
+/* ---------- header ---------- */
+.top { display: flex; align-items: center; gap: .9rem; min-height: 2.6rem; }
+.brand { display: flex; align-items: center; gap: .6rem; white-space: nowrap; }
+.brand .mk { width: 1.9rem; height: 1.9rem; border-radius: 8px; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: .95rem; }
+.brand h1 { margin: 0; font-size: 1.15rem; font-weight: 650; letter-spacing: -.01em; }
+.brand h1 span { color: var(--ink-3); font-weight: 500; }
+.tag { display: inline-flex; align-items: center; height: 1.35rem; padding: 0 .5rem; border-radius: 6px; background: var(--sunk); border: 1px solid var(--line); color: var(--ink-3); font-size: .68rem; font-weight: 650; letter-spacing: .07em; }
+.clock { display: flex; align-items: baseline; gap: .55rem; margin-left: .4rem; white-space: nowrap; }
+.clock .d { font-size: 1.05rem; font-weight: 650; }
+.clock .w { color: var(--ink-3); font-size: .9rem; }
+.clock .t { font-size: 1.35rem; font-weight: 650; letter-spacing: -.01em; min-width: 4.3em; }
+.phase { display: inline-flex; align-items: center; gap: .4rem; height: 1.7rem; padding: 0 .65rem; border-radius: 999px; font-size: .8rem; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); white-space: nowrap; }
+.phase i { width: .5rem; height: .5rem; border-radius: 50%; background: var(--ink-4); }
+.phase.win { background: var(--wait-soft); border-color: var(--wait-line); color: var(--wait); } .phase.win i { background: var(--wait); }
+.phase.send { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent); } .phase.send i { background: var(--accent); }
+.phase.end { color: var(--ink-3); }
+.sp { flex: 1; }
+.ctl { display: flex; align-items: center; gap: .4rem; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; height: 2.1rem; padding: 0 .8rem; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-size: .88rem; font-weight: 550; cursor: pointer; white-space: nowrap; color: var(--ink); transition: background .15s, border-color .15s, color .15s; }
+.btn:hover:not(:disabled) { background: var(--hover); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn.primary:hover:not(:disabled) { background: #0d6961; }
+.btn.icon { width: 2.1rem; padding: 0; }
+.btn.sm { height: 1.85rem; font-size: .8rem; padding: 0 .6rem; }
+.btn.good { color: var(--good); border-color: var(--good-line); }
+.btn.good:hover:not(:disabled) { background: var(--good-soft); }
+.btn.bad { color: var(--bad); border-color: var(--bad-line); }
+.btn.bad:hover:not(:disabled) { background: var(--bad-soft); }
+.btn.on { background: var(--sunk); box-shadow: inset 0 0 0 1px var(--line-2); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { height: 2.1rem; padding: 0 .6rem; border: 0; background: transparent; font-size: .82rem; color: var(--ink-2); cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--sunk); color: var(--ink); font-weight: 650; }
+.chk { display: inline-flex; align-items: center; gap: .35rem; font-size: .8rem; color: var(--ink-2); cursor: pointer; user-select: none; white-space: nowrap; }
+.chk input { accent-color: var(--accent); margin: 0; }
+kbd { font: 600 .7rem var(--mono); border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 4px; padding: 0 .3rem; color: var(--ink-2); background: var(--surface); }
+
+/* ---------- campaign strip ---------- */
+.strip { display: grid; grid-template-columns: 1.25fr repeat(7, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); }
+.strip > div { padding: .5rem .9rem .55rem; min-width: 0; }
+.strip > div + div { border-left: 1px solid var(--line); }
+.strip .l { font-size: .74rem; color: var(--ink-3); font-weight: 550; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.strip .v { font-size: 1.45rem; font-weight: 650; letter-spacing: -.02em; line-height: 1.2; white-space: nowrap; }
+.strip .v small { font-size: .78rem; color: var(--ink-3); font-weight: 500; margin-left: .2rem; letter-spacing: 0; }
+.strip .camp .v { font-size: 1rem; font-weight: 600; letter-spacing: 0; }
+.strip .camp .v span { color: var(--ink-3); font-weight: 500; font-size: .85rem; }
+.v.good { color: var(--good); } .v.bad { color: var(--bad); } .v.wait { color: var(--wait); }
+.strip .flag { display: inline-flex; margin-left: .35rem; height: 1.2rem; align-items: center; padding: 0 .35rem; border-radius: 5px; font-size: .64rem; font-weight: 700; letter-spacing: .05em; vertical-align: middle; }
+.flag.red { background: var(--bad-soft); color: var(--bad); border: 1px solid var(--bad-line); }
+.flag.amb { background: var(--wait-soft); color: var(--wait); border: 1px solid var(--wait-line); }
+
+/* ---------- pipeline ---------- */
+.pipe { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: .8rem; position: relative; }
+.stg { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: .6rem .75rem .65rem; cursor: pointer; text-align: left; min-width: 0;
+  display: flex; flex-direction: column; gap: .2rem; height: 7.4rem; transition: border-color .25s, background .25s, box-shadow .25s; box-shadow: var(--shadow); }
+.stg:hover { border-color: var(--line-2); }
+.stg::after { content: ""; position: absolute; right: -.8rem; top: 50%; width: .8rem; height: 2px; background: var(--line); }
+.stg:last-child::after { display: none; }
+.stg .hd { display: flex; align-items: center; gap: .45rem; }
+.stg .n { width: 1.35rem; height: 1.35rem; border-radius: 50%; border: 1px solid var(--line-2); display: grid; place-items: center; font-size: .72rem; font-weight: 650; color: var(--ink-3); flex: none; background: var(--surface); transition: all .25s; }
+.stg .nm { font-size: .9rem; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stg .en { font-size: .7rem; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stg .st { font-size: .8rem; color: var(--ink-2); line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-top: auto; }
+.stg .tm { font-size: .7rem; color: var(--ink-4); }
+.stg.has .n { background: var(--accent); border-color: var(--accent); color: #fff; }
+.stg.has::after { background: var(--accent-line); }
+.stg.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow); }
+.stg.hot { background: var(--accent-soft); border-color: var(--accent-line); }
+.stg.hot .n { animation: ring 1.1s ease-out; }
+.stg.blk { background: var(--bad-soft); border-color: var(--bad-line); } .stg.blk .n { background: var(--bad); border-color: var(--bad); }
+.stg.amb { background: var(--wait-soft); border-color: var(--wait-line); } .stg.amb .n { background: var(--wait); border-color: var(--wait); }
+.stg.grn { background: var(--good-soft); border-color: var(--good-line); } .stg.grn .n { background: var(--good); border-color: var(--good); }
+.stg.dim { opacity: .55; }
+@keyframes ring { 0% { box-shadow: 0 0 0 0 rgba(15,118,110,.45); } 100% { box-shadow: 0 0 0 .7rem rgba(15,118,110,0); } }
+.flow { position: absolute; top: 50%; width: .45rem; height: .45rem; margin-top: -.2rem; border-radius: 50%; background: var(--accent); pointer-events: none; opacity: 0; }
+.flow.go { animation: flow .7s ease-in-out; }
+@keyframes flow { 0% { opacity: 0; transform: translateX(0); } 15% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; transform: translateX(var(--dx)); } }
+
+/* ---------- banner ---------- */
+.banner { display: flex; align-items: center; gap: .8rem; padding: .5rem .9rem; border-radius: 10px; border: 1px solid var(--wait-line); background: var(--wait-soft); color: #78350f; font-size: .92rem; min-height: 2.5rem; }
+.banner.ok { border-color: var(--good-line); background: var(--good-soft); color: #14532d; }
+.banner.info { border-color: var(--accent-line); background: var(--accent-soft); color: #134e4a; }
+.banner b { font-weight: 650; }
+.banner .sp { flex: 1; }
+
+/* ---------- main grid ---------- */
+.main { flex: 1; min-height: 0; display: grid; grid-template-columns: 24.5rem minmax(0, 1fr) 27.5rem; gap: .8rem; }
+.col { display: flex; flex-direction: column; gap: .8rem; min-height: 0; min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: .8rem .95rem; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
+.ch { display: flex; align-items: center; gap: .6rem; margin-bottom: .55rem; }
+.ch h2 { margin: 0; font-size: .92rem; font-weight: 650; }
+.ch .note { font-size: .76rem; color: var(--ink-3); }
+.ch .sp { flex: 1; }
+.scroll { overflow-y: auto; min-height: 0; flex: 1; scrollbar-width: thin; }
+
+/* spotlight card */
+.who { display: flex; align-items: center; gap: .75rem; }
+.av { width: 2.8rem; height: 2.8rem; border-radius: 50%; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line); display: grid; place-items: center; font-weight: 700; font-size: 1.1rem; flex: none; }
+.who .nm { font-size: 1.3rem; font-weight: 650; letter-spacing: -.01em; line-height: 1.15; }
+.who .sub { font-size: .78rem; color: var(--ink-3); }
+.status { margin-left: auto; display: inline-flex; align-items: center; height: 1.6rem; padding: 0 .6rem; border-radius: 999px; font-size: .75rem; font-weight: 650; letter-spacing: .03em; border: 1px solid var(--line); color: var(--ink-2); background: var(--sunk); white-space: nowrap; }
+.status.good { background: var(--good-soft); color: var(--good); border-color: var(--good-line); }
+.status.bad { background: var(--bad-soft); color: var(--bad); border-color: var(--bad-line); }
+.status.wait { background: var(--wait-soft); color: var(--wait); border-color: var(--wait-line); }
+.kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .45rem .7rem; margin-top: .7rem; }
+.kv div { min-width: 0; }
+.kv .k { font-size: .7rem; color: var(--ink-3); font-weight: 550; text-transform: uppercase; letter-spacing: .05em; }
+.kv .x { font-size: .95rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kv .x.chg { animation: chg 1.4s ease-out; border-radius: 4px; }
+@keyframes chg { 0% { background: var(--accent-soft); box-shadow: 0 0 0 3px var(--accent-soft); } 100% { background: transparent; box-shadow: none; } }
+.cons { display: flex; gap: .3rem; flex-wrap: wrap; margin-top: .6rem; }
+.chip { display: inline-flex; align-items: center; gap: .3rem; height: 1.55rem; padding: 0 .5rem; border-radius: 6px; font-size: .75rem; font-weight: 600; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); white-space: nowrap; transition: all .3s; }
+.chip.yes { background: var(--good-soft); border-color: var(--good-line); color: var(--good); }
+.chip.no { color: var(--ink-4); background: var(--sunk); text-decoration: line-through; }
+.chip.stop { background: var(--bad-soft); border-color: var(--bad-line); color: var(--bad); }
+.chip.amb { background: var(--wait-soft); border-color: var(--wait-line); color: var(--wait); }
+.chip.acc { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent); }
+.best { margin-top: .6rem; font-size: .82rem; color: var(--ink-2); display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; }
+.best b { color: var(--ink); }
+.presets { display: flex; gap: .35rem; margin-bottom: .6rem; flex-wrap: wrap; }
+.presets button { height: 1.75rem; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: .76rem; padding: 0 .65rem; cursor: pointer; color: var(--ink-2); }
+.presets button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); font-weight: 650; }
+
+/* timeline */
+.tl { list-style: none; margin: 0; padding: 0; }
+.tl li { display: grid; grid-template-columns: 3.4rem 1.1rem minmax(0, 1fr); gap: .45rem; padding: .32rem .2rem; border-radius: 6px; cursor: pointer; font-size: .82rem; align-items: start; }
+.tl li:hover { background: var(--hover); }
+.tl li.new { animation: chg 1.4s ease-out; }
+.tl .when { color: var(--ink-3); font-size: .74rem; line-height: 1.5; white-space: nowrap; }
+.tl .dot { width: .6rem; height: .6rem; border-radius: 50%; margin-top: .35rem; background: var(--accent); justify-self: center; }
+.tl .dot.bad { background: var(--bad); } .tl .dot.good { background: var(--good); } .tl .dot.wait { background: var(--wait); } .tl .dot.mute { background: var(--line-2); }
+.tl .dot.hum { background: #fff; border: 2px solid var(--ink); }
+.tl .tx { color: var(--ink-2); line-height: 1.35; }
+.tl .tx b { color: var(--ink); font-weight: 600; }
+.tl .dayh { grid-template-columns: 1fr; font-size: .7rem; color: var(--ink-3); font-weight: 650; text-transform: uppercase; letter-spacing: .06em; padding-top: .5rem; cursor: default; }
+.tl .dayh:hover { background: none; }
+.empty { color: var(--ink-3); font-size: .85rem; padding: .6rem 0; }
+
+/* detail */
+.dt-h { display: flex; align-items: center; gap: .7rem; margin-bottom: .6rem; }
+.dt-h .n { width: 1.8rem; height: 1.8rem; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 650; font-size: .9rem; flex: none; }
+.dt-h h2 { margin: 0; font-size: 1.12rem; font-weight: 650; }
+.dt-h .en { font-size: .8rem; color: var(--ink-3); }
+.ev { border: 1px solid var(--line); border-radius: 10px; padding: .75rem .9rem; margin-bottom: .6rem; background: var(--surface); }
+.ev.latest { border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-soft); }
+.ev.bad { border-color: var(--bad-line); box-shadow: 0 0 0 3px var(--bad-soft); }
+.ev .meta { font-size: .74rem; color: var(--ink-3); display: flex; gap: .5rem; align-items: center; margin-bottom: .25rem; flex-wrap: wrap; }
+.ev .sum { font-size: 1.02rem; line-height: 1.4; color: var(--ink); font-weight: 500; }
+.ev.old .sum { font-size: .88rem; color: var(--ink-2); font-weight: 400; }
+.ev .body { margin-top: .6rem; }
+.lbl { font-size: .7rem; color: var(--ink-3); font-weight: 650; text-transform: uppercase; letter-spacing: .06em; margin: .55rem 0 .3rem; }
+pre.raw { margin: .5rem 0 0; padding: .6rem .7rem; background: var(--sunk); border: 1px solid var(--line); border-radius: 8px; font: .74rem/1.45 var(--mono); color: var(--ink-2); white-space: pre-wrap; word-break: break-word; max-height: 18rem; overflow: auto; }
+.grid { display: grid; gap: 3px; font-size: .8rem; }
+.grid .h { font-size: .7rem; color: var(--ink-3); font-weight: 600; padding: .15rem .3rem; }
+.grid .c { padding: .32rem .45rem; border-radius: 6px; text-align: center; font-weight: 600; border: 1px solid transparent; position: relative; }
+.grid .c small { display: block; font-weight: 500; font-size: .66rem; color: var(--ink-3); }
+.grid .c.chosen { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.grid .c.chosen::after { content: "chosen"; position: absolute; top: -.55rem; right: .25rem; font-size: .58rem; background: var(--accent); color: #fff; padding: 0 .3rem; border-radius: 4px; font-weight: 650; }
+.grid .rl { font-weight: 600; padding: .32rem .2rem; font-size: .8rem; }
+.rules { display: flex; flex-wrap: wrap; gap: .25rem; }
+.rules span { font-size: .68rem; padding: .12rem .4rem; border-radius: 5px; border: 1px solid var(--good-line); background: var(--good-soft); color: var(--good); font-weight: 600; }
+.rules span.x { border-color: var(--bad-line); background: var(--bad-soft); color: var(--bad); }
+.rules span.na { border-color: var(--line); background: var(--sunk); color: var(--ink-4); }
+.verd { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .35rem; }
+.verd div { border: 1px solid var(--line); border-radius: 8px; padding: .4rem .5rem; font-size: .78rem; min-width: 0; }
+.verd div b { display: block; font-size: .8rem; }
+.verd div span { color: var(--ink-3); font-size: .72rem; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.verd .ok { border-color: var(--good-line); background: var(--good-soft); } .verd .ok b { color: var(--good); }
+.verd .no { border-color: var(--bad-line); background: var(--bad-soft); } .verd .no b { color: var(--bad); }
+.tiers { display: flex; align-items: stretch; gap: .35rem; flex-wrap: wrap; }
+.tiers div { border: 1px solid var(--line); border-radius: 8px; padding: .35rem .6rem; font-size: .78rem; background: var(--sunk); color: var(--ink-3); }
+.tiers div b { display: block; color: var(--ink-2); font-size: .8rem; }
+.tiers div.on { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent); } .tiers div.on b { color: var(--accent); }
+.tiers div.hu { background: var(--wait-soft); border-color: var(--wait-line); color: var(--wait); }
+.tiers .ar { border: 0; background: none; padding: .35rem 0; color: var(--ink-4); }
+.bubble { display: inline-block; max-width: 100%; padding: .55rem .8rem; border-radius: 12px 12px 12px 3px; background: #dcf8c6; color: #1c1917; font-size: .95rem; border: 1px solid #c4ebaa; }
+.move { display: flex; align-items: center; gap: .6rem; font-size: 1.05rem; font-weight: 650; }
+.move span.f { color: var(--ink-3); text-decoration: line-through; font-weight: 500; }
+.bar { height: .55rem; background: var(--sunk); border-radius: 999px; position: relative; overflow: hidden; border: 1px solid var(--line); }
+.bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 999px; transition: width .6s; }
+.bar i.was { background: var(--line-2); }
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; }
+.facts div { background: var(--sunk); border-radius: 8px; padding: .4rem .6rem; min-width: 0; }
+.facts .k { font-size: .68rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+.facts .x { font-size: .9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* controls */
+.grp { border-top: 1px solid var(--line); padding-top: .6rem; margin-top: .6rem; }
+.grp:first-child { border-top: 0; padding-top: 0; margin-top: 0; }
+.grp .gt { font-size: .72rem; color: var(--ink-3); font-weight: 650; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .4rem; display: flex; align-items: center; gap: .4rem; }
+.grp .gt .sp { flex: 1; }
+.row { display: flex; gap: .4rem; align-items: center; flex-wrap: wrap; }
+.kill { flex: 1; height: 2.6rem; border-radius: 9px; border: 1px solid var(--bad); background: var(--bad); color: #fff; font-weight: 700; letter-spacing: .02em; font-size: .9rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; }
+.kill:hover { background: #991b1b; }
+.kill.on { background: var(--surface); color: var(--bad); }
+.kill.on:hover { background: var(--bad-soft); }
+.appr { display: flex; flex-direction: column; gap: .35rem; max-height: 11.5rem; overflow-y: auto; }
+.ap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; align-items: center; padding: .4rem .55rem; border: 1px solid var(--line); border-radius: 8px; }
+.ap.me { border-color: var(--wait-line); background: var(--wait-soft); }
+.ap .t1 { font-size: .85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ap .t2 { font-size: .72rem; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dd { height: 1.85rem; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); font-size: .82rem; padding: 0 .35rem; }
+.verdict { margin-top: .4rem; font-size: .8rem; padding: .35rem .55rem; border-radius: 7px; background: var(--sunk); color: var(--ink-2); border: 1px solid var(--line); min-height: 1.95rem; line-height: 1.35; }
+.verdict.ok { background: var(--good-soft); border-color: var(--good-line); color: #14532d; }
+.verdict.no { background: var(--bad-soft); border-color: var(--bad-line); color: #7f1d1d; }
+.applies { font-size: .74rem; color: var(--ink-3); margin-left: auto; }
+.audit { list-style: none; margin: 0; padding: 0; }
+.audit li { padding: .4rem .1rem; border-bottom: 1px solid var(--line); font-size: .78rem; display: grid; grid-template-columns: 3.3rem minmax(0, 1fr); gap: .45rem; }
+.audit li.new { animation: chg 1.4s ease-out; }
+.audit .tm { color: var(--ink-3); font-size: .72rem; }
+.audit .w1 { font-weight: 600; color: var(--ink); }
+.audit .w2 { color: var(--ink-3); font-size: .72rem; }
+.audit .rs { font-weight: 600; } .audit .rs.ok { color: var(--good); } .audit .rs.no { color: var(--bad); }
+
+/* footer + overlays */
+.foot { display: flex; align-items: center; gap: .8rem; font-size: .76rem; color: var(--ink-3); min-height: 1.4rem; }
+.foot .feed { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.foot .feed b { color: var(--ink-2); font-weight: 600; }
+.toast { position: fixed; top: 4.2rem; left: 50%; transform: translateX(-50%) translateY(-1rem); opacity: 0; background: var(--ink); color: #fff; padding: .6rem 1rem; border-radius: 10px; font-size: .9rem; box-shadow: var(--shadow-lg); transition: all .25s; pointer-events: none; z-index: 30; max-width: 52rem; }
+.toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.bad { background: var(--bad); } .toast.good { background: var(--good); }
+.cue { position: fixed; left: 1rem; bottom: 2.6rem; width: 29rem; background: var(--surface); border: 1px solid var(--line-2); border-radius: 14px; box-shadow: var(--shadow-lg); padding: .9rem 1rem; z-index: 25; }
+.cue .ct { display: flex; align-items: center; gap: .5rem; font-size: .72rem; color: var(--ink-3); font-weight: 650; text-transform: uppercase; letter-spacing: .06em; }
+.cue h3 { margin: .3rem 0 .45rem; font-size: 1.05rem; }
+.cue p { margin: .3rem 0; font-size: .86rem; color: var(--ink-2); line-height: 1.45; }
+.cue p b { color: var(--accent); }
+.cue .row { margin-top: .5rem; }
+.veil { position: fixed; inset: 0; background: rgba(250,250,249,.86); backdrop-filter: blur(3px); display: grid; place-items: center; z-index: 40; }
+.pick { width: min(64rem, 92vw); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-lg); padding: 1.6rem 1.7rem; }
+.pick h2 { margin: 0 0 .25rem; font-size: 1.5rem; letter-spacing: -.015em; }
+.pick > p { margin: 0 0 1.1rem; color: var(--ink-3); }
+.pcs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .9rem; }
+.pc { text-align: left; border: 1px solid var(--line); border-radius: 12px; padding: 1rem 1.05rem; background: var(--surface); cursor: pointer; transition: all .15s; display: flex; flex-direction: column; gap: .35rem; }
+.pc:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.pc .k { font-size: .72rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
+.pc .nm { font-size: 1.25rem; font-weight: 650; }
+.pc .ti { font-weight: 600; }
+.pc .bl { color: var(--ink-3); font-size: .86rem; }
+.spin { width: 1rem; height: 1rem; border: 2px solid var(--accent-line); border-top-color: var(--accent); border-radius: 50%; animation: sp 0.8s linear infinite; display: inline-block; }
+@keyframes sp { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="top">
+    <div class="brand"><div class="mk">K</div><h1>Kairos <span>· Outbound collections, live</span></h1></div>
+    <span class="tag" title="Synthetic borrowers, DEV simulator, mock channel adapters (dry-run). Nothing is sent.">SIMULATED</span>
+    <div class="clock" aria-live="off"><span class="d" id="cDay">Day –</span><span class="w" id="cDate"></span><span class="t" id="cTime">--:--</span></div>
+    <span class="phase" id="phase"><i></i><span id="phaseT">Not started</span></span>
+    <div class="sp"></div>
+    <div class="ctl">
+      <label class="chk" title="Playback stops at each of the spotlight borrower's decisions and approvals"><input type="checkbox" id="autoPause" checked> Pause at decisions</label>
+      <button class="btn icon" id="bPlay" title="Play / pause playback (Space)" aria-label="Play"><svg class="i" viewBox="0 0 24 24" id="playIco"><path d="M7 5l12 7-12 7z"/></svg></button>
+      <button class="btn" id="bStep" title="Step to the spotlight's next event (N)"><svg class="i" viewBox="0 0 24 24"><path d="M5 5l10 7-10 7z M18 5v14"/></svg>Next event</button>
+      <div class="seg" id="speed" role="group" aria-label="Playback speed"><button data-s="1" aria-pressed="true">1×</button><button data-s="2" aria-pressed="false">2×</button><button data-s="4" aria-pressed="false">4×</button></div>
+      <button class="btn" id="bRestart" title="Choose a borrower and start again">Restart</button>
+      <button class="btn" id="bCue" title="Presenter script (P)"><kbd>P</kbd> Script</button>
+    </div>
+  </header>
+
+  <section class="strip" aria-label="Campaign today">
+    <div class="camp"><div class="l">Campaign (SIMULATED)</div><div class="v" id="kCamp">– <span></span></div></div>
+    <div><div class="l">Contacted today</div><div class="v" id="kSent">0</div></div>
+    <div><div class="l">Waiting today</div><div class="v wait" id="kWait">0</div></div>
+    <div><div class="l">Held for a person</div><div class="v" id="kHeld">0</div></div>
+    <div><div class="l">Paid today</div><div class="v good" id="kPaid">0</div></div>
+    <div><div class="l">Recovered so far</div><div class="v good" id="kRec">₹0</div></div>
+    <div><div class="l">Aladdin blocks</div><div class="v" id="kBlk">0</div></div>
+    <div><div class="l">Cap breaches</div><div class="v good" id="kCap">0</div></div>
+  </section>
+
+  <section class="pipe" id="pipe" aria-label="Engine pipeline for the spotlight borrower"></section>
+
+  <div class="banner info" id="banner"><span id="bannerT">Choose a borrower to follow. Every box below is a real Kairos engine; it lights up when that engine acts for them.</span><span class="sp"></span><span id="bannerA"></span></div>
+
+  <section class="main">
+    <div class="col">
+      <div class="card" id="cardBox">
+        <div class="presets" id="presets"></div>
+        <div class="who"><div class="av" id="av">–</div><div><div class="nm" id="nm">–</div><div class="sub" id="sub"></div></div><span class="status" id="stat">–</span></div>
+        <div class="kv" id="kv"></div>
+        <div class="cons" id="cons"></div>
+        <div class="best" id="best"></div>
+      </div>
+      <div class="card" style="flex:1">
+        <div class="ch"><h2>Journey so far</h2><span class="note" id="tlNote"></span></div>
+        <div class="scroll"><ul class="tl" id="tl"></ul></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card" style="flex:1">
+        <div class="dt-h"><div class="n" id="dN">1</div><div><h2 id="dT">–</h2><div class="en" id="dE"></div></div><div class="sp" style="flex:1"></div>
+          <button class="btn sm" id="bFollow" title="Follow the latest engine">Follow live</button>
+          <div class="seg" role="group" aria-label="View"><button id="vPlain" aria-pressed="true">Plain words</button><button id="vTech" aria-pressed="false">Technical</button></div>
+        </div>
+        <div class="scroll" id="detail"></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card" style="flex:none">
+        <div class="ch"><h2>Take control</h2><span class="sp"></span><span class="applies" id="applies"></span></div>
+        <div class="grp">
+          <div class="gt">Campaign</div>
+          <div class="row">
+            <button class="btn" id="bCamp" style="flex:none">Pause campaign</button>
+            <button class="kill" id="bKill"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5"/></svg><span>PAUSE ALL OUTBOUND</span></button>
+          </div>
+        </div>
+        <div class="grp">
+          <div class="gt">Approvals <span class="sp"></span><span id="apN" style="text-transform:none;letter-spacing:0;font-weight:500"></span></div>
+          <div class="appr" id="appr"></div>
+        </div>
+        <div class="grp">
+          <div class="gt">Spotlight: <span id="spName" style="text-transform:none;letter-spacing:0;color:var(--ink)">–</span></div>
+          <div class="row">
+            <button class="btn sm" id="bWait" title="Cancel today's planned touch (HITL cancel_next)">Force WAIT</button>
+            <span style="font-size:.8rem;color:var(--ink-3)">or send</span>
+            <select class="dd" id="oCh" aria-label="Channel"><option value="sms">SMS</option><option value="whatsapp" selected>WhatsApp</option><option value="email">Email</option><option value="ivr">Voice call</option><option value="voicebot">Voice bot</option></select>
+            <select class="dd" id="oTm" aria-label="Time"><option>07:30</option><option>09:30</option><option selected>14:30</option><option>17:30</option><option>20:00</option></select>
+            <button class="btn sm primary" id="bOv">Apply</button>
+          </div>
+          <div class="verdict" id="verdict">Aladdin checks any override against every rule before anything is reserved.</div>
+          <div class="row" style="margin-top:.45rem">
+            <button class="btn sm" id="bHold">Put on hold</button>
+            <button class="btn sm bad" id="bStop" title="Record STOP on the borrower's behalf: every channel off">Mark STOP for borrower</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="flex:1">
+        <div class="ch"><h2>Audit log</h2><span class="note">every human action · who · rule check · result</span></div>
+        <div class="scroll"><ul class="audit" id="audit"></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot"><span class="tag">SIMULATED</span><span class="feed" id="feed">Synthetic borrowers (K03 generator), DEV simulator, mock channel adapters (dry-run): nothing is sent. Supervisor display name: Aladdin (K06).</span><span><kbd>Space</kbd> play · <kbd>N</kbd> next · <kbd>P</kbd> script</span></footer>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<div class="cue" id="cue" hidden>
+  <div class="ct"><span id="cueN">Cue 1 / 6</span><span class="sp" style="flex:1"></span><span>presenter only · <kbd>P</kbd> hides</span></div>
+  <h3 id="cueH"></h3>
+  <p id="cueDo"></p>
+  <p id="cueSay"></p>
+  <div class="row"><button class="btn sm" id="cuePrev">← Prev</button><button class="btn sm" id="cueNext">Next →</button></div>
+</div>
+
+<div class="veil" id="veil">
+  <div class="pick">
+    <h2>Follow one borrower through a live campaign</h2>
+    <p>A SIMULATED 200-borrower collections campaign runs on Kairos's real engines. Pick whose journey to follow — the engines, not a script, decide what happens.</p>
+    <div class="pcs" id="pcs"><div class="empty"><span class="spin"></span> Loading…</div></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const API = "/demo/journey/outbound/api";
+const STAGES = [
+  {k: "churn", t: "Auto-churn", e: "K27 · cohort, risk, layer"},
+  {k: "learner", t: "Learner", e: "K09 · channel × time, contact or wait"},
+  {k: "aladdin", t: "Aladdin", e: "K06 gate · every rule, reserve, re-check"},
+  {k: "executor", t: "Executor", e: "channel adapter · mock, dry-run"},
+  {k: "webhooks", t: "Webhooks", e: "delivered · read · duplicates ignored"},
+  {k: "intent", t: "Intent stack", e: "rules → model → prism → human"},
+  {k: "outcomes", t: "Outcome → learning", e: "24 h window → posterior update"},
+  {k: "payments", t: "Payment", e: "bank-verified → journey exit"},
+];
+const SI = Object.fromEntries(STAGES.map((s, i) => [s.k, i]));
+const CH = {sms: "SMS", whatsapp: "WhatsApp", email: "Email", ivr: "Voice call", voicebot: "Voice bot"};
+const SLOT = {"08-11": "morning", "14-17": "afternoon", "17-19": "evening"};
+const SLOT_T = {"08-11": "9:30", "14-17": "2:30", "17-19": "5:30"};
+const RULE_WORD = {VOICE_CHANNEL: "voice call", FIRST_SEND_AFTER_HARDSHIP: "first send after hardship", MANUAL_DISPATCH: "manual send · maker-checker", STANDARD_INTENSITY_HIGH_DPD: "firm wording, 60+ days"};
+const $ = (id) => document.getElementById(id);
+const h = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const inr = (p) => p == null ? "–" : "₹" + Math.round(p / 100).toLocaleString("en-IN");
+const inr2 = (p) => p == null ? "–" : "₹" + (p / 100).toLocaleString("en-IN", {minimumFractionDigits: p % 100 ? 2 : 0, maximumFractionDigits: 2});
+const pct = (m) => m == null ? "–" : (m * 100).toFixed(1);
+const ruleName = (r) => String(r || "").toLowerCase().replace(/_/g, " ");
+const mins = (t) => +t.slice(11, 13) * 60 + +t.slice(14, 16);
+const fmtT = (m) => { m = Math.max(0, Math.min(1439, Math.round(m))); const hh = Math.floor(m / 60), mm = m % 60; return (hh % 12 || 12) + ":" + String(mm).padStart(2, "0") + (hh < 12 ? " am" : " pm"); };
+
+// ---------------- state ----------------
+const S = {
+  started: false, busy: false, paused: true, speed: 1, step: false,
+  queue: [], shown: 0, cursor: 0, day: 1, clock: 360, phase: "ready", snap: null, pendingSnap: null,
+  spot: null, presets: [], days: 14, campaignDays: {},
+  stage: {}, sel: null, follow: true, tech: false, spotEvents: [], tl: [],
+  today: {sent: 0, wait: 0, held: 0, paid: 0}, rec: 0, blocks: 0, cap: 0, dayKey: 0,
+  pauseFlag: null, lastSpotStage: null, beat: 0, card: null, patch: {}, ended: false, cue: 0, auditSeen: 0,
+};
+
+// ---------------- network ----------------
+async function call(path, body, method) {
+  const r = await fetch(API + path, {method: method || (body === undefined ? "GET" : "POST"), headers: {"Content-Type": "application/json"}, body: body === undefined ? undefined : JSON.stringify(body)});
+  let j = null;
+  try { j = await r.json(); } catch (e) { j = null; }
+  if (!r.ok && !(j && j.ok === false)) throw new Error((j && (j.detail && (j.detail.message || j.detail))) || ("HTTP " + r.status));
+  return j;
+}
+
+// ---------------- start ----------------
+async function loadPresets() {
+  const j = await call("/presets");
+  S.presets = j.presets;
+  const pcs = $("pcs");
+  pcs.innerHTML = j.presets.map((p, i) => `<button class="pc" data-b="${h(p.borrower_id)}"><span class="k">Story ${i + 1}</span><span class="nm">${h(p.first_name || p.borrower_id)}</span><span class="ti">${h(p.title)}</span><span class="bl">${h(p.blurb)}</span></button>`).join("") || `<button class="pc" data-b=""><span class="nm">Start</span></button>`;
+  pcs.querySelectorAll(".pc").forEach((b) => b.onclick = () => start(b.dataset.b || null));
+}
+
+async function start(bid) {
+  $("pcs").querySelectorAll(".pc").forEach((b) => b.disabled = true);
+  const j = await call("/start", bid ? {spotlight: bid} : {});
+  Object.assign(S, {started: true, busy: false, paused: false, step: false, queue: [], shown: 0, cursor: j.cursor, day: 1, clock: 360,
+    phase: j.snapshot.phase, snap: j.snapshot, pendingSnap: null, spot: j.spotlight, presets: j.presets, days: j.days, borrowers: j.borrowers,
+    stage: {}, sel: null, follow: true, spotEvents: [], tl: [], today: {sent: 0, wait: 0, held: 0, paid: 0}, rec: 0, blocks: 0, cap: 0,
+    dayKey: 1, pauseFlag: null, lastSpotStage: null, beat: 0, patch: {}, ended: false, auditSeen: 0});
+  $("veil").hidden = true;
+  $("tl").innerHTML = ""; $("audit").innerHTML = "";
+  S.card = j.snapshot.card;
+  renderPresets(); renderCard(); renderPipe(); renderDetail(); renderControls(j.snapshot); renderAudit(j.snapshot.audit); renderStrip(); renderClock();
+  banner(`Following <b>${h(S.card.first_name)}</b> (${h(S.card.band_word)}, EMI ${inr(S.card.emi_paise)}) through a ${j.borrowers}-borrower campaign. The engines decide; you can take control at any decision.`, "info");
+  setPlaying(true);
+}
+
+function renderPresets() {
+  $("presets").innerHTML = (S.presets || []).map((p) => `<button data-b="${h(p.borrower_id)}" aria-pressed="${p.borrower_id === S.spot}" title="${h(p.blurb)}">${h(p.first_name)} · ${h(p.key)}</button>`).join("");
+  $("presets").querySelectorAll("button").forEach((b) => b.onclick = () => { if (b.dataset.b !== S.spot) start(b.dataset.b); });
+}
+
+// ---------------- playback ----------------
+function rate(m) { // simulated minutes per real second at 1×
+  if (m < 480) return 200;          // 06:00–08:00: the LMS refresh, K27 tick, the plan
+  if (m < 570) return 60;           // 08:00–09:30: the approval window
+  return 160;                       // 09:30–22:00: sends, receipts, replies, payments, learning
+}
+
+function setPlaying(on) {
+  S.paused = !on;
+  $("playIco").innerHTML = on ? '<path d="M8 5v14M16 5v14"/>' : '<path d="M7 5l12 7-12 7z"/>';
+  $("bPlay").setAttribute("aria-label", on ? "Pause" : "Play");
+}
+
+async function fetchStep() {
+  if (S.busy || S.phase === "finished") return;
+  S.busy = true;
+  try {
+    const j = await call("/step", {});
+    S.phase = j.snapshot.phase;
+    const evs = j.events || [];
+    S.queue.push(...evs);
+    S.cursor = j.cursor;
+    S.pendingSnap = {asOf: evs.length ? evs[evs.length - 1].id : S.shown, snap: j.snapshot};
+    if (!evs.length) applySnap();
+  } catch (e) { toast("Step failed: " + e.message, "bad"); setPlaying(false); }
+  S.busy = false;
+}
+
+function applySnap() {
+  if (!S.pendingSnap) return;
+  const sn = S.pendingSnap.snap; S.pendingSnap = null;
+  S.snap = sn; S.card = sn.card; S.patch = {};
+  renderCard(); renderControls(sn); renderAudit(sn.audit);
+  if (sn.cap_breaches != null) { S.cap = Math.max(S.cap, sn.cap_breaches); renderStrip(); }
+  if (sn.phase === "window" && S.started && $("autoPause").checked && !S.step) {
+    const mine = (sn.pending_approvals || []).find((p) => p.borrower_id === S.spot);
+    if (mine) S.pauseFlag = {kind: "approval", p: mine};
+  }
+}
+
+function phaseEnd() { return S.phase === "window" ? 570 : 1320; }
+
+let last = performance.now();
+function tick(now) {
+  const dt = Math.min(0.25, (now - last) / 1000); last = now;
+  if (S.started && !S.busy) {
+    if (S.step) { stepRun(); }
+    else if (!S.paused) advance(dt * S.speed);
+  }
+  if (S.dirty) { S.dirty = false; renderStrip(); renderClock(); }
+}
+
+function advance(dt) {
+  if (S.beat > 0) { S.beat -= dt; return; }
+  let budget = dt;
+  while (budget > 0 && !S.paused && !S.busy) {
+    const nx = S.queue[0];
+    const pf = S.pauseFlag;
+    if (pf && pf.kind === "paid" && (!nx || nx.day > pf.day || mins(nx.t) > pf.t)) { firePause(); return; }
+    if (nx) {
+      const em = nx.day > S.day ? 1e9 : mins(nx.t);
+      if (nx.day < S.day || em <= S.clock) { show(S.queue.shift()); if (S.beat > 0 || S.paused) return; continue; }
+      const need = (em - S.clock) / rate(S.clock);
+      if (need <= budget) { budget -= need; S.clock = em; S.dirty = true; continue; }
+      S.clock += budget * rate(S.clock); S.dirty = true; return;
+    }
+    // queue empty: pending pause flag first (decision point / approval)
+    if (S.pendingSnap) applySnap();
+    if (S.pauseFlag) { firePause(); return; }
+    if (S.phase === "finished") { finish(); return; }
+    if (S.phase === "ready" && S.shown === 0) { nextPhase(); return; }   // the very first plan
+    const end = phaseEnd();
+    if (S.clock < end) {
+      const need = (end - S.clock) / rate(S.clock);
+      if (need <= budget) { budget -= need; S.clock = end; S.dirty = true; }
+      else { S.clock += budget * rate(S.clock); S.dirty = true; return; }
+    }
+    // at the phase end: compute the next phase on the engines
+    nextPhase();
+    return;
+  }
+}
+
+function nextPhase() {
+  if (S.phase === "ready" && S.shown > 0) { // a day ended: next day's plan starts at 06:00
+    S.day = Math.min(S.days, S.day + 1); S.clock = 360; newDay();
+  }
+  fetchStep();
+}
+
+function stepRun() { // jump to the spotlight's next event
+  let guard = 0;
+  while (S.step && !S.busy && guard++ < 5000) {
+    const nx = S.queue[0];
+    if (nx) {
+      if (nx.day >= S.day && mins(nx.t) > S.clock) S.clock = mins(nx.t);
+      const e = S.queue.shift();
+      show(e, true);
+      if (e.spot) { S.step = false; S.beat = 0; setPlaying(false); return; }
+      continue;
+    }
+    if (S.pendingSnap) applySnap();
+    if (S.pauseFlag) { S.step = false; firePause(); return; }
+    if (S.phase === "finished") { S.step = false; finish(); return; }
+    S.clock = phaseEnd(); S.dirty = true;
+    nextPhase();
+    return;
+  }
+}
+
+function firePause() {
+  const f = S.pauseFlag; S.pauseFlag = null;
+  setPlaying(false);
+  if (f.kind === "approval") {
+    banner(`<b>Waiting for you:</b> ${h(f.p.first_name)}'s ${h(CH[f.p.channel] || f.p.channel)} at ${h(f.p.send_time)} needs a person's approval (${h((f.p.rules || []).map((r) => RULE_WORD[r] || r).join(", "))}). Approve or reject it on the right — or press ▶ and the duty supervisor (simulated) decides.`, "warn");
+  } else if (f.kind === "paid") {
+    if (S.follow) { S.sel = "payments"; renderPipe(); renderDetail(); }
+    banner(`<b>Journey complete.</b> ${h(S.card.first_name)} paid, the bank confirmed it, the journey exited — ${S.spotEvents.filter((x) => x.component === "executor").length} messages, ${inr2(spentOnSpot())} spent. Press ▶ to keep the campaign running, or pick another borrower.`, "ok");
+  } else if (f.kind === "decision") {
+    banner(`<b>Decision point · Day ${S.day}, 8:00 am:</b> ${h(f.text)} Press ▶ to let it go, or take control on the right.`, "warn");
+  }
+}
+
+function finish() {
+  setPlaying(false); S.ended = true;
+  banner("The 14-day campaign has ended. Restart to follow another borrower.", "info");
+  renderClock();
+}
+
+function newDay() {
+  S.today = {sent: 0, wait: 0, held: 0, paid: 0}; S.dirty = true;
+  const li = document.createElement("li"); li.className = "dayh"; li.textContent = "Day " + S.day; S.tlDay = li;
+}
+
+// ---------------- one event ----------------
+function show(e, fast) {
+  S.shown = Math.max(S.shown, e.id);
+  if (e.day > S.day) { S.day = e.day; S.clock = 360; newDay(); }
+  if (e.day === S.day) S.clock = Math.max(S.clock, mins(e.t));
+  count(e);
+  if (e.spot || (e.component === "human")) spotEvent(e, fast);
+  else if (e.borrower_id == null) campaignEvent(e);
+  if (S.pendingSnap && S.shown >= S.pendingSnap.asOf) applySnap();
+  S.dirty = true;
+}
+
+function count(e) {
+  const c = e.component, k = e.kind;
+  if (e.day !== S.day) return;
+  if (c === "executor" && k === "dispatched") S.today.sent++;
+  else if (c === "learner" && k === "wait") S.today.wait++;
+  else if (c === "hitl" && k === "approval_pending") S.today.held++;
+  else if (c === "payments" && k === "verified") { S.today.paid++; S.rec += (e.amount_paise || (e.detail && e.detail.amount_paise) || 0); }
+  else if (c === "aladdin" && k === "blocked") S.blocks++;
+  else if (c === "reports" && k === "day_end") S.cap = Math.max(S.cap, (e.detail && e.detail.cap_breaches) || 0);
+}
+
+function campaignEvent(e) {
+  if (["daily_summary", "switch", "world_change", "finalized", "day_start"].includes(e.kind) || e.component === "human") {
+    $("feed").innerHTML = `<b>Campaign · Day ${e.day} ${h(fmtT(mins(e.t)))}:</b> ${h(e.summary)}`;
+  }
+}
+
+const BEAT = {learner: 1.4, aladdin: 1.3, executor: 1.0, webhooks: .8, intent: 1.5, outcomes: 1.4, payments: 1.6, churn: .7};
+
+function spotEvent(e, fast) {
+  const st = e.stage || "aladdin";
+  if (e.component === "human" && !e.spot && e.borrower_id && e.borrower_id !== S.spot) return;
+  S.spotEvents.push(e);
+  const prev = S.stage[st];
+  S.stage[st] = e;
+  patchCard(e);
+  addTimeline(e);
+  if (S.follow) S.sel = st;
+  flowTo(st);
+  renderPipe(st); renderDetail();
+  if (!fast && e.component !== "human") S.beat = (BEAT[st] || 1) * (e.kind === "moved" ? .6 : 1);
+  // decision point: the spotlight's plan for today (learner contact) → pause after the plan is shown
+  if (e.component === "learner" && e.kind === "contact" && $("autoPause").checked && !S.step) {
+    const ch = CH[e.detail.channel] || e.detail.channel;
+    S.pauseFlag = S.pauseFlag || {kind: "decision", text: `the learner picked ${ch} at ${e.detail.send_time}${e.detail.lane === "voice_first" ? " (the journey says call)" : ""}; Aladdin checked every rule.`};
+  }
+  if (e.component === "payments" && e.kind === "verified") {
+    if ($("autoPause").checked && !fast) S.pauseFlag = {kind: "paid", day: e.day, t: mins(e.t) + 1};
+    banner(`<b>${h(e.first_name)} paid ${inr(e.detail.amount_paise)}</b>, confirmed by the bank. The journey exits${e.detail.cancelled_touches ? `; ${e.detail.cancelled_touches} queued touch(es) for that EMI cancelled` : ""}. Kairos spent ${inr2(spentOnSpot())} on ${h(e.first_name)}.`, "ok");
+  }
+  void prev;
+}
+
+function spentOnSpot() { return S.spotEvents.filter((x) => x.component === "executor" && x.kind === "dispatched").reduce((a, x) => a + (x.detail.cost_paise || 0), 0); }
+
+function patchCard(e) {
+  const d = e.detail || {};
+  if (e.component === "churn" && (e.kind === "moved" || e.kind === "assigned")) {
+    if (d.cohort) S.patch.cohort = d.cohort; if (d.layer) S.patch.layer = d.layer; if (d.risk_tier) S.patch.risk_tier = d.risk_tier;
+    if (d.engine === "lifecycle") S.patch.lifecycle = d.to;
+    S.patch._chg = d.engine === "risk" ? "risk_tier" : d.engine; renderCard();
+  } else if (e.component === "payments" && e.kind === "verified") { S.patch.paid = true; S.patch.queued = []; S.patch.flags = []; renderCard(); renderControls(S.snap); }
+  else if (e.component === "executor" && e.kind === "dispatched" && S.card) { S.patch.queued = (S.patch.queued || S.card.queued || []).filter((q) => q.channel !== d.channel); renderCard(); }
+  else if ((e.component === "borrower" && e.kind === "stop") || (e.component === "human" && e.kind === "stop")) { S.patch.stopped = true; renderCard(); renderControls(S.snap); }
+}
+
+// ---------------- pipeline ----------------
+function short(e) {
+  const d = e.detail || {}, c = e.component, k = e.kind;
+  if (!e) return "";
+  if (c === "human") return e.summary;
+  if (c === "churn") return k === "assigned" ? `Cohort ${d.cohort} · ${String(d.risk_tier || "").toLowerCase()} risk · ${d.layer}` : `${d.engine}: ${d.from} → ${d.to}`;
+  if (c === "learner") return k === "contact" ? `Contact: ${CH[d.channel]} at ${d.send_time}` : `Wait — ${({REST: "resting", JOURNEY: "no journey step", LEARNER: "not worth it now"})[d.rule] || "not today"}`;
+  if (c === "aladdin") {
+    if (k === "allowed") return `✓ every rule passed · reserved`;
+    if (k === "rechecked") return `✓ re-checked at ${d.stage === "send" ? "send" : "approval"}`;
+    if (k === "blocked") return `✗ ${d.label || d.reason}`;
+    if (k === "checks") { const ok = (d.checks || []).filter((x) => x.allowed).length; return ok ? `${ok} of 5 channels allowed` : `✗ ${(d.checks || [])[0] ? d.checks[0].label : "blocked"}`; }
+  }
+  if (c === "hitl") return ({approval_pending: "⏸ waits for a person", approved: "✓ approved by a person", rejected: "✗ rejected by a person", blocked_at_recheck: "✗ approved, re-check blocked", expired: "expired", withdrawn: "withdrawn", case_opened: "→ a person takes the case", case_resolved: "case resolved"})[k] || k;
+  if (c === "voice") return k === "bot_selected" ? `Bot ${d.bot} · ${String(d.language || "")}` : k === "call_ended" ? `Call: ${ruleName(d.disposition)} @ ${d.confidence}` : "Duplicate call-end ignored";
+  if (c === "executor") return `${CH[d.channel]} sent · ${inr2(d.cost_paise)} · dry-run`;
+  if (c === "channel") return ({delivered: "Delivered", read: "Read (reach, not a reply)", failed: "Not delivered", duplicate_ignored: "Duplicate receipt ignored", call_answered: "Call answered", call_not_answered: "Call not answered"})[k] || k;
+  if (c === "borrower") return k === "stop" ? "STOP" : `“${String(d.text || "").slice(0, 60)}”`;
+  if (c === "intent") return `${ruleName(d.label)} · ${String(d.tier || "").replace("_", " ")} ${d.confidence}`;
+  if (c === "outcomes") return `${({REPLY: "Reply", NO_REPLY: "No reply", UNRESOLVED: "Unresolved"})[d.status] || d.status}${d.learned ? ` → ${pct(d.before)}→${pct(d.after)}` : ""}`;
+  if (c === "payments") return ({verified: `${inr(d.amount_paise)} verified → exit`, promise_kept: "Promise kept", promise_broken: "Promise broken", claim_pending: "Claim: waiting for the bank", claim_verified: "Claim verified", claim_rejected: "Claim rejected"})[k] || k;
+  return e.summary;
+}
+
+function tone(e) {
+  if (!e) return "";
+  const c = e.component, k = e.kind, d = e.detail || {};
+  if ((c === "aladdin" && (k === "blocked" || (k === "checks" && !(d.checks || []).some((x) => x.allowed)))) || k === "stop" || k === "override_blocked" || k === "refused" || k === "blocked_at_recheck" || k === "rejected") return "blk";
+  if (k === "approval_pending" || k === "hold_on" || (c === "human" && /paused/.test(k)) || k === "override_queued") return "amb";
+  if ((c === "payments" && (k === "verified" || k === "promise_kept" || k === "claim_verified")) || (c === "outcomes" && d.status === "REPLY")) return "grn";
+  return "";
+}
+
+function renderPipe(hot) {
+  const el = $("pipe");
+  if (!el.children.length) {
+    el.innerHTML = STAGES.map((s, i) => `<button class="stg" data-k="${s.k}"><div class="hd"><span class="n">${i + 1}</span><span class="nm">${h(s.t)}</span></div><div class="en">${h(s.e)}</div><div class="st"></div><div class="tm"></div></button>`).join("") + '<span class="flow" id="flow"></span>';
+    el.querySelectorAll(".stg").forEach((b) => b.onclick = () => { S.sel = b.dataset.k; S.follow = false; renderPipe(); renderDetail(); });
+  }
+  el.querySelectorAll(".stg").forEach((b) => {
+    const k = b.dataset.k, e = S.stage[k];
+    b.className = "stg" + (e ? " has" : "") + (S.sel === k ? " sel" : "") + (e ? " " + tone(e) : "") + (hot === k ? " hot" : "");
+    b.querySelector(".st").textContent = e ? short(e) : "waiting for this engine";
+    b.querySelector(".tm").textContent = e ? `Day ${e.day} · ${fmtT(mins(e.t))}` : "";
+    if (hot === k) { const n = b.querySelector(".n"); n.style.animation = "none"; void n.offsetWidth; n.style.animation = ""; setTimeout(() => b.classList.remove("hot"), 1400); }
+  });
+  $("bFollow").classList.toggle("on", S.follow);
+}
+
+function flowTo(st) {
+  const from = S.lastSpotStage; S.lastSpotStage = st;
+  if (from == null || from === st || SI[from] > SI[st]) return;
+  const pipe = $("pipe"), a = pipe.querySelector(`[data-k="${from}"]`), b = pipe.querySelector(`[data-k="${st}"]`), f = $("flow");
+  if (!a || !b || !f) return;
+  const pr = pipe.getBoundingClientRect(), ar = a.getBoundingClientRect(), br = b.getBoundingClientRect();
+  f.style.left = (ar.right - pr.left - 4) + "px";
+  f.style.setProperty("--dx", (br.left - ar.right + 8) + "px");
+  f.classList.remove("go"); void f.offsetWidth; f.classList.add("go");
+}
+
+// ---------------- detail ----------------
+function renderDetail() {
+  const k = S.sel || "churn", i = SI[k], s = STAGES[i];
+  $("dN").textContent = i + 1; $("dT").textContent = s.t; $("dE").textContent = s.e;
+  const evs = S.spotEvents.filter((e) => (e.stage || "aladdin") === k).slice().reverse();
+  const el = $("detail");
+  if (!evs.length) { el.innerHTML = `<div class="empty">${h(s.t)} has not acted for ${h(S.card ? S.card.first_name : "this borrower")} yet.</div>`; return; }
+  el.innerHTML = evs.slice(0, 12).map((e, j) => evCard(e, j === 0)).join("");
+}
+
+function evCard(e, latest) {
+  const t = tone(e);
+  const who = e.component === "human" ? `<span class="chip amb">person · ${h((e.detail && e.detail.api) || "HITL")}</span>` : `<span class="chip">${h(e.component)} · ${h(e.kind)}</span>`;
+  const body = latest ? view(e) : "";
+  const raw = S.tech ? `<pre class="raw">${h(JSON.stringify({component: e.component, kind: e.kind, t: e.t, borrower_id: e.borrower_id, detail: e.detail, links: e.links, provenance: e.provenance}, null, 2))}</pre>` : "";
+  return `<div class="ev ${latest ? (t === "blk" ? "bad" : "latest") : "old"}"><div class="meta"><b>Day ${e.day} · ${h(fmtT(mins(e.t)))}</b>${who}</div><div class="sum">${h(e.summary)}</div>${body ? `<div class="body">${body}</div>` : ""}${raw}</div>`;
+}
+
+function view(e) {
+  const d = e.detail || {}, c = e.component, k = e.kind;
+  if (c === "learner" && d.scores && d.scores.length) return scoreGrid(d);
+  if (c === "aladdin" || (c === "human" && (d.checks || d.verdict))) return aladdinView(e);
+  if (c === "churn") return k === "assigned" ? facts([["Cohort", d.cohort], ["Risk", d.risk_tier], ["Layer", d.layer], ["Journey", d.journey], ["Status", d.lifecycle]]) :
+    `<div class="move"><span class="f">${h(d.from)}</span>→<span>${h(d.to)}</span></div><div class="lbl">Rule that fired</div><span class="chip acc">${h(d.rule || "–")}</span> <span class="chip">${h(d.engine)}</span> <span class="chip">trigger: ${h(d.trigger || "")}</span>`;
+  if (c === "executor") return facts([["Channel", CH[d.channel]], ["Adapter", d.adapter], ["Cost", inr2(d.cost_paise)], ["Provider ref", d.provider_ref || "–"], ["Mode", "dry-run (mock)"], ["Sent to", "nobody (SIMULATED)"]]);
+  if (c === "voice" && k === "bot_selected") return facts([["Bot", d.bot], ["Use case", ruleName(d.use_case)], ["Language", d.language], ["Needs approval", d.requires_human_approval ? "yes" : "no"], ["Blocked vars", (d.blocked_variables || []).join(", ") || "none"], ["Dialled", "never (dry-run)"]]);
+  if (c === "voice" && k === "call_ended") return facts([["Disposition", ruleName(d.disposition)], ["Confidence", d.confidence], ["Action", ruleName(d.action)], ["Rule", d.rule || "–"], ["Unsure → review", d.low_confidence_review ? "yes" : "no"], ["Call id", d.call_id]]);
+  if (c === "channel") return facts([["Channel", CH[d.channel] || d.channel], ["Status", d.status], ["Counts as reply", "no — reach only"], ...(k === "duplicate_ignored" ? [["Dedupe", d.ignored_reason || "DUPLICATE"], ["State change", "none"]] : [])]);
+  if (c === "borrower") return `<span class="bubble">${h(d.text || "")}</span><div class="lbl">Channel</div><span class="chip">${h(CH[d.channel] || d.channel)}</span>`;
+  if (c === "intent") return intentView(d);
+  if (c === "outcomes") return outcomeView(d);
+  if (c === "payments") return facts([["Amount", inr(d.amount_paise)], ["Source", d.source || "D7/LMS"], ["Touches cancelled", d.cancelled_touches != null ? d.cancelled_touches : "–"], ["Other EMIs touched", d.cancelled_other_emis != null ? d.cancelled_other_emis : "–"], ["Promise date", d.promise_date || "–"], ["Journey", k === "verified" ? "exit (PAID)" : "–"]]);
+  if (c === "hitl") return facts([["Rules", (d.rules || []).map((r) => RULE_WORD[r] || r).join(", ") || "–"], ["Decided by", d.by || "–"], ["Gate", d.gate || "–"], ["Queue", d.queue || "–"], ["Approval id", d.approval_id ? "…" + String(d.approval_id).slice(-6) : "–"]]);
+  if (c === "human") return humanView(d);
+  return "";
+}
+
+function facts(rows) { rows = rows.filter(([, v]) => v != null && v !== "–" && v !== ""); if (!rows.length) return ""; return `<div class="facts">${rows.map(([k, v]) => `<div><div class="k">${h(k)}</div><div class="x" title="${h(v)}">${h(v == null ? "–" : v)}</div></div>`).join("")}</div>`; }
+
+function scoreGrid(d) {
+  const sc = d.scores, slots = ["08-11", "14-17", "17-19"], chans = [...new Set(sc.map((s) => s.channel))];
+  const max = Math.max(...sc.map((s) => s.replies_per_inr || 0), 0.0001);
+  const cell = (ch, sl) => { const s = sc.find((x) => x.channel === ch && x.slot === sl); if (!s) return `<div class="c" style="color:var(--ink-4)">–</div>`;
+    const a = Math.max(.06, (s.replies_per_inr || 0) / max * .55); const draw = s.draw != null ? `draw ${pct(s.draw)}` : `${s.n_obs} seen`;
+    return `<div class="c${s.chosen ? " chosen" : ""}" style="background:rgba(15,118,110,${a.toFixed(2)});${s.qualifies ? "" : "opacity:.55"}">${pct(s.mean)}<small>${draw}</small></div>`; };
+  const head = `<div class="h"></div>` + slots.map((s) => `<div class="h">${SLOT[s]} · ${SLOT_T[s]}</div>`).join("");
+  const rows = chans.map((ch) => `<div class="rl">${h(CH[ch] || ch)}</div>` + slots.map((sl) => cell(ch, sl)).join("")).join("");
+  return `<div class="lbl">Reply chance per 100 (posterior), by channel × time — what the learner weighs against cost</div><div class="grid" style="grid-template-columns:7rem repeat(3,minmax(0,1fr))">${head}${rows}</div>
+    <div class="lbl">Decision · the chosen cell had the best sampled reply chance per ₹ (Thompson sampling keeps exploring)</div><span class="chip ${d.decision === "SEND" ? "acc" : "amb"}">${d.decision === "SEND" ? "CONTACT" : "WAIT"}</span> ${d.reply_chance != null ? `<span class="chip">chosen arm ≈ ${pct(d.reply_chance)} in 100</span>` : ""} ${d.replies_per_inr != null ? `<span class="chip">${d.replies_per_inr} replies per ₹</span>` : ""} ${d.rule ? `<span class="chip">${h(ruleName(d.rule))}</span>` : ""}`;
+}
+
+function aladdinView(e) {
+  const d = e.detail || {};
+  let out = "";
+  const checks = d.checks || (d.verdict ? null : null);
+  if (d.verdict) {
+    const v = d.verdict;
+    out += `<div class="lbl">Aladdin's verdict for the override</div><div class="verd" style="grid-template-columns:1fr"><div class="${v.allowed ? "ok" : "no"}"><b>${v.allowed ? "✓ allowed" : "✗ " + h(v.rule) + " · " + h(v.reason)}</b><span>${h(v.allowed ? (v.needs_approval && v.needs_approval.length ? "needs " + v.needs_approval.map((r) => RULE_WORD[r] || r).join(", ") : "reserved") : v.why)}${v.locked_by_guardrails ? " · locked by guardrails: no role can override" : ""}</span></div></div>`;
+  }
+  if (checks) out += `<div class="lbl">Every channel for ${h(e.first_name || "")}${d.at ? " at " + h(d.at) : ""} (Ledger.preview — nothing reserved)</div><div class="verd">${checks.map((g) => `<div class="${g.allowed ? "ok" : "no"}"><b>${g.allowed ? "✓" : "✗"} ${h(CH[g.channel] || g.channel)}</b><span title="${h(g.reason)}">${h(g.allowed ? "allowed" : g.label)}</span></div>`).join("")}</div>`;
+  if (d.rule_order && d.rule_order.length) {
+    const blockedAt = e.kind === "blocked" ? d.rule : (e.kind === "checks" ? null : null);
+    let past = false;
+    out += `<div class="lbl">K01 rules in order${d.stage ? " · stage: " + h(d.stage) : ""}</div><div class="rules">` + (d.rule === "CONTROL" || d.reason === "OUTBOUND_PAUSED" || d.reason === "CAMPAIGN_PAUSED" ? `<span class="x">control: ${h(ruleName(d.reason))}</span>` : `<span>control</span>`) +
+      d.rule_order.map((r) => { if (past) return `<span class="na">${h(ruleName(r))}</span>`; if (blockedAt && r === blockedAt) { past = true; return `<span class="x">✗ ${h(ruleName(r))}</span>`; } return `<span>${h(ruleName(r))}</span>`; }).join("") + `</div>`;
+  }
+  if (d.budget) {
+    const b = d.budget;
+    out += `<div class="lbl">Reserve (atomic, with the contact-limit counts)</div>` + facts([["Cost", inr2(d.cost_paise)], ["Pool left", inr(b.pool_left_paise)], ["Today left", inr(b.today_left_paise)], ["Touch", d.touch_status || "RESERVED"], ["Policy", d.policy_version || "–"], ["Channel", CH[d.channel] || "–"]]);
+  } else if (e.kind === "rechecked" || e.kind === "blocked") {
+    out += facts([["Stage", d.stage || "–"], ["Channel", CH[d.channel] || "–"], ["Rule", d.rule || "ALL_PASSED"], ["Reason", d.reason || "ELIGIBLE"]]);
+  }
+  if (e.component === "human") out += humanView(d);
+  return out;
+}
+
+function intentView(d) {
+  const t = d.tier || "";
+  const unsure = (x) => ["small_model", "prism", "local_llm", "cloud_llm", "abstain"].indexOf(t) > ["rules", "small_model", "prism"].indexOf(x);
+  const tier = (key, name, sub) => { const on = t === key; const u = !on && unsure(key); return `<div class="${on ? "on" : ""}"><b>${name}</b>${on ? "decided" : u ? "unsure → next" : sub}</div>`; };
+  return `<div class="tiers">${tier("rules", "Rules", "not needed")}<div class="ar">→</div>${tier("small_model", "Small model", "not needed")}<div class="ar">→</div><div class="${t === "prism" ? "on" : ""}"><b>Prism (Sarvam)</b>${t === "prism" ? "decided" : "skipped: no key in this demo"}</div><div class="ar">→</div><div class="${d.needs_human || t === "abstain" ? "hu" : ""}"><b>Human</b>${d.needs_human || t === "abstain" ? "a person reads it" : "not needed"}</div></div>` +
+    facts([["Label", ruleName(d.label)], ["Confidence", d.confidence], ["Tier", String(t).replace("_", " ")], ["Action", ruleName(d.action)], ["Safety flags", (d.safety_flags || []).join(", ") || "none"], ["Source", CH[d.source] || d.source]]);
+}
+
+function outcomeView(d) {
+  const b = d.before, a = d.after, m = Math.max(b || 0, a || 0, .01) * 1.4;
+  return facts([["Touch", (CH[d.channel] || d.channel) + " · " + (SLOT[d.slot] || d.slot)], ["Outcome", ({REPLY: "reply", NO_REPLY: "no reply", UNRESOLVED: "unresolved"})[d.status] || d.status], ["Learner update", d.learned ? "yes (once)" : "no"]]) +
+    (d.learned && b != null ? `<div class="lbl">Posterior reply chance, people ${h(d.band)} · ${h(CH[d.channel])} · ${h(SLOT[d.slot])}</div>
+      <div style="display:grid;grid-template-columns:4.5rem 1fr 3rem;gap:.4rem .6rem;align-items:center;font-size:.8rem"><span>before</span><div class="bar"><i class="was" style="width:${(b / m * 100).toFixed(1)}%"></i></div><b>${pct(b)}</b><span>after</span><div class="bar"><i style="width:${(a / m * 100).toFixed(1)}%"></i></div><b>${pct(a)}</b></div>` : "");
+}
+
+function humanView(d) {
+  const rows = [];
+  if (d.api) rows.push(["Real API", d.api]);
+  if (d.cancelled != null) rows.push(["Cancelled", Array.isArray(d.cancelled) ? d.cancelled.map((x) => `${CH[x.channel]} ${x.time}`).join(", ") || "nothing queued" : (typeof d.cancelled === "object" ? `${CH[d.cancelled.channel]} ${d.cancelled.time}` : d.cancelled)]);
+  if (d.consents_opted_out) rows.push(["Channels off", Object.keys(d.consents_opted_out).filter((k) => d.consents_opted_out[k]).map((k) => CH[k]).join(", ")]);
+  if (d.still_blocked_by) rows.push(["Still blocked by", d.still_blocked_by.join(", ") || "nothing"]);
+  let out = rows.length ? facts(rows) : "";
+  if (d.ledger_audit && d.ledger_audit.length) out += `<div class="lbl">Audit rows written by the ledger</div><div class="rules">${d.ledger_audit.map((a) => `<span class="${/REFUSED|BLOCK/.test(a.type) ? "x" : ""}">#${a.id} ${h(a.type)}</span>`).join("")}</div>`;
+  return out;
+}
+
+// ---------------- timeline ----------------
+function keyMoment(e) {
+  const c = e.component, k = e.kind;
+  if (c === "human") return true;
+  if (c === "churn") return k === "assigned" || (k === "moved" && (e.detail.engine === "cohort" || e.detail.engine === "lifecycle"));
+  if (c === "aladdin") return k === "blocked" || k === "allowed" || (k === "checks" && !(e.detail.checks || []).some((x) => x.allowed));
+  if (c === "channel") return k === "delivered" || k === "duplicate_ignored" || k === "call_answered";
+  return ["contact", "dispatched", "replied", "stop", "classified", "approval_pending", "approved", "rejected", "verified", "promise_kept", "promise_broken", "finalized", "call_ended", "case_opened", "case_resolved", "claim_pending", "withdrawn"].includes(k) || (c === "learner" && k === "wait");
+}
+
+function addTimeline(e) {
+  if (!keyMoment(e)) return;
+  const ul = $("tl");
+  if (S.tlDay) { ul.prepend(S.tlDay); S.tlDay = null; }
+  else if (!ul.children.length) { const li = document.createElement("li"); li.className = "dayh"; li.textContent = "Day " + e.day; ul.prepend(li); }
+  const li = document.createElement("li");
+  const t = tone(e), dot = e.component === "human" ? "hum" : t === "blk" ? "bad" : t === "grn" ? "good" : t === "amb" ? "wait" : (e.component === "learner" && e.kind === "wait") ? "mute" : "";
+  li.className = "new";
+  li.innerHTML = `<span class="when">${h(fmtT(mins(e.t)))}</span><span class="dot ${dot}"></span><span class="tx"><b>${h(STAGES[SI[e.stage || "aladdin"]].t)}</b> · ${h(short(e))}</span>`;
+  li.onclick = () => { S.sel = e.stage || "aladdin"; S.follow = false; renderPipe(); renderDetail(); };
+  const head = ul.querySelector(".dayh");
+  if (head && head.nextSibling) ul.insertBefore(li, head.nextSibling); else ul.appendChild(li);
+  $("tlNote").textContent = `${S.spotEvents.length} engine events`;
+}
+
+// ---------------- card ----------------
+function renderCard() {
+  const c = Object.assign({}, S.card || {}, S.patch);
+  if (!S.card) return;
+  $("av").textContent = (c.first_name || "?")[0];
+  $("nm").textContent = c.first_name;
+  $("spName").textContent = c.first_name;
+  $("sub").textContent = `${c.masked_name} (masked) · ${c.borrower_id} · phone hidden`;
+  const st = $("stat");
+  const status = c.paid ? ["PAID · EXITED", "good"] : c.stopped ? ["STOP", "bad"] : (c.flags || []).length ? [c.flags[0], "wait"] : ["ACTIVE", ""];
+  st.textContent = status[0]; st.className = "status " + status[1];
+  const kv = [["EMI", inr(c.emi_paise)], ["Outstanding", inr(c.outstanding_paise)], ["Days late", c.dpd != null ? c.dpd + " days" : "–"],
+    ["Cohort", c.cohort, "cohort"], ["Risk", String(c.risk_tier || "").toLowerCase(), "risk_tier"], ["Layer", c.layer, "layer"],
+    ["Language", c.language === "hi" ? "Hindi" : c.language === "en" ? "English" : c.language], ["Status", String(c.lifecycle || "").replace(/_/g, " ").toLowerCase(), "lifecycle"], ["Spent on them", inr2(spentOnSpot())]];
+  $("kv").innerHTML = kv.map(([k, v, key]) => `<div><div class="k">${h(k)}</div><div class="x${key && S.patch._chg === key.replace("_tier", "") ? " chg" : ""}" title="${h(v)}">${h(v || "–")}</div></div>`).join("");
+  S.patch._chg = null;
+  const cons = c.consents || {}, stopped = c.stopped;
+  $("cons").innerHTML = ["sms", "whatsapp", "email", "ivr", "voicebot"].map((ch) => { const v = stopped && cons[ch] !== "no" ? "STOP" : (cons[ch] || "no");
+    return `<span class="chip ${v === "yes" ? "yes" : v === "STOP" ? "stop" : "no"}" title="consent: ${h(v)}">${v === "yes" ? "✓" : v === "STOP" ? "✗" : "–"} ${h(CH[ch])}</span>`; }).join("") +
+    (c.flags || []).map((f) => `<span class="chip amb">${h(f)}</span>`).join("");
+  const b = c.best;
+  $("best").innerHTML = (b ? `Learner's best arm for people ${h(c.band_word)}: <b>${h(CH[b.channel])} · ${h(b.slot_word)} ${h(b.time || "")}</b> <span class="chip">${pct(b.reply_chance)} in 100</span>` : "") +
+    ((c.queued || []).length && !c.paid && !c.stopped ? ` <span class="chip acc">queued: ${c.queued.map((q) => `${h(CH[q.channel])} ${h(q.time)}${q.status === "PENDING_APPROVAL" ? " (needs approval)" : ""}`).join(", ")}</span>` : "");
+}
+
+// ---------------- controls ----------------
+function renderControls(sn) {
+  if (!sn) return;
+  const win = sn.phase === "window";
+  $("applies").textContent = sn.phase === "finished" ? "campaign ended" : "applies " + sn.applies;
+  const bc = $("bCamp"); bc.textContent = sn.campaign_paused ? "Resume campaign" : "Pause campaign"; bc.classList.toggle("on", sn.campaign_paused);
+  const bk = $("bKill"); bk.classList.toggle("on", sn.outbound_paused); bk.querySelector("span").textContent = sn.outbound_paused ? "RESUME ALL OUTBOUND" : "PAUSE ALL OUTBOUND";
+  const ap = sn.pending_approvals || [];
+  $("apN").textContent = win ? (ap.length ? `${ap.length} waiting · window closes 9:25` : "none waiting") : "window opens 8:00";
+  $("appr").innerHTML = ap.length ? ap.slice(0, 30).map((p) => `<div class="ap${p.borrower_id === S.spot ? " me" : ""}"><div style="min-width:0"><div class="t1">${h(p.first_name || p.borrower_id)} · ${h(CH[p.channel] || p.channel)} at ${h(p.send_time)}</div><div class="t2">${h((p.rules || []).map((r) => RULE_WORD[r] || r).join(", "))}${p.manual ? " · you scheduled it" : ""}</div></div><div class="row"><button class="btn sm good" data-a="approve" data-id="${h(p.approval_id)}">Approve</button><button class="btn sm bad" data-a="reject" data-id="${h(p.approval_id)}">Reject</button></div></div>`).join("")
+    : `<div class="empty" style="padding:.2rem 0">${win ? "Nothing is waiting for a person right now." : "Calls and first-sends-after-hardship wait here for a person during the 8:00–9:30 approval window."}</div>`;
+  $("appr").querySelectorAll("button[data-a]").forEach((b) => b.onclick = () => decide(b.dataset.id, b.dataset.a === "approve"));
+  const c = Object.assign({}, S.card || {}, S.patch), over = c.paid || c.stopped || sn.phase === "finished";
+  ["bWait", "bOv", "bHold", "bStop", "oCh", "oTm"].forEach((id) => $(id).disabled = over);
+  $("bCamp").disabled = $("bKill").disabled = sn.phase === "finished";
+  $("bHold").textContent = (c.holds || []).length ? "Release hold" : "Put on hold";
+  $("bHold").dataset.on = (c.holds || []).length ? "1" : "";
+  if (over || !win) $("verdict").className = "verdict" + (c.stopped ? " no" : "");
+  if (over) $("verdict").textContent = c.paid ? `${c.first_name} has paid: the journey is over, nothing left to override.` : c.stopped ? `${c.first_name} said STOP: every channel is off. No person can override STOP.` : "The campaign has ended.";
+  else if (!win) $("verdict").textContent = "Outside the approval window an override is queued and checked by Aladdin right after the next 8:00 plan.";
+  else preview();
+}
+
+let pvSeq = 0;
+async function preview() {
+  if (!S.snap || S.snap.phase !== "window") return;
+  const seq = ++pvSeq;
+  try {
+    const j = await call("/spotlight/preview", {channel: $("oCh").value, time: $("oTm").value});
+    if (seq !== pvSeq) return;
+    const v = j.result || {}, el = $("verdict");
+    if (!v.checked) { el.className = "verdict"; el.textContent = v.note || ""; return; }
+    el.className = "verdict " + (v.allowed ? "ok" : "no");
+    el.innerHTML = v.allowed ? `<b>Aladdin ✓</b> ${h(CH[v.channel])} at ${h(v.time)}: every rule passes${v.replaces ? ` (replaces the learner's ${h(CH[v.replaces.channel])} at ${h(v.replaces.time)})` : ""}${v.needs_approval && v.needs_approval.length ? ` · then a second person approves (${h(v.needs_approval.map((r) => RULE_WORD[r] || r).join(", "))})` : ""}.`
+      : `<b>Aladdin ✗ ${h(v.rule)}</b> · ${h(v.why)}.${v.locked_by_guardrails ? " <b>Locked by guardrails:</b> no person can override this." : ""}`;
+  } catch (e) { /* preview is advisory */ }
+}
+
+async function act(path, body, okMsg) {
+  try {
+    const j = await call(path, body);
+    for (const e of (j.events || [])) show(e, true);
+    if (j.snapshot) {
+      S.snap = j.snapshot; S.card = j.snapshot.card; S.patch = {};
+      if (S.pendingSnap) S.pendingSnap.snap = j.snapshot;   // never fall back to a snapshot from before the action
+      renderCard(); renderControls(j.snapshot); renderAudit(j.snapshot.audit); renderStrip();
+    }
+    if (j.ok === false) { toast("Refused: " + (j.refusal && j.refusal.message), "bad"); }
+    else if (okMsg) toast(typeof okMsg === "function" ? okMsg(j.result) : okMsg, "good");
+    return j;
+  } catch (e) { toast(e.message, "bad"); }
+}
+
+async function decide(id, approve) {
+  const j = await act(`/approvals/${encodeURIComponent(id)}/${approve ? "approve" : "reject"}`, {}, (r) => approve ? (r.outcome === "APPROVED" ? "Approved — Aladdin re-ran every rule: still allowed" : "Approved, but Aladdin's re-check blocked it: " + (r.gate || "")) : "Rejected — the budget goes back to the pool");
+  if (j && j.ok !== false && S.paused && !S.ended && !(S.snap.pending_approvals || []).some((p) => p.borrower_id === S.spot)) banner("Decided. Press ▶ to continue — the engines run the day's sends next.", "info");
+}
+
+// ---------------- audit ----------------
+function renderAudit(rows) {
+  rows = rows || [];
+  const ul = $("audit");
+  if (!rows.length) { ul.innerHTML = `<li style="display:block;border:0" class="empty">No human action yet. Everything you do here is checked by Aladdin and written to the ledger's audit table.</li>`; S.auditSeen = 0; return; }
+  ul.innerHTML = rows.slice().reverse().map((r) => `<li class="${r.seq > S.auditSeen ? "new" : ""}"><span class="tm">D${r.day} ${h(r.time)}</span><div><div class="w1">${h(r.what)}</div><div class="w2">${h(r.who)} · ${h(r.api)}</div><div class="w2">check: ${h(r.check)}</div><div class="rs ${r.ok ? "ok" : "no"}">${r.ok ? "✓" : "✗"} ${h(r.result)}</div></div></li>`).join("");
+  S.auditSeen = rows.length;
+}
+
+// ---------------- strip / clock / banner / toast ----------------
+function renderStrip() {
+  const sn = S.snap || {};
+  $("kCamp").innerHTML = `${S.snap ? (sn.campaign_paused ? '<span class="flag amb">CAMPAIGN PAUSED</span>' : "") + (sn.outbound_paused ? '<span class="flag red">OUTBOUND OFF</span>' : "") : ""}${!sn.campaign_paused && !sn.outbound_paused ? "Running" : ""} <span>· ${S.borrowers || 200} borrowers · day ${S.day}/${S.days}</span>`;
+  $("kSent").textContent = S.today.sent; $("kWait").textContent = S.today.wait; $("kHeld").textContent = S.today.held; $("kPaid").textContent = S.today.paid;
+  $("kRec").textContent = inr(S.rec); $("kBlk").textContent = S.blocks.toLocaleString("en-IN");
+  const cap = $("kCap"); cap.textContent = S.cap; cap.className = "v " + (S.cap ? "bad" : "good");
+}
+
+function renderClock() {
+  const base = new Date(Date.UTC(2026, 10, 23 + S.day - 1));
+  $("cDay").textContent = "Day " + S.day;
+  $("cDate").textContent = base.toLocaleDateString("en-GB", {weekday: "short", day: "numeric", month: "short", timeZone: "UTC"});
+  $("cTime").textContent = S.started ? fmtT(S.clock) : "--:--";
+  const ph = $("phase"), m = S.clock;
+  let cls = "", txt = "Not started";
+  if (S.ended || S.phase === "finished" && !S.queue.length) { cls = "end"; txt = "Campaign ended"; }
+  else if (S.started) {
+    if (m < 480) txt = "Morning refresh & plan";
+    else if (m < 570) { cls = "win"; txt = "Approval window"; }
+    else { cls = "send"; txt = "Sends · replies · learning"; }
+    if (new Date(base).getUTCDay() === 0) txt += " · Sunday (quiet)";
+  }
+  ph.className = "phase " + cls; $("phaseT").textContent = txt;
+}
+
+function banner(html, kind) { const b = $("banner"); b.className = "banner " + (kind === "ok" ? "ok" : kind === "info" ? "info" : ""); $("bannerT").innerHTML = html; }
+let tt = 0;
+function toast(msg, kind) { const t = $("toast"); t.textContent = msg; t.className = "toast on " + (kind || ""); clearTimeout(tt); tt = setTimeout(() => t.className = "toast", 3800); }
+
+// ---------------- presenter script ----------------
+const CUES = [
+  {h: "One borrower, every engine", d: "Click <b>Story 1 (Vikram)</b>. Point at the strip, then the eight boxes.", s: "A simulated 200-borrower campaign runs on Kairos's real engines. We follow one borrower, Vikram: 10 days late on a ₹7,409 EMI. Each box is a real engine; it lights up when it acts for him."},
+  {h: "Day 1 · the engines decide", d: "It pauses at 8:00 am. Click <b>Learner</b>, then <b>Aladdin</b>; flip <b>Technical</b> once.", s: "Auto-churn placed him: cohort C4, high risk. The learner scores every channel × time against its cost — SMS in the morning wins. Aladdin, our supervisor, runs all the policy rules and reserves the budget. Press ▶: the mock SMS goes out, the receipt comes back, and a duplicate receipt is ignored."},
+  {h: "No reply → the learner switches", d: "Press <b>▶</b>; it pauses again on Day 3.", s: "24 hours, no reply: that outcome updates the learner — SMS in the morning drops. Day 3 it picks WhatsApp instead. He replies in Hindi, ‘I'll pay by the 29th’. The intent stack's rules catch a promise, and Kairos goes quiet until that date."},
+  {h: "Take control — Aladdin still rules", d: "At a pause: set <b>WhatsApp · 20:00 → Apply</b> (blocked). Then <b>14:30 → Apply</b>, or <b>Approve / Reject</b> a waiting call.", s: "I'm the supervisor. I try a message at 8 pm — Aladdin blocks it: outside contact hours, and no role can override that. A legal override still needs a second person: maker-checker. Every click lands in the audit log with the rule it was checked against."},
+  {h: "The payment closes the loop", d: "Press <b>▶</b> (or <b>2×</b>) to Day 7. Click <b>Payment</b>.", s: "The bank confirms ₹7,409 — only bank-verified money counts. The journey exits; queued touches for that EMI are cancelled. Total spent on Vikram: 65 paise."},
+  {h: "Kill switch & STOP", d: "Press <b>PAUSE ALL OUTBOUND</b>, then resume. Or pick <b>Aarav</b> / <b>Diya</b> and <b>Mark STOP</b>.", s: "One click cancels everything queued on every channel, and Aladdin refuses every send until a person resumes. A STOP recorded for a borrower turns every channel off at once — and nobody can undo it."},
+];
+function renderCue() { const c = CUES[S.cue]; $("cueN").textContent = `Cue ${S.cue + 1} / ${CUES.length}`; $("cueH").textContent = c.h; $("cueDo").innerHTML = "<b>Do:</b> " + c.d; $("cueSay").innerHTML = "<b>Say:</b> " + h(c.s); }
+function toggleCue() { $("cue").hidden = !$("cue").hidden; renderCue(); }
+
+// ---------------- wiring ----------------
+$("bPlay").onclick = () => { if (!S.started) return; if (S.ended) return; setPlaying(S.paused); if (!S.paused) banner(`Running. ${S.card ? h(S.card.first_name) + "'s" : "The"} next decision will pause the story${$("autoPause").checked ? "" : " (auto-pause is off)"}.`, "info"); };
+$("bStep").onclick = () => { if (!S.started || S.ended) return; S.beat = 0; S.step = true; };
+$("speed").querySelectorAll("button").forEach((b) => b.onclick = () => { S.speed = +b.dataset.s; $("speed").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b)); });
+$("bRestart").onclick = () => { setPlaying(false); $("veil").hidden = false; $("pcs").querySelectorAll(".pc").forEach((b) => b.disabled = false); };
+$("bCue").onclick = toggleCue;
+$("cuePrev").onclick = () => { S.cue = Math.max(0, S.cue - 1); renderCue(); };
+$("cueNext").onclick = () => { S.cue = Math.min(CUES.length - 1, S.cue + 1); renderCue(); };
+$("vPlain").onclick = () => { S.tech = false; $("vPlain").setAttribute("aria-pressed", "true"); $("vTech").setAttribute("aria-pressed", "false"); renderDetail(); };
+$("vTech").onclick = () => { S.tech = true; $("vTech").setAttribute("aria-pressed", "true"); $("vPlain").setAttribute("aria-pressed", "false"); renderDetail(); };
+$("bFollow").onclick = () => { S.follow = true; const last = S.spotEvents[S.spotEvents.length - 1]; if (last) S.sel = last.stage; renderPipe(); renderDetail(); };
+$("bCamp").onclick = () => act("/campaign", {paused: !(S.snap && S.snap.campaign_paused)}, (r) => r.campaign_paused ? `Campaign paused · ${r.cancelled} queued touches cancelled` : "Campaign resumed");
+$("bKill").onclick = () => act("/outbound", {paused: !(S.snap && S.snap.outbound_paused)}, (r) => r.outbound_paused ? `ALL OUTBOUND PAUSED · ${r.cancelled} queued touches cancelled on every channel` : "Outbound resumed");
+$("bWait").onclick = () => act("/spotlight/override", {mode: "wait"}, (r) => r.queued ? "Override queued for the next plan" : "Override applied: WAIT");
+$("bOv").onclick = () => act("/spotlight/override", {mode: "channel", channel: $("oCh").value, time: $("oTm").value}, (r) => r.queued ? "Override queued: Aladdin checks it after the next plan" : `Override reserved: ${CH[r.channel]} at ${r.time}`);
+$("oCh").onchange = preview; $("oTm").onchange = preview;
+$("bHold").onclick = () => act("/spotlight/hold", {on: !$("bHold").dataset.on}, (r) => r.hold_id ? "On hold: Aladdin answers SUPERVISOR_HOLD on every channel" : "Hold released");
+let stopArm = 0;
+$("bStop").onclick = () => {
+  if (Date.now() - stopArm > 3000) { stopArm = Date.now(); $("bStop").textContent = "Click again to confirm STOP"; setTimeout(() => $("bStop").textContent = "Mark STOP for borrower", 3000); return; }
+  stopArm = 0; $("bStop").textContent = "Mark STOP for borrower";
+  act("/spotlight/stop", {}, (r) => `STOP recorded: every channel off · ${r.canceled} queued touch(es) cancelled`);
+};
+document.addEventListener("keydown", (ev) => {
+  if (ev.target.tagName === "SELECT" || ev.metaKey || ev.ctrlKey || ev.altKey) return;
+  if (ev.key === "p" || ev.key === "P") { toggleCue(); ev.preventDefault(); }
+  else if (ev.key === " ") { $("bPlay").click(); ev.preventDefault(); }
+  else if (ev.key === "n" || ev.key === "N") { $("bStep").click(); ev.preventDefault(); }
+  else if (ev.key === "]") $("cueNext").click(); else if (ev.key === "[") $("cuePrev").click();
+});
+
+renderPipe(); renderDetail(); renderStrip(); renderClock();
+loadPresets().catch((e) => { $("pcs").innerHTML = `<div class="empty">Could not load: ${h(e.message)}</div>`; });
+setInterval(() => tick(performance.now()), 40);   // a timer, not rAF: keeps playing when the tab is in the background
+</script>
+</body>
+</html>

@@ -1017,6 +1017,10 @@ def demo_live_reject(approval_id: str, body: Optional[LiveApprovalIn] = None):
     return _live_decide(approval_id, False, body)
 
 
+from .journey_outbound import router as _journey_outbound_router  # noqa: E402  Journey 1: /demo/journey/outbound
+app.include_router(_journey_outbound_router)
+
+
 # ---------- live event feed (for the demo UI's streaming panel) ----------
 EVENT_KIND = {"DECISION": "supervisor.decision", "SEND_TIME_CHECK": "gate.send_time", "PROVIDER_STATUS": "touch.status",
               "RESPONSE": "borrower.reply", "CALL_RESULT": "call.result", "VOICE_DISPOSITION": "voice.call_disposition"}
