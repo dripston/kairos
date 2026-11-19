@@ -36,8 +36,9 @@ from spine.ledger import PaymentError
 from .. import intent as k09
 from ..policy import Policy
 from . import PROVENANCE
+from . import k10 as K10
 from . import nlu as N
-from .copy import PRE_VERIFY_SAFE, render
+from .copy import COPY, LENDER, PRE_VERIFY_SAFE, render
 from .fraud import (ALREADY_APPLIED, FAKE, PENDING, REVERSED, SETTLED, Signal, check_attachment, impersonation,
                     scan_text)
 from .otp import EXPIRED, LOCKED, NO_OTP, VERIFIED, WRONG
@@ -45,6 +46,7 @@ from .store import dumps, init_schema, mask_phone, scrub
 from .tools import DryRunWhatsAppAdapter, ToolBox, Turn
 
 NEW, AWAIT_LOAN_ID, AWAIT_OTP = "NEW", "AWAIT_LOAN_ID", "AWAIT_OTP"
+AWAIT_NAME, UNREGISTERED = "AWAIT_NAME", "UNREGISTERED"   # identity_mode="k10" only
 S_VERIFIED, AWAIT_PTP_DATE, AWAIT_UTR = "VERIFIED", "AWAIT_PTP_DATE", "AWAIT_UTR"
 HANDOFF, CLOSED = "HANDOFF", "CLOSED"
 
@@ -52,6 +54,12 @@ RESOLVED_OUTCOMES = {"BALANCE_SHARED", "NO_DUES", "LINK_SENT", "CLAIM_VERIFIED_R
                      "CLAIM_RECORDED_NO_REF", "RECEIPT_RESENT", "PTP_RECORDED", "PTP_RECORDED_NO_HOLD", "NEEDS_TIME_NOTED",
                      "DOC_SENT", "NOC_SENT", "NOC_INFO", "LOAN_DETAILS_SHARED", "STOP_HONOURED", "WRONG_NUMBER_CLOSED"}
 SESSION_TTL = timedelta(minutes=30)
+IDENTITY_MODES = ("otp", "k10")
+# identity_mode="k10": our reply keys that K10 scripts.csv also has, rendered from his scripts instead.
+K10_SCRIPT_FOR = {"HARDSHIP": "HARDSHIP_ACK", "CALLBACK": "CALLBACK_CREATED", "STOP_ACK": "STOP_CONFIRMED",
+                  "WRONG_NUMBER": "WRONG_PERSON", "ROUTED": "ROUTED", "ASK_PTP_DATE": "NT_ASK_DATE",
+                  "PTP_CONFIRM": "PTP_CAPTURED", "ASK_UTR": "PAY_ASK_PROOF", "UNREGISTERED": "UNREGISTERED",
+                  "BROKEN_PTP_PUSH": "BROKEN_PTP_PUSH", "END_CONVERSATION": "END_CONVERSATION"}
 
 
 def normalize_sender(sender: str) -> str:
@@ -107,8 +115,14 @@ class Conversation:
 class ConversationEngine:
     def __init__(self, ledger, clock: Optional[Callable[[], datetime]] = None,
                  adapter: Optional[DryRunWhatsAppAdapter] = None, classifier: Optional[k09.IntentClassifier] = None,
-                 otp_code_source: Optional[Callable[[], str]] = None, ptp_max_days: Optional[int] = None):
+                 otp_code_source: Optional[Callable[[], str]] = None, ptp_max_days: Optional[int] = None,
+                 identity_mode: Optional[str] = None):
         self.ledger = ledger
+        # "otp" (default): registered number + OTP (CM-03 brief). "k10": Ojas's K10 - registered number + name
+        # confirmation, OTP step-up only if K10 otp_step_up.enabled. Which is the default: OPEN_DECISION K10-1.
+        self.identity_mode = identity_mode or "otp"
+        if self.identity_mode not in IDENTITY_MODES:
+            raise ValueError(f"identity_mode must be one of {IDENTITY_MODES}")
         self.policy: Policy = ledger.policy
         self.clock = clock or self.policy.now
         init_schema(ledger._conn())
@@ -220,10 +234,25 @@ class ConversationEngine:
             # Disclosure guard: the engine never sends account copy before OTP verification.
             turn.add("GUARD_BLOCK", key, {"reason": "account copy requested before verification"}, self._iso())
             key, kw = "PRE_VERIFY_NEED", {}
-        text = render(key, conv.lang, **kw)
+        if self.identity_mode == "k10" and (key in K10_SCRIPT_FOR or (key in K10.scripts() and key not in COPY)):
+            key = K10_SCRIPT_FOR.get(key, key)
+            text = K10.render(key, self._k10_lang(conv), **self._k10_fields(conv, kw))
+        else:
+            text = render(key, conv.lang, **kw)
         self.tools.send_whatsapp_reply(turn, conv.sender, text)
         turn.replies.append({"key": key, "text": text})
         turn.add("REPLY", key, {"text": scrub(text), "to": mask_phone(conv.sender), "lang": conv.lang}, self._iso())
+
+    def _k10_lang(self, conv: Conversation) -> str:
+        if conv.lang == "hi":
+            return "hi"
+        return "hinglish" if conv.data.get("hinglish") else "en"
+
+    def _k10_fields(self, conv: Conversation, kw: dict) -> dict:
+        f = {"lender_name": LENDER, "first_name": conv.data.get("first_name", ""), "link": kw.get("link", ""),
+             "ptp_date": kw.get("date", "")}
+        f.update(K10.date_options(self.clock().date()))
+        return f
 
     def _outcome(self, conv: Conversation, turn: Turn, outcome: str) -> None:
         conv.outcomes.append(outcome)
@@ -241,7 +270,7 @@ class ConversationEngine:
         if key:
             self._reply(conv, turn, key, **kw)
 
-    def _fraud(self, conv: Conversation, turn: Turn, signals: List[Signal]) -> None:
+    def _fraud(self, conv: Conversation, turn: Turn, signals: List[Signal], key: str = "FRAUD_REFUSE") -> None:
         conv.fraud = True
         kinds = sorted({s.kind for s in signals})
         turn.add("FRAUD_SUSPECT", ",".join(kinds), {"signals": [s.as_dict() for s in signals], "disclosed": False},
@@ -249,7 +278,7 @@ class ConversationEngine:
         self.tools.create_ticket(turn, "FRAUD_SUSPECT", conv.borrower_id, None,
                                  (f"CM-03 fraud suspect: {', '.join(kinds)}"[:160], signals[0].reason[:160]),
                                  (conv.conversation_id,), audit_type="FRAUD_SUSPECT")
-        self._handoff(conv, turn, "FRAUD_SUSPECT", "FRAUD_REFUSE", ticket=False)
+        self._handoff(conv, turn, "FRAUD_SUSPECT", key, ticket=False)
 
     # ------------------------------------------------------------------ the state machine
     def _step(self, conv: Conversation, turn: Turn, text: str, attachment: Optional[dict]) -> None:
@@ -261,6 +290,8 @@ class ConversationEngine:
             conv.lang = "hi"
         elif det == "en" and conv.turns == 1:
             conv.lang = "en"
+        if conv.lang != "hi" and text:
+            conv.data["hinglish"] = bool(N._HINGLISH.search(text)) and not N._DEVANAGARI.search(text)
 
         if conv.state == HANDOFF:
             if k09.is_stop(text):
@@ -275,6 +306,13 @@ class ConversationEngine:
             # image text is read for embedded instructions only; the payment itself is checked after OTP
             signals += [s for s in check_attachment({"ocr": {"text": (attachment.get("ocr") or {}).get("text")}},
                                                     self.clock(), None)]
+        if signals and self.identity_mode == "k10" and all(s.kind == "PROMPT_INJECTION" for s in signals):
+            # K10 untrusted_input: ignore the instruction, log INJECTION_ATTEMPT, reply INJECTION_SAFE, carry on.
+            conv.data["injection_attempts"] = conv.data.get("injection_attempts", 0) + 1
+            turn.add("INJECTION_ATTEMPT", "PROMPT_INJECTION", {"signals": [s.as_dict() for s in signals],
+                                                               "disclosed": False}, self._iso())
+            self._reply(conv, turn, "INJECTION_SAFE")
+            return
         if signals:
             self._fraud(conv, turn, signals)
             return
@@ -311,6 +349,11 @@ class ConversationEngine:
             return
 
         u = self.nlu.understand(text, self.clock(), verified=False) if text else N.Understanding(k09.OTHER, None)
+        if self._before_verification(conv, turn, text, u):
+            return
+        if self.identity_mode == "k10" and conv.state in (NEW, AWAIT_NAME, UNREGISTERED):
+            self._k10_identity(conv, turn, text, attachment, u)
+            return
         if u.intent == k09.WRONG_PERSON:
             turn.add("STATE", "WRONG_NUMBER", {"review": "number flagged for contact-data review"}, self._iso())
             self._outcome(conv, turn, "WRONG_NUMBER_CLOSED")
@@ -372,6 +415,97 @@ class ConversationEngine:
         else:
             self._reply(conv, turn, "ASK_LOAN_ID")
 
+    def _registered_borrower(self, conv: Conversation, turn: Turn) -> Optional[str]:
+        if conv.borrower_id:
+            return conv.borrower_id
+        acct = self.tools.lookup_account(turn, phone=conv.sender)
+        if acct:
+            conv.borrower_id = acct["borrower_id"]
+        return conv.borrower_id
+
+    def _before_verification(self, conv: Conversation, turn: Turn, text: str, u: N.Understanding) -> bool:
+        """K10 allowed_before_verification: abuse / legal threat / fraud claim end the chat and route; hardship
+        is acknowledged and held; a callback is created. Only for the registered number, and nothing about the
+        account goes into the reply."""
+        safety = K10.safety_intent(text)
+        if not safety and u.intent not in (k09.HARDSHIP, k09.CALLBACK):
+            return False
+        if self._registered_borrower(conv, turn) is None:
+            return False
+        if safety:
+            self._end_conversation(conv, turn, safety)
+        elif u.intent == k09.HARDSHIP:
+            self._hardship(conv, turn)
+        else:
+            self._callback(conv, turn)
+        return True
+
+    def _end_conversation(self, conv: Conversation, turn: Turn, event: str) -> None:
+        """K13 routed_exceptions ABUSIVE / LEGAL_THREAT / FRAUD_CLAIM: end the automated chat, no argument,
+        supervisor ticket, outreach paused until a supervisor clears it."""
+        got = self._oldest_due(conv, turn) if conv.borrower_id else None
+        res = self.tools.k13_exception(turn, conv.borrower_id, event, self._band(conv, turn) if conv.borrower_id else "B1",
+                                       got[1]["obligation_id"] if got else None,
+                                       (f"WhatsApp: {event.lower().replace('_', ' ')}", "K13: conversation ended, no argument"))
+        self._handoff(conv, turn, event, "END_CONVERSATION", ticket=not res.get("ticket_id"))
+
+    def _k10_identity(self, conv: Conversation, turn: Turn, text: str, attachment: Optional[dict],
+                      u: N.Understanding) -> None:
+        """K10 section 4: registered number + name confirmation (2 attempts); OTP only as a step-up."""
+        if u.intent == k09.WRONG_PERSON:
+            self._outcome(conv, turn, "WRONG_NUMBER_CLOSED")
+            self._reply(conv, turn, "WRONG_NUMBER")
+            conv.state = CLOSED
+            return
+        if conv.state == UNREGISTERED:
+            if re.search(r"^\W*call\W*$", text, re.I) or u.intent == k09.CALLBACK:
+                self._handoff(conv, turn, "UNREGISTERED_CALLBACK", "CALLBACK")
+            else:
+                self._reply(conv, turn, "UNREGISTERED")
+            return
+        if conv.state == NEW:
+            self._reply(conv, turn, "ACK")
+            if self._registered_borrower(conv, turn) is None:
+                conv.state = UNREGISTERED
+                self._reply(conv, turn, "UNREGISTERED")
+                return
+            self._park(conv, text, attachment, u)
+            conv.state = AWAIT_NAME
+            self._reply(conv, turn, "ASK_NAME")
+            return
+        # AWAIT_NAME: compare with the name on record
+        row = self.ledger._conn().execute("SELECT full_name FROM borrowers WHERE borrower_id=?",
+                                          (conv.borrower_id,)).fetchone()
+        on_record = row["full_name"] if row else ""
+        tries = conv.data.get("name_attempts", 0) + 1
+        conv.data["name_attempts"] = tries
+        ok = K10.name_matches(text, on_record)
+        turn.add("TOOL_RESULT", "name_check", {"attempt": tries, "match": ok}, self._iso())
+        if not ok:
+            if tries >= K10.max_name_attempts():
+                self._handoff(conv, turn, "NAME_NOT_VERIFIED", "NAME_FAILED",
+                              summary=("CM-03 WhatsApp: name not confirmed after 2 attempts", "offer callback"))
+            else:
+                self._reply(conv, turn, "NAME_RETRY")
+            return
+        conv.data["first_name"] = K10.first_name(on_record)
+        if K10.otp_step_up():
+            acct = self.tools.lookup_account(turn, phone=conv.sender)
+            sent = acct and self.tools.send_otp(turn, conv.conversation_id, conv.borrower_id, conv.sender, acct["phone"],
+                                                conv.lang)
+            conv.state = AWAIT_OTP
+            self._reply(conv, turn, "OTP_PROMPT") if sent else self._handoff(conv, turn, "OTP_SEND_LIMIT", "OTP_LIMIT")
+            return
+        conv.verified, turn.verified = True, True
+        conv.verified_at = self._iso()
+        conv.state = S_VERIFIED
+        turn.add("STATE", "VERIFIED", {"binds": "sender+conversation+account", "method": "registered_number+name"},
+                 self._iso())
+        self._reply(conv, turn, "VERIFIED")
+        pending = conv.data.pop("pending", None)
+        if pending:
+            self._serve(conv, turn, pending.get("text") or "", pending.get("attachment"))
+
     def _park(self, conv: Conversation, text: str, attachment: Optional[dict], u: N.Understanding) -> None:
         """Remember a request made before verification; it is served right after the OTP succeeds."""
         if u.intent in (N.GREETING, N.THANKS, N.RESEND_OTP, N.LANG_CHANGE) and not attachment:
@@ -422,6 +556,16 @@ class ConversationEngine:
             if got:
                 self._ptp(conv, turn, got)
                 return
+        safety = K10.safety_intent(text)
+        if safety:
+            self._end_conversation(conv, turn, safety)
+            return
+        if K10.is_foreclosure(text):   # K10 route_not_serve: no quote in chat
+            got = self._oldest_due(conv, turn)
+            tid = self.tools.create_ticket(turn, K10.FORECLOSURE, conv.borrower_id, got[1]["obligation_id"] if got else None,
+                                           ("WhatsApp: foreclosure quote requested", "K10: routed, never served in chat"))
+            self._handoff(conv, turn, K10.FORECLOSURE, "ROUTED", ticket=False, ticket_ref=tid or "-")
+            return
         u = self.nlu.understand(text, self.clock(), verified=True)
         i = u.intent
         if i in (N.MENU_PICK,):
@@ -522,7 +666,7 @@ class ConversationEngine:
             loan_start = min(date.fromisoformat(s) for s in starts) if starts else None
             sigs = check_attachment(attachment, self.clock(), loan_start)
             if sigs:
-                self._fraud(conv, turn, sigs)
+                self._fraud(conv, turn, sigs, key=self._not_matched_key())
                 return
         ref = N.extract_reference(text) or (str(ocr["reference"]) if ocr.get("reference") else None)
         amount = N.extract_amount_paise(text)
@@ -549,7 +693,7 @@ class ConversationEngine:
         if chk.verdict == FAKE:
             self.tools.record_payment_claim(turn, conv.conversation_id, conv.borrower_id, ob_id, ref, amount, claimed_on,
                                             "FAKE_SUSPECT", chk.signal.kind)
-            self._fraud(conv, turn, [chk.signal])
+            self._fraud(conv, turn, [chk.signal], key=self._not_matched_key())
             return
         if chk.verdict == ALREADY_APPLIED:
             p = chk.payment
@@ -570,6 +714,10 @@ class ConversationEngine:
             return
         # SETTLED in the D7 feed: the only path that applies money to the spine
         self._apply_settled(conv, turn, ref, chk.feed, ob_id, amount, claimed_on)
+
+    def _not_matched_key(self) -> str:
+        """K10 payment_claim_flow: MISMATCH or EDITED -> no receipt, neutral message, route to supervisor."""
+        return "PAY_NOT_MATCHED" if self.identity_mode == "k10" else "FRAUD_REFUSE"
 
     def _apply_settled(self, conv: Conversation, turn: Turn, ref: str, feed: dict, ob_id: Optional[str],
                        amount: Optional[int], claimed_on: Optional[date], claim_id: Optional[str] = None) -> bool:
@@ -611,7 +759,7 @@ class ConversationEngine:
             conv.state = AWAIT_PTP_DATE
             self._reply(conv, turn, "ASK_PTP_DATE", days=self.ptp_max_days)
             return
-        if offset > self.ptp_max_days and not conv.data.get("ptp_far_asked"):
+        if offset > self.ptp_max_days and not conv.data.get("ptp_far_asked") and self.identity_mode != "k10":
             conv.data["ptp_far_asked"] = True
             conv.state = AWAIT_PTP_DATE
             self._reply(conv, turn, "PTP_TOO_FAR", max_date=(today + timedelta(days=self.ptp_max_days)).strftime("%d %b"))
@@ -630,13 +778,30 @@ class ConversationEngine:
             self._outcome(conv, turn, "PTP_RECORDED_NO_HOLD")
             return
         if offset > self.ptp_max_days:   # K13: beyond auto-accept -> supervisor approves or counters
-            self._handoff(conv, turn, "PTP_BEYOND_WINDOW", "PTP_REFERRED", ticket=False, date=when_s, days=self.ptp_max_days)
+            self._handoff(conv, turn, "PTP_BEYOND_WINDOW",
+                          "PTP_CAPTURED_REVIEW" if self.identity_mode == "k10" else "PTP_REFERRED",
+                          ticket=False, date=when_s, days=self.ptp_max_days)
             return
         link = self.tools.create_payment_link(turn, conv.borrower_id, ob["obligation_id"], ob["outstanding_paise"])
         self._reply(conv, turn, "PTP_CONFIRM", date=when_s, link=link)
         self._outcome(conv, turn, "PTP_RECORDED")
 
+    def _broken_ptps(self, conv: Conversation) -> int:
+        r = self.ledger._conn().execute("SELECT broken_ptp FROM borrower_state WHERE borrower_id=?",
+                                        (conv.borrower_id,)).fetchone()
+        return r[0] if r else 0
+
     def _needs_time(self, conv: Conversation, turn: Turn) -> None:
+        threshold = ((self.policy.exceptions.get("promise_to_pay") or {}).get("broken_ptp") or {}).get("threshold")
+        if threshold is not None and self._broken_ptps(conv) >= threshold:
+            # K13 broken_ptp at/above threshold: do not solicit a PTP; push payment now with a link.
+            got = self._oldest_due(conv, turn)
+            if got is not None:
+                loan, ob = got
+                link = self.tools.create_payment_link(turn, conv.borrower_id, ob["obligation_id"], ob["outstanding_paise"])
+                self._reply(conv, turn, "BROKEN_PTP_PUSH", link=link)
+                self._outcome(conv, turn, "LINK_SENT")
+                return
         conv.state = AWAIT_PTP_DATE
         conv.data["ptp_asks"] = 1
         self._reply(conv, turn, "ASK_PTP_DATE", days=self.ptp_max_days)
