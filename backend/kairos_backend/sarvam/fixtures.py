@@ -118,7 +118,7 @@ class FixtureTransport:
     # -- conversations --------------------------------------------------------------------------
     def _phrase(self, req: Dict[str, Any]) -> str:
         n = self._tick("conversations")
-        user = json.loads(req["messages"][-1]["content"])
+        user = json.loads(next(m["content"] for m in req["messages"] if m["role"] == "user"))
         line, style = user["approved_line"], user["style"]
         if self.bad_every and n % self.bad_every == 0:
             kind, extra = BAD_PHRASES[(n // self.bad_every) % len(BAD_PHRASES)]

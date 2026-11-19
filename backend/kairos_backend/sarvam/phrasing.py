@@ -28,7 +28,7 @@ from typing import Any, Dict, List, Optional, Sequence
 from .. import template_compliance as tc
 from .client import CONVERSATIONS, SarvamClient
 
-PHRASING_VERSION = "phrasing-1"
+PHRASING_VERSION = "phrasing-2"
 
 # Small talk / clarification / empathy only. Never balances, links, PTP confirmations, receipts, OTP codes.
 PHRASE_KEYS = frozenset({"CLARIFY", "GOODBYE", "HARDSHIP", "HARDSHIP_ACK", "HANDOFF_HOLD", "ANYTHING_ELSE",
@@ -40,7 +40,7 @@ MIN_RATIO, MAX_RATIO = 0.4, 1.8
 
 _ANY = {
     "thanks": ["thank", "dhanyavaad", "dhanyawad", "shukriya", "धन्यवाद", "शुक्रिया"],
-    "sorry": ["sorry", "dukh", "afsos", "maaf", "दुख", "खेद", "माफ़", "माफ"],
+    "sorry": ["sorry", "dukh", "afsos", "maaf", "khed", "दुख", "खेद", "माफ़", "माफ"],
     "pause": ["pause", "paused", "rok", "band", "रोक", "बंद"],
     "team": ["team", "टीम"],
     "help": ["help", "madad", "sahayata", "मदद", "सहायता"],
@@ -134,6 +134,8 @@ def validate(candidate: Optional[str], approved: str, key: str, lang: str, verif
             return "keyword_dropped"
     if lender and lender in a and lender not in c:
         return "lender_dropped"
+    if set(_CAPS.findall(c)) - set(_CAPS.findall(a)):
+        return "new_caps"          # "HUMARI TEAM", "REMINDER": shouting, or a keyword that was never approved
     for concept in CONCEPTS.get(key, []):
         if not any(t in c.lower() for t in _ANY[concept]):
             return "intent_changed"
@@ -146,10 +148,16 @@ def validate(candidate: Optional[str], approved: str, key: str, lang: str, verif
 
 SYSTEM_PROMPT = (
     "You rephrase ONE approved customer-service line for a loan-servicing WhatsApp assistant in India. "
-    "Keep exactly the same meaning and every number, link, keyword in capitals and the lender name. "
+    "Keep exactly the same meaning. The user message lists must_keep tokens: copy every one of them EXACTLY as "
+    "written, same spelling and same letter case, never translated, transliterated or upper-cased (the lender "
+    "name stays exactly as given). Do not write any other word in ALL CAPITAL letters. "
     "Do not add facts, amounts, dates, promises, threats, consequences or questions that are not in the line. "
     "Be warm, short and natural. Reply with the rephrased line only, no quotes, no explanations."
 )
+# Validator reasons a second, corrective call may fix (keeping / formatting slips). Content violations
+# (amount, threat, promise, link added, account words, intent changed) are never retried: verbatim at once.
+RETRYABLE = frozenset({"lender_dropped", "keyword_dropped", "digits_dropped", "link_dropped", "new_caps", "length",
+                       "wrong_script", "format", "intent_changed"})
 STYLE = {"en": "plain, friendly Indian English",
          "hinglish": "natural Hinglish (Hindi in Latin script mixed with English), as Indians type on WhatsApp",
          "hi": "simple, polite Hindi in Devanagari script"}
@@ -172,7 +180,8 @@ class Phraser:
         self.client, self.model, self.lender = client, model, lender
         self._lock = threading.Lock()
         self.stats: Dict[str, Any] = {"eligible": 0, "accepted": 0, "rejected": {}, "model_errors": {},
-                                      "unique_answers": 0, "unique_rejected": 0}
+                                      "unique_answers": 0, "unique_rejected": 0, "retries": 0,
+                                      "accepted_after_retry": 0}
 
     def _count(self, bucket: str, reason: str) -> None:
         with self._lock:
@@ -183,10 +192,24 @@ class Phraser:
     def eligible(key: str, verified: bool) -> bool:
         return key in PHRASE_KEYS if verified else key in PRE_VERIFY_KEYS
 
+    def must_keep(self, approved: str) -> List[str]:
+        a = _norm(approved)
+        keep = [self.lender] if self.lender and self.lender in a else []
+        keep += sorted(set(_CAPS.findall(a)))
+        keep += sorted(set(URL_RX.findall(a)))
+        keep += sorted(set(re.findall(r"\d+", a)), key=lambda x: (len(x), x))
+        return keep
+
     def build_messages(self, approved: str, style: str) -> List[Dict[str, str]]:
+        keep = self.must_keep(approved)
         return [{"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": json.dumps({"style": STYLE[style], "approved_line": approved},
-                                                      ensure_ascii=False)}]
+                {"role": "user", "content": json.dumps(
+                    {"style": STYLE[style], "approved_line": approved, "must_keep": keep,
+                     "rule": "Copy each must_keep token exactly, same letter case. No other ALL-CAPS words."},
+                    ensure_ascii=False)}]
+
+    def _ask(self, messages: List[Dict[str, str]]):
+        return self.client.chat(self.model, messages, temperature=0.0, top_p=1.0, max_tokens=220)
 
     def phrase(self, key: str, approved: str, lang: str, hinglish: bool, verified: bool) -> PhraseResult:
         if not self.eligible(key, verified):
@@ -194,9 +217,10 @@ class Phraser:
         with self._lock:
             self.stats["eligible"] += 1
         style = "hi" if lang == "hi" else ("hinglish" if hinglish else "en")
+        vlang = "hi" if lang == "hi" else "en"
+        msgs = self.build_messages(approved, style)
         try:
-            rep = self.client.chat(self.model, self.build_messages(approved, style), temperature=0.0, top_p=1.0,
-                                   max_tokens=220)
+            rep = self._ask(msgs)
         except Exception as e:   # defensive
             self._count("model_errors", type(e).__name__)
             return PhraseResult(approved, False, f"MODEL_ERROR:{type(e).__name__}", {"model": self.model})
@@ -204,9 +228,29 @@ class Phraser:
         if not rep.ok:
             self._count("model_errors", (rep.error or "error").split(":")[0])
             return PhraseResult(approved, False, f"MODEL_ERROR:{rep.error}", meta)
-        cand = rep.data["text"].strip().strip('"').strip("“”").strip()
-        why = validate(cand, approved, key, "hi" if lang == "hi" else "en", verified, self.lender)
-        if not rep.cached:
+        first_cached = rep.cached
+        cand = _clean(rep.data["text"])
+        why = validate(cand, approved, key, vlang, verified, self.lender)
+        if why in RETRYABLE:
+            # one corrective call, same validator; the answer it gives is cached like any other
+            retry = msgs + [{"role": "assistant", "content": cand},
+                            {"role": "user", "content": f"Not accepted ({why}). Rewrite it once more following every "
+                                                        f"rule. must_keep, exactly: {json.dumps(self.must_keep(approved), ensure_ascii=False)}. "
+                                                        "Reply with the line only."}]
+            try:
+                rep2 = self._ask(retry)
+            except Exception:
+                rep2 = None
+            if rep2 is not None and rep2.ok:
+                with self._lock:
+                    self.stats["retries"] += 1
+                cand2 = _clean(rep2.data["text"])
+                why2 = validate(cand2, approved, key, vlang, verified, self.lender)
+                if why2 is None:
+                    cand, why, meta = cand2, None, {**rep2.meta(), "retried_after": why}
+                    with self._lock:
+                        self.stats["accepted_after_retry"] += 1
+        if not first_cached:
             with self._lock:
                 self.stats["unique_answers"] += 1
                 self.stats["unique_rejected"] += bool(why)
@@ -228,7 +272,12 @@ class Phraser:
                 "unique_model_answers": s["unique_answers"], "unique_rejected": s["unique_rejected"],
                 "unique_rejection_rate": round(s["unique_rejected"] / s["unique_answers"], 4)
                 if s["unique_answers"] else None,
-                "note": "per reply sent (cache hits re-validated) and per distinct model answer"}
+                "corrective_retries": s["retries"], "accepted_after_retry": s["accepted_after_retry"],
+                "note": "per reply sent (cache hits re-validated) and per distinct request (first answer not cached)"}
+
+
+def _clean(text: str) -> str:
+    return text.strip().strip('"').strip("“”").strip()
 
 
 def shared_phraser(env=None, lender: Optional[str] = None) -> Optional[Phraser]:
