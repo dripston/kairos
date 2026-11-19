@@ -536,7 +536,7 @@ Seed 42, 300 × 14: Kairos ₹1,76,723 recovered / ₹471.05 spent / 49 replies 
 
 ### Live view: full mode events
 
-`POST /demo/live/start {"mode": "full", seed=42, borrowers=300, days=14, speed=1, interactive_approvals=false}`
+`POST /demo/live/start {"mode": "full", seed=42, borrowers=300, days=14, speed=1, interactive_approvals=false, approval_wait_s=45}`
 runs ONE SIMULATED campaign (K09 + K27 arm) through every component on the real modules, on a fresh temp
 DB: K03/K24 spine → K27 auto-churn → K09 learner → K06 Gate ("Aladdin") → HITL approvals → executor +
 mock channel adapters (dry-run, no real sends) → DEV simulator → reply text → intent stack → Sarvam
@@ -570,7 +570,7 @@ call-end webhook → `voice/ingest.py` → CM-03 WhatsApp agent (OTP) → D7/LMS
 | learner | `contact` | per borrower per day: `channel`, `slot`, `send_time`, `template_id`, `band`, `reply_chance`, `replies_per_inr`, `reason`, `lane` (`k09` or `voice_first`) |
 | learner | `wait` | `reason`, `rule` (`REST`, `LEARNER`, `JOURNEY`) |
 | learner | `posterior` | `channel`, `band`, `slot`, `before`, `after`, `direction` (day end, biggest moves) |
-| learner | `switch` | `from_channel`, `to_channel`, `counts` (top channel changed, e.g. after the drift) |
+| learner | `switch` | `from_channel`, `to_channel`, `basis` (`posterior`: the band's preferred channel by replies per ₹; `send_mix`: the day's top channel), `band`, `after_drift` |
 | aladdin | `allowed` | `stage` `plan`, `channel`, `rules_checked`, `policy_version` |
 | aladdin | `blocked` | `stage` (`plan` / `send` / `approval`), `rule`, `reason`, `label` (e.g. "quiet day", "weekly limit", "said STOP", "no consent", "budget used", "promised to pay", "hardship hold", "held by a person"), `channel` |
 | aladdin | `rechecked` | `stage` `send` / `approval`, `channel`: the Gate ran again and passed |
@@ -606,6 +606,33 @@ otp_verified, disclosures_before_otp, fakes_caught, claims_verified, resolved_wi
 promises_kept, promises_broken}`, `outcomes {finalized, by_status}`, `reports {daily_reports, last}`.
 Plus `counters.kairos` (sent, spent, replies, verified payments, ₹ recovered, STOPs, cap breaches) for the
 scoreboard, and `pending_approvals: [{approval_id, borrower_id, first_name, channel, rules, send_time}]`.
+
+**Seed 42, 300 × 14 (`day_seconds=0`, ~9 s compute; ~3 min at 1×, ~55 s at 4×), 11,443 events:**
+spine 300 loans, ₹1,500 pool · churn 439 moves (cohort 165, risk 117, journey 66, layer 50, lifecycle 41), 2 in
+BROKEN_PTP · learner 3,738 decisions (1,368 contact, 2,370 wait), 57 voice-first, 36 posterior moves, 1 switch
+(B1: WhatsApp → SMS after the drift) · Aladdin 3,029 checks, 202 blocked (quiet day 175, already paid 12, weekly
+limit 10, budget 4, STOP 1), **cap breaches 0** · executor 1,343 sent, ₹1,123.30 · channel 1,152 delivered, 425
+read, 69 duplicate receipts ignored · borrower 47 replies, 2 STOPs · intent 45 classified (rules 35, small model 1,
+abstain 9) · voice 50 calls (Advait 31, Ritu 19), 21 connected, 3 low-confidence → review, 12 duplicate webhooks
+ignored · CM-03 20 conversations, 18 OTP-verified, **0 disclosures before OTP**, 3 fakes caught, 12 claims
+verified, 17 resolved without a human (85%) · HITL 128 approvals (VOICE_CHANNEL 125, FIRST_SEND_AFTER_HARDSHIP
+3): 116 approved, 12 rejected, 5 cases opened, 10 resolved · payments 23 verified (D7 9, CM-03 12, promise kept
+2), ₹3,13,524, 12 queued touches cancelled (other EMIs 0), 1 claim rejected (F4), 2 promises broken · outcomes
+1,343 finalized → learner · reports 14 daily K26 summaries. All SIMULATED.
+
+**What is simulated or a display mapping** (full mode only; race mode untouched):
+- Reply text, call dispositions and confidences, promise-keeping and the CM-03 scenarios are seeded mappings of
+  DEV-simulator outcomes (`_category`, `_voice_outcome`). The real modules (intent stack, VoiceIngester
+  thresholds, K13 table, CM-03 engine, HITL) decide what happens with them.
+- Connected voice calls without a simulator reply get a non-rewarded disposition (refused, language, wrong
+  person, third party, unsure STOP @ 0.45): never a learner reward the simulator did not produce.
+- Budget is a fixed demo pool (₹5 per borrower), not the race's matched budget. The voice-first lane is a
+  full-mode rule (K27 voice step + voice-bot consent + a registered bot for the band, ≤ 6 a day).
+- Promised payments kept on the promise date and the D7 credits behind CM-03 claims are synthetic LMS/bank events.
+- No LLM tier runs (rules → small model → abstain only). Sarvam model tiers (`llm/sarvam-models`) are not on this
+  branch and are skipped (`final.sarvam_model_tiers`).
+- With `interactive_approvals`, each day with approvals waits up to `approval_wait_s` (default 45 s) for clicks
+  before the 09:30 sends; whatever is left expires at the end of the contact window (event `hitl.expired`).
 
 | Endpoint (full mode) | What |
 |---|---|
