@@ -469,3 +469,99 @@ default's +78.9% / +52.5%. It is available as `--policy rl2`.
 Determinism: `--check-determinism` at 1,500 × 14 on seed 271828 with `--policy rl2 --rl2-opts
 '{"pacing": "dual"}'` → IDENTICAL (CRM envelope hash 1bc7d4a67666f318 both runs). The real script gave
 the same numbers as the sweep harness on that seed.
+
+### Reports per level, layers, one borrower explained
+
+`python3 scripts/run_k09_replay.py --borrowers 1500 --days 14 --seed 271828 --policy rl2 --rl2-opts
+'{"pacing": "dual"}' --report-levels` prints the following:
+
+* every level's κ and its largest effects;
+* P(pay | reply) and the STOP share;
+* the state × band × channel × slot drill-down sentences, or a note that the level collapsed;
+* the layer rule per cohort, as a table and a mermaid diagram;
+* the per-segment daily table (cohort × day: touches, replies, verified payments, STOPs, spend,
+  replies/₹1k);
+* the best arm per band, day by day;
+* one borrower's trace. Each day shows p as a product of named factors, the price, and the decision.
+
+The JSON report holds the same data under `rl2.levels`.
+
+Learned layer rule on seed 271828, the same for every cohort: after any touch without a reply, the next
+step is WhatsApp (L2). Cohort × transition collapsed. The population transition level learned that a
+second WhatsApp after a delivered, unread WhatsApp is worth about 0.75×, and that SMS after a silent SMS
+is worth 0.75×.
+
+```mermaid
+flowchart LR
+  L1D["L1 no reply"] -->|whatsapp| L2["L2 rich digital (WhatsApp)"]
+  L2D["L2 no reply"] -->|whatsapp| L2
+  L3D["L3 no reply"] -->|whatsapp| L2
+  P["paused (optimal stopping)"] --> L4["L4 human (agent hand-off)"]
+```
+
+Trace excerpt (borrower BRW-SL101051, C2, Tamil Nadu, seed 271828):
+
+* **Day 4:** SEND WhatsApp 08-11, p = 0.40 = arm 0.18 × cohort 0.84 × borrower 2.66 (they replied on
+  day 1). Value per paisa 0.0100 against a price of 0.0043.
+* **Days 8–11:** SMS, p ≈ 0.09 = arm 0.08 × fatigue 0.85–0.97 × borrower 1.5–1.6.
+* **Day 13:** WhatsApp, p = 0.096 = arm 0.096 × fatigue 0.67 × transition 0.95 × borrower 1.57.
+
+**Recommendations for K27 journeys.** These come from simulated evidence only.
+
+* Layer escalation is not supported by the evidence. Voice (L3) never beat WhatsApp or SMS per rupee,
+  so the rule stays in L1/L2.
+* The fatigue level says a borrower's touch is worth about 0.6× after one touch in the previous 6 days,
+  and about 0.5× after two. Journeys that space touches out lose little.
+* `recommend_layer` up-moves need lift ≥ 1.10. On this simulator no up-move clears that bar.
+* `ChurnEngine(stop_policy=...)` can call `rl.lookahead.continuation_value` with the borrower's
+  (O, E, κ) from `RL2Policy.model.borrower_evidence`.
+
+### Throughput
+
+50,000 borrowers (K03 synthetic, seed 42), `--policy rl2` with `pacing: dual`, one process, on a
+shared machine (load average 10 → 4 during the run):
+
+* Day 1: 48,825 borrowers were scored and 48,825 full Supervisor decisions were made (K01 gate preview
+  plus atomic reserve) in 108 s. That is **452 decisions/s**, so 50,000 take about 1.8 minutes against
+  the 10-minute limit.
+* RL v2's own scoring took 2.2 s of that (about 22,000 borrowers/s). The rest is the K06 gate and ledger.
+* At 1,500 × 14 the replay reports 250–800 decisions/s for RL v2 under 6-way parallel sweeps, and 336/s
+  on the determinism run.
+* K01 breaches were 0. The K15 checker flagged 1 `daily_budget` violation in the benchmark only, because
+  the benchmark pool (200 paise per case over 2 days, ₹50,000/day) is far above K15's placeholder
+  ₹8,000/day. Every 1,500-borrower run had 0 K15 violations.
+
+### Caveats
+
+* Everything is SIMULATED. The DEV simulator's hidden traits (responsiveness, channel affinity, best
+  slot) are per borrower and independent of cohort and state, so the segment levels can only collapse.
+  P(pay | reply) is one constant rate, so the α term can only steer toward larger EMIs.
+* The dual price's slow start drives a large part of its STOP reduction. Day 1 prices at the prior's
+  best ratio (about 0.6 replies/₹). It is a legitimate "be careful before evidence" rule, but it was
+  not designed as one.
+* No RL v2 configuration spends close to the pool without losing replies/₹ or adding STOPs. In this
+  setup the contact caps and STOP risk bind before money does.
+* The tune seeds also served as warm-start sources. The warm start was never selected.
+* Throughput and the sweeps ran with other agents on the same machine (load average 10–15).
+
+### Context for Claude / how to continue
+
+* **Code:**
+  * `kairos_backend/rl/`: `hier.py` (EB machinery), `value.py` (all levels and the value),
+    `pacing.py`, `lookahead.py`, `warmstart.py`, `policy.py` (`RL2Policy`, `RL2Options`), `report.py`.
+  * Replay hook: `replay/k09.py` (`policy="rl2"` in `StackRun` / `run_comparison`; one dispatch in
+    `_plan_queue`).
+  * CLI: `--policy`, `--rl2-opts`, `--report-levels`.
+  * Tests: `tests/test_rl2.py`.
+* **Sweeps:**
+  * `scripts/rl2_sweep.py --seeds ... --configs-file list.json`. It caches CN10 per seed in
+    `$TMPDIR/rl2-cn10-cache`.
+  * A config is `{"policy": "rl2", "rl2": {...RL2Options}, "warm_from": seed | {seed: seed}}` or
+    `{"policy": "default", "kairos": {...KairosOptions}}`.
+* **Next ideas:**
+  * A proper fatigue-aware Lagrangian with a second price on contact slots, so money is not the only
+    priced resource.
+  * Warm start with the arm level's decay applied at export, so the next cohort does not inherit the
+    end-of-campaign drift.
+  * Integrate K27 `allowed_channels` through `RL2Policy(journey=...)`. The hook exists; it is not wired
+    to the CLI.
