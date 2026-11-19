@@ -1,0 +1,625 @@
+{
+  "evidence": "SIMULATED (synthetic corpus) + hand-written messages; no customer data; offline, no LLM calls",
+  "method": "Learn-then-Test (Angelopoulos et al. 2021, arXiv:2110.01052): fixed-sequence test from lambda=0.99 down to the policy floor, binomial p-values; risk = error rate among messages handled without a human. Related: conformal risk control, arXiv:2208.02814.",
+  "guarantee": "P(risk(chosen) <= 0.05) >= 0.9 for data exchangeable with the calibration split. SYNTHETIC guarantee: re-run on real labelled borrower messages before relying on it.",
+  "stack_version": "intent-stack-1",
+  "params": {
+    "alpha": 0.05,
+    "delta": 0.1,
+    "seed": 7,
+    "pvalue": "binomial",
+    "per_label": 120,
+    "data": "both",
+    "synthetic_corpus_seed": 31337,
+    "grid": [
+      0.99,
+      0.5,
+      0.01
+    ]
+  },
+  "data": {
+    "calibration": 1140,
+    "test": 1140,
+    "sources": {
+      "handwritten": 240,
+      "synthetic": 2040
+    }
+  },
+  "hand_set": {
+    "rule_accept": 0.85,
+    "model_accept": 0.7
+  },
+  "chosen": {
+    "model_accept": 0.5,
+    "rule_accept": 0.85,
+    "certified": true,
+    "note": "smallest certified threshold"
+  },
+  "calibration_split": {
+    "hand_set": {
+      "n": 1140,
+      "auto_handled": 916,
+      "automation_rate": 0.8035,
+      "errors_among_auto": 6,
+      "error_rate_among_auto": 0.0066,
+      "accuracy_all": 0.9789,
+      "to_human": 224,
+      "safety_recall": {
+        "STOP": {
+          "support": 65,
+          "recall": 1.0
+        },
+        "HARDSHIP": {
+          "support": 77,
+          "recall": 1.0
+        }
+      }
+    },
+    "calibrated": {
+      "n": 1140,
+      "auto_handled": 920,
+      "automation_rate": 0.807,
+      "errors_among_auto": 6,
+      "error_rate_among_auto": 0.0065,
+      "accuracy_all": 0.9825,
+      "to_human": 220,
+      "safety_recall": {
+        "STOP": {
+          "support": 65,
+          "recall": 1.0
+        },
+        "HARDSHIP": {
+          "support": 77,
+          "recall": 1.0
+        }
+      }
+    }
+  },
+  "test_split": {
+    "hand_set": {
+      "n": 1140,
+      "auto_handled": 929,
+      "automation_rate": 0.8149,
+      "errors_among_auto": 10,
+      "error_rate_among_auto": 0.0108,
+      "accuracy_all": 0.9798,
+      "to_human": 211,
+      "safety_recall": {
+        "STOP": {
+          "support": 77,
+          "recall": 1.0
+        },
+        "HARDSHIP": {
+          "support": 67,
+          "recall": 1.0
+        }
+      }
+    },
+    "calibrated": {
+      "n": 1140,
+      "auto_handled": 931,
+      "automation_rate": 0.8167,
+      "errors_among_auto": 10,
+      "error_rate_among_auto": 0.0107,
+      "accuracy_all": 0.9816,
+      "to_human": 209,
+      "safety_recall": {
+        "STOP": {
+          "support": 77,
+          "recall": 1.0
+        },
+        "HARDSHIP": {
+          "support": 67,
+          "recall": 1.0
+        }
+      }
+    },
+    "by_source": {
+      "handwritten": {
+        "hand_set": {
+          "n": 120,
+          "auto_handled": 95,
+          "automation_rate": 0.7917,
+          "errors_among_auto": 2,
+          "error_rate_among_auto": 0.0211,
+          "accuracy_all": 0.95,
+          "to_human": 25,
+          "safety_recall": {
+            "STOP": {
+              "support": 13,
+              "recall": 1.0
+            },
+            "HARDSHIP": {
+              "support": 12,
+              "recall": 1.0
+            }
+          }
+        },
+        "calibrated": {
+          "n": 120,
+          "auto_handled": 96,
+          "automation_rate": 0.8,
+          "errors_among_auto": 2,
+          "error_rate_among_auto": 0.0208,
+          "accuracy_all": 0.9583,
+          "to_human": 24,
+          "safety_recall": {
+            "STOP": {
+              "support": 13,
+              "recall": 1.0
+            },
+            "HARDSHIP": {
+              "support": 12,
+              "recall": 1.0
+            }
+          }
+        }
+      },
+      "synthetic": {
+        "hand_set": {
+          "n": 1020,
+          "auto_handled": 834,
+          "automation_rate": 0.8176,
+          "errors_among_auto": 8,
+          "error_rate_among_auto": 0.0096,
+          "accuracy_all": 0.9833,
+          "to_human": 186,
+          "safety_recall": {
+            "STOP": {
+              "support": 64,
+              "recall": 1.0
+            },
+            "HARDSHIP": {
+              "support": 55,
+              "recall": 1.0
+            }
+          }
+        },
+        "calibrated": {
+          "n": 1020,
+          "auto_handled": 835,
+          "automation_rate": 0.8186,
+          "errors_among_auto": 8,
+          "error_rate_among_auto": 0.0096,
+          "accuracy_all": 0.9843,
+          "to_human": 185,
+          "safety_recall": {
+            "STOP": {
+              "support": 64,
+              "recall": 1.0
+            },
+            "HARDSHIP": {
+              "support": 55,
+              "recall": 1.0
+            }
+          }
+        }
+      }
+    }
+  },
+  "safety": {
+    "calibration": {
+      "safety_rows": 142,
+      "decided_by_rules": 133,
+      "min_recall_over_grid": {
+        "STOP": 1.0,
+        "HARDSHIP": 1.0
+      },
+      "auto_handled_as_non_safety_at_any_threshold": 0
+    },
+    "test": {
+      "safety_rows": 144,
+      "decided_by_rules": 137,
+      "min_recall_over_grid": {
+        "STOP": 1.0,
+        "HARDSHIP": 1.0
+      },
+      "auto_handled_as_non_safety_at_any_threshold": 0
+    },
+    "note": "STOP / HARDSHIP / ABUSIVE are rule-final; the calibrated threshold only gates the small model's stand-alone answers"
+  },
+  "ltt_trace": [
+    {
+      "lambda": 0.99,
+      "n_auto": 885,
+      "errors": 6,
+      "risk_hat": 0.0068,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.98,
+      "n_auto": 892,
+      "errors": 6,
+      "risk_hat": 0.0067,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.97,
+      "n_auto": 893,
+      "errors": 6,
+      "risk_hat": 0.0067,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.96,
+      "n_auto": 895,
+      "errors": 6,
+      "risk_hat": 0.0067,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.95,
+      "n_auto": 897,
+      "errors": 6,
+      "risk_hat": 0.0067,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.94,
+      "n_auto": 898,
+      "errors": 6,
+      "risk_hat": 0.0067,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.93,
+      "n_auto": 899,
+      "errors": 6,
+      "risk_hat": 0.0067,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.92,
+      "n_auto": 901,
+      "errors": 6,
+      "risk_hat": 0.0067,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.91,
+      "n_auto": 903,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.9,
+      "n_auto": 903,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.89,
+      "n_auto": 904,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.88,
+      "n_auto": 907,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.87,
+      "n_auto": 907,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.86,
+      "n_auto": 908,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.85,
+      "n_auto": 909,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.84,
+      "n_auto": 910,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.83,
+      "n_auto": 911,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.82,
+      "n_auto": 914,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.81,
+      "n_auto": 915,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.8,
+      "n_auto": 915,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.79,
+      "n_auto": 915,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.78,
+      "n_auto": 915,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.77,
+      "n_auto": 915,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.76,
+      "n_auto": 915,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.75,
+      "n_auto": 915,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.74,
+      "n_auto": 915,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.73,
+      "n_auto": 915,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.72,
+      "n_auto": 915,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.71,
+      "n_auto": 915,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.7,
+      "n_auto": 916,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.69,
+      "n_auto": 916,
+      "errors": 6,
+      "risk_hat": 0.0066,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.68,
+      "n_auto": 917,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.67,
+      "n_auto": 917,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.66,
+      "n_auto": 917,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.65,
+      "n_auto": 917,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.64,
+      "n_auto": 917,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.63,
+      "n_auto": 917,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.62,
+      "n_auto": 917,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.61,
+      "n_auto": 917,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.6,
+      "n_auto": 917,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.59,
+      "n_auto": 919,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.58,
+      "n_auto": 919,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.57,
+      "n_auto": 919,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.56,
+      "n_auto": 919,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.55,
+      "n_auto": 919,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.54,
+      "n_auto": 919,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.53,
+      "n_auto": 919,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.52,
+      "n_auto": 919,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.51,
+      "n_auto": 919,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    },
+    {
+      "lambda": 0.5,
+      "n_auto": 920,
+      "errors": 6,
+      "risk_hat": 0.0065,
+      "p_value": 0.0,
+      "certified": true
+    }
+  ],
+  "flag": "KAIROS_INTENT_THRESHOLDS=calibrated reads chosen.model_accept; default is hand-set",
+  "runtime_seconds": 1.19
+}

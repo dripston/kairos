@@ -18,6 +18,8 @@ Thumbs.db
 backend/data/
 backend/reports/*
 !backend/reports/intent_eval.json
+!backend/reports/threshold_calibration.json
+!backend/reports/ope_k09.json
 backend/*.csv
 
 # demo recipients entered at runtime — personal phone numbers, never commit
