@@ -8,6 +8,8 @@ from datetime import date, datetime, timedelta
 
 import pytest
 
+from tests.spine_helpers import add_loan
+
 from kairos_backend.ledger import Instruction, Ledger
 from kairos_backend.policy import policy_dir
 from kairos_backend.templates import (
@@ -253,17 +255,17 @@ D = date(2026, 11, 20)  # Friday, a contact day
 
 @pytest.fixture
 def ledger(policy, tmp_path):
+    # K03 spine: borrower + loan B1-A + EMI B1-A-1 (12 DPD), every channel consented, enrolled in C1.
     lg = Ledger(policy, tmp_path / "k22.db")
-    lg.upsert_campaign("C1", budget_per_case_inr=100, allocated_cases=10, start_date=D, end_date=D + timedelta(days=10))
-    lg.upsert_borrower("B1", dpd=12, dpd_updated_at=datetime(2026, 11, 20, 7), lender_id=None,
-                       consent={ch: True for ch in CHANNELS})
-    lg.upsert_obligation("B1-A", "B1", "C1", overdue_inr=5000)
+    lg.upsert_campaign("C1", budget_per_case_paise=10_000, start_date=D, end_date=D + timedelta(days=10))
+    add_loan(lg, "B1", D, dpd=12, consents={ch: 1 for ch in CHANNELS}, campaign="C1")
+    lg.start_day(D)  # daily LMS refresh -> DPD is fresh
     yield lg
     lg.close()
 
 
 def _decide(ledger, channel, template_id):
-    return ledger.preview(Instruction("B1", "B1-A", "C1", channel, template_id, datetime(2026, 11, 20, 10), 0.2))
+    return ledger.preview(Instruction("B1", "B1-A-1", "C1", channel, template_id, datetime(2026, 11, 20, 10), 20))
 
 
 def test_sync_makes_gate_pass_for_selected_template(ledger, catalog, policy):
