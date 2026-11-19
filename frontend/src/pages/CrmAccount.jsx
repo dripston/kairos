@@ -12,6 +12,7 @@ import { getBorrower } from '../api/kairos'
 import { SourceBadge } from '../components/live'
 import CrmLive from './CrmLive'
 import { Bar, Button, Card, CardHead, ChannelTag, Chip, Empty, ReasonDialog, StatusChip, Td, Th, cx, inr, pct } from '../components/ui'
+import { ExplainButton } from '../components/Explain'
 
 const TABS = ['Journey', 'Overview', 'Payments', 'Cases', 'Audit']
 
@@ -194,6 +195,7 @@ function MockAccount({ res }) {
                     </div>
                     <div className="mt-1 text-[13.5px]">{decision.reason}</div>
                     <div className="mt-2 text-[12px] text-muted">Instruction v{decision.version} · expires {decision.expires}</div>
+                    <div className="mt-3"><ExplainButton borrowerId={b.id} fallback={`Aladdin chose ${decision.action}${decision.channel ? ` on ${decision.channel} at ${decision.when}` : ''}. ${decision.reason} Every guardrail was checked first: ${decision.checks.filter((c) => c.ok).map((c) => c.label.toLowerCase()).join(', ')}${decision.checks.some((c) => !c.ok) ? `; blocked by: ${decision.checks.filter((c) => !c.ok).map((c) => c.label.toLowerCase()).join(', ')}` : ''}.`} /></div>
                   </div>
                   <div className="w-60 shrink-0 rounded-lg border border-line bg-bg p-3">
                     <div className="mb-1.5 text-[11.5px] font-semibold tracking-wide text-muted uppercase">Guardrail checks</div>

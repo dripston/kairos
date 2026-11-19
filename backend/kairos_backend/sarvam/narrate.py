@@ -173,7 +173,13 @@ class Narrator:
                f"(policy {latest.get('policy_version') or '-'}).") if latest else "No audit events."
         required = [x for x in (latest.get("decision"), latest.get("rule")) if x]
         return self._run("explain_decision", {"latest_decision": latest, "trail": rows}, required, det,
-                         "Explain in at most four sentences why the latest decision happened, citing its rule.", 700)
+                         "Explain to a collections operator, in plain English and at most three short sentences, what "
+                         "Kairos decided for this borrower and why. Use the decision word and the rule code once each, "
+                         "in brackets after the plain words. Translate codes: SEND_TIME_CHECK = the second guardrail "
+                         "check just before sending; DECISION = the plan made earlier; ALL_PASSED = every guardrail "
+                         "passed (consent, caps, quiet hours, budget, template); ELIGIBLE = allowed to contact now; "
+                         "WAIT = not now; HANDOFF = a person must decide. Do not repeat ids, timestamps or policy "
+                         "versions.", 700)
 
     def daily_ops(self, report: Dict[str, Any]) -> Narrative:
         t = report.get("totals") or {}

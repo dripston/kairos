@@ -1,0 +1,16 @@
+# Render blueprint for the Kairos API (Docker). Create it from the dashboard ("New → Blueprint") or the CLI.
+# The image ships a demo DB seeded from the SIMULATED journey; every number it serves is SIMULATED.
+services:
+  - type: web
+    name: kairos-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./deploy/backend.Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: SARVAM_API_KEY      # set the value in the Render dashboard; never in this file
+        sync: false
+      - key: KAIROS_CM03_DEMO_INBOX
+        value: "1"               # simulated inbox for synthetic +910 numbers only (CM-03 console demo)

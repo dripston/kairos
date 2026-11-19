@@ -13,6 +13,7 @@ import { OfflineError } from '../api/client'
 import { TEMPLATES } from '../lib/mock'
 import { fmtTs, paiseInr } from '../lib/format'
 import { MockNote, ProvChip, RefreshButton, SourceBadge } from '../components/live'
+import { ExplainButton } from '../components/Explain'
 import { Button, Card, CardHead, ChannelTag, Chip, Empty, Input, ReasonDialog, Select, StatusChip, Td, Th, cx } from '../components/ui'
 import { TONE_BG, TONE_TEXT } from '../lib/events'
 
@@ -175,28 +176,40 @@ export default function CrmLive({ b, res }) {
                 <div className="mt-1 text-[13.5px]">{next.reason}</div>
                 <div className="mt-2 text-[12px] text-muted">From {next.source}{next.version ? ` · policy v${next.version}` : ''}{next.at ? ` · ${fmtTs(next.at)}` : ''}</div>
               </div>
-              <ProvChip prov={status.env} title="Backend environment — sends go through FakeProvider until real adapters are wired" />
+              <div className="flex shrink-0 flex-col items-end gap-2">
+                <ProvChip prov={status.env} title="Backend environment — sends go through FakeProvider until real adapters are wired" />
+                <ExplainButton borrowerId={id} fallback={`${next.action}: ${next.reason}`} />
+              </div>
             </div>
           </Card>
 
           <Card>
             <CardHead title="Loans & EMIs" sub="K03 spine · each EMI tracked separately — a verified payment clears that EMI only" right={<SourceBadge res={res} />} />
+            <div className="overflow-x-auto">
             <table className="w-full">
-              <thead><tr><Th>Loan · EMI</Th><Th>Due</Th><Th>Amount due</Th><Th>Paid</Th><Th>Outstanding</Th><Th>DPD · band</Th><Th>Status</Th></tr></thead>
+              <thead><tr><Th>EMI</Th><Th>Due</Th><Th className="text-right">Outstanding</Th><Th className="text-right">Status</Th></tr></thead>
               <tbody>
-                {(b.loans || []).flatMap((l) => (l.obligations || []).map((o, i) => (
-                  <tr key={o.obligation_id}>
-                    <Td className="whitespace-nowrap"><span className="font-mono">{i === 0 ? l.loan_id : ''}</span><div className="font-mono text-[11.5px] text-muted">EMI #{o.installment_no}</div></Td>
-                    <Td className="font-mono text-[12px]">{o.due_date}</Td>
-                    <Td className="tabular">{paiseInr(o.amount_due_paise, 0)}</Td>
-                    <Td className="tabular">{paiseInr(o.amount_paid_paise, 0)}</Td>
-                    <Td className="tabular">{paiseInr(o.outstanding_paise, 0)}</Td>
-                    <Td>{i === 0 ? <Chip tone={l.dpd >= 60 ? 'bad' : l.dpd >= 30 ? 'warn' : 'neutral'}>{l.dpd ?? '—'} DPD · {l.band ?? '—'}</Chip> : null}</Td>
-                    <Td>{o.outstanding_paise <= 0 ? <Chip tone="ok">Paid · verified</Chip> : <Chip tone="warn">Open</Chip>}</Td>
-                  </tr>
-                )))}
+                {(b.loans || []).flatMap((l) => [
+                  <tr key={`${l.loan_id}-h`} className="bg-raised/40">
+                    <td colSpan={4} className="border-t border-line px-5 py-2">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-mono text-[12.5px] font-semibold">{l.loan_id}</span>
+                        <Chip tone={l.dpd >= 60 ? 'bad' : l.dpd >= 30 ? 'warn' : 'neutral'}>{l.dpd ?? '—'} DPD · {l.band ?? '—'}</Chip>
+                      </div>
+                    </td>
+                  </tr>,
+                  ...(l.obligations || []).map((o) => (
+                    <tr key={o.obligation_id}>
+                      <Td className="whitespace-nowrap font-mono text-[12px] text-muted">#{o.installment_no}</Td>
+                      <Td className="whitespace-nowrap font-mono text-[12px]">{o.due_date}</Td>
+                      <Td className="whitespace-nowrap text-right tabular">{paiseInr(o.outstanding_paise, 0)}<span className="text-[11.5px] text-faint"> / {paiseInr(o.amount_due_paise, 0)}</span></Td>
+                      <Td className="whitespace-nowrap text-right">{o.outstanding_paise <= 0 ? <Chip tone="ok">Paid</Chip> : <Chip tone="warn">Open</Chip>}</Td>
+                    </tr>
+                  )),
+                ])}
               </tbody>
             </table>
+            </div>
             {!(b.loans || []).length && <Empty>No loans in the spine for this borrower.</Empty>}
           </Card>
 

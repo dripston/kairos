@@ -15,6 +15,7 @@ import {
 } from '../components/ui'
 import { ApprovalsQueue, BudgetCaps, Cm03Console, DemoRecipients, LiveDecisions } from '../components/LiveControl'
 import LiveFeed from '../components/LiveFeed'
+import SystemHealth from '../components/SystemHealth'
 
 const ACTIVE = ['RESERVED', 'SCHEDULED', 'NEEDS_APPROVAL', 'APPROVED']
 const RANGES = { Today: 1, '7 days': 7, 'To date': Infinity }
@@ -155,7 +156,10 @@ export default function ControlRoom() {
             <ChannelStatus d={d} />
             <DemoRecipients />
           </div>
-          <CampaignControls ask={ask} />
+          <div className="space-y-8">
+            <SystemHealth />
+            <CampaignControls ask={ask} />
+          </div>
         </div>
       )}
 
