@@ -9,7 +9,7 @@ cd backend
 python -m venv .venv
 .venv/Scripts/activate            # Windows  (macOS/Linux: source .venv/bin/activate)
 pip install -e ".[dev]"
-pytest                            # 98 tests: all K01 + K13 cases, ledger, executor, API
+pytest                            # 201 tests: all K01 + K13 cases, ledger, executor, API, K22 templates
 uvicorn kairos_backend.api:app --reload    # http://127.0.0.1:8000/docs
 python scripts/bench_ledger.py 50000       # throughput check (50k decisions)
 ```
@@ -36,7 +36,21 @@ borrower events (reply, call >10 s, STOP, payment, K13 exceptions) ──► Led
 | `exceptions.py` | K13 decision table (needs time, PTP, callback, hardship, routed types). |
 | `ledger.py` | SQLite state + **atomic check-and-reserve**, budget pool and daily pacing, cancellations, tickets, audit log, independent cap-breach audit. |
 | `executor.py` | `Supervisor` (versioned instruction with reason + expiry) and `Executor` (dispatch once, uncertain-send handling). `FakeProvider` stands in for K07/K08/K17 adapters. |
+| `templates.py` | K22 approved-template selector over `policy/K22-template-catalog/catalog.json`; `sync_to_ledger` feeds the Gate's `TEMPLATE_APPROVED` check. |
 | `api.py` | FastAPI endpoints for the frontend and other agents. |
+
+## K22 template selector
+
+```python
+from kairos_backend.templates import TemplateCatalog
+cat = TemplateCatalog.load()                     # policy/K22-template-catalog/catalog.json (KAIROS_POLICY_DIR aware)
+cat.sync_to_ledger(ledger)                       # once at startup: Gate checks the same catalog
+c = cat.select("whatsapp", "hi", None, "STANDARD", policy.band_for(dpd), intent="NEEDS_TIME")
+c.decision, c.template_id, c.reason, c.catalog_version   # ("SEND", "WA_ASKDATE_HI_STD_01", "MATCH", "0.1.0-placeholder")
+cat.select_for_channels(["whatsapp", "ivr"], "hi", "REMINDER", {"whatsapp": "LOW", "ivr": "WAIT"}, "B2")  # WAIT is per channel
+```
+
+Approved only. The language must be a K01 language and match exactly (no fallback). Intensity `WAIT` → WAIT. `LOW` never escalates, `STANDARD` may de-escalate to `LOW`. The band must be listed on the template. Ties go to the lowest id. Unknown channel/purpose/intensity/band ids raise `ValueError`, while a genuine "nothing fits" returns WAIT with a reason. **The catalog is a synthetic PLACEHOLDER until the official D13 file arrives.** See [`policy/K22-template-catalog/README.md`](../policy/K22-template-catalog/README.md) for the swap steps. Tests: `pytest tests/test_templates.py`.
 
 ## Guarantees and how they're tested
 
@@ -60,3 +74,6 @@ borrower events (reply, call >10 s, STOP, payment, K13 exceptions) ──► Led
 - **Any hold cancels the borrower's queued touches** so their budget returns to the pool; the Supervisor replans after the hold.
 - `budget_per_case_inr` and collection targets are K01 REQUIRED_INPUTs — supplied per campaign, never defaulted.
 - Money is compared at 1/100 paisa precision to avoid float drift.
+- **K22: an unsupported language is a WAIT, not a fallback.** K01 says "no suitable template → WAIT". A Marathi speaker gets WAIT, not an English or Hindi template.
+- **K22: K13 routed-stop intents** (`ABUSIVE`, `LEGAL_THREAT`, `FRAUD_CLAIM`) and `STOP` map to no template (WAIT `INTENT_NOT_AUTOMATED`) instead of the default REMINDER. `PAID`/`PAYMENT_VERIFIED` map to `PAYMENT_RECEIVED`, so a borrower who has just paid never gets a reminder.
+- **K22: `sync_to_ledger` withdraws ledger templates that are not in the catalog** (`withdraw_missing=True`), so placeholder ids stop passing the Gate after the D13 swap.
