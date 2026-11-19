@@ -19,7 +19,8 @@ Arms differ only in the ranker:
     cn10    CreditNirvana's 10-day cohort cadence (replay/cn10.py) — CN's own strategy doc, stand-in
             until the official fixed-cadence file (K02)
     k15     the K15 placeholder schedule (WhatsApp every 5 days, SMS every 3, morning)
-    kairos  K09 Beta-Bernoulli (+ borrower context), seeded Thompson sampling in SIMULATOR mode
+    kairos  K09 Beta-Bernoulli (+ borrower context; KairosOptions: decayed evidence and a relative
+            value floor by default), posterior mean unless explore=True (seeded Thompson, SIMULATOR)
 
 Every number is SIMULATED: DEV simulator, synthetic dataset and priors, placeholder costs/caps.
 Money is integer paise; INR fields in the report are display conversions.
@@ -124,17 +125,20 @@ def load_loans(csv_path: str) -> list[LoanInfo]:
 
 @dataclass(frozen=True)
 class KairosOptions:
-    """Kairos-side decision options for the replay's K09 arm (defaults = the current K09 default).
-    Everything here uses only what a deployment has: ledger history, finalized outcomes, spine
-    fields and costs. See BetaBernoulliLearner / BorrowerContextModel / ContextualLearner."""
-    decay: Optional[float] = None              # per-day discount of arm evidence (drift)
+    """Kairos-side decision options for the replay's K09 arm. Everything here uses only what a
+    deployment has: ledger history, finalized outcomes, spine fields and costs. See
+    BetaBernoulliLearner / BorrowerContextModel / ContextualLearner.
+
+    Replay default (k09/optimize, chosen on tune seeds, validated on held-out seeds; README "Multi-seed
+    result"): decay=0.7 and value_floor_rel=0.5. The previous default is LEGACY_KAIROS_OPTIONS."""
+    decay: Optional[float] = 0.7               # per-day discount of arm evidence (drift)
     hier_strength: Optional[float] = None      # band x channel x slot shrunk to pooled channel x slot
     affinity_strength: Optional[float] = None  # per-borrower x channel factor (hierarchical)
     recency: str = "count"                     # context recency feature: "count" (7-day) or "gap"
     min_reply_prob: float = DEFAULT_MIN_REPLY_PROB
     min_replies_per_inr: float = 0.0           # value floor on borrower-adjusted replies per rupee
     payment_lambda: float = 0.0                # fund order by (p_reply + λ·p_pay) per rupee (demo rule)
-    value_floor_rel: Optional[float] = None    # WAIT below φ × campaign-to-date realized replies per rupee
+    value_floor_rel: Optional[float] = 0.5     # WAIT below φ × campaign-to-date realized replies per rupee
 
     @classmethod
     def from_dict(cls, d: Optional[dict]) -> "KairosOptions":
@@ -147,6 +151,10 @@ class KairosOptions:
     def changed(self) -> dict:
         default = KairosOptions()
         return {k: v for k, v in asdict(self).items() if getattr(default, k) != v}
+
+
+# The K09 replay default before k09/optimize (posterior mean + context layer, nothing else).
+LEGACY_KAIROS_OPTIONS = {"decay": None, "value_floor_rel": None}
 
 
 class DriftSimulator(DevSimulator):
@@ -612,7 +620,7 @@ def run_comparison(n_borrowers: int, days: int, seed: int, drift_day: Optional[i
                             f" + K15 {S.MIN_DAYS_BETWEEN_CONTACTS}-day cross-channel gap (replay pre-filter)",
                     "costs_paise": COST_PAISE, "drift_day": None if drift_day is None else drift_day + 1,
                     "kairos_context": context, "kairos_explore": explore,
-                    "kairos_options": KairosOptions.from_dict(kairos_opts).changed()},
+                    "kairos_options": asdict(KairosOptions.from_dict(kairos_opts))},
         "import": k.import_report,
         "baseline": runs[baselines[0]].report(),
         "baselines": {b: runs[b].report() for b in baselines},
