@@ -88,6 +88,27 @@ def kairos(seed, n, days, drift, config) -> dict:
     return out
 
 
+def _line(label, seeds, res):
+    chg = [r["vs_cn10"] for r in res]
+    return (f"{label:34} mean {sum(chg) / len(chg):+.1f} min {min(chg):+.1f} | " +
+            " ".join(f"{s}:{r['vs_cn10']:+.1f}/R{r['replies']}/P{r['payments']}/S{r['stops']}/"
+                     f"rec{r['recovered_per_inr']}/sp{r['spend_vs_pool']}" for s, r in zip(seeds, res)))
+
+
+def run_many(items, a, drift):
+    jobs = [(it, s) for it in items for s in a.seeds]
+    with ProcessPoolExecutor(a.jobs) as ex:
+        res = list(ex.map(kairos, [s for _, s in jobs], [a.borrowers] * len(jobs), [a.days] * len(jobs),
+                          [drift] * len(jobs), [it["config"] for it, _ in jobs]))
+    for i, it in enumerate(items):
+        rs = res[i * len(a.seeds):(i + 1) * len(a.seeds)]
+        print(_line(it["label"], a.seeds, rs), flush=True)
+        if a.out:
+            with open(a.out, "a") as f:
+                f.write(json.dumps({"label": it["label"], "config": it["config"], "seeds": a.seeds,
+                                    "results": [{k: v for k, v in r.items() if k != "rl2_report"} for r in rs]}) + "\n")
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--seeds", type=int, nargs="+", default=[7, 42, 99, 2026])
@@ -98,9 +119,12 @@ def main():
     p.add_argument("--label", default="")
     p.add_argument("--jobs", type=int, default=4)
     p.add_argument("--out", default=None)
+    p.add_argument("--configs-file", default=None, help="JSON list of {label, config}: every (config, seed) in one pool")
     a = p.parse_args()
-    cfg = json.loads(a.config)
     drift = a.drift_day - 1
+    if a.configs_file:
+        return run_many(json.load(open(a.configs_file)), a, drift)
+    cfg = json.loads(a.config)
     with ProcessPoolExecutor(a.jobs) as ex:
         res = list(ex.map(kairos, a.seeds, [a.borrowers] * len(a.seeds), [a.days] * len(a.seeds),
                           [drift] * len(a.seeds), [cfg] * len(a.seeds)))

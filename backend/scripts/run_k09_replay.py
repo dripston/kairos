@@ -58,6 +58,11 @@ def main() -> int:
                    help="JSON of replay.k09.KairosOptions overrides for the K09 arm, e.g. '{\"decay\": 0.8}'")
     p.add_argument("--legacy-k09", action="store_true",
                    help="K09 as it was before k09/optimize: no evidence decay, no value floor, no STOP penalty")
+    p.add_argument("--policy", choices=("default", "rl2"), default="default",
+                   help="K09 arm: default (KairosOptions ranker) or rl2 (K09 RL v2, kairos_backend/rl)")
+    p.add_argument("--rl2-opts", default=None, help="JSON of kairos_backend.rl.policy.RL2Options overrides")
+    p.add_argument("--report-levels", action="store_true",
+                   help="rl2: print learned effects per level, layers, per-segment daily table, a borrower trace")
     p.add_argument("--budget-per-case-paise", type=int, default=None,
                    help="fixed paise per loan for every arm (default: match the baseline's spend)")
     a = p.parse_args()
@@ -65,7 +70,8 @@ def main() -> int:
     baselines = ("cn10", "k15") if a.baseline == "both" else (a.baseline,)
     kwargs = dict(baselines=baselines, context=not a.no_context, explore=a.explore, dataset=a.dataset,
                   kairos_opts={**(LEGACY_KAIROS_OPTIONS if a.legacy_k09 else {}),
-                               **(json.loads(a.kairos_opts) if a.kairos_opts else {})})
+                               **(json.loads(a.kairos_opts) if a.kairos_opts else {})},
+                  policy=a.policy, rl2_opts=json.loads(a.rl2_opts) if a.rl2_opts else None)
 
     t0 = time.perf_counter()
     r = run_comparison(a.borrowers, a.days, a.seed, drift, a.budget_per_case_paise, **kwargs)
@@ -88,6 +94,8 @@ def main() -> int:
         ("Meaningful replies", lambda x: x["meaningful_replies"]),
         ("Replies per ₹1,000", lambda x: x["replies_per_1000_inr"]),
         ("Verified payments", lambda x: x["verified_payments"]),
+        ("₹ recovered (verified EMIs)", lambda x: x["recovered_paise"] / 100),
+        ("₹ recovered per ₹ spent", lambda x: round(x["recovered_paise"] / x["spend_paise"], 2) if x["spend_paise"] else 0.0),
         ("Opt-outs (STOP)", lambda x: x["opt_outs"]),
         ("K01 cap breaches", lambda x: x["cap_breaches_k01"]),
         ("K15 safety violations", lambda x: sum(x["k15_safety_violations"].values())),
@@ -124,6 +132,10 @@ def main() -> int:
         thr = x["decisions_per_second"]
         print(f"Throughput {name:6}: {thr} decisions/s → 50,000 decisions in {50000 / thr / 60:.1f} min "
               f"(limit {S.PLANNING_TIME_LIMIT_SECONDS // 60} min)" if thr else f"Throughput {name}: n/a")
+
+    if r.get("rl2"):
+        from kairos_backend.rl.report import print_levels
+        print_levels(r["rl2"], full=a.report_levels)
 
     if a.check_determinism:
         r2 = run_comparison(a.borrowers, a.days, a.seed, drift, a.budget_per_case_paise, **kwargs)

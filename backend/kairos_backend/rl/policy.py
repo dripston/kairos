@@ -102,14 +102,8 @@ class RL2Policy:
         self.pacer = DualPacer(mode=o.pacing, eta=o.eta, rho=o.rho, phi=o.phi, spend_down_days=o.spend_down_days)
         conn = ledger._conn()
         conn.executescript(LEARNER_SCHEMA)
-        state = {r[0]: (r[1] or "UNKNOWN") for r in conn.execute("SELECT borrower_id, state FROM borrowers")}
         self.meta: dict[str, BorrowerMeta] = {}
-        for b in run.portfolio:
-            loan = run.loans[b.index]
-            self.meta[b.borrower_id] = BorrowerMeta(b.borrower_id, b.index, loan.cohort or "C?",
-                                                    state.get(b.borrower_id, "UNKNOWN"), int(loan.emi_paise or 0))
-        emis = [m.emi_paise for m in self.meta.values() if m.emi_paise > 0]
-        self.mean_emi = (sum(emis) / len(emis)) if emis else 1.0
+        self.mean_emi = 1.0
         self.history: dict[str, list[tuple[int, str, str]]] = defaultdict(list)  # bid -> (day ord, ch, R/D/U)
         self.applied: set[str] = set()
         self.paused: dict[str, str] = {}
@@ -123,6 +117,18 @@ class RL2Policy:
         self._stop_key = None
         self.config_hash = hashlib.sha1(json.dumps(asdict(o), sort_keys=True, default=str).encode()).hexdigest()[:8]
         self.realized = [0, 0]   # replies, paise over finalized touches
+
+    def _load_meta(self) -> None:
+        """Cohort, region (spine borrowers.state) and EMI per borrower; read once the spine is loaded."""
+        if self.meta:
+            return
+        state = {r[0]: (r[1] or "UNKNOWN") for r in self.ledger._conn().execute("SELECT borrower_id, state FROM borrowers")}
+        for b in self.run.portfolio:
+            loan = self.run.loans[b.index]
+            self.meta[b.borrower_id] = BorrowerMeta(b.borrower_id, b.index, loan.cohort or "C?",
+                                                    state.get(b.borrower_id, "UNKNOWN"), int(loan.emi_paise or 0))
+        emis = [m.emi_paise for m in self.meta.values() if m.emi_paise > 0]
+        self.mean_emi = (sum(emis) / len(emis)) if emis else 1.0
 
     # ---------- contracts.Learner ----------
     @property
@@ -196,6 +202,7 @@ class RL2Policy:
         if reward is None or outcome.instruction_id in self.applied:
             return False
         self.applied.add(outcome.instruction_id)
+        self._load_meta()
         m = self.meta.get(outcome.borrower_id)
         ex = self.ledger.policy.local(outcome.executed_at)
         day_ord = ex.date().toordinal()
@@ -248,6 +255,7 @@ class RL2Policy:
     def plan_queue(self, run, day: int, d: date, plan_at: datetime, too_soon) -> list[tuple]:
         t0 = time.perf_counter()
         o, mdl = self.opts, self.model
+        self._load_meta()
         day_ord = d.toordinal()
         mdl.refresh(day_ord)
         pool_left, days_left, prev = self._budget(d)
