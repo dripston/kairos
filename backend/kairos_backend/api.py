@@ -17,7 +17,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, Header, HTTPException, Query
+from fastapi import FastAPI, Header, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -30,6 +30,7 @@ from .learner import BetaBernoulliLearner
 from .ledger import Instruction, Ledger, PaymentError
 from .outcomes import OutcomeFinalizer
 from .policy import load_policy
+from . import reports
 from .voice import registry as voice_registry
 from .voice.ingest import VoiceIngester
 
@@ -573,3 +574,44 @@ def hitl_audit(borrower_id: Optional[str] = None, actor: Optional[str] = None, t
     """Durable audit store, newest first. Filters: borrower_id, actor, type (repeatable), instruction_id,
     since/until, human_only. Masked for the caller's role."""
     return _call(hitl.audit, role, borrower_id, actor, type, instruction_id, since, until, human_only, limit)
+
+
+# ---------- K26 reports (read-only, SIMULATED) ----------
+REPORT_ROUTES = {"aici": "aici", "data-dump": "data_dump", "trails": "trails", "ftd": "ftd", "hourly": "hourly"}
+
+
+def _report_response(name: str, rows: list, columns: list, fmt: str, meta: dict):
+    if fmt == "csv":
+        return Response(reports.rows_to_csv(rows, columns), media_type="text/csv; charset=utf-8",
+                        headers={"Content-Disposition": f'attachment; filename="{name}.csv"',
+                                 "X-Kairos-Provenance": reports.PROVENANCE})
+    return {"report": name, "provenance": reports.PROVENANCE, **meta, "columns": columns, "count": len(rows),
+            "rows": rows}
+
+
+@app.get("/reports/daily-segment")
+def report_daily_segment(campaign_id: str, day: date, format: str = "json"):
+    """CM-02: spend, response and learning per DPD band x channel (and risk cohort) for one day."""
+    if format not in ("json", "csv"):
+        raise HTTPException(422, "format must be json or csv")
+    rep = _call(reports.daily_segment_report, ledger, campaign_id, day)
+    if format == "json":
+        return rep
+    rows = reports.daily_segment_sheets(rep)["daily_segment"]
+    return _report_response("daily-segment", rows, reports.DAILY_SEGMENT_COLUMNS, "csv", {})
+
+
+@app.get("/reports/{name}")
+def report_sheet(name: str, start: Optional[str] = None, end: Optional[str] = None, format: str = "json",
+                 campaign_id: Optional[str] = None, hash_ids: bool = False):
+    """Lender sheets: aici, data-dump, trails, ftd, hourly. start/end: a date (whole IST day, end
+    inclusive) or a datetime ([start, end)). hash_ids=true replaces borrower ids with a keyed hash."""
+    key = REPORT_ROUTES.get(name)
+    if key is None:
+        raise HTTPException(404, f"unknown report {name}; one of {', '.join(REPORT_ROUTES)} or daily-segment")
+    if format not in ("json", "csv"):
+        raise HTTPException(422, "format must be json or csv")
+    rows = _call(reports.SHEETS[key], ledger, start, end, campaign_id=campaign_id, hash_ids=hash_ids)
+    return _report_response(name, rows, reports.SHEET_COLUMNS[key], format,
+                            {"sheet": reports.SHEET_TITLES[key], "start": start, "end": end,
+                             "campaign_id": campaign_id, "hashed_ids": hash_ids})

@@ -9,9 +9,10 @@ cd backend
 python -m venv .venv
 .venv/Scripts/activate            # Windows  (macOS/Linux: source .venv/bin/activate)
 pip install -e ".[dev]"
-pytest                            # K01 + K13 cases, K06 ledger/executor/API/SupervisorFSM/HITL, K03 spine + K15 replay, K09, K17/K18 voice
+pytest                            # K01 + K13 cases, K06 ledger/executor/API/SupervisorFSM/HITL, K03 spine + K15 replay, K09, K17/K18 voice, K26 reports
 uvicorn kairos_backend.api:app --reload    # http://127.0.0.1:8000/docs
 python scripts/bench_ledger.py 50000       # 50k decisions on K03's synthetic dataset
+python scripts/report_pack.py              # K26: seeded SIMULATED campaign -> reports/report_pack/*.csv
 ```
 
 K03 / K15 scripts (Varun): `python scripts/spine_report.py`, `scripts/make_dataset.py`, `scripts/load_dataset.py`, `scripts/run_replay.py` — see [`spine/README.md`](spine/README.md).
@@ -307,3 +308,71 @@ HUMAN_REQUESTED at ≥ 0.6 (after any downgrade). Reach (call connected → touc
   the gate template `VB_KAIROS_CALLBACK` (voicebot, `hi`) must be registered via `PUT /templates`.
 - Tests: `tests/test_voice_engine.py` (every threshold both sides of its boundary, idempotency,
   language / voice / A/B, no PII in variables, API).
+
+## Reports (K26)
+
+`kairos_backend/reports.py` builds the lender's five operational sheets (column names exactly as in
+"HDFC Reports.xlsx") and the CM-02 daily per-segment report ("spend, response and learning per segment
+each day"). Read-only over the one SQLite file; every output is labelled **SIMULATED**.
+
+| Sheet | Columns | One row per |
+|---|---|---|
+| AICI | Customer, Channel, Attempted Intensity, Connected Intensity | customer × channel |
+| Data Dump | Customer, Channel, Date, Time, Disposition | disposition event (IST) |
+| Trails | Customer, Channel, Disposition | customer × channel: `Sent > Delivered > Responded` |
+| FTD | Customer, Channel, Latest Best Disposition | customer × channel |
+| Hourly Report | Customer, Time, Channel | attempt, `Time` = IST hour bucket `2026-11-20 10:00-11:00` |
+
+**Disposition = ordinal (CreditNirvana PRD).** Messages: No data < Sent < Delivered < Read < Clicked <
+Responded. Calls (ivr, voicebot): Attempted < No answer < Busy < Connected. A touch's disposition is the
+highest label any source reports; a lower or older status never overwrites it (as `ledger.RANK`, E04).
+Payments and STOP are separate facts, never dispositions. The full table is `reports.DISPOSITION_MAP`:
+
+| Source | Value | Message | Call |
+|---|---|---|---|
+| `touches.status` | RESERVED / CANCELED | — (not an attempt) | — |
+| | DISPATCHING / UNCERTAIN | No data | No data |
+| | FAILED | Failed (ranks with No data) | Failed |
+| | SENT | Sent | Attempted |
+| | DELIVERED (ledger folds READ in) | Delivered | Attempted (answered ≠ connected) |
+| spine `events` | touch_sent | Sent | Attempted |
+| | reply_received (not a STOP keyword) | Responded | Connected |
+| | payment_received / payment_reversed / consent_changed | — (facts) | — |
+| `audit` CALL_RESULT | answered_seconds > K01 threshold (10 s) / ≤ | — | Connected / No answer |
+| `channel_events` (K07/K08, optional) | ACCEPTED, SENT / DELIVERED / READ / CLICKED / REPLY | Sent / Delivered / Read (never SMS) / Clicked / Responded | Attempted / Attempted / — / — / Connected |
+| | ANSWERED, COMPLETED / NO_ANSWER / BUSY, DECLINED / FAILED / UNKNOWN | — | Connected if duration > 10 s else No answer / No answer / Busy / Failed / No data |
+
+**Daily per-segment report** — `daily_segment_report(ledger, campaign_id, day)`: per DPD band × channel
+and per risk cohort (C1–C5 from `loans.risk_tag`, when present) × channel: attempts, reach, meaningful
+replies, responders, spend reserved / actual / committed (paise and ₹), unreconciled sends, replies per
+₹1,000 committed, cap breaches. Verified payments and reversals are separate (per band / cohort, never per
+channel). If K09's tables exist (`learner_arms`, `decision_scores`, `learner_context`) a `learning`
+section adds posterior mean + n per arm and the day's decision share per arm; absent tables never fail.
+
+API (additive): `GET /reports/{aici|data-dump|trails|ftd|hourly}?start=&end=&format=json|csv&campaign_id=&hash_ids=`
+and `GET /reports/daily-segment?campaign_id=&day=&format=json|csv`. Python: `reports.report_pack(...)`,
+`reports.export_csv(rows, path)`, `reports.export_pack({name: rows}, folder)`.
+
+Interpretations (flag if wrong):
+- **Attempted Intensity** = touches dispatched to a provider in the period (DISPATCHING, UNCERTAIN, SENT,
+  DELIVERED, FAILED; plus spine-only `touch_sent`). A provider rejection is still an attempt; a queued or
+  canceled reservation is not. **Connected Intensity** = those whose best disposition reached the borrower
+  (Delivered/Read/Clicked/Responded; Connected for calls), judged on every outcome known now.
+- **Period**: a date = the whole IST day, end date inclusive; a datetime = exact instant, `[start, end)`.
+- **Replies / calls are attributed** to the borrower's latest attempted touch on that channel at or before
+  them. Under a `campaign_id` filter, events that cannot be tied to that campaign's touches are dropped.
+- **The ledger keeps the slot time, not receipt times**: Sent/Delivered rows show the scheduled time unless
+  `channel_events` carries the receipt time.
+- **Short pickup** (≤ 10 s) = No answer; **DECLINED** = Busy; a reply on a call channel = Connected.
+- **Band in the daily report** = DPD band at 00:00 IST that day (that day's payments rolled back), so a
+  payment never moves its own day's activity to CLEARED. Verified payments = paid that day and not reversed.
+- **Customer = borrower id** only. `hash_ids=True` gives `CUST-` + HMAC-SHA256(salt, id); set
+  `KAIROS_REPORT_SALT` per external share.
+
+**How to continue.** When the K07/K08 adapters merge, `channel_events` is picked up automatically
+(Read/Clicked/Busy and receipt times appear without code changes); when K09 merges, the learning section
+fills from its tables — adjust `_learning()` if `learner_context` gets a documented schema (today only its
+row count and columns are reported). If the lender confirms a different reading of "Attempted/Connected
+Intensity" or wants "No data" rows for enrolled-but-untouched customers, change `aici()` / `ftd()` and the
+matching tests in `tests/test_reports.py`. For a real lender share, send the `export_pack` folder with
+`hash_ids=True` and a fresh salt; generated CSVs live in `backend/reports/` (gitignored).
