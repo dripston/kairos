@@ -71,3 +71,27 @@ def test_zero_cap_breaches_and_reports_written(journey):
 def test_deterministic_hash(journey, tmp_path):
     again = run(seed=42, quick=True, out_dir=None, echo=False, cohort_size=4)
     assert again["journey_hash"] == journey[0]["journey_hash"]
+
+
+def test_demo_journey_endpoint_returns_the_player_shape(tmp_path, monkeypatch):
+    """POST /demo/journey/run: what frontend/src/api/journey.js normalizeJourney() plays."""
+    import importlib
+
+    from fastapi.testclient import TestClient
+    monkeypatch.setenv("KAIROS_DB", str(tmp_path / "api.db"))
+    import kairos_backend.api as api
+    api = importlib.reload(api)
+    r = TestClient(api.app).post("/demo/journey/run", json={"seed": 42})
+    assert r.status_code == 200
+    j = r.json()
+    assert j["provenance"] == "SIMULATED" and j["borrower_id"] == j["cast"]["A"] and len(j["steps"]) >= 8
+    for s in j["steps"]:
+        assert s["id"] and s["title"] and s["story"] and s["events"]
+        assert {"cohort", "risk_tier", "layer", "next_action", "holds", "emis"} <= set(s["borrower"])
+        assert s["borrower"]["phone"] == "masked" and "(synthetic)" in s["borrower"]["name"]
+    stop = next(s for s in j["steps"] if s["id"] == "stop")
+    assert "STOP · all channels" in stop["borrower"]["holds"]
+    pay = next(s for s in j["steps"] if s["id"] == "payment")
+    assert [e["status"].split(" ")[0] for e in pay["borrower"]["emis"]] == ["Paid", "Due"]
+    # the API's own database is untouched by a journey run
+    assert api.ledger._conn().execute("SELECT COUNT(*) FROM touches").fetchone()[0] == 0

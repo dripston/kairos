@@ -4,7 +4,9 @@
     python3 scripts/run_journey.py --quick         # the story only
     python3 scripts/run_journey.py --seed 7 --out reports/journey
 
-Writes <out>/timeline.json (events + CRM envelopes), <out>/summary.json and <out>/journey.html.
+Writes <out>/timeline.json (events + CRM envelopes), <out>/summary.json, <out>/journey.json (the
+frontend Live journey player shape) and <out>/journey.html. --export-frontend also writes the player
+JSON to frontend/public/journey/journey.json.
 Ctrl-C prints a partial summary and exits 130; report files are written to a temp file and renamed,
 so an interrupted run never leaves a half-written report. See replay/journey.py for the story.
 """
@@ -28,9 +30,13 @@ def main(argv=None) -> int:
     ap.add_argument("--out", type=Path, default=BACKEND / "reports" / "journey")
     ap.add_argument("--replay-borrowers", type=int, default=150)
     ap.add_argument("--replay-days", type=int, default=4)
+    ap.add_argument("--export-frontend", action="store_true",
+                    help="also write the player JSON to frontend/public/journey/journey.json")
     args = ap.parse_args(argv)
     j = Journey(seed=args.seed, quick=args.quick, out_dir=args.out, replay_borrowers=args.replay_borrowers,
-                replay_days=args.replay_days)
+                replay_days=args.replay_days,
+                export_frontend=(BACKEND.parent / "frontend" / "public" / "journey" / "journey.json")
+                if args.export_frontend else None)
     try:
         j.run()
     except KeyboardInterrupt:

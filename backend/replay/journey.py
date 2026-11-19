@@ -41,6 +41,7 @@ import json
 import os
 import random
 import re
+import shutil
 import tempfile
 from datetime import date, datetime, time as dtime, timedelta
 from pathlib import Path
@@ -56,6 +57,7 @@ from kairos_backend.learner import BetaBernoulliLearner
 from kairos_backend.ledger import Instruction, Ledger
 from kairos_backend.outcomes import OutcomeFinalizer
 from kairos_backend.policy import load_policy
+from kairos_backend.safeio import atomic_write_text
 from kairos_backend import reports as k26
 from kairos_backend.supervisor import SupervisorFSM
 from kairos_backend.templates import TemplateCatalog
@@ -106,11 +108,12 @@ def module_available(name: str) -> bool:
 class Journey:
     def __init__(self, seed: int = 42, quick: bool = False, out_dir: Optional[Path] = None,
                  db_path: Optional[str] = None, echo: bool = True, cohort_size: int = 6,
-                 replay_borrowers: int = 150, replay_days: int = 4):
+                 replay_borrowers: int = 150, replay_days: int = 4, export_frontend: Optional[Path] = None):
         self.seed, self.quick, self.echo = seed, quick, echo
         self.cohort_size = cohort_size
         self.replay_borrowers, self.replay_days = replay_borrowers, replay_days
         self.out_dir = Path(out_dir) if out_dir else None
+        self.export_frontend = Path(export_frontend) if export_frontend else None
         self.tmp = tempfile.mkdtemp(prefix="kairos-journey-")
         self.policy = load_policy()
         self.ledger = Ledger(self.policy, db_path or os.path.join(self.tmp, "journey.db"))
@@ -129,6 +132,7 @@ class Journey:
         self.catalog = TemplateCatalog.load(policy=self.policy)
         self.intent = IntentClassifier()                    # rules only: no LLM key in a replay
         self.events: list[dict] = []
+        self.sections: list[dict] = []
         self.facts: dict[str, Any] = {"steps": {}}
         self.webhooks: dict[str, dict] = {}
         self.cast: dict[str, str] = {}
@@ -154,6 +158,81 @@ class Journey:
     def say(self, text: str) -> None:
         if self.echo:
             print(text)
+
+    # ---------- player sections (frontend Live journey page) ----------
+    def section(self, sid: str, title: str, focus: str, story: str, heading: str) -> None:
+        self._close_section()
+        self.say("\n" + heading)
+        self.sections.append({"id": sid, "title": title, "story": story, "focus": focus,
+                              "first_event": len(self.events), "provenance": PROVENANCE})
+
+    def _close_section(self) -> None:
+        if not self.sections or "borrower" in self.sections[-1]:
+            return
+        sec = self.sections[-1]
+        evs = self.events[sec["first_event"]:]
+        at = max((datetime.fromisoformat(e["at"]) for e in evs), default=_at(D0, 8))
+        bid = self.cast.get(sec["focus"])
+        sec["borrower"] = self._card(bid, at, [e for e in evs if e["borrower"] == bid]) if bid else {}
+        sec["events"] = [self._player_event(e) for e in evs]
+
+    def _card(self, bid: str, at: datetime, evs: list) -> dict:
+        lg = self.ledger
+        st = lg.borrower_state(bid, at.date())
+        role = next(k for k, v in self.cast.items() if v == bid)
+        s = st["state"]
+        holds = []
+        if s["stopped"]:
+            holds.append("STOP · all channels")
+        if s["hardship_until"] and lg._dt(s["hardship_until"]) > lg._loc(at):
+            holds.append("Hardship hold")
+        if s["supervisor_hold"]:
+            holds.append("Supervisor hold")
+        if s["ptp_date"]:
+            holds.append(f"PTP until {s['ptp_date']}")
+        if s["callback_pending"]:
+            holds.append("Callback pending")
+        emis, risk = [], None
+        for ln in st["loans"]:
+            r = lg._conn().execute("SELECT risk_tag FROM loans WHERE loan_id=?", (ln["loan_id"],)).fetchone()
+            risk = risk or (r["risk_tag"] if r else None)
+            for o in ln["obligations"]:
+                dpd = (at.date() - date.fromisoformat(o["due_date"])).days
+                status = ("Paid · verified" if o["outstanding_paise"] <= 0 else
+                          f"Overdue · {dpd} DPD" if dpd > 0 else "Due today" if dpd == 0 else f"Due in {-dpd} d")
+                emis.append({"id": o["obligation_id"], "loan": ln["loan_id"], "due": o["due_date"],
+                             "amount": f"Rs.{o['amount_due_paise'] / 100:,.0f}", "status": status})
+        plan = next((e for e in reversed(evs) if e["kind"] == "plan"), None)
+        nxt = (f"{plan['detail'].get('decision')} · {plan['title']}" if plan else "WAIT · nothing planned")
+        open_loans = [ln for ln in st["loans"] if not ln["cured"]]
+        cohort, tier = (risk.split(" - ", 1) + [None])[:2] if risk else (None, None)
+        return {"borrower_id": bid, "name": f"Borrower {role} (synthetic)", "phone": "masked",
+                "language": st.get("language"), "cohort": cohort, "risk_tier": tier,
+                "layer": (open_loans[0]["band"] if open_loans else "cured"), "next_action": nxt,
+                "holds": holds, "emis": emis}
+
+    _PLAYER_TYPES = {"plan": "supervisor.decision", "dispatch": "touch.dispatched", "voice": "voice.call",
+                     "channel": "provider.callback", "hitl": "hitl.action", "guardrail": "guardrail.check",
+                     "payment": "payment.feed", "learner": "learner.outcome_finalized", "report": "report.daily_segment",
+                     "cm03": "cm03.message", "churn": "churn.cohort_changed", "intent": "intent.classified",
+                     "pending": "pending", "story": "story"}
+
+    def _player_event(self, e: dict) -> dict:
+        env_type = (e.get("envelope") or {}).get("event_type")
+        return {"event_type": env_type or self._PLAYER_TYPES.get(e["kind"], e["kind"]), "kind": e["kind"],
+                "occurred_at": e["at"], "borrower_id": e["borrower"], "role": e["role"], "provenance": e["provenance"],
+                "payload": {"decision": e["detail"].get("decision"), "reason": e["title"], "rule": e["rule"],
+                            "policy_version": e["policy_version"]}}
+
+    def player_json(self) -> dict:
+        """The shape frontend/src/api/journey.js (normalizeJourney / MOCK_JOURNEY) plays."""
+        self._close_section()
+        first = self.sections[0]["borrower"] if self.sections else {}
+        return {"provenance": PROVENANCE, "seed": self.seed, "journey_hash": self.facts.get("journey_hash"),
+                "policy_version": self.policy.version, "borrower_id": self.cast.get("A"), "borrower": first,
+                "cast": dict(self.cast),
+                "steps": [{k: sec[k] for k in ("id", "title", "story", "borrower", "events", "provenance")}
+                          for sec in self.sections]}
 
     # ---------- world ----------
     def _setup(self) -> None:
@@ -358,7 +437,7 @@ class Journey:
 
     def step1_pre_due(self):
         lg, A = self.ledger, self.cast["A"]
-        self.say("\n1 · Day 0, pre-due: K09 + SupervisorFSM plan the cohort; A gets the Pre-Due voice bot")
+        self.section('pre_due', 'Pre-due · cohort plan + voice bot', 'A', "Day 0, three days before the EMI. K09 and the SupervisorFSM pick a channel, slot and K22 template for each borrower in the pre-due cohort. Borrower A also gets the Pre-Due voice bot: the call is held for a supervisor (every call needs a person), the Gate re-runs at approval, and select_bot fills the call variables with no amounts, phones or loan numbers. The Sarvam call-end webhook says PTP at 0.9 confidence, so Kairos places a PTP hold and A's queued WhatsApp is withdrawn.", '1 · Day 0, pre-due: K09 + SupervisorFSM plan the cohort; A gets the Pre-Due voice bot')
         lg.start_day(D0)
         plan_at = _at(D0, 8)
         sends = []
@@ -399,7 +478,7 @@ class Journey:
         self.facts["steps"]["1"]["voice_status"] = r.get("status")
 
     def step2_stop(self, B):
-        self.say("\n2b · Borrower B replies STOP on SMS: all channels suppressed from the next cycle")
+        self.section('stop', 'STOP on SMS → every channel', 'B', 'Borrower B replies STOP to the pre-due SMS. Consent is per channel, but STOP suppresses outbound on every channel from the next cycle: next morning the Gate answers STOP_OPT_OUT for SMS, WhatsApp, email, IVR and the voice bot.', '2b · Borrower B replies STOP on SMS: all channels suppressed from the next cycle')
         res = self.b_sms
         if res is None or res.decision != "SEND":
             self.ev("2", _at(D0, 18), "pending", "B had no SMS touch to reply to", borrower=B)
@@ -428,7 +507,7 @@ class Journey:
 
     def step4_hardship(self, C):
         d1, d2 = D0 + timedelta(days=1), D0 + timedelta(days=2)
-        self.say("\n4 · Hardship: C reports a job loss on a call (HARDSHIP @ 0.55) -> hold + HITL handoff")
+        self.section('hardship', 'Hardship on a call', 'C', 'Borrower C tells the EMI reminder bot about a job loss. The bot reports HARDSHIP at 0.55; safety signals are accepted at 0.5, so Kairos places a K13 hardship hold and hands off to a person. Every channel now waits.', '4 · Hardship: C reports a job loss on a call (HARDSHIP @ 0.55) -> hold + HITL handoff')
         res, _ = self._voice_call(4, "C", d1, 10, "EMI_REMINDER_EARLY", "VB_REMIND_EN_SOFT_01", _at(d1, 9))
         if res is None:
             self.ev(4, _at(d1, 9), "pending", "no voice touch for C", borrower=C)
@@ -468,7 +547,7 @@ class Journey:
         """D2: a human reads the handoff. Scheduling the triage call now is refused by the Gate: the K13
         hardship hold still runs, and a person cannot override a guardrail."""
         d2 = D0 + timedelta(days=2)
-        self.say("\n4b · D2: the supervisor works the handoff; a triage call during the hold is refused")
+        self.section('hitl_refused', 'Human vs guardrail', 'C', 'Day 2. The supervisor confirms the hardship on the handoff case. The operator tries to book a Hardship Triage call, but the K13 hold is still running and the Gate refuses: a person cannot override a guardrail.', '4b · D2: the supervisor works the handoff; a triage call during the hold is refused')
         self.ledger.start_day(d2)
         cases = getattr(self, "c_cases", [])
         hand = next((c for c in cases if c["type"] in ("HARDSHIP", "HUMAN_HANDOFF")), None)
@@ -486,7 +565,7 @@ class Journey:
         """D4: the K13 hold has ended. The first send after a hardship hold, a voice call and a manual send all
         need a person: PENDING_APPROVAL, then the supervisor approves and the Gate runs again."""
         d4 = D0 + timedelta(days=4)
-        self.say("\n4c · D4: hold over; the Hardship Triage call goes through the approval queue")
+        self.section('hitl_approved', 'Hardship Triage approved', 'C', 'Day 4. The hold has ended. The first send after a hardship hold, a voice call and a manual send all need a person, so the triage call waits as PENDING_APPROVAL. The supervisor approves it, the Gate runs again at approval and once more at send time, and the Hardship Triage bot (Advait) calls.', '4c · D4: hold over; the Hardship Triage call goes through the approval queue')
         # the K13 hold has expired, but the supervisor confirmed hardship on the case: that is the signal
         sel = self.select_bot(4, C, self.obligations["C"], _at(d4, 9, 35), human_approved=True, hardship=True)
         one = self._schedule_triage(C, _at(d4, 9, 40), _at(d4, 11, 30))
@@ -501,7 +580,7 @@ class Journey:
 
     def step5_low_conf_stop(self, D):
         d1 = D0 + timedelta(days=1)
-        self.say("\n5 · Low-confidence STOP: D's call says STOP_REQUESTED @ 0.45 -> fail closed (hold + review)")
+        self.section('low_conf_stop', 'Unsure STOP → fail closed', 'D', "Borrower D's call ends with STOP_REQUESTED at only 0.45. Kairos does not guess either way: no opt-out is written, but every channel pauses under a supervisor hold and a person reviews the call.", "5 · Low-confidence STOP: D's call says STOP_REQUESTED @ 0.45 -> fail closed (hold + review)")
         res, _ = self._voice_call(5, "D", d1, 12, "EMI_REMINDER_EARLY", "VB_REMIND_EN_SOFT_01", _at(d1, 9, 5))
         if res is None:
             self.ev(5, _at(d1, 9), "pending", "no voice touch for D", borrower=D)
@@ -518,7 +597,7 @@ class Journey:
                                     "tickets": tickets, "channels": per}
 
     def step2_bounce(self, A):
-        self.say("\n2 · Bounce: A's EMI bounces, the promise breaks, K09 sends a WhatsApp reminder")
+        self.section('bounce', 'Bounce + broken promise', 'A', "A's NACH debit bounces on the due date. A is still inside the promise window, so nothing goes out. When the promise date passes unpaid, the day roll-over marks a BROKEN_PTP and lifts the hold; the next bot for A would be PTP Follow-up, and K09 sends a WhatsApp reminder with the payment-link template.", "2 · Bounce: A's EMI bounces, the promise breaks, K09 sends a WhatsApp reminder")
         a1 = self.obligations["A1"]
         d2, d3, d4 = (D0 + timedelta(days=k) for k in (2, 3, 4))
         self.ev("2", _at(d2, 20), "payment", f"NACH presentation for A's EMI returned unpaid (SIMULATED LMS feed); "
@@ -570,7 +649,7 @@ class Journey:
 
     def step3_cm03(self, A):
         d4 = D0 + timedelta(days=4)
-        self.say("\n3 · CM-03: A messages the WhatsApp servicing agent")
+        self.section('cm03', 'CM-03 · WhatsApp servicing', 'A', 'A writes to the WhatsApp servicing agent. Nothing about the account is disclosed before OTP. After OTP the agent gives the balance; A then claims "already paid" with a UTR that is not in the bank feed, and the agent flags FRAUD_SUSPECT and hands off. (Shown as pending until cm03/whatsapp-servicing is merged.)', '3 · CM-03: A messages the WhatsApp servicing agent')
         if not module_available("kairos_backend.cm03.engine"):
             self.ev(3, _at(d4, 13), "pending", "cm03/whatsapp-servicing not merged yet: OTP, balance and the fake-UTR "
                                                "check light up here once it is", borrower=A, rule="PENDING_CM03")
@@ -615,7 +694,7 @@ class Journey:
     def step6_payment(self, A):
         lg = self.ledger
         d5 = D0 + timedelta(days=5)
-        self.say("\n6 · Payment verified by the LMS feed: only that EMI's queued touch is cancelled")
+        self.section('payment', 'Payment verified · that EMI only', 'A', "The LMS / D7 feed verifies A's payment on loan 1. Only that EMI clears and only its queued WhatsApp is cancelled. Loan 2 stays open and its pre-due SMS still goes.", "6 · Payment verified by the LMS feed: only that EMI's queued touch is cancelled")
         lg.start_day(d5)
         a1, a2 = self.obligations["A1"], self.obligations["A2"]
         r1 = self.plan(6, A, a1, _at(d5, 8), self.candidates(a1, d5, channels=("whatsapp",), slots=("17-19",)),
@@ -642,7 +721,7 @@ class Journey:
     def step7_duplicates_and_learning(self):
         lg = self.ledger
         d5 = D0 + timedelta(days=5)
-        self.say("\n7 · Duplicates are ignored; reply windows close and the K09 posteriors move")
+        self.section('learner', 'Duplicates ignored · learner update', 'A', 'The Sarvam webhook and a WhatsApp delivery receipt arrive a second time: both are ignored, nothing changes. The 24 h reply windows close, one outcome per executed touch is finalized, and the K09 arm posteriors move.', '7 · Duplicates are ignored; reply windows close and the K09 posteriors move')
         first = self.webhooks["sv-call-A-predue"]
         dup = self.voice.ingest(dict(first))
         self.ev(7, _at(d5, 18), "voice", f"Sarvam call-end sv-call-A-predue delivered again -> {dup['status']}",
@@ -677,7 +756,7 @@ class Journey:
     def step8_day_end(self):
         lg = self.ledger
         d5 = D0 + timedelta(days=5)
-        self.say("\n8 · Day end (SIMULATED): K26 per-segment report, learner state, cap breaches, red team, K09 vs CN10")
+        self.section('report', 'Day-end report', 'A', 'The CM-02 daily per-segment report (K26) lists attempts, reach, replies and spend per DPD band and channel for each day. Cap breaches: 0. Everything here is SIMULATED.', '8 · Day end (SIMULATED): K26 per-segment report, learner state, cap breaches, red team, K09 vs CN10')
         days = []
         for k in range(6):
             d = D0 + timedelta(days=k)
@@ -732,9 +811,14 @@ class Journey:
         self.facts["provenance"] = PROVENANCE
         self.facts["policy_version"] = self.policy.version
         self.facts["crm_envelopes"] = len(self.sink.envelopes) + len(self.voice_sink.envelopes)
+        self.player = self.player_json()
         if self.out_dir:
             self.write(self.out_dir)
+        if self.export_frontend:
+            atomic_write(self.export_frontend, json.dumps(self.player, indent=1, default=str))
+            self.say(f"wrote {self.export_frontend}")
         self.ledger.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)  # the temp DB (and replay DBs) are not kept
         self.say(f"\njourney hash {self.facts['journey_hash']} · {len(self.events)} events · "
                  f"{self.facts['crm_envelopes']} CRM envelopes · cap breaches {self.facts['steps']['8']['cap_breaches']}"
                  f" · {PROVENANCE}")
@@ -759,21 +843,12 @@ class Journey:
         atomic_write(out / "timeline.json", json.dumps(timeline, indent=1, default=str))
         atomic_write(out / "summary.json", json.dumps(self.facts, indent=1, default=str))
         atomic_write(out / "journey.html", render_html(self.events, self.facts))
-        self.say(f"wrote {out / 'timeline.json'}, {out / 'summary.json'}, {out / 'journey.html'}")
+        atomic_write(out / "journey.json", json.dumps(self.player, indent=1, default=str))
+        self.say(f"wrote {out / 'timeline.json'}, {out / 'summary.json'}, {out / 'journey.json'}, {out / 'journey.html'}")
 
 
 def atomic_write(path: Path, text: str) -> None:
-    """Write to a temp file in the same folder, then rename: a reader (or a Ctrl-C) never sees half a file."""
-    tmp = path.with_name(f".{path.name}.tmp-{os.getpid()}")
-    try:
-        with open(tmp, "w", encoding="utf-8") as f:
-            f.write(text)
-            f.flush()
-            os.fsync(f.fileno())
-        os.replace(tmp, path)
-    finally:
-        if tmp.exists():
-            tmp.unlink()
+    atomic_write_text(path, text)   # temp file + rename: a Ctrl-C never leaves half a report
 
 
 COLOURS = {"plan": "#2f6fdf", "dispatch": "#5b6b7f", "voice": "#8a4fd6", "channel": "#14899a", "hitl": "#c26a00",
@@ -822,6 +897,13 @@ Seed {esc(str(facts.get('seed', '')))} · K01 policy {esc(str(facts.get('policy_
 · cap breaches {esc(str(s8.get('cap_breaches')))} · {len(events)} events</div>
 <div class="legend">{legend}</div>
 <table><tbody>{''.join(rows)}</tbody></table></body></html>"""
+
+
+def run_player(seed: int = 42) -> dict:
+    """POST /demo/journey/run: the quick journey on a fresh temp DB, returned in the player shape."""
+    j = Journey(seed=seed, quick=True, echo=False)
+    j.run()
+    return j.player
 
 
 def run(seed: int = 42, quick: bool = False, out_dir: Optional[str] = None, echo: bool = True, **kw) -> dict:
