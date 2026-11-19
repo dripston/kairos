@@ -10,6 +10,7 @@ Everything is SIMULATED. Run from backend/:
     python3 scripts/run_k09_replay.py --no-context           # K09 without the borrower-context layer
     python3 scripts/run_k09_replay.py --dataset data/synthetic_50k.csv   # a K03 dataset file as-is
     python3 scripts/run_k09_replay.py --check-determinism    # run everything twice and compare
+    python3 scripts/run_k09_replay.py --kairos-opts '{"decay": 0.8}'   # K09 decision options (replay.k09.KairosOptions)
 
 Baselines: cn10 = CreditNirvana's own "Personal Loan 10-Day Post-Due Digital Collections Strategy"
 (HDFC project), a stand-in until the official fixed-cadence policy file (K02) arrives; k15 = the K15
@@ -51,12 +52,15 @@ def main() -> int:
     p.add_argument("--no-context", action="store_true", help="K09 without the borrower-context layer")
     p.add_argument("--dataset", default=None, help="K03-format CSV to use instead of generating one")
     p.add_argument("--check-determinism", action="store_true")
+    p.add_argument("--kairos-opts", default=None,
+                   help="JSON of replay.k09.KairosOptions overrides for the K09 arm, e.g. '{\"decay\": 0.8}'")
     p.add_argument("--budget-per-case-paise", type=int, default=None,
                    help="fixed paise per loan for every arm (default: match the baseline's spend)")
     a = p.parse_args()
     drift = None if a.no_drift else a.drift_day - 1
     baselines = ("cn10", "k15") if a.baseline == "both" else (a.baseline,)
-    kwargs = dict(baselines=baselines, context=not a.no_context, explore=a.explore, dataset=a.dataset)
+    kwargs = dict(baselines=baselines, context=not a.no_context, explore=a.explore, dataset=a.dataset,
+                  kairos_opts=json.loads(a.kairos_opts) if a.kairos_opts else None)
 
     t0 = time.perf_counter()
     r = run_comparison(a.borrowers, a.days, a.seed, drift, a.budget_per_case_paise, **kwargs)
@@ -66,7 +70,8 @@ def main() -> int:
     print(f"Matched: seed {m['seed']}, {m['borrowers']:,} borrowers, {m['days']} days from {m['start']}, "
           f"budget ₹{m['budget_pool_paise'] / 100:,.2f} ({m['budget_basis']}), caps {m['caps']}")
     print(f"Dataset: {m['dataset']}")
-    print(f"Simulator: {k['simulator']}\n")
+    print(f"Simulator: {k['simulator']}")
+    print(f"K09 options: {m['kairos_options'] or 'default'}\n")
     arms = [(b, r["baselines"][b]) for b in baselines] + [("K09", k)]
     rows = [
         ("Attempted (unique)", lambda x: x["funnel_unique_borrowers"]["attempted"]),
