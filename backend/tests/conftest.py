@@ -1,9 +1,15 @@
 import csv
+import os
 from pathlib import Path
 
 import pytest
 
 from kairos_backend.policy import load_policy, policy_dir
+
+# Sarvam models are OFF for the whole suite even when a key is configured on this machine
+# (backend/.env, KAIROS_DOTENV, ~/.kairos/sarvam_api_key): the suite must be deterministic and offline.
+# Tests that exercise the models pass fake transports explicitly.
+os.environ["KAIROS_SARVAM_MODELS"] = "off"
 
 K01_DIR = policy_dir() / "K01-decision-policy"
 K13_DIR = policy_dir() / "K13-operational-exceptions"
