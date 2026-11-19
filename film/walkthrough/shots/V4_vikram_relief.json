@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H7_2_man_smiles_texting.mp4",
+ "in": 1.0,
+ "dur": 2.2,
+ "mode": "none",
+ "out": "comp/V4_vikram_relief.mov",
+ "fps": 30
+}

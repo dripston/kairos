@@ -42,6 +42,13 @@
   .call .ava { margin-top: 60px; width: 130px; height: 130px; border-radius: 50%; background: #0F766E; font: 700 60px/130px sans-serif; text-align: center; }
   .call .sim2 { margin-top: 26px; font-size: 13px; background: rgba(255,255,255,.12); padding: 6px 12px; border-radius: 8px; }
   .call .end { margin-top: auto; margin-bottom: 70px; width: 76px; height: 76px; border-radius: 50%; background: #e5484d; }
+  /* generic payment confirmation (unbranded): the borrower paid from the secure link */
+  .paid { background: #f6f7f8; align-items: center; color: #111; }
+  .paid .tick { margin-top: 170px; width: 112px; height: 112px; border-radius: 50%; background: #16a34a; color: #fff; font: 700 64px/112px sans-serif; text-align: center; }
+  .paid .t1 { margin-top: 26px; font-size: 22px; font-weight: 600; }
+  .paid .amt { margin-top: 8px; font-size: 46px; font-weight: 700; letter-spacing: -.02em; }
+  .paid .to { margin-top: 10px; font-size: 16px; color: #555; }
+  .paid .ref { margin-top: 26px; font-size: 13.5px; color: #777; text-align: center; line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -84,6 +91,11 @@ If you've already paid, please disregard this message.
 <div class="scene call" id="call">
   <div class="who">Kairos Demo Finance</div><div class="sub">Voice assistant · Hindi</div><div class="tm">00:14</div>
   <div class="ava">K</div><div class="sim2">SIMULATED call · synthetic borrower</div><div class="end"></div>
+</div>
+<div class="scene paid" id="paid">
+  <div class="tick">✓</div><div class="t1">Payment successful</div><div class="amt">₹7,409</div>
+  <div class="to">to Kairos Demo Finance · secure payment link</div>
+  <div class="ref">EMI · account ending 0073<br>SIMULATED · synthetic borrower</div>
 </div>
 <script>
   var s = new URLSearchParams(location.search).get("scene") || "sms3";

@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H1_3_mumbai_road_taxi_scooters.mp4",
+ "in": 1.0,
+ "dur": 1.9,
+ "mode": "none",
+ "out": "comp/M1_flyover.mov",
+ "fps": 30
+}

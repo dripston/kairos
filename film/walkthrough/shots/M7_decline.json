@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H3_5_hand_declines_call_desk.mp4",
+ "in": 5.6,
+ "dur": 1.6,
+ "mode": "none",
+ "out": "comp/M7_decline.mov",
+ "fps": 30
+}

@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H4_2_older_woman_shop_doorway.mp4",
+ "in": 2.0,
+ "dur": 1.3,
+ "mode": "none",
+ "out": "comp/M5_shopkeeper.mov",
+ "fps": 30
+}

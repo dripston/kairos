@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H2_5_bangalore_street_man_phone.mp4",
+ "in": 3.4,
+ "dur": 1.1,
+ "mode": "none",
+ "out": "comp/M3_bazaar.mov",
+ "fps": 30
+}

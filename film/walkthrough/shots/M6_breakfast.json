@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H3_3_phone_ringing_breakfast_table.mp4",
+ "in": 1.6,
+ "dur": 1.2,
+ "mode": "none",
+ "out": "comp/M6_breakfast.mov",
+ "fps": 30
+}

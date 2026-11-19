@@ -1,10 +1,10 @@
 {
- "clip": "../assets/human/H8_3_hand_34_table_green.mp4",
- "in": 0.3,
- "dur": 6.2,
+ "clip": "../assets/human/H8_4_hands_34_table_green.mp4",
+ "in": 4.3,
+ "dur": 3.7,
  "mode": "green",
  "up": [
-  -0.6,
+  0.35,
   -1
  ],
  "expand": 0.12,
@@ -14,7 +14,7 @@
    "img": "captures/phone_wa1/f00001.jpg"
   },
   {
-   "t": 3.4,
+   "t": 1.6,
    "img": "captures/phone_wa2/f00001.jpg"
   }
  ],

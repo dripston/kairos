@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H2_2_rider_orange_shirt_phone.mp4",
+ "in": 6.0,
+ "dur": 1.3,
+ "mode": "none",
+ "out": "comp/M2_rider.mov",
+ "fps": 30
+}

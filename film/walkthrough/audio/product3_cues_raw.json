@@ -1,104 +1,104 @@
 [
   {
-    "t1" : 6.2196145124716553,
-    "t0" : 0.5,
-    "text" : "Every month, lenders send the same reminder, at the same time, to everyone.",
-    "who" : ""
+    "who" : "",
+    "t1" : 6.1196145124716557,
+    "t0" : 0.40000000000000002,
+    "text" : "Every month, lenders send the same reminder, at the same time, to everyone."
   },
   {
-    "t1" : 21.888866213151928,
+    "t0" : 21.100000000000001,
+    "t1" : 25.688866213151929,
     "who" : "",
-    "t0" : 17.300000000000001,
     "text" : "Kairos looks at every borrower, every day, and decides."
   },
   {
-    "t0" : 30.5,
-    "t1" : 37.295306122448977,
-    "who" : "",
-    "text" : "Before anything goes out, Aladdin, our safety supervisor, checks it against the lender's rules."
+    "t0" : 32.899999999999999,
+    "t1" : 39.695306122448976,
+    "text" : "Before anything goes out, Aladdin, our safety supervisor, checks it against the lender's rules.",
+    "who" : ""
   },
   {
+    "t1" : 44.993492063492063,
+    "t0" : 39.850000000000001,
     "who" : "",
-    "t0" : 37.649999999999999,
-    "text" : "No reply on SMS. So it learns, and tries WhatsApp.",
-    "t1" : 42.79349206349206
+    "text" : "No reply on SMS. So it learns, and tries WhatsApp."
   },
   {
+    "t1" : 65.213469387755111,
     "text" : "Your team stays in charge.",
-    "t0" : 63,
     "who" : "",
-    "t1" : 65.013469387755109
+    "t0" : 63.200000000000003
   },
   {
     "who" : "",
-    "t0" : 66.799999999999997,
-    "t1" : 69.431700680272101,
+    "t0" : 67,
+    "t1" : 69.631700680272104,
     "text" : "But even they can't break the rules."
   },
   {
-    "t1" : 73.944603174603174,
-    "t0" : 72.400000000000006,
+    "t0" : 72.599999999999994,
+    "t1" : 74.144603174603162,
     "text" : "When is my EMI due?",
     "who" : "Sunita"
   },
   {
     "who" : "Kairos",
-    "t1" : 79.393990929705211,
     "text" : "To protect your account, I have sent a 6-digit code to your registered WhatsApp number.",
-    "t0" : 74.200000000000003
+    "t0" : 74.400000000000006,
+    "t1" : 79.593990929705228
   },
   {
-    "t1" : 81.20204081632653,
-    "t0" : 79.599999999999994,
-    "who" : "Kairos",
-    "text" : "Thank you, you are verified."
+    "t0" : 79.799999999999997,
+    "text" : "Thank you, you are verified.",
+    "t1" : 81.402040816326533,
+    "who" : "Kairos"
   },
   {
-    "t0" : 81.200000000000003,
-    "t1" : 86.266371882086176,
+    "t0" : 81.400000000000006,
+    "text" : "Kairos answers in seconds. But only once it knows it's really them.",
     "who" : "",
-    "text" : "Kairos answers in seconds. But only once it knows it's really them."
+    "t1" : 86.466371882086179
   },
   {
-    "t0" : 86.299999999999997,
-    "text" : "I already paid, here is the screenshot.",
     "who" : "Sunita",
-    "t1" : 88.694240362811783
+    "t0" : 86.5,
+    "text" : "I already paid, here is the screenshot.",
+    "t1" : 88.894240362811786
   },
   {
     "who" : "Kairos",
-    "t1" : 93.986394557823132,
-    "t0" : 88.799999999999997,
-    "text" : "For your security, I can't help with this request in chat. A specialist from our team will review it."
+    "t1" : 94.186394557823135,
+    "text" : "For your security, I can't help with this request in chat. A specialist from our team will review it.",
+    "t0" : 89
   },
   {
+    "t1" : 97.629024943310654,
     "text" : "A doctored payment screenshot? It checks with the bank.",
-    "t0" : 94.099999999999994,
     "who" : "",
-    "t1" : 97.429024943310651
+    "t0" : 94.299999999999997
   },
   {
-    "t1" : 110.43151927437641,
-    "t0" : 110,
-    "text" : "Stop.",
-    "who" : "Sunita"
+    "t1" : 111.03151927437641,
+    "who" : "Sunita",
+    "t0" : 110.59999999999999,
+    "text" : "Stop."
   },
   {
-    "who" : "Kairos",
-    "t0" : 110.90000000000001,
-    "t1" : 114.51560090702948,
-    "text" : "You will not receive further automated reminders from us on any channel."
+    "t0" : 111.5,
+    "t1" : 115.11560090702947,
+    "text" : "You will not receive further automated reminders from us on any channel.",
+    "who" : "Kairos"
   },
   {
-    "who" : "",
-    "t1" : 117.31859410430839,
+    "t0" : 115.15000000000001,
+    "t1" : 117.8685941043084,
     "text" : "And stop means stop. Everywhere.",
-    "t0" : 114.59999999999999
+    "who" : ""
   },
   {
-    "t1" : 123.82897959183673,
     "who" : "",
-    "t0" : 117.59999999999999,
-    "text" : "In our tests, about twice the money back for every rupee. With zero rule breaches."
+    "text" : "In our tests, about twice the money back for every rupee. With zero rule breaches.",
+    "t0" : 118,
+    "t1" : 124.22897959183673
   }
 ]

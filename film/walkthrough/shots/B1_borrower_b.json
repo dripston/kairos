@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H4_1_stressed_woman_closeup.mp4",
+ "in": 6.5,
+ "dur": 2.2,
+ "mode": "none",
+ "out": "comp/B1_borrower_b.mov",
+ "fps": 30
+}

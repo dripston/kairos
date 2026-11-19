@@ -1,0 +1,19 @@
+{
+ "expand": 0.12,
+ "clip": "../assets/human/H8_4_hands_34_table_green.mp4",
+ "in": 8.0,
+ "dur": 2.0,
+ "mode": "green",
+ "up": [
+  0.35,
+  -1
+ ],
+ "ui": [
+  {
+   "t": 0,
+   "img": "captures/phone_paid/f00001.jpg"
+  }
+ ],
+ "out": "comp/V3_vikram_pays.mov",
+ "fps": 30
+}

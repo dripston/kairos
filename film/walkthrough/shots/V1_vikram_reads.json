@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H7_1_man_reads_text_serious.mp4",
+ "in": 3.0,
+ "dur": 2.6,
+ "mode": "none",
+ "out": "comp/V1_vikram_reads.mov",
+ "fps": 30
+}
