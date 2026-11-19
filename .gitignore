@@ -23,3 +23,9 @@ backend/*.csv
 # demo recipients entered at runtime — personal phone numbers, never commit
 backend/.demo/
 .env*.local
+
+# Local secrets: never commit (SARVAM_API_KEY etc.)
+.env
+**/.env
+.kairos/
+*.key
