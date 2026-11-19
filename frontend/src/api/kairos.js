@@ -89,6 +89,8 @@ export async function getRoutes(o) {
   return new Set(Object.keys(doc?.paths || {}))
 }
 export const CM03_CONSOLE_URL = `${API_BASE}/cm03/console`
+// Live collections view (backend-served page, no build step): K09 vs fixed schedule, SIMULATED
+export const LIVE_COLLECTIONS_URL = `${API_BASE}/demo/live`
 
 // ---------- K09 replay report (static JSON, optional) ----------
 export async function getReplayReport(o) {
