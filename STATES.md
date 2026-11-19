@@ -85,7 +85,7 @@ happens next.
 | [`k13.hold.supervisor`](#k13holdsupervisor-v1) | 1 | 2 | 6 | this branch | tests/fsm/test_conformance_holds.py |
 | [`k01.consent`](#k01consent-v1) | 1 | 3 | 13 | this branch | tests/fsm/test_conformance_holds.py |
 | [`k09.intent`](#k09intent-v1) | 1 | 8 | 12 | this branch | tests/fsm/test_conformance_intent.py |
-| [`k17.payment_claim`](#k17payment_claim-v010-draft) | 0.1.0-draft | 4 | 6 | origin/k17-k18/voice-engine | tests/fsm/test_conformance_voice.py |
+| [`k17.payment_claim`](#k17payment_claim-v020-draft) | 0.2.0-draft | 5 | 8 | origin/k17-k18/voice-engine | tests/fsm/test_conformance_voice.py |
 | [`k06.hitl.approval`](#k06hitlapproval-v010) | 0.1.0 | 9 | 24 | origin/k06/hitl-control | tests/fsm/test_conformance_hitl.py |
 | [`k17.voice.disposition`](#k17voicedisposition-v010-draft) | 0.1.0-draft | 15 | 46 | origin/k17-k18/voice-engine | tests/fsm/test_conformance_voice.py |
 | [`k17.voice.call`](#k17voicecall-v1) | 1 | 4 | 7 | origin/k17-k18/voice-engine | tests/fsm/test_conformance_voice.py |
@@ -864,36 +864,40 @@ Transitions (self-loops are events that are accepted and change nothing):
 
 **Proven by:** tests/fsm/test_conformance_intent.py (seeded random messages, spy LLM); tests/test_intent.py
 
-### `k17.payment_claim` (v0.1.0-draft)
+### `k17.payment_claim` (v0.2.0-draft)
 
 > Declared from `origin/k17-k18/voice-engine`. Its conformance test runs when that branch's code is present and is skipped otherwise.
 
-**Purpose.** A borrower says they already paid. A claim is never a payment: reminders pause for 48 h while the ledger waits for D7/LMS; only Ledger.record_payment_verified clears an EMI. There is no REJECTED state in the code: a fake claim simply EXPIRES (see findings).
+**Purpose.** A borrower says they already paid. A claim is never a payment: reminders pause for 48 h while the ledger waits for D7/LMS; only Ledger.record_payment_verified clears an EMI (VERIFIED). Fraud evidence (a CM-03 FRAUD_SUSPECT or a reused bank reference) REJECTS the claim and ends the pause early; otherwise it EXPIRES.
 
 ```mermaid
 stateDiagram-v2
     [*] --> NONE
     NONE --> PENDING_VERIFICATION : CLAIM
     PENDING_VERIFICATION --> VERIFIED : RESOLVE [emi_paid]
-    PENDING_VERIFICATION --> EXPIRED : RESOLVE [!emi_paid & pause_over]
+    PENDING_VERIFICATION --> REJECTED : RESOLVE [!emi_paid & fraud_evidence]
+    PENDING_VERIFICATION --> EXPIRED : RESOLVE [!emi_paid & !fraud_evidence & pause_over]
     VERIFIED --> [*]
+    REJECTED --> [*]
     EXPIRED --> [*]
 ```
 
-States: `NONE`, `PENDING_VERIFICATION`, `VERIFIED`, `EXPIRED`. Initial: `NONE`. Final: `EXPIRED`, `VERIFIED`. Fingerprint `0faf9fb32659`.
+States: `NONE`, `PENDING_VERIFICATION`, `VERIFIED`, `REJECTED`, `EXPIRED`. Initial: `NONE`. Final: `EXPIRED`, `REJECTED`, `VERIFIED`. Fingerprint `4227e7e77b76`.
 
 Transitions (self-loops are events that are accepted and change nothing):
 
 | From | Event | Guard | To | Action | Rule / policy |
 |---|---|---|---|---|---|
 | NONE | CLAIM | — | PENDING_VERIFICATION | stop_for_day rows for every day the 48 h pause touches; cancel those days' queued touches; NEVER mark paid | K17 thresholds.json payment_claim (ALREADY_PAID >= accept_at) |
-| PENDING_VERIFICATION | RESOLVE | emi_paid | VERIFIED | — | the ledger (D7/LMS via Ledger.record_payment_verified) shows the EMI fully paid |
-| PENDING_VERIFICATION | RESOLVE | !emi_paid & pause_over | EXPIRED | — | no verification within pause_hours: reminders resume on their own |
-| PENDING_VERIFICATION | RESOLVE | !emi_paid & !pause_over | PENDING_VERIFICATION | — | still waiting |
+| PENDING_VERIFICATION | RESOLVE | emi_paid | VERIFIED | — | the ledger (D7/LMS via Ledger.record_payment_verified) shows the EMI fully paid — the only way to VERIFIED |
+| PENDING_VERIFICATION | RESOLVE | !emi_paid & fraud_evidence | REJECTED | lift this claim's remaining PAYMENT_CLAIM_PENDING days (pause ends early); audit VOICE_PAYMENT_CLAIM_REJECTED | FSM-F4: Ledger.fraud_evidence — CM-03 FRAUD_SUSPECT, or a D7 payment refused for a bank reference already used by another account (REFERENCE_REUSED), from pause_hours before the claim to now |
+| PENDING_VERIFICATION | RESOLVE | !emi_paid & !fraud_evidence & pause_over | EXPIRED | — | no verification within pause_hours: reminders resume on their own |
+| PENDING_VERIFICATION | RESOLVE | !emi_paid & !fraud_evidence & !pause_over | PENDING_VERIFICATION | — | still waiting |
 | VERIFIED | RESOLVE | — | VERIFIED | — | final: resolve_payment_claims only reads PENDING_VERIFICATION |
+| REJECTED | RESOLVE | — | REJECTED | — | final: resolve_payment_claims only reads PENDING_VERIFICATION |
 | EXPIRED | RESOLVE | — | EXPIRED | — | final: resolve_payment_claims only reads PENDING_VERIFICATION |
 
-**Enforced by:** `kairos_backend/voice/ingest.py (k17-k18/voice-engine): VoiceIngester._payment_claim / resolve_payment_claims`
+**Enforced by:** `kairos_backend/voice/ingest.py: VoiceIngester._payment_claim / resolve_payment_claims`; `kairos_backend/ledger.py: Ledger.fraud_evidence / record_payment_verified (PAYMENT_REFUSED)`
 
 **Proven by:** tests/fsm/test_conformance_voice.py (runs when kairos_backend.voice is present)
 

@@ -21,7 +21,7 @@ Machines (name -> builder):
     k01.consent             per-channel contactability: STOP on any channel, re-entry per channel
     k09.intent              inbound message -> intent: rules first, at most one LLM call (the only LLM choice)
     k09.learner.arm         where an arm's estimate comes from: prior -> pooled -> segment
-    k17.payment_claim       "I already paid" claim: PENDING_VERIFICATION -> VERIFIED / EXPIRED
+    k17.payment_claim       "I already paid" claim: PENDING_VERIFICATION -> VERIFIED / REJECTED / EXPIRED
     k06.hitl.approval       a held send's approval: PENDING -> APPROVED / BLOCKED_AT_RECHECK / ...
     k17.voice.disposition   disposition x confidence -> action (thresholds.json)
     k17.voice.call          one call-end webhook: PROCESSING -> DONE / UNMATCHED / DUPLICATE
@@ -583,19 +583,27 @@ def payment_claim_machine() -> Machine:
           "stop_for_day rows for every day the 48 h pause touches; cancel those days' queued touches; NEVER mark paid",
           "K17 thresholds.json payment_claim (ALREADY_PAID >= accept_at)"),
         T("PENDING_VERIFICATION", "RESOLVE", "VERIFIED", "emi_paid", None,
-          "the ledger (D7/LMS via Ledger.record_payment_verified) shows the EMI fully paid"),
-        T("PENDING_VERIFICATION", "RESOLVE", "EXPIRED", "!emi_paid & pause_over", None,
+          "the ledger (D7/LMS via Ledger.record_payment_verified) shows the EMI fully paid — the only way to VERIFIED"),
+        T("PENDING_VERIFICATION", "RESOLVE", "REJECTED", "!emi_paid & fraud_evidence",
+          "lift this claim's remaining PAYMENT_CLAIM_PENDING days (pause ends early); audit VOICE_PAYMENT_CLAIM_REJECTED",
+          "FSM-F4: Ledger.fraud_evidence — CM-03 FRAUD_SUSPECT, or a D7 payment refused for a bank reference "
+          "already used by another account (REFERENCE_REUSED), from pause_hours before the claim to now"),
+        T("PENDING_VERIFICATION", "RESOLVE", "EXPIRED", "!emi_paid & !fraud_evidence & pause_over", None,
           "no verification within pause_hours: reminders resume on their own"),
-        T("PENDING_VERIFICATION", "RESOLVE", "PENDING_VERIFICATION", "!emi_paid & !pause_over", None, "still waiting"),
+        T("PENDING_VERIFICATION", "RESOLVE", "PENDING_VERIFICATION", "!emi_paid & !fraud_evidence & !pause_over", None,
+          "still waiting"),
     ]
-    tr += _loops(["VERIFIED", "EXPIRED"], ["RESOLVE"], "final: resolve_payment_claims only reads PENDING_VERIFICATION")
+    tr += _loops(["VERIFIED", "REJECTED", "EXPIRED"], ["RESOLVE"],
+                 "final: resolve_payment_claims only reads PENDING_VERIFICATION")
     return Machine(
-        "k17.payment_claim", "0.1.0-draft", ["NONE", "PENDING_VERIFICATION", "VERIFIED", "EXPIRED"], "NONE",
-        ["VERIFIED", "EXPIRED"], tr,
+        "k17.payment_claim", "0.2.0-draft", ["NONE", "PENDING_VERIFICATION", "VERIFIED", "REJECTED", "EXPIRED"], "NONE",
+        ["VERIFIED", "REJECTED", "EXPIRED"], tr,
         description=("A borrower says they already paid. A claim is never a payment: reminders pause for 48 h while "
-                     "the ledger waits for D7/LMS; only Ledger.record_payment_verified clears an EMI. There is no "
-                     "REJECTED state in the code: a fake claim simply EXPIRES (see findings)."),
-        enforced_by=["kairos_backend/voice/ingest.py (k17-k18/voice-engine): VoiceIngester._payment_claim / resolve_payment_claims"],
+                     "the ledger waits for D7/LMS; only Ledger.record_payment_verified clears an EMI (VERIFIED). "
+                     "Fraud evidence (a CM-03 FRAUD_SUSPECT or a reused bank reference) REJECTS the claim and ends "
+                     "the pause early; otherwise it EXPIRES."),
+        enforced_by=["kairos_backend/voice/ingest.py: VoiceIngester._payment_claim / resolve_payment_claims",
+                     "kairos_backend/ledger.py: Ledger.fraud_evidence / record_payment_verified (PAYMENT_REFUSED)"],
         proven_by=["tests/fsm/test_conformance_voice.py (runs when kairos_backend.voice is present)"],
         source="branch:k17-k18/voice-engine")
 

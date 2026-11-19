@@ -32,6 +32,7 @@ from typing import Iterator, Optional
 from spine.db import create_schema as create_spine_schema
 from spine.db import get_connection as spine_connection
 from spine.ledger import PaymentError, apply_payment, record_event, reverse_payment
+from spine.ledger import reference_key as spine_reference_key
 
 from .exceptions import ExceptionEvent, ExceptionOutcome, handle
 from .gate import SEND, WAIT, Decision, Facts, evaluate
@@ -859,8 +860,12 @@ class Ledger:
             ob = self._obligation(c, obligation_id)
         if ob is None:
             raise KeyError(f"unknown obligation {obligation_id}")
-        applied = apply_payment(self._spine(), payment_id, ob["loan_id"], obligation_id, int(amount_paise),
-                                at.date().isoformat(), mode, reference)
+        try:
+            applied = apply_payment(self._spine(), payment_id, ob["loan_id"], obligation_id, int(amount_paise),
+                                    at.date().isoformat(), mode, reference)
+        except PaymentError as e:
+            self._payment_refused(ob, obligation_id, payment_id, reference, int(amount_paise), at, e)
+            raise
         with self.tx() as c:
             cleared, n = False, 0
             if applied:
@@ -875,6 +880,32 @@ class Ledger:
             self._audit(c, "tool:d7", "PAYMENT_VERIFIED", ob["borrower_id"], at=at, obligation_id=obligation_id,
                         amount_paise=amount_paise, applied=applied, cleared=cleared, canceled=n, reference=reference)
         return {"applied": applied, "obligation_cleared": cleared, "canceled": n}
+
+    def _payment_refused(self, ob, obligation_id: str, payment_id: str, reference, amount_paise: int, at: datetime,
+                         err: Exception) -> None:
+        """K03 refused a payment: audit PAYMENT_REFUSED. A bank reference already used for ANOTHER account's
+        payment is fraud evidence (REFERENCE_REUSED, the same rule as CM-03's check_reference); one already
+        used by this borrower is a repeat (REFERENCE_ALREADY_APPLIED), anything else INVALID_PAYMENT."""
+        kind = "INVALID_PAYMENT"
+        key = spine_reference_key(reference) if reference else ""
+        if key:
+            row = self._conn().execute("SELECT p.payment_id, l.borrower_id FROM payments p JOIN loans l ON l.loan_id=p.loan_id"
+                                       " WHERE p.reference_key=? AND p.payment_id<>? LIMIT 1", (key, payment_id)).fetchone()
+            if row is not None:
+                kind = "REFERENCE_REUSED" if row["borrower_id"] != ob["borrower_id"] else "REFERENCE_ALREADY_APPLIED"
+        with self.tx() as c:
+            self._audit(c, "tool:d7", "PAYMENT_REFUSED", ob["borrower_id"], at=at, reason=kind, obligation_id=obligation_id,
+                        payment_id=payment_id, amount_paise=amount_paise, error=self._scrub(c, ob["borrower_id"], str(err)))
+
+    def fraud_evidence(self, borrower_id: str, since: datetime, until: Optional[datetime] = None) -> list[dict]:
+        """Audited fraud signals for one borrower in [since, until]: a CM-03 FRAUD_SUSPECT (fake / reused UTR,
+        doctored receipt, other people's data) or a D7 payment refused because its bank reference belongs to
+        another account (REFERENCE_REUSED). Used to REJECT a pending payment claim (k17.payment_claim, FSM-F4)."""
+        rows = self._conn().execute(
+            "SELECT id, ts, type, reason, detail FROM audit WHERE borrower_id=? AND ts>=? AND ts<=?"
+            " AND (type='FRAUD_SUSPECT' OR (type='PAYMENT_REFUSED' AND reason='REFERENCE_REUSED')) ORDER BY id",
+            (borrower_id, self._iso(since), self._iso(until or self.policy.now()))).fetchall()
+        return [{"audit_id": r["id"], "ts": r["ts"], "type": r["type"], "reason": r["reason"]} for r in rows]
 
     def record_payment_reversed(self, payment_id: str, at: datetime, reason: str) -> bool:
         """The bank reversed a payment (E15): K03 makes that EMI due again; collection progress is

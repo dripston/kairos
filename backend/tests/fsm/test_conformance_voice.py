@@ -12,7 +12,7 @@ import pytest
 pytest.importorskip("kairos_backend.voice")
 
 from kairos_backend.executor import Executor, FakeProvider  # noqa: E402
-from kairos_backend.ledger import Instruction  # noqa: E402
+from kairos_backend.ledger import Instruction, PaymentError  # noqa: E402
 from kairos_backend.machines import PAYMENT_CLAIM, VOICE_CALL, load_voice_thresholds, voice_disposition_machine  # noqa: E402
 from kairos_backend.voice.dispositions import DISPOSITIONS, UNCLEAR, Disposition  # noqa: E402
 from kairos_backend.voice.ingest import VoiceIngester, decide  # noqa: E402
@@ -95,6 +95,8 @@ def run_claims(policy, path, seed) -> Coverage:
         add_borrower(lg, b, dpd=12, consents=voice)
     claim_state, call_state, cov = {}, {}, Coverage()
     now, k = at(9), 0
+    refs = {"V1": [], "V2": []}       # bank references each borrower's verified payments used
+    fraud = []                        # (borrower, when) of every fraud signal this harness caused
     for _ in range(40):
         roll = rng.random()
         now += timedelta(hours=rng.choice([0, 1, 3, 20]))
@@ -131,11 +133,24 @@ def run_claims(policy, path, seed) -> Coverage:
             if due > 0:
                 k += 1
                 lg.record_payment_verified(f"{b}-A-1", due if rng.random() < 0.6 else due // 2, now, f"P{k}", f"R{k}")
+                refs[b].append(f"R{k}")
+        elif roll < 0.72:  # a payment quoting a bank reference another account already used: refused (fraud signal)
+            b = rng.choice(("V1", "V2"))
+            other = refs["V2" if b == "V1" else "V1"]
+            ob = lg._obligation(lg._conn(), f"{b}-A-1")
+            if other and ob["amount_due_paise"] > ob["amount_paid_paise"]:
+                k += 1
+                with pytest.raises(PaymentError):
+                    lg.record_payment_verified(f"{b}-A-1", 100, now, f"P{k}", " " + rng.choice(other).lower())
+                fraud.append((b, now))
         else:  # the claim clock
             rows = {r["call_id"]: dict(r) for r in lg._conn().execute("SELECT * FROM voice_payment_claims")}
             for cid, r in rows.items():
                 ob = lg._obligation(lg._conn(), r["obligation_id"]) if r["obligation_id"] else None
+                since = lg._dt(r["claimed_at"]) - timedelta(hours=THR["payment_claim"]["pause_hours"])
                 ctx = {"emi_paid": ob is not None and ob["amount_paid_paise"] >= ob["amount_due_paise"],
+                       "fraud_evidence": any(fb == r["borrower_id"] and since <= lg.policy.local(t) <= lg.policy.local(now)
+                                             for fb, t in fraud),
                        "pause_over": lg._iso(now) >= r["pause_until"]}
                 new_c, tc = PAYMENT_CLAIM.step(claim_state[cid], "RESOLVE", ctx)
                 cov.add(tc)
@@ -152,15 +167,85 @@ def run_claims(policy, path, seed) -> Coverage:
     return cov
 
 
-@pytest.mark.parametrize("seed", range(12))
+@pytest.mark.parametrize("seed", range(16))
 def test_payment_claims_and_call_webhooks_follow_their_machines(policy, tmp_path, seed):
     run_claims(policy, tmp_path / "v.db", seed)
 
 
 def test_every_claim_and_call_transition_is_exercised(policy, tmp_path):
     cov = Coverage()
-    for seed in range(12):
+    for seed in range(16):
         cov.fired.update(run_claims(policy, tmp_path / f"v{seed}.db", seed).fired)
     assert cov.missing(PAYMENT_CLAIM) == []
     # a crash mid-processing (row deleted for a retry) is covered by tests/test_voice_engine.py
     assert cov.missing(VOICE_CALL, exempt=[("PROCESSING", "ERROR"), ("PROCESSING", "CALL_END")]) == []
+
+
+# ---------- FSM-F4 (fixed): fraud evidence REJECTS a claim and ends the pause early ----------
+def _claim(policy, tmp_path, name="f4.db"):
+    lg, ing, ex = env(policy, tmp_path / name)
+    voice = {"sms": 1, "whatsapp": 1, "email": 1, "ivr": 1, "voicebot": 1}
+    for b in ("V1", "V2"):
+        add_borrower(lg, b, dpd=12, consents=voice)
+    iid = call(lg, ex, "V1", at(10))
+    p = {"call_id": "CL1", "app_id": APP_EMI, "status": "completed", "duration_seconds": 40,
+         "ended_at": at(10, 5).isoformat(), "variables": {"touch_id": iid, "disposition": "ALREADY_PAID",
+                                                          "disposition_confidence": 0.9}}
+    assert ing.ingest(p)["action"] == "PAYMENT_CLAIM_PENDING"
+    return lg, ing
+
+
+def _paused(lg, b="V1"):
+    return {r["day"]: r["trigger"] for r in lg._conn().execute("SELECT day, trigger FROM stop_for_day WHERE borrower_id=?", (b,))}
+
+
+def test_reused_reference_rejects_the_claim_and_lifts_the_pause(policy, tmp_path):
+    lg, ing = _claim(policy, tmp_path)
+    lg.record_payment_verified("V2-A-1", 500, at(11), "PV2", "UTR-123456789012")    # V2's real payment
+    with pytest.raises(PaymentError):                                             # V1 quotes V2's UTR
+        lg.record_payment_verified("V1-A-1", 500, at(12), "PV1", "utr-123456789012 ")
+    refused = [a for a in lg.audit_log(borrower_id="V1") if a["type"] == "PAYMENT_REFUSED"]
+    assert refused and refused[0]["reason"] == "REFERENCE_REUSED"
+    d1 = (D + timedelta(days=1)).isoformat()
+    assert _paused(lg)[d1] == "PAYMENT_CLAIM_PENDING"
+    out = ing.resolve_payment_claims(at(9, 0, D + timedelta(days=1)))
+    assert [o["status"] for o in out] == ["REJECTED"] and claims(lg) == {"CL1": "REJECTED"}
+    assert d1 not in _paused(lg)
+    assert all(t != "PAYMENT_CLAIM_PENDING" for day, t in _paused(lg).items() if day >= d1)
+    row = lg._conn().execute("SELECT reason, resolved_at FROM voice_payment_claims WHERE call_id='CL1'").fetchone()
+    assert row["reason"] == "REFERENCE_REUSED" and row["resolved_at"]
+    assert any(a["type"] == "VOICE_PAYMENT_CLAIM_REJECTED" for a in lg.audit_log(borrower_id="V1"))
+    ob = lg._obligation(lg._conn(), "V1-A-1")
+    assert ob["amount_paid_paise"] == 0                                           # a claim never pays
+    assert ing.resolve_payment_claims(at(9, 0, D + timedelta(days=3))) == []      # final
+    lg.close()
+
+
+def test_cm03_fraud_suspect_rejects_the_claim(policy, tmp_path):
+    lg, ing = _claim(policy, tmp_path)
+    with lg.tx() as c:  # what CM-03 ToolBox.create_ticket(audit_type="FRAUD_SUSPECT") writes
+        lg._audit(c, "agent:cm03", "FRAUD_SUSPECT", "V1", at=at(13), reason="FRAUD_SUSPECT")
+    assert ing.resolve_payment_claims(at(14))[0]["status"] == "REJECTED"
+    lg.close()
+
+
+def test_own_reference_repeat_and_other_borrowers_fraud_are_not_evidence(policy, tmp_path):
+    lg, ing = _claim(policy, tmp_path)
+    lg.record_payment_verified("V1-B-1", 500, at(11), "PB1", "UTR-999988887777")
+    with pytest.raises(PaymentError):  # the same borrower's own reference again: a repeat, not fraud
+        lg.record_payment_verified("V1-A-1", 500, at(12), "PB2", "UTR-999988887777")
+    with lg.tx() as c:
+        lg._audit(c, "agent:cm03", "FRAUD_SUSPECT", "V2", at=at(13), reason="FRAUD_SUSPECT")
+    assert ing.resolve_payment_claims(at(14)) == []
+    assert ing.resolve_payment_claims(at(10, 6, D + timedelta(days=2)))[0]["status"] == "EXPIRED"
+    lg.close()
+
+
+def test_verified_beats_evidence_and_stays_ledger_only(policy, tmp_path):
+    lg, ing = _claim(policy, tmp_path)
+    with lg.tx() as c:
+        lg._audit(c, "agent:cm03", "FRAUD_SUSPECT", "V1", at=at(13), reason="FRAUD_SUSPECT")
+    ob = lg._obligation(lg._conn(), "V1-A-1")
+    lg.record_payment_verified("V1-A-1", ob["amount_due_paise"], at(14), "PV9", "UTR-111122223333")
+    assert ing.resolve_payment_claims(at(15))[0]["status"] == "VERIFIED"
+    lg.close()
