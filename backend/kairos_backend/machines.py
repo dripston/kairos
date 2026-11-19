@@ -521,14 +521,13 @@ def payment_claim_machine() -> Machine:
         T("NONE", "CLAIM", "PENDING_VERIFICATION", None,
           "stop_for_day rows for every day the 48 h pause touches; cancel those days' queued touches; NEVER mark paid",
           "K17 thresholds.json payment_claim (ALREADY_PAID >= accept_at)"),
-        T("PENDING_VERIFICATION", "CLAIM", "PENDING_VERIFICATION", None, None, "same call_id: INSERT OR IGNORE"),
         T("PENDING_VERIFICATION", "RESOLVE", "VERIFIED", "emi_paid", None,
           "the ledger (D7/LMS via Ledger.record_payment_verified) shows the EMI fully paid"),
         T("PENDING_VERIFICATION", "RESOLVE", "EXPIRED", "!emi_paid & pause_over", None,
           "no verification within pause_hours: reminders resume on their own"),
         T("PENDING_VERIFICATION", "RESOLVE", "PENDING_VERIFICATION", "!emi_paid & !pause_over", None, "still waiting"),
     ]
-    tr += _loops(["VERIFIED", "EXPIRED"], ["RESOLVE", "CLAIM"], "final")
+    tr += _loops(["VERIFIED", "EXPIRED"], ["RESOLVE"], "final: resolve_payment_claims only reads PENDING_VERIFICATION")
     return Machine(
         "k17.payment_claim", "0.1.0-draft", ["NONE", "PENDING_VERIFICATION", "VERIFIED", "EXPIRED"], "NONE",
         ["VERIFIED", "EXPIRED"], tr,
