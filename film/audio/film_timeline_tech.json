@@ -1,0 +1,235 @@
+{
+ "cut": "technical",
+ "rule": "Technical film. First line 1.2 s; 0.45 s between lines; +0.8 s before x05_hitl and x06_proof; 2.5 s end hold.",
+ "runtime_s": 135.64,
+ "lines": [
+  {
+   "line": "x01_intro",
+   "chapter": "intro",
+   "kind": "narrator",
+   "src": "audio/vo_tech/x01_intro.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 1.2,
+   "end": 3.96,
+   "dur": 2.76,
+   "text": "This is how Kairos works, under the hood.",
+   "en": "This is how Kairos works, under the hood."
+  },
+  {
+   "line": "t1_record",
+   "chapter": "record",
+   "kind": "narrator",
+   "src": "audio/vo_tech/t1_record.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 4.41,
+   "end": 12.992,
+   "dur": 8.582,
+   "text": "Every borrower lives in one record. Loans, payments, replies, consent. Money is kept to the paisa.",
+   "en": "Every borrower lives in one record. Loans, payments, replies, consent. Money is kept to the paisa."
+  },
+  {
+   "line": "x02_churn",
+   "chapter": "churn",
+   "kind": "narrator",
+   "src": "audio/vo_tech/x02_churn.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 13.442,
+   "end": 27.945,
+   "dur": 14.504,
+   "text": "Every day, and on every event, the churn engine re-sorts each borrower. Their cohort, their risk, their step in the journey, and the layer of contact. Pay, or say stop, and they leave the journey at once.",
+   "en": "Every day, and on every event, the churn engine re-sorts each borrower. Their cohort, their risk, their step in the journey, and the layer of contact. Pay, or say stop, and they leave the journey at once."
+  },
+  {
+   "line": "t2_model",
+   "chapter": "learner",
+   "kind": "narrator",
+   "src": "audio/vo_tech/t2_model.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 28.395,
+   "end": 38.168,
+   "dur": 9.773,
+   "text": "A learning model scores every channel and every hour for them, using what worked for similar borrowers in their region, and for them personally.",
+   "en": "A learning model scores every channel and every hour for them, using what worked for similar borrowers in their region, and for them personally."
+  },
+  {
+   "line": "t3_reserve",
+   "chapter": "aladdin",
+   "kind": "narrator",
+   "src": "audio/vo_tech/t3_reserve.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 38.618,
+   "end": 47.327,
+   "dur": 8.709,
+   "text": "Before a message is queued, Aladdin reserves the budget and the contact limit. At the moment of sending, it checks the rules again.",
+   "en": "Before a message is queued, Aladdin reserves the budget and the contact limit. At the moment of sending, it checks the rules again."
+  },
+  {
+   "line": "t4_webhooks",
+   "chapter": "channels",
+   "kind": "narrator",
+   "src": "audio/vo_tech/t4_webhooks.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 47.777,
+   "end": 57.621,
+   "dur": 9.845,
+   "text": "Messages go out through each channel's API. Delivery, read and reply receipts come back as webhooks. Duplicates are ignored.",
+   "en": "Messages go out through each channel's API. Delivery, read and reply receipts come back as webhooks. Duplicates are ignored."
+  },
+  {
+   "line": "x03_voice",
+   "chapter": "voice",
+   "kind": "narrator",
+   "src": "audio/vo_tech/x03_voice.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 58.071,
+   "end": 68.039,
+   "dur": 9.967,
+   "text": "Voice calls run on Sarvam agents, in eight languages. Every call returns a disposition with a confidence score. Below the threshold, a person reviews it.",
+   "en": "Voice calls run on Sarvam agents, in eight languages. Every call returns a disposition with a confidence score. Below the threshold, a person reviews it."
+  },
+  {
+   "line": "t5_intent",
+   "chapter": "intent",
+   "kind": "narrator",
+   "src": "audio/vo_tech/t5_intent.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 68.489,
+   "end": 78.51,
+   "dur": 10.021,
+   "text": "Replies are understood by rules first, then a small model, then Sarvam's decision model. If it's still unsure, a human decides.",
+   "en": "Replies are understood by rules first, then a small model, then Sarvam's decision model. If it's still unsure, a human decides."
+  },
+  {
+   "line": "x04_cm03",
+   "chapter": "cm03",
+   "kind": "narrator",
+   "src": "audio/vo_tech/x04_cm03.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 78.96,
+   "end": 92.919,
+   "dur": 13.959,
+   "text": "Inbound WhatsApp runs on its own state machine. No account details before OTP. Payment claims are checked against the bank, so doctored screenshots and reused references are caught.",
+   "en": "Inbound WhatsApp runs on its own state machine. No account details before OTP. Payment claims are checked against the bank, so doctored screenshots and reused references are caught."
+  },
+  {
+   "line": "x05_hitl",
+   "chapter": "hitl",
+   "kind": "narrator",
+   "src": "audio/vo_tech/x05_hitl.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 94.169,
+   "end": 108.825,
+   "dur": 14.656,
+   "text": "And a person can take control at any moment. Pause a campaign, approve or reject a held call, put a borrower on hold, or take over a conversation. Every action goes through Aladdin, and into the audit log.",
+   "en": "And a person can take control at any moment. Pause a campaign, approve or reject a held call, put a borrower on hold, or take over a conversation. Every action goes through Aladdin, and into the audit log."
+  },
+  {
+   "line": "t6_loop",
+   "chapter": "loop",
+   "kind": "narrator",
+   "src": "audio/vo_tech/t6_loop.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 109.275,
+   "end": 118.389,
+   "dur": 9.114,
+   "text": "Every outcome is written back, and the model updates. Same data in, same decision out. Every step, on the record.",
+   "en": "Every outcome is written back, and the model updates. Same data in, same decision out. Every step, on the record."
+  },
+  {
+   "line": "x06_proof",
+   "chapter": "proof",
+   "kind": "narrator",
+   "src": "audio/vo_tech/x06_proof.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 119.639,
+   "end": 128.186,
+   "dur": 8.547,
+   "text": "Fifty thousand decisions in about two minutes. Zero cap breaches. And forty-nine out of forty-nine red-team attacks, blocked.",
+   "en": "Fifty thousand decisions in about two minutes. Zero cap breaches. And forty-nine out of forty-nine red-team attacks, blocked."
+  },
+  {
+   "line": "x07_end",
+   "chapter": "end",
+   "kind": "narrator",
+   "src": "audio/vo_tech/x07_end.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 128.636,
+   "end": 133.14,
+   "dur": 4.504,
+   "text": "Kairos. Built to be trusted with every rupee, and every borrower.",
+   "en": "Kairos. Built to be trusted with every rupee, and every borrower."
+  }
+ ],
+ "chapters": {
+  "intro": [
+   1.2,
+   3.96
+  ],
+  "record": [
+   4.41,
+   12.992
+  ],
+  "churn": [
+   13.442,
+   27.945
+  ],
+  "learner": [
+   28.395,
+   38.168
+  ],
+  "aladdin": [
+   38.618,
+   47.327
+  ],
+  "channels": [
+   47.777,
+   57.621
+  ],
+  "voice": [
+   58.071,
+   68.039
+  ],
+  "intent": [
+   68.489,
+   78.51
+  ],
+  "cm03": [
+   78.96,
+   92.919
+  ],
+  "hitl": [
+   94.169,
+   108.825
+  ],
+  "loop": [
+   109.275,
+   118.389
+  ],
+  "proof": [
+   119.639,
+   128.186
+  ],
+  "end": [
+   128.636,
+   133.14
+  ]
+ },
+ "markers": {
+  "hitl": 93.869,
+  "climax_proof": 119.339,
+  "final_line": 128.636
+ }
+}

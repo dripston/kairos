@@ -50,9 +50,9 @@
  "07_channel": {
   "speaker": "neha",
   "model": "bulbul:v3",
-  "pace": 1.2,
+  "pace": 1.4,
   "lang": "en-IN",
-  "text": "If it reaches out, it picks the channel. SMS, WhatsApp, a voice call in their own language, or a human agent. And the best time of day.",
+  "text": "It picks the channel. SMS, WhatsApp, a voice call in their language, or a human. And the best time of day.",
   "ok": true
  },
  "08_aladdin": {
@@ -77,14 +77,6 @@
   "pace": 1.2,
   "lang": "en-IN",
   "text": "When a borrower writes back on WhatsApp, Kairos answers in seconds, in Hindi or in English.",
-  "ok": true
- },
- "11_agent_hi": {
-  "speaker": "neha",
-  "model": "bulbul:v3",
-  "pace": 1.2,
-  "lang": "hi-IN",
-  "text": "नमस्ते! आपकी EMI की तारीख कल है। क्या मैं आपको पेमेंट लिंक भेज दूँ?",
   "ok": true
  },
  "12_verify": {
@@ -134,5 +126,62 @@
   "lang": "en-IN",
   "text": "Kairos. The right message, at the right time. Or none at all.",
   "ok": true
+ },
+ "t1_record": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Under the hood, every borrower lives in one record. Loans, payments, replies, consent.",
+  "ok": true
+ },
+ "t2_model": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "A learning model scores every channel and every hour for them, using what worked for similar borrowers in their region, and for them personally.",
+  "ok": true
+ },
+ "t3_reserve": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Before a message is queued, Aladdin reserves the budget and the contact limit. At the moment of sending, it checks the rules again.",
+  "ok": true
+ },
+ "t4_webhooks": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Messages go out through each channel's API. Delivery, read and reply receipts come back as webhooks. Duplicates are ignored.",
+  "ok": true
+ },
+ "t5_intent": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Replies are understood by rules first, then a small model, then Sarvam's decision model. If it's still unsure, a human decides.",
+  "ok": true
+ },
+ "t6_loop": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Every outcome is written back, and the model updates. Same data in, same decision out. Every step, on the record.",
+  "ok": true
+ },
+ "02s_same": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Every month, lenders remind borrowers the same way. Same message. Same time. To everyone.",
+  "ok": true,
+  "cut": "short"
  }
 }

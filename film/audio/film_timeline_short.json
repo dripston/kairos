@@ -1,0 +1,301 @@
+{
+ "cut": "short",
+ "rule": "Short (2-min) cut. First line 1.5 s; 0.6 s between lines; 0.25 s inside a conversation; +1.0 s before 04_meet and 15_proof; 3 s end hold.",
+ "runtime_s": 119.287,
+ "lines": [
+  {
+   "line": "02s_same",
+   "chapter": "problem",
+   "kind": "narrator",
+   "src": "audio/vo_neha/02s_same.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "text": "Every month, lenders remind borrowers the same way. Same message. Same time. To everyone.",
+   "en": "Every month, lenders remind borrowers the same way. Same message. Same time. To everyone.",
+   "start": 1.5,
+   "dur": 7.615,
+   "end": 9.115
+  },
+  {
+   "line": "03_cost",
+   "chapter": "problem",
+   "kind": "narrator",
+   "src": "audio/vo_neha/03_cost.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 9.715,
+   "end": 17.27,
+   "dur": 7.555,
+   "text": "Most of those messages are ignored. Some annoy people. And every single one costs money.",
+   "en": "Most of those messages are ignored. Some annoy people. And every single one costs money."
+  },
+  {
+   "line": "04_meet",
+   "chapter": "meet",
+   "kind": "narrator",
+   "src": "audio/vo_neha/04_meet.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 18.87,
+   "end": 24.795,
+   "dur": 5.925,
+   "text": "Meet Kairos. An AI that runs loan collections, one person at a time.",
+   "en": "Meet Kairos. An AI that runs loan collections, one person at a time."
+  },
+  {
+   "line": "06_decides",
+   "chapter": "decides",
+   "kind": "narrator",
+   "src": "audio/vo_neha/06_decides.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 25.395,
+   "end": 29.801,
+   "dur": 4.406,
+   "text": "Then it decides. Contact them today, or wait.",
+   "en": "Then it decides. Contact them today, or wait."
+  },
+  {
+   "line": "07_channel",
+   "chapter": "channels",
+   "kind": "narrator",
+   "src": "audio/vo_neha/07_channel.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 30.401,
+   "end": 37.222,
+   "dur": 6.822,
+   "text": "It picks the channel. SMS, WhatsApp, a voice call in their language, or a human. And the best time of day.",
+   "en": "It picks the channel. SMS, WhatsApp, a voice call in their language, or a human. And the best time of day."
+  },
+  {
+   "line": "vc_a2",
+   "chapter": "call",
+   "kind": "dialogue",
+   "src": "audio/dialogue/vc_a2.wav",
+   "speaker": "ritu",
+   "role": "agent",
+   "start": 37.822,
+   "end": 41.747,
+   "dur": 3.925,
+   "text": "आपकी EMI पिछले हफ़्ते ड्यू थी। क्या आप शुक्रवार तक पेमेंट कर पाएँगी?",
+   "en": "Your EMI was due last week. Could you pay by Friday?"
+  },
+  {
+   "line": "vc_b2",
+   "chapter": "call",
+   "kind": "dialogue",
+   "src": "audio/dialogue/vc_b2.wav",
+   "speaker": "pooja",
+   "role": "borrower",
+   "start": 41.997,
+   "end": 43.796,
+   "dur": 1.799,
+   "text": "हाँ, शुक्रवार को कर दूँगी।",
+   "en": "Yes, I'll pay on Friday."
+  },
+  {
+   "line": "vc_a3",
+   "chapter": "call",
+   "kind": "dialogue",
+   "src": "audio/dialogue/vc_a3.wav",
+   "speaker": "ritu",
+   "role": "agent",
+   "start": 44.046,
+   "end": 48.661,
+   "dur": 4.615,
+   "text": "बहुत अच्छा। मैंने शुक्रवार का वादा नोट कर लिया है, और आपको एक रिमाइंडर भेज दूँगी।",
+   "en": "Great. I've noted your promise for Friday, and I'll send you a reminder."
+  },
+  {
+   "line": "08_aladdin",
+   "chapter": "safety",
+   "kind": "narrator",
+   "src": "audio/vo_neha/08_aladdin.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 49.261,
+   "end": 56.439,
+   "dur": 7.178,
+   "text": "Before anything is sent, Aladdin, our safety supervisor, checks it against the lender's rules. Twice.",
+   "en": "Before anything is sent, Aladdin, our safety supervisor, checks it against the lender's rules. Twice."
+  },
+  {
+   "line": "09_rules",
+   "chapter": "safety",
+   "kind": "narrator",
+   "src": "audio/vo_neha/09_rules.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 57.039,
+   "end": 66.661,
+   "dur": 9.622,
+   "text": "No messages at night. Never more than allowed. And if someone says stop, everything stops. On every channel.",
+   "en": "No messages at night. Never more than allowed. And if someone says stop, everything stops. On every channel."
+  },
+  {
+   "line": "st_b1",
+   "chapter": "safety",
+   "kind": "dialogue",
+   "src": "audio/dialogue/st_b1.wav",
+   "speaker": "pooja",
+   "role": "borrower",
+   "start": 67.261,
+   "end": 68.808,
+   "dur": 1.547,
+   "text": "Please stop messaging me.",
+   "en": "Please stop messaging me."
+  },
+  {
+   "line": "st_a1",
+   "chapter": "safety",
+   "kind": "dialogue",
+   "src": "audio/dialogue/st_a1.wav",
+   "speaker": "ritu",
+   "role": "agent",
+   "start": 69.058,
+   "end": 72.055,
+   "dur": 2.998,
+   "text": "Understood. You won't get any more messages from us.",
+   "en": "Understood. You won't get any more messages from us."
+  },
+  {
+   "line": "fp_b1",
+   "chapter": "fake",
+   "kind": "dialogue",
+   "src": "audio/dialogue/fp_b1.wav",
+   "speaker": "pooja",
+   "role": "borrower",
+   "start": 72.655,
+   "end": 75.561,
+   "dur": 2.906,
+   "text": "मैंने पेमेंट कर दिया है, ये रहा स्क्रीनशॉट।",
+   "en": "I've paid, here's the screenshot."
+  },
+  {
+   "line": "fp_a1",
+   "chapter": "fake",
+   "kind": "dialogue",
+   "src": "audio/dialogue/fp_a1.wav",
+   "speaker": "ritu",
+   "role": "agent",
+   "start": 75.811,
+   "end": 81.181,
+   "dur": 5.37,
+   "text": "शुक्रिया! बैंक में अभी ये पेमेंट नहीं दिख रहा। मैंने इसे वेरिफिकेशन के लिए टीम को भेज दिया है।",
+   "en": "Thanks! The bank doesn't show this payment yet. I've sent it to the team to verify."
+  },
+  {
+   "line": "13_learns",
+   "chapter": "learns",
+   "kind": "narrator",
+   "src": "audio/vo_neha/13_learns.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 81.781,
+   "end": 90.078,
+   "dur": 8.297,
+   "text": "Every reply, and every payment, teaches Kairos something new. So it gets better, every single day.",
+   "en": "Every reply, and every payment, teaches Kairos something new. So it gets better, every single day."
+  },
+  {
+   "line": "14_operator",
+   "chapter": "operator",
+   "kind": "narrator",
+   "src": "audio/vo_neha/14_operator.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 90.678,
+   "end": 96.842,
+   "dur": 6.164,
+   "text": "And the collections team? They watch the money come in, and approve the few decisions that need a human.",
+   "en": "And the collections team? They watch the money come in, and approve the few decisions that need a human."
+  },
+  {
+   "line": "15_proof",
+   "chapter": "proof",
+   "kind": "narrator",
+   "src": "audio/vo_neha/15_proof.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 98.442,
+   "end": 106.452,
+   "dur": 8.01,
+   "text": "In our tests, Kairos recovered about twice as much money for every rupee spent, compared to a fixed schedule.",
+   "en": "In our tests, Kairos recovered about twice as much money for every rupee spent, compared to a fixed schedule."
+  },
+  {
+   "line": "16_safe",
+   "chapter": "proof",
+   "kind": "narrator",
+   "src": "audio/vo_neha/16_safe.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 107.052,
+   "end": 110.964,
+   "dur": 3.912,
+   "text": "With zero rule breaches. And every safety test passed.",
+   "en": "With zero rule breaches. And every safety test passed."
+  },
+  {
+   "line": "17_end",
+   "chapter": "proof",
+   "kind": "narrator",
+   "src": "audio/vo_neha/17_end.wav",
+   "speaker": "neha",
+   "role": "narrator",
+   "start": 111.564,
+   "end": 116.287,
+   "dur": 4.723,
+   "text": "Kairos. The right message, at the right time. Or none at all.",
+   "en": "Kairos. The right message, at the right time. Or none at all."
+  }
+ ],
+ "chapters": {
+  "problem": [
+   1.5,
+   17.27
+  ],
+  "meet": [
+   18.87,
+   24.795
+  ],
+  "decides": [
+   25.395,
+   29.801
+  ],
+  "channels": [
+   30.401,
+   37.222
+  ],
+  "call": [
+   37.822,
+   48.661
+  ],
+  "safety": [
+   49.261,
+   72.055
+  ],
+  "fake": [
+   72.655,
+   81.181
+  ],
+  "learns": [
+   81.781,
+   90.078
+  ],
+  "operator": [
+   90.678,
+   96.842
+  ],
+  "proof": [
+   98.442,
+   116.287
+  ]
+ },
+ "markers": {
+  "lift_meet_kairos": 18.57,
+  "climax_proof": 98.142,
+  "final_line": 111.564
+ }
+}

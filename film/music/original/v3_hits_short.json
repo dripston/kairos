@@ -1,0 +1,174 @@
+{
+ "variant": "v3_trailer_short",
+ "timeline": "audio/film_timeline_short.json",
+ "runtime_s": 119.287,
+ "dialogue_sections_pad_only": [
+  [
+   37.7,
+   48.66
+  ],
+  [
+   67.2,
+   81.18
+  ]
+ ],
+ "tempo_anchors_beat_s": [
+  [
+   0,
+   0.0
+  ],
+  [
+   31,
+   18.57
+  ],
+  [
+   42,
+   25.29
+  ],
+  [
+   50,
+   30.3
+  ],
+  [
+   62,
+   37.7
+  ],
+  [
+   81,
+   49.16
+  ],
+  [
+   94,
+   56.94
+  ],
+  [
+   106,
+   64.0
+  ],
+  [
+   120,
+   72.56
+  ],
+  [
+   135,
+   81.68
+  ],
+  [
+   150,
+   90.58
+  ],
+  [
+   163,
+   98.14
+  ],
+  [
+   178,
+   106.95
+  ],
+  [
+   186,
+   111.46
+  ],
+  [
+   198,
+   119.13999999999999
+  ]
+ ],
+ "hits": [
+  {
+   "t": 0.0,
+   "type": "cold_open",
+   "cue": "problem: cold-open boom + sub drop, pizzicato/tick pulse"
+  },
+  {
+   "t": 17.3,
+   "type": "riser",
+   "cue": "riser 17.30-18.27, near-silence to 18.57"
+  },
+  {
+   "t": 18.57,
+   "type": "big",
+   "cue": "04_meet: Meet Kairos"
+  },
+  {
+   "t": 25.29,
+   "type": "medium",
+   "cue": "06_decides"
+  },
+  {
+   "t": 30.3,
+   "type": "flourish",
+   "cue": "07_channel: channel ring flourish"
+  },
+  {
+   "t": 37.7,
+   "type": "ring",
+   "cue": "vc dialogue: phone-ring accent, pad only to 49.16"
+  },
+  {
+   "t": 49.16,
+   "type": "medium_brass",
+   "cue": "08_aladdin: brass stab"
+  },
+  {
+   "t": 56.94,
+   "type": "light",
+   "cue": "09_rules"
+  },
+  {
+   "t": 64.0,
+   "type": "stop",
+   "cue": "09_rules: everything stops; near-silence to 67.20"
+  },
+  {
+   "t": 67.2,
+   "type": "pad",
+   "cue": "st dialogue: pad only"
+  },
+  {
+   "t": 72.56,
+   "type": "pad",
+   "cue": "fp dialogue: suspense pad only"
+  },
+  {
+   "t": 75.75,
+   "type": "accent",
+   "cue": "fp_a1: the fake is caught (soft medium accent)"
+  },
+  {
+   "t": 81.68,
+   "type": "build",
+   "cue": "13_learns: build begins"
+  },
+  {
+   "t": 90.58,
+   "type": "lift",
+   "cue": "14_operator: lift (dashboard)"
+  },
+  {
+   "t": 96.9,
+   "type": "riser",
+   "cue": "riser 96.90-97.85, silence to 98.14"
+  },
+  {
+   "t": 98.14,
+   "type": "biggest",
+   "cue": "15_proof: climax, choir"
+  },
+  {
+   "t": 106.95,
+   "type": "big",
+   "cue": "16_safe"
+  },
+  {
+   "t": 111.46,
+   "type": "final",
+   "cue": "17_end: final statement, sustained D major"
+  },
+  {
+   "t": 116.4,
+   "type": "boom",
+   "cue": "final low boom, tail to 119.287"
+  }
+ ]
+}

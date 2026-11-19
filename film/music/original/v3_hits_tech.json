@@ -1,0 +1,155 @@
+{
+ "variant": "v3_tech",
+ "timeline": "audio/film_timeline_tech.json",
+ "runtime_s": 135.64,
+ "dialogue_sections_pad_only": [],
+ "tempo_anchors_beat_s": [
+  [
+   0,
+   0.0
+  ],
+  [
+   2,
+   1.1
+  ],
+  [
+   7,
+   4.31
+  ],
+  [
+   22,
+   13.34
+  ],
+  [
+   47,
+   28.3
+  ],
+  [
+   64,
+   38.52
+  ],
+  [
+   79,
+   47.68
+  ],
+  [
+   96,
+   57.97
+  ],
+  [
+   113,
+   68.39
+  ],
+  [
+   130,
+   78.86
+  ],
+  [
+   155,
+   93.87
+  ],
+  [
+   181,
+   109.18
+  ],
+  [
+   198,
+   119.34
+  ],
+  [
+   213,
+   128.54
+  ],
+  [
+   225,
+   136.22
+  ]
+ ],
+ "hits": [
+  {
+   "t": 0.0,
+   "type": "riser",
+   "cue": "soft riser into the cold open"
+  },
+  {
+   "t": 1.1,
+   "type": "cold_open",
+   "cue": "x01_intro: cold-open hit, C minor"
+  },
+  {
+   "t": 4.31,
+   "type": "step",
+   "cue": "t1_record: arpeggio, sub pulse, ticking hats"
+  },
+  {
+   "t": 13.34,
+   "type": "step",
+   "cue": "x02_churn: churn / re-sort rhythm"
+  },
+  {
+   "t": 28.3,
+   "type": "step",
+   "cue": "t2_model: off-beat e-piano arp, halo pad"
+  },
+  {
+   "t": 38.52,
+   "type": "medium_brass",
+   "cue": "t3_reserve: Aladdin, low brass stab"
+  },
+  {
+   "t": 47.68,
+   "type": "step",
+   "cue": "t4_webhooks: ping-pong delay plucks"
+  },
+  {
+   "t": 57.97,
+   "type": "step",
+   "cue": "x03_voice: strings ostinato + arps"
+  },
+  {
+   "t": 68.39,
+   "type": "step",
+   "cue": "t5_intent: layered decision ladder"
+  },
+  {
+   "t": 78.86,
+   "type": "step",
+   "cue": "x04_cm03: build"
+  },
+  {
+   "t": 92.95,
+   "type": "riser",
+   "cue": "riser 92.95-93.65"
+  },
+  {
+   "t": 93.87,
+   "type": "lift",
+   "cue": "x05_hitl: lift to E-flat major, a person takes control (piano)"
+  },
+  {
+   "t": 109.18,
+   "type": "step",
+   "cue": "t6_loop: back to C minor, building"
+  },
+  {
+   "t": 118.4,
+   "type": "riser",
+   "cue": "riser 118.40-119.05, silence to 119.34"
+  },
+  {
+   "t": 119.34,
+   "type": "biggest",
+   "cue": "x06_proof: climax, choir"
+  },
+  {
+   "t": 128.54,
+   "type": "final",
+   "cue": "x07_end: final statement, C major"
+  },
+  {
+   "t": 133.3,
+   "type": "boom",
+   "cue": "final low boom, tail to 135.64"
+  }
+ ]
+}

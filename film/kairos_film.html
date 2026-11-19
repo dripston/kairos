@@ -3,186 +3,236 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kairos Launch Film</title>
+<title>Kairos Films</title>
 <script>
 /* =====================================================================
-   CONFIG: every number and name in the film. Edit, save, reload.
-   All results are SIMULATED (synthetic borrowers, DEV simulator). Sources: TRUTH_TABLE.md
+   Kairos films. Three cuts share one set of scenes ("beats"), each keyed by the voice lines it shows:
+     ?cut=short  Product film  (2:00, audio/film_timeline_short.json)
+     ?cut=tech   Technical film (2:16, audio/film_timeline_tech.json)
+     ?cut=full   Full film     (4:08, audio/film_timeline.json)
+   All timing comes from the timelines (embedded below by tools/embed_timelines.py).
+   Every number is SIMULATED (synthetic borrowers, DEV simulator). Sources: TRUTH_TABLE.md
    ===================================================================== */
 const CONFIG = {
-  product: "Kairos",
-  team: "The A Team",
-  event: "CreditNirvana Agentathon 2026",
-  numbers: {
-    recoveryX: "2",                       // "~2x money recovered per rupee spent" (K09 vs CN10, unseen seeds)
-    recoveryExamples: "517 vs 272 · 530 vs 229 · 459 vs 268",
-    recoveryRange: "1.7× to 2.3×",
-    ruleBreaches: 0,
-    attacks: "49/49",
-    policyCases: "148/148"                // POLICY_COVERAGE.md: K01 38, K10 33 (identity_mode k10), K13 25, K21 20, K24 32
-  }
+  product: "Kairos", team: "The A Team", event: "CreditNirvana Agentathon 2026",
+  cuts: {
+    short: {label: "Product film", vo: "music/vo_short.m4a", music: "music/original/v3_trailer_short.m4a", hits: "music/original/v3_hits_short.json"},
+    tech:  {label: "Technical film", vo: "music/vo_tech.m4a",  music: "music/original/v3_tech.m4a",          hits: "music/original/v3_hits_tech.json"},
+    full:  {label: "Full film", vo: "music/vo_hero.m4a",  music: "music/original/v3_cinematic_trailer.m4a", hits: "music/original/v3_hits.json"}
+  },
+  defaultCut: "short"
 };
+const DATA = /*TL>*/{"cuts":{"full":{"runtime_s":247.665,"markers":{"lift_meet_kairos":26.077,"stop_word":70.39,"under_the_hood":159.523,"climax_proof":226.52,"final_line":239.942,"everything_stops":71.35,"borrower_stop":74.612},"lines":[{"line":"01_people","chapter":"problem","kind":"narrator","role":"narrator","start":1.5,"end":8.646,"text":"Every month, millions of people in India repay a loan. For a phone, a bike, a small shop.","en":"Every month, millions of people in India repay a loan. For a phone, a bike, a small shop."},{"line":"02_same","chapter":"problem","kind":"narrator","role":"narrator","start":9.246,"end":16.422,"text":"And every month, lenders remind them the same way. Same message. Same time. To everyone.","en":"And every month, lenders remind them the same way. Same message. Same time. To everyone."},{"line":"03_cost","chapter":"problem","kind":"narrator","role":"narrator","start":17.022,"end":24.577,"text":"Most of those messages are ignored. Some annoy people. And every single one costs money.","en":"Most of those messages are ignored. Some annoy people. And every single one costs money."},{"line":"04_meet","chapter":"meet","kind":"narrator","role":"narrator","start":26.377,"end":32.302,"text":"Meet Kairos. An AI that runs loan collections, one person at a time.","en":"Meet Kairos. An AI that runs loan collections, one person at a time."},{"line":"05_looks","chapter":"looks","kind":"narrator","role":"narrator","start":32.902,"end":42.784,"text":"Every morning, Kairos looks at each borrower. How late they are, how they replied before, and when they usually read their messages.","en":"Every morning, Kairos looks at each borrower. How late they are, how they replied before, and when they usually read their messages."},{"line":"06_decides","chapter":"looks","kind":"narrator","role":"narrator","start":43.384,"end":47.79,"text":"Then it decides. Contact them today, or wait.","en":"Then it decides. Contact them today, or wait."},{"line":"07_channel","chapter":"channels","kind":"narrator","role":"narrator","start":48.39,"end":55.212,"text":"It picks the channel. SMS, WhatsApp, a voice call in their language, or a human. And the best time of day.","en":"It picks the channel. SMS, WhatsApp, a voice call in their language, or a human. And the best time of day."},{"line":"08_aladdin","chapter":"safety","kind":"narrator","role":"narrator","start":56.612,"end":63.79,"text":"Before anything is sent, Aladdin, our safety supervisor, checks it against the lender's rules. Twice.","en":"Before anything is sent, Aladdin, our safety supervisor, checks it against the lender's rules. Twice."},{"line":"09_rules","chapter":"safety","kind":"narrator","role":"narrator","start":64.39,"end":74.012,"text":"No messages at night. Never more than allowed. And if someone says stop, everything stops. On every channel.","en":"No messages at night. Never more than allowed. And if someone says stop, everything stops. On every channel."},{"line":"st_b1","chapter":"safety","kind":"dialogue","role":"borrower","start":74.612,"end":76.159,"text":"Please stop messaging me.","en":"Please stop messaging me."},{"line":"st_a1","chapter":"safety","kind":"dialogue","role":"agent","start":76.409,"end":79.407,"text":"Understood. You won't get any more messages from us.","en":"Understood. You won't get any more messages from us."},{"line":"10_reply","chapter":"whatsapp","kind":"narrator","role":"narrator","start":80.007,"end":87.031,"text":"When a borrower writes back on WhatsApp, Kairos answers in seconds, in Hindi or in English.","en":"When a borrower writes back on WhatsApp, Kairos answers in seconds, in Hindi or in English."},{"line":"wa_b1","chapter":"whatsapp","kind":"dialogue","role":"borrower","start":87.631,"end":90.626,"text":"नमस्ते, मेरी EMI कब ड्यू है?","en":"Hi, when is my EMI due?"},{"line":"wa_a1","chapter":"whatsapp","kind":"dialogue","role":"agent","start":90.876,"end":96.991,"text":"नमस्ते सुनीता जी! पहले आपकी पहचान कन्फर्म कर लूँ। आपके रजिस्टर्ड नंबर पर एक OTP भेजा है।","en":"Hello Sunita ji! First let me confirm it's you. I've sent an OTP to your registered number."},{"line":"wa_b2","chapter":"whatsapp","kind":"dialogue","role":"borrower","start":97.241,"end":99.503,"text":"OTP है चार आठ दो नौ।","en":"The OTP is 4829."},{"line":"wa_a2","chapter":"whatsapp","kind":"dialogue","role":"agent","start":99.753,"end":106.109,"text":"धन्यवाद! आपकी EMI, चार हज़ार दो सौ पचास रुपये, कल ड्यू है। क्या मैं पेमेंट लिंक भेज दूँ?","en":"Thank you! Your EMI of ₹4,250 is due tomorrow. Shall I send a payment link?"},{"line":"wa_b3","chapter":"whatsapp","kind":"dialogue","role":"borrower","start":106.359,"end":107.56,"text":"हाँ, भेज दीजिए।","en":"Yes, please send it."},{"line":"wa_a3","chapter":"whatsapp","kind":"dialogue","role":"agent","start":107.81,"end":111.043,"text":"लिंक भेज दिया है। पेमेंट होते ही मैं कन्फर्म कर दूँगी।","en":"Link sent. I'll confirm as soon as the payment lands."},{"line":"vc_a1","chapter":"call","kind":"dialogue","role":"agent","start":112.543,"end":117.637,"text":"नमस्ते, मैं डेमो फाइनेंस की तरफ़ से बोल रही हूँ। क्या मेरी बात सुनीता जी से हो रही है?","en":"Hello, I'm calling from Demo Finance. Am I speaking with Sunita ji?"},{"line":"vc_b1","chapter":"call","kind":"dialogue","role":"borrower","start":117.887,"end":119.019,"text":"हाँ, बोलिए।","en":"Yes, go ahead."},{"line":"vc_a2","chapter":"call","kind":"dialogue","role":"agent","start":119.269,"end":123.194,"text":"आपकी EMI पिछले हफ़्ते ड्यू थी। क्या आप शुक्रवार तक पेमेंट कर पाएँगी?","en":"Your EMI was due last week. Could you pay by Friday?"},{"line":"vc_b2","chapter":"call","kind":"dialogue","role":"borrower","start":123.444,"end":125.243,"text":"हाँ, शुक्रवार को कर दूँगी।","en":"Yes, I'll pay on Friday."},{"line":"vc_a3","chapter":"call","kind":"dialogue","role":"agent","start":125.493,"end":130.108,"text":"बहुत अच्छा। मैंने शुक्रवार का वादा नोट कर लिया है, और आपको एक रिमाइंडर भेज दूँगी।","en":"Great. I've noted your promise for Friday, and I'll send you a reminder."},{"line":"12_verify","chapter":"fake","kind":"narrator","role":"narrator","start":130.708,"end":140.0,"text":"It confirms who they are before sharing any loan details. And if someone sends a fake payment screenshot, it checks with the bank, and catches it.","en":"It confirms who they are before sharing any loan details. And if someone sends a fake payment screenshot, it checks with the bank, and catches it."},{"line":"fp_b1","chapter":"fake","kind":"dialogue","role":"borrower","start":140.6,"end":143.506,"text":"मैंने पेमेंट कर दिया है, ये रहा स्क्रीनशॉट।","en":"I've paid, here's the screenshot."},{"line":"fp_a1","chapter":"fake","kind":"dialogue","role":"agent","start":143.756,"end":149.126,"text":"शुक्रिया! बैंक में अभी ये पेमेंट नहीं दिख रहा। मैंने इसे वेरिफिकेशन के लिए टीम को भेज दिया है।","en":"Thanks! The bank doesn't show this payment yet. I've sent it to the team to verify."},{"line":"13_learns","chapter":"learns","kind":"narrator","role":"narrator","start":149.726,"end":158.023,"text":"Every reply, and every payment, teaches Kairos something new. So it gets better, every single day.","en":"Every reply, and every payment, teaches Kairos something new. So it gets better, every single day."},{"line":"t1_record","chapter":"hood","kind":"narrator","role":"narrator","start":159.823,"end":166.996,"text":"Under the hood, every borrower lives in one record. Loans, payments, replies, consent.","en":"Under the hood, every borrower lives in one record. Loans, payments, replies, consent."},{"line":"t2_model","chapter":"hood","kind":"narrator","role":"narrator","start":167.596,"end":178.353,"text":"A learning model scores every channel and every hour for them, using what worked for similar borrowers in their region, and for them personally.","en":"A learning model scores every channel and every hour for them, using what worked for similar borrowers in their region, and for them personally."},{"line":"t3_reserve","chapter":"hood","kind":"narrator","role":"narrator","start":178.953,"end":187.672,"text":"Before a message is queued, Aladdin reserves the budget and the contact limit. At the moment of sending, it checks the rules again.","en":"Before a message is queued, Aladdin reserves the budget and the contact limit. At the moment of sending, it checks the rules again."},{"line":"t4_webhooks","chapter":"hood","kind":"narrator","role":"narrator","start":188.272,"end":198.522,"text":"Messages go out through each channel's API. Delivery, read and reply receipts come back as webhooks. Duplicates are ignored.","en":"Messages go out through each channel's API. Delivery, read and reply receipts come back as webhooks. Duplicates are ignored."},{"line":"t5_intent","chapter":"hood","kind":"narrator","role":"narrator","start":199.122,"end":208.275,"text":"Replies are understood by rules first, then a small model, then Sarvam's decision model. If it's still unsure, a human decides.","en":"Replies are understood by rules first, then a small model, then Sarvam's decision model. If it's still unsure, a human decides."},{"line":"t6_loop","chapter":"hood","kind":"narrator","role":"narrator","start":208.875,"end":217.656,"text":"Every outcome is written back, and the model updates. Same data in, same decision out. Every step, on the record.","en":"Every outcome is written back, and the model updates. Same data in, same decision out. Every step, on the record."},{"line":"14_operator","chapter":"operator","kind":"narrator","role":"narrator","start":218.856,"end":225.02,"text":"And the collections team? They watch the money come in, and approve the few decisions that need a human.","en":"And the collections team? They watch the money come in, and approve the few decisions that need a human."},{"line":"15_proof","chapter":"proof","kind":"narrator","role":"narrator","start":226.82,"end":234.83,"text":"In our tests, Kairos recovered about twice as much money for every rupee spent, compared to a fixed schedule.","en":"In our tests, Kairos recovered about twice as much money for every rupee spent, compared to a fixed schedule."},{"line":"16_safe","chapter":"proof","kind":"narrator","role":"narrator","start":235.43,"end":239.342,"text":"With zero rule breaches. And every safety test passed.","en":"With zero rule breaches. And every safety test passed."},{"line":"17_end","chapter":"proof","kind":"narrator","role":"narrator","start":239.942,"end":244.665,"text":"Kairos. The right message, at the right time. Or none at all.","en":"Kairos. The right message, at the right time. Or none at all."}]},"short":{"runtime_s":119.287,"markers":{"lift_meet_kairos":18.57,"climax_proof":98.142,"final_line":111.564},"lines":[{"line":"02s_same","chapter":"problem","kind":"narrator","role":"narrator","start":1.5,"end":9.115,"text":"Every month, lenders remind borrowers the same way. Same message. Same time. To everyone.","en":"Every month, lenders remind borrowers the same way. Same message. Same time. To everyone."},{"line":"03_cost","chapter":"problem","kind":"narrator","role":"narrator","start":9.715,"end":17.27,"text":"Most of those messages are ignored. Some annoy people. And every single one costs money.","en":"Most of those messages are ignored. Some annoy people. And every single one costs money."},{"line":"04_meet","chapter":"meet","kind":"narrator","role":"narrator","start":18.87,"end":24.795,"text":"Meet Kairos. An AI that runs loan collections, one person at a time.","en":"Meet Kairos. An AI that runs loan collections, one person at a time."},{"line":"06_decides","chapter":"decides","kind":"narrator","role":"narrator","start":25.395,"end":29.801,"text":"Then it decides. Contact them today, or wait.","en":"Then it decides. Contact them today, or wait."},{"line":"07_channel","chapter":"channels","kind":"narrator","role":"narrator","start":30.401,"end":37.222,"text":"It picks the channel. SMS, WhatsApp, a voice call in their language, or a human. And the best time of day.","en":"It picks the channel. SMS, WhatsApp, a voice call in their language, or a human. And the best time of day."},{"line":"vc_a2","chapter":"call","kind":"dialogue","role":"agent","start":37.822,"end":41.747,"text":"आपकी EMI पिछले हफ़्ते ड्यू थी। क्या आप शुक्रवार तक पेमेंट कर पाएँगी?","en":"Your EMI was due last week. Could you pay by Friday?"},{"line":"vc_b2","chapter":"call","kind":"dialogue","role":"borrower","start":41.997,"end":43.796,"text":"हाँ, शुक्रवार को कर दूँगी।","en":"Yes, I'll pay on Friday."},{"line":"vc_a3","chapter":"call","kind":"dialogue","role":"agent","start":44.046,"end":48.661,"text":"बहुत अच्छा। मैंने शुक्रवार का वादा नोट कर लिया है, और आपको एक रिमाइंडर भेज दूँगी।","en":"Great. I've noted your promise for Friday, and I'll send you a reminder."},{"line":"08_aladdin","chapter":"safety","kind":"narrator","role":"narrator","start":49.261,"end":56.439,"text":"Before anything is sent, Aladdin, our safety supervisor, checks it against the lender's rules. Twice.","en":"Before anything is sent, Aladdin, our safety supervisor, checks it against the lender's rules. Twice."},{"line":"09_rules","chapter":"safety","kind":"narrator","role":"narrator","start":57.039,"end":66.661,"text":"No messages at night. Never more than allowed. And if someone says stop, everything stops. On every channel.","en":"No messages at night. Never more than allowed. And if someone says stop, everything stops. On every channel."},{"line":"st_b1","chapter":"safety","kind":"dialogue","role":"borrower","start":67.261,"end":68.808,"text":"Please stop messaging me.","en":"Please stop messaging me."},{"line":"st_a1","chapter":"safety","kind":"dialogue","role":"agent","start":69.058,"end":72.055,"text":"Understood. You won't get any more messages from us.","en":"Understood. You won't get any more messages from us."},{"line":"fp_b1","chapter":"fake","kind":"dialogue","role":"borrower","start":72.655,"end":75.561,"text":"मैंने पेमेंट कर दिया है, ये रहा स्क्रीनशॉट।","en":"I've paid, here's the screenshot."},{"line":"fp_a1","chapter":"fake","kind":"dialogue","role":"agent","start":75.811,"end":81.181,"text":"शुक्रिया! बैंक में अभी ये पेमेंट नहीं दिख रहा। मैंने इसे वेरिफिकेशन के लिए टीम को भेज दिया है।","en":"Thanks! The bank doesn't show this payment yet. I've sent it to the team to verify."},{"line":"13_learns","chapter":"learns","kind":"narrator","role":"narrator","start":81.781,"end":90.078,"text":"Every reply, and every payment, teaches Kairos something new. So it gets better, every single day.","en":"Every reply, and every payment, teaches Kairos something new. So it gets better, every single day."},{"line":"14_operator","chapter":"operator","kind":"narrator","role":"narrator","start":90.678,"end":96.842,"text":"And the collections team? They watch the money come in, and approve the few decisions that need a human.","en":"And the collections team? They watch the money come in, and approve the few decisions that need a human."},{"line":"15_proof","chapter":"proof","kind":"narrator","role":"narrator","start":98.442,"end":106.452,"text":"In our tests, Kairos recovered about twice as much money for every rupee spent, compared to a fixed schedule.","en":"In our tests, Kairos recovered about twice as much money for every rupee spent, compared to a fixed schedule."},{"line":"16_safe","chapter":"proof","kind":"narrator","role":"narrator","start":107.052,"end":110.964,"text":"With zero rule breaches. And every safety test passed.","en":"With zero rule breaches. And every safety test passed."},{"line":"17_end","chapter":"proof","kind":"narrator","role":"narrator","start":111.564,"end":116.287,"text":"Kairos. The right message, at the right time. Or none at all.","en":"Kairos. The right message, at the right time. Or none at all."}]},"tech":{"runtime_s":135.64,"markers":{"hitl":93.869,"climax_proof":119.339,"final_line":128.636},"lines":[{"line":"x01_intro","chapter":"intro","kind":"narrator","role":"narrator","start":1.2,"end":3.96,"text":"This is how Kairos works, under the hood.","en":"This is how Kairos works, under the hood."},{"line":"t1_record","chapter":"record","kind":"narrator","role":"narrator","start":4.41,"end":12.992,"text":"Every borrower lives in one record. Loans, payments, replies, consent. Money is kept to the paisa.","en":"Every borrower lives in one record. Loans, payments, replies, consent. Money is kept to the paisa."},{"line":"x02_churn","chapter":"churn","kind":"narrator","role":"narrator","start":13.442,"end":27.945,"text":"Every day, and on every event, the churn engine re-sorts each borrower. Their cohort, their risk, their step in the journey, and the layer of contact. Pay, or say stop, and they leave the journey at once.","en":"Every day, and on every event, the churn engine re-sorts each borrower. Their cohort, their risk, their step in the journey, and the layer of contact. Pay, or say stop, and they leave the journey at once."},{"line":"t2_model","chapter":"learner","kind":"narrator","role":"narrator","start":28.395,"end":38.168,"text":"A learning model scores every channel and every hour for them, using what worked for similar borrowers in their region, and for them personally.","en":"A learning model scores every channel and every hour for them, using what worked for similar borrowers in their region, and for them personally."},{"line":"t3_reserve","chapter":"aladdin","kind":"narrator","role":"narrator","start":38.618,"end":47.327,"text":"Before a message is queued, Aladdin reserves the budget and the contact limit. At the moment of sending, it checks the rules again.","en":"Before a message is queued, Aladdin reserves the budget and the contact limit. At the moment of sending, it checks the rules again."},{"line":"t4_webhooks","chapter":"channels","kind":"narrator","role":"narrator","start":47.777,"end":57.621,"text":"Messages go out through each channel's API. Delivery, read and reply receipts come back as webhooks. Duplicates are ignored.","en":"Messages go out through each channel's API. Delivery, read and reply receipts come back as webhooks. Duplicates are ignored."},{"line":"x03_voice","chapter":"voice","kind":"narrator","role":"narrator","start":58.071,"end":68.039,"text":"Voice calls run on Sarvam agents, in eight languages. Every call returns a disposition with a confidence score. Below the threshold, a person reviews it.","en":"Voice calls run on Sarvam agents, in eight languages. Every call returns a disposition with a confidence score. Below the threshold, a person reviews it."},{"line":"t5_intent","chapter":"intent","kind":"narrator","role":"narrator","start":68.489,"end":78.51,"text":"Replies are understood by rules first, then a small model, then Sarvam's decision model. If it's still unsure, a human decides.","en":"Replies are understood by rules first, then a small model, then Sarvam's decision model. If it's still unsure, a human decides."},{"line":"x04_cm03","chapter":"cm03","kind":"narrator","role":"narrator","start":78.96,"end":92.919,"text":"Inbound WhatsApp runs on its own state machine. No account details before OTP. Payment claims are checked against the bank, so doctored screenshots and reused references are caught.","en":"Inbound WhatsApp runs on its own state machine. No account details before OTP. Payment claims are checked against the bank, so doctored screenshots and reused references are caught."},{"line":"x05_hitl","chapter":"hitl","kind":"narrator","role":"narrator","start":94.169,"end":108.825,"text":"And a person can take control at any moment. Pause a campaign, approve or reject a held call, put a borrower on hold, or take over a conversation. Every action goes through Aladdin, and into the audit log.","en":"And a person can take control at any moment. Pause a campaign, approve or reject a held call, put a borrower on hold, or take over a conversation. Every action goes through Aladdin, and into the audit log."},{"line":"t6_loop","chapter":"loop","kind":"narrator","role":"narrator","start":109.275,"end":118.389,"text":"Every outcome is written back, and the model updates. Same data in, same decision out. Every step, on the record.","en":"Every outcome is written back, and the model updates. Same data in, same decision out. Every step, on the record."},{"line":"x06_proof","chapter":"proof","kind":"narrator","role":"narrator","start":119.639,"end":128.186,"text":"Fifty thousand decisions in about two minutes. Zero cap breaches. And forty-nine out of forty-nine red-team attacks, blocked.","en":"Fifty thousand decisions in about two minutes. Zero cap breaches. And forty-nine out of forty-nine red-team attacks, blocked."},{"line":"x07_end","chapter":"end","kind":"narrator","role":"narrator","start":128.636,"end":133.14,"text":"Kairos. Built to be trusted with every rupee, and every borrower.","en":"Kairos. Built to be trusted with every rupee, and every borrower."}]}},"dialogue":{"wa_b1":{"role":"borrower","text":"नमस्ते, मेरी EMI कब ड्यू है?","en":"Hi, when is my EMI due?"},"wa_a1":{"role":"agent","text":"नमस्ते सुनीता जी! पहले आपकी पहचान कन्फर्म कर लूँ। आपके रजिस्टर्ड नंबर पर एक OTP भेजा है।","en":"Hello Sunita ji! First let me confirm it's you. I've sent an OTP to your registered number."},"wa_b2":{"role":"borrower","text":"OTP है चार आठ दो नौ।","en":"The OTP is 4829."},"wa_a2":{"role":"agent","text":"धन्यवाद! आपकी EMI, चार हज़ार दो सौ पचास रुपये, कल ड्यू है। क्या मैं पेमेंट लिंक भेज दूँ?","en":"Thank you! Your EMI of ₹4,250 is due tomorrow. Shall I send a payment link?"},"wa_b3":{"role":"borrower","text":"हाँ, भेज दीजिए।","en":"Yes, please send it."},"wa_a3":{"role":"agent","text":"लिंक भेज दिया है। पेमेंट होते ही मैं कन्फर्म कर दूँगी।","en":"Link sent. I'll confirm as soon as the payment lands."},"fp_b1":{"role":"borrower","text":"मैंने पेमेंट कर दिया है, ये रहा स्क्रीनशॉट।","en":"I've paid, here's the screenshot."},"fp_a1":{"role":"agent","text":"शुक्रिया! बैंक में अभी ये पेमेंट नहीं दिख रहा। मैंने इसे वेरिफिकेशन के लिए टीम को भेज दिया है।","en":"Thanks! The bank doesn't show this payment yet. I've sent it to the team to verify."},"vc_a1":{"role":"agent","text":"नमस्ते, मैं डेमो फाइनेंस की तरफ़ से बोल रही हूँ। क्या मेरी बात सुनीता जी से हो रही है?","en":"Hello, I'm calling from Demo Finance. Am I speaking with Sunita ji?"},"vc_b1":{"role":"borrower","text":"हाँ, बोलिए।","en":"Yes, go ahead."},"vc_a2":{"role":"agent","text":"आपकी EMI पिछले हफ़्ते ड्यू थी। क्या आप शुक्रवार तक पेमेंट कर पाएँगी?","en":"Your EMI was due last week. Could you pay by Friday?"},"vc_b2":{"role":"borrower","text":"हाँ, शुक्रवार को कर दूँगी।","en":"Yes, I'll pay on Friday."},"vc_a3":{"role":"agent","text":"बहुत अच्छा। मैंने शुक्रवार का वादा नोट कर लिया है, और आपको एक रिमाइंडर भेज दूँगी।","en":"Great. I've noted your promise for Friday, and I'll send you a reminder."},"st_b1":{"role":"borrower","text":"Please stop messaging me.","en":"Please stop messaging me."},"st_a1":{"role":"agent","text":"Understood. You won't get any more messages from us.","en":"Understood. You won't get any more messages from us."}}}/*<TL*/;
 </script>
 <style>
 :root{
-  --ink:#1d1d1f; --grey:#6e6e73; --hair:#d2d2d7; --studio:#f2efe9; --studio2:#e7e3dc;
-  --accent:#0f766e; --accent-soft:#e3f1ef; --ok:#2e7d4f; --bad:#b4232c; --warn:#b26a00;
+  --ink:#1d1d1f; --grey:#6e6e73; --acc:#0f766e; --acc2:#5fbfb4; --ok:#30d158; --bad:#ff453a; --warn:#ffb340;
   --sans:"SF Pro Display","Inter",-apple-system,"Helvetica Neue",Arial,"Noto Sans Devanagari","Kohinoor Devanagari",sans-serif;
+  --mono:"SF Mono",Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:#000;color:var(--ink);font-family:var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased}
+html,body{margin:0;height:100%;background:#000;color:#f5f5f7;font-family:var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased}
 #stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;background:#000}
 #cam{position:absolute;inset:0}
 .abs{position:absolute}
-.scene{position:absolute;inset:0;display:none;transform-origin:50% 50%;will-change:transform,opacity,filter;overflow:hidden}
-.black{background:#000;color:#f5f5f7}
-.black .spot{position:absolute;inset:0;background:radial-gradient(900px 520px at 50% 80%,rgba(255,255,255,.12),rgba(255,255,255,.03) 55%,transparent 72%)}
-.studio{background:radial-gradient(1400px 900px at 50% 40%,#f8f6f2,var(--studio) 55%,var(--studio2));color:var(--ink)}
-.studio .floor{position:absolute;left:0;right:0;bottom:0;height:300px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.035))}
+.beat{position:absolute;inset:0;display:none;overflow:hidden;background:#05060a;will-change:transform,opacity,filter,clip-path}
+[data-at],[data-out]{visibility:hidden}
+/* footage */
 .clip{position:absolute;inset:0;overflow:hidden;background:#000 center/cover no-repeat}
-.clip video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:contrast(1.07) saturate(.85) sepia(.05) brightness(.95)}
-.clip::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(0,0,0,.45)),linear-gradient(180deg,rgba(0,0,0,0) 55%,rgba(0,0,0,.5))}
-.ontop{position:absolute;z-index:3}
-.over{color:#fff;text-shadow:0 2px 30px rgba(0,0,0,.35)}
-#grain{position:absolute;inset:-50%;pointer-events:none;z-index:9;opacity:.03;mix-blend-mode:overlay;
+.clip video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:contrast(1.06) saturate(.88) brightness(.96)}
+.clip::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(0,0,0,.45)),linear-gradient(180deg,rgba(0,0,0,0) 60%,rgba(0,0,0,.45))}
+.clip.dim video{filter:contrast(1.05) saturate(.8) brightness(.5)}
+.clip.dim::before,.clip.soft::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:rgba(0,0,0,.35)}
+.clip.soft video{filter:blur(14px) saturate(.8) brightness(.42);transform:scale(1.08)}
+.clip.neb video{filter:saturate(.75) brightness(.42) contrast(1.1) hue-rotate(-12deg)}
+.clip.neb::after{background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 30%,rgba(0,0,0,.6)),linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.45))}
+.clip.frozen video{filter:saturate(.2) brightness(.5) contrast(1.1)}
+#grain{position:absolute;inset:-50%;pointer-events:none;z-index:9;opacity:.035;mix-blend-mode:overlay;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
 #flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:8}
 /* type */
-.eyebrow{font-size:28px;font-weight:600;color:var(--grey);letter-spacing:-.005em}
-.black .eyebrow,.over .eyebrow{color:#a1a1a6}
-.h{font-weight:650;letter-spacing:-.035em;line-height:1.04;font-size:132px;white-space:nowrap}
-.h.xl{font-size:220px;letter-spacing:-.045em;font-weight:700}.h.hero{font-size:340px;letter-spacing:-.05em;font-weight:700;line-height:.95}
-.h.m{font-size:92px}.h.s{font-size:62px;letter-spacing:-.025em}
+.eyebrow{font-size:26px;font-weight:600;color:#a1a1a6;letter-spacing:-.005em}
+.lbl{font-size:15px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--acc2)}
+.h{font-weight:650;letter-spacing:-.035em;line-height:1.04;font-size:120px;white-space:nowrap;color:#f5f5f7}
+.h.xl{font-size:220px;letter-spacing:-.045em;font-weight:700}.h.hero{font-size:320px;letter-spacing:-.05em;font-weight:700;line-height:.95}
+.h.m{font-size:84px}.h.s{font-size:58px;letter-spacing:-.025em}.h.xs{font-size:42px;letter-spacing:-.02em}
 .grad{background:linear-gradient(180deg,#ffffff 20%,#a1a1aa);-webkit-background-clip:text;background-clip:text;color:transparent}
-.gradink{background:linear-gradient(180deg,#1d1d1f 30%,#6e6e73);-webkit-background-clip:text;background-clip:text;color:transparent}
-.acc{color:var(--accent)}
 .center{position:absolute;left:0;right:0;text-align:center}
-.fine{font-size:19px;color:var(--grey);line-height:1.5}
-.black .fine{color:#8e8e93}
+.fine{font-size:19px;color:#a1a1a6;line-height:1.5}
+.shadowtxt{text-shadow:0 2px 24px rgba(0,0,0,.6)}
 .mask{display:inline-block;overflow:hidden;padding:0 .05em .22em;margin:0 -.05em -.22em;vertical-align:bottom}
 .mask>.mi{display:inline-block;will-change:transform}
-.sim{display:inline-block;font-size:15px;font-weight:600;letter-spacing:.08em;color:#8e8e93;border:1px solid #3a3a3c;border-radius:999px;padding:6px 14px;text-transform:uppercase}
-.realtag{font-size:15px;color:var(--grey)}
-.black .realtag{color:#8e8e93}
-.realtag b{font-weight:700;letter-spacing:.1em;font-size:12px;margin-right:8px;color:var(--accent)}
-.black .realtag b{color:#5fbfb4}
-/* laptop: an original aluminium-laptop render (no logos) */
+.sim{display:inline-block;font-size:14px;font-weight:700;letter-spacing:.1em;color:#c7c7cc;border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:6px 14px;text-transform:uppercase;background:rgba(0,0,0,.35)}
+.tag{display:inline-block;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#d1d1d6;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:5px 10px}
+.real{position:absolute;font-size:14px;color:#a1a1a6}.real b{font-weight:800;letter-spacing:.12em;font-size:12px;margin-right:8px;color:var(--acc2)}
+.glass{position:absolute;background:rgba(18,20,26,.62);backdrop-filter:blur(22px) saturate(1.2);-webkit-backdrop-filter:blur(22px) saturate(1.2);border:1px solid rgba(255,255,255,.13);border-radius:28px;box-shadow:0 40px 80px -30px rgba(0,0,0,.7)}
+.glass.light{background:rgba(250,250,252,.92);color:var(--ink);border-color:rgba(0,0,0,.06)}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.acc{color:var(--acc2)}
+.mono{font-family:var(--mono)}
+/* focused product screen: a glass frame holding a real capture; data-focus moves the crop */
+.scr{position:absolute;overflow:hidden;border-radius:22px;background:#111;border:1px solid rgba(255,255,255,.16);box-shadow:0 50px 100px -30px rgba(0,0,0,.85),0 0 0 8px rgba(255,255,255,.03)}
+.scr>img{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;max-width:none}
+.scr::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.07),rgba(255,255,255,0) 35%)}
+/* laptop render (no logos) */
 .mbp{position:absolute;width:1000px;-webkit-box-reflect:below 4px linear-gradient(transparent 82%,rgba(255,255,255,.10))}
-.studio .mbp{-webkit-box-reflect:below 4px linear-gradient(transparent 85%,rgba(255,255,255,.35))}
 .mbp .lid{position:relative;width:1000px;height:640px;border-radius:24px 24px 6px 6px;background:linear-gradient(180deg,#e2e3e6,#a9acb1);padding:3px;transform-origin:50% 100%}
 .mbp .bezel{position:absolute;inset:3px;border-radius:21px 21px 4px 4px;background:#0b0b0c;padding:16px 16px 20px}
 .mbp .notchm{position:absolute;left:50%;top:3px;width:128px;height:20px;margin-left:-64px;background:#0b0b0c;border-radius:0 0 11px 11px;z-index:4}
-.mbp .scr{position:relative;width:100%;height:100%;border-radius:5px;overflow:hidden;background:#000}
-.mbp .scr>img{position:absolute;left:0;top:0;width:962px;transform-origin:0 0;will-change:transform}
-.glass{position:absolute;inset:0;pointer-events:none;z-index:6;background:linear-gradient(115deg,rgba(255,255,255,.12),rgba(255,255,255,0) 34%,rgba(255,255,255,0) 70%,rgba(255,255,255,.04))}
+.mbp .ls{position:relative;width:100%;height:100%;border-radius:5px;overflow:hidden;background:#000}
 .mbp .base{position:relative;width:1190px;margin-left:-95px;height:24px;border-radius:3px 3px 18px 18px;background:linear-gradient(180deg,#eceef0 0%,#c3c6ca 40%,#8b8e93 100%);box-shadow:0 26px 40px -14px rgba(0,0,0,.55)}
-.mbp .base .lip{position:absolute;left:50%;top:0;width:190px;height:9px;margin-left:-95px;border-radius:0 0 9px 9px;background:linear-gradient(180deg,#9fa2a7,#d0d2d5)}
-.shadow{position:absolute;height:60px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.35),transparent);filter:blur(8px)}
-/* phone: an original titanium-edge phone render (no logos) */
-.iph{position:absolute;width:390px;height:810px;border-radius:66px;padding:4px;background:linear-gradient(135deg,#8c8d91,#e6e7e9 28%,#76777b 58%,#cfd0d3 85%,#8f9094);
-  box-shadow:0 60px 90px -40px rgba(0,0,0,.6);-webkit-box-reflect:below 6px linear-gradient(transparent 86%,rgba(255,255,255,.12))}
-.iph::before{content:"";position:absolute;right:-4px;top:200px;width:4px;height:110px;border-radius:2px;background:linear-gradient(90deg,#9a9b9f,#5f6064)}
-.iph::after{content:"";position:absolute;left:-4px;top:170px;width:4px;height:64px;border-radius:2px;background:linear-gradient(90deg,#5f6064,#9a9b9f);box-shadow:0 90px 0 #8a8b8f}
-.iph .frame{position:absolute;inset:4px;border-radius:62px;background:#050505;padding:11px}
-.iph .pscr{position:relative;width:100%;height:100%;border-radius:52px;overflow:hidden;background:#fff;color:var(--ink)}
-.iph .island{position:absolute;left:50%;top:12px;width:116px;height:34px;margin-left:-58px;border-radius:20px;background:#000;z-index:7}
-.lock{position:absolute;inset:0;background:linear-gradient(170deg,#2f3a4f,#5e5466 55%,#8c6f6a)}
-.lock .time{position:absolute;left:0;right:0;top:92px;text-align:center;color:#fff;font-size:92px;font-weight:300;letter-spacing:-.02em}
-.lock .date{position:absolute;left:0;right:0;top:78px;text-align:center;color:rgba(255,255,255,.85);font-size:19px;font-weight:600}
-.ntf{position:absolute;left:12px;right:12px;height:78px;border-radius:22px;background:rgba(245,245,247,.8);backdrop-filter:blur(12px);display:flex;gap:12px;align-items:center;padding:0 14px;color:#1d1d1f}
-.ntf .ic{flex:none;width:38px;height:38px;border-radius:10px;background:#8e8e93;display:grid;place-items:center;color:#fff;font-size:18px;font-weight:800}
-.ntf .t{font-size:14px;font-weight:700;display:flex;justify-content:space-between}
-.ntf .t span{font-weight:500;color:#6e6e73}
-.ntf .b{font-size:15px;margin-top:2px}
-.chat{position:absolute;inset:0;background:#fff}
-.chat .hd{position:absolute;left:0;right:0;top:0;height:112px;background:rgba(248,248,250,.95);border-bottom:1px solid #e5e5ea;display:flex;align-items:center;justify-content:flex-end;padding-bottom:12px;font-weight:600;font-size:18px;flex-direction:column}
-.chat .hd small{font-weight:400;color:#6e6e73;font-size:13px}
-.chat .body{position:absolute;left:14px;right:14px;top:128px}
-.bub{max-width:280px;padding:10px 14px;border-radius:20px;font-size:17px;line-height:1.36;margin-bottom:10px}
-.bub.in{background:#e9e9eb;color:#1d1d1f;border-bottom-left-radius:6px}
-.bub.out{background:var(--accent);color:#fff;margin-left:auto;border-bottom-right-radius:6px}
-.meta{font-size:12px;color:#8e8e93;margin:-4px 0 10px}
-.okpill{display:inline-block;background:#e3f4ea;color:var(--ok);font-weight:700;font-size:15px;padding:6px 12px;border-radius:999px}
-/* realistic generic chat (no messenger logo or doodle pattern): muted-teal header, warm beige textured background */
-.wa{position:absolute;inset:0;background:#ece5da radial-gradient(rgba(60,40,20,.06) 1.2px,transparent 1.6px) 0 0/18px 18px}
-.wa .whd{position:absolute;left:0;right:0;top:0;height:118px;background:#0f5f58;color:#fff;display:flex;align-items:flex-end;gap:12px;padding:0 18px 14px}
-.wa .whd .av{width:44px;height:44px;border-radius:50%;background:#e8f3f1;color:#0f5f58;display:grid;place-items:center;font-weight:800;font-size:18px}
-.wa .whd b{font-size:19px;display:block}.wa .whd small{font-size:13px;opacity:.85}
-.wa .wbody{position:absolute;left:12px;right:12px;top:132px;bottom:12px;display:flex;flex-direction:column;justify-content:flex-end;gap:10px}
-.wa .m{max-width:84%;padding:10px 13px 18px;border-radius:14px;font-size:19px;line-height:1.36;position:relative;box-shadow:0 1px 1px rgba(0,0,0,.08)}
-.wa .m.i{background:#fff;align-self:flex-start;border-top-left-radius:4px}
-.wa .m.o{background:#d6efe4;align-self:flex-end;border-top-right-radius:4px}
-.wa .m .ts{position:absolute;right:10px;bottom:4px;font-size:11px;color:#7b8794}
-.wa .chipd{align-self:center;background:#dfe9ee;color:#46545f;font-size:12px;font-weight:600;padding:5px 10px;border-radius:8px}
-.wa .typing{align-self:flex-start;background:#fff;border-radius:14px;padding:12px 16px;display:flex;gap:5px}
-.wa .typing i{width:8px;height:8px;border-radius:50%;background:#9aa5ae;animation:tdot 1s infinite}
+.mbp .base i{position:absolute;left:50%;top:0;width:190px;height:9px;margin-left:-95px;border-radius:0 0 9px 9px;background:linear-gradient(180deg,#9fa2a7,#d0d2d5)}
+.wordmark{position:absolute;inset:0;display:grid;place-items:center;background:#0b0b0c;color:#f5f5f7;font-size:110px;font-weight:700;letter-spacing:-.04em}
+/* chroma-keyed phone footage: the real chat UI sits behind the keyed video, mapped onto the screen */
+.gs{position:absolute;inset:0;overflow:hidden;background:#000;z-index:0;isolation:isolate}
+.gs canvas.key{position:absolute;inset:0;width:1920px;height:1080px;z-index:2;filter:contrast(1.05) saturate(.9)}
+.gs .gsui{position:absolute;left:0;top:0;transform-origin:0 0;z-index:1}
+.gs::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 60%,rgba(0,0,0,.4))}
+/* WhatsApp-style chat, 400 x 866 logical pixels */
+.wa{position:relative;width:400px;height:866px;overflow:hidden;background:#efeae2;font-family:-apple-system,"SF Pro Text","Helvetica Neue",Arial,"Noto Sans Devanagari","Kohinoor Devanagari",sans-serif;color:#111b21}
+.wa .wall{position:absolute;inset:0;opacity:.55;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' fill='none' stroke='%23c9bfae' stroke-width='1.6'><circle cx='18' cy='20' r='7'/><path d='M60 12l8 8-8 8-8-8z'/><path d='M96 18c6-8 14 0 8 6s-12 4-8-6z'/><rect x='14' y='62' width='16' height='12' rx='3'/><path d='M56 66h18M65 57v18'/><circle cx='100' cy='70' r='4'/><path d='M20 104q8-10 16 0'/><path d='M62 100l10 6-10 6z'/><path d='M94 98h14v10h-14z'/></svg>")}
+.wa .sb{position:absolute;left:0;right:0;top:0;height:44px;background:#008069;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:6px 26px 0 30px;font-size:16px;font-weight:600;z-index:3}
+.wa .sb .ic{display:flex;gap:6px;align-items:center}
+.wa .hd{position:absolute;left:0;right:0;top:44px;height:62px;background:#008069;color:#fff;display:flex;align-items:center;gap:10px;padding:0 14px;z-index:3}
+.wa .hd .bk{font-size:28px;line-height:1;margin-right:-2px}
+.wa .hd .av{width:38px;height:38px;border-radius:50%;background:#dfe5e7;color:#008069;display:grid;place-items:center;font-weight:800;font-size:15px}
+.wa .hd b{font-size:17px;display:flex;align-items:center;gap:5px}.wa .hd small{font-size:12.5px;opacity:.85;display:block}
+.wa .hd .vt{width:15px;height:15px;border-radius:50%;background:#25d366;display:inline-grid;place-items:center;font-size:10px;color:#fff}
+.wa .hd .ri{margin-left:auto;display:flex;gap:18px;font-size:19px;opacity:.95}
+.wa .body{position:absolute;left:10px;right:10px;top:112px;bottom:64px;display:flex;flex-direction:column;justify-content:flex-end;gap:7px;overflow:hidden;z-index:2}
+.wa .m{max-width:82%;padding:7px 10px 18px;border-radius:9px;font-size:16.5px;line-height:1.34;position:relative;box-shadow:0 1px .5px rgba(11,20,26,.13);flex:none}
+.wa .m.i{background:#fff;align-self:flex-start;border-top-left-radius:2px}
+.wa .m.o{background:#d9fdd3;align-self:flex-end;border-top-right-radius:2px}
+.wa .m .ts{position:absolute;right:8px;bottom:3px;font-size:11px;color:#667781;display:flex;gap:3px;align-items:center}
+.wa .m .tk{color:#53bdeb;font-size:12px;letter-spacing:-3px}
+.wa .chip{align-self:center;background:#fff;color:#54656f;font-size:12.5px;font-weight:600;padding:5px 11px;border-radius:7px;box-shadow:0 1px .5px rgba(11,20,26,.13);flex:none}
+.wa .chip.sys{background:#ffeecd;color:#54656f}
+.wa .chip.okc{background:#e7f8ec;color:#1f7a3a}
+.wa .typing{align-self:flex-start;background:#fff;border-radius:9px;border-top-left-radius:2px;padding:11px 14px;display:flex;gap:5px;flex:none;box-shadow:0 1px .5px rgba(11,20,26,.13)}
+.wa .typing i{width:8px;height:8px;border-radius:50%;background:#8696a0;animation:tdot 1s infinite}
 .wa .typing i:nth-child(2){animation-delay:.15s}.wa .typing i:nth-child(3){animation-delay:.3s}
 @keyframes tdot{0%,60%,100%{opacity:.35;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
-.wa .pay{background:#fff;border-radius:14px;overflow:hidden;align-self:flex-start;width:84%;box-shadow:0 1px 1px rgba(0,0,0,.08)}
-.wa .pay .top{background:#0f766e;color:#fff;padding:14px 14px;font-weight:700;font-size:18px}
-.wa .pay .bot{padding:10px 14px;font-size:15px;color:#46545f}
-/* rebuilt light dashboard in the product's own style (#f3f5f8, white cards, #0f766e) */
-.dash{position:absolute;inset:0;background:#f3f5f8;color:#1d2430}
-.dash .top{height:46px;background:#fff;border-bottom:1px solid #e3e7ee;display:flex;align-items:center;gap:10px;padding:0 16px;font-size:15px}
-.dash .k{width:24px;height:24px;border-radius:6px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
-.dash .pill{font-size:10px;font-weight:800;letter-spacing:.08em;background:#f6c344;color:#3d2c00;padding:3px 8px;border-radius:5px}
-.dash .cardd{position:absolute;background:#fff;border:1px solid #e3e7ee;border-radius:14px;padding:14px 16px}
-.dash .lab{font-size:11px;font-weight:700;letter-spacing:.1em;color:#5b6577}
-.dash .row{font-size:13px;line-height:1.4;padding:8px 10px;border-radius:9px;background:#f6f8fb;margin-top:8px;display:flex;gap:10px}
-.dash .tag{flex:none;font-size:9.5px;font-weight:800;letter-spacing:.08em;padding:3px 7px;border-radius:5px;background:var(--accent-soft);color:var(--accent);height:fit-content}
-.dash .bars .b{display:flex;align-items:center;gap:10px;font-size:14px;margin-top:14px}
-.dash .bars .b span{width:96px}
-.dash .bars .b i{height:12px;border-radius:6px;background:var(--accent);display:block}
-.wordmark{position:absolute;inset:0;display:grid;place-items:center;background:#0b0b0c;color:#f5f5f7;font-size:110px;font-weight:700;letter-spacing:-.04em}
-/* explainer pieces */
-.card{position:absolute;background:#fff;border:1px solid #e3e1db;border-radius:28px;box-shadow:0 30px 60px -30px rgba(0,0,0,.25)}
-.opt{position:absolute;width:640px;height:300px;border-radius:32px;background:#fff;border:2px solid #e3e1db;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:none}
-.opt .t{font-size:64px;font-weight:700;letter-spacing:-.03em}
-.opt .s{font-size:24px;color:var(--grey)}
-.opt.on{border-color:var(--accent);box-shadow:0 0 0 6px rgba(15,118,110,.12),0 30px 60px -30px rgba(0,0,0,.3)}
-.opt.on .t{color:var(--accent)}
-.opt.dim{opacity:.35}
-.chan{position:absolute;width:380px;height:220px;border-radius:28px;background:#fff;border:2px solid #e3e1db;padding:30px 30px;opacity:.45}
-.chan .n{font-size:44px;font-weight:700;letter-spacing:-.02em}
-.chan .d{font-size:21px;color:var(--grey);margin-top:8px}
-.chan.hi{opacity:1;border-color:#b9c6c4}
-.chan.pick{opacity:1;border-color:var(--accent);box-shadow:0 0 0 6px rgba(15,118,110,.12)}
-.clock{position:absolute;width:220px;height:220px;border-radius:50%;background:#fff;border:2px solid #e3e1db;box-shadow:0 20px 40px -24px rgba(0,0,0,.3)}
-.clock i{position:absolute;left:50%;top:50%;transform-origin:0 0;border-radius:3px;background:#1d1d1f}
-.chk{font-size:34px;font-weight:600;color:#6e6e73;padding:12px 0;border-bottom:1px solid #2c2c2e;display:flex;justify-content:space-between;width:560px}
-.chk b{color:#30d158;opacity:0}
+.wa .pay{background:#fff;border-radius:9px;overflow:hidden;align-self:flex-start;width:82%;box-shadow:0 1px .5px rgba(11,20,26,.13);flex:none}
+.wa .pay .top{background:#e7f6f3;padding:12px;display:flex;gap:10px;align-items:center}
+.wa .pay .top .k{width:40px;height:40px;border-radius:9px;background:#0f766e;color:#fff;display:grid;place-items:center;font-weight:800}
+.wa .pay .bt{border-top:1px solid #e9edef;color:#027eb5;text-align:center;padding:10px;font-weight:600;font-size:15px}
+.wa .shot{width:210px;height:250px;border-radius:6px;background:linear-gradient(180deg,#f6f7f9,#e9ecf1);margin-bottom:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#1d2430;font-size:13px}
+.wa .shot .ck{width:46px;height:46px;border-radius:50%;background:#1aa260;color:#fff;display:grid;place-items:center;font-size:26px}
+.wa .inp{position:absolute;left:8px;right:8px;bottom:10px;height:46px;display:flex;gap:8px;z-index:3}
+.wa .inp .f{flex:1;background:#fff;border-radius:23px;display:flex;align-items:center;padding:0 16px;color:#8696a0;font-size:16px;gap:10px}
+.wa .inp .mic{width:46px;height:46px;border-radius:50%;background:#00a884;color:#fff;display:grid;place-items:center;font-size:20px}
+/* channel ring */
+.ring{position:absolute;left:0;top:0;width:1920px;height:1080px}
+.node{position:absolute;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;display:grid;place-items:center;background:rgba(30,32,38,.75);border:2px solid rgba(255,255,255,.18);backdrop-filter:blur(10px);transition:none}
+.node svg{width:62px;height:62px}
+.node .nm{position:absolute;top:158px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:24px;font-weight:650;color:#d1d1d6}
+.node.on{border-color:var(--acc2);background:rgba(15,118,110,.55);box-shadow:0 0 0 10px rgba(95,191,180,.14),0 0 60px rgba(95,191,180,.35)}
+.node.lock{border-color:#fff;background:rgba(15,118,110,.85);box-shadow:0 0 0 12px rgba(95,191,180,.22),0 0 90px rgba(95,191,180,.5)}
+.node.dim{opacity:.32}
+.bub{position:absolute;width:420px;margin-left:-210px;padding:16px 20px;border-radius:20px;font-size:20px;line-height:1.38;background:rgba(250,250,252,.95);color:#1d1d1f;box-shadow:0 30px 60px -25px rgba(0,0,0,.7)}
+.bub small{display:block;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6e6e73;margin-bottom:6px}
+.hub{position:absolute;width:250px;height:250px;margin:-125px 0 0 -125px;border-radius:50%;background:radial-gradient(circle at 50% 35%,rgba(255,255,255,.14),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;backdrop-filter:blur(8px)}
+.hub .av{width:76px;height:76px;border-radius:50%;background:#e7d7c9;color:#5b3d2a;display:grid;place-items:center;font-size:28px;font-weight:800}
+.lockpill{display:inline-flex;gap:14px;align-items:center;padding:16px 28px;border-radius:999px;background:rgba(15,118,110,.9);font-size:34px;font-weight:700;box-shadow:0 0 60px rgba(95,191,180,.45)}
+/* borrower profile */
+.prof{left:150px;top:128px;width:1620px;height:800px;padding:38px 46px;color:#f5f5f7}
+.prof .row{display:flex;gap:26px;align-items:center}
+.prof .av{width:96px;height:96px;border-radius:50%;background:#e7d7c9;color:#5b3d2a;display:grid;place-items:center;font-size:36px;font-weight:800}
+.prof .nm{font-size:50px;font-weight:700;letter-spacing:-.02em}
+.prof .sub{font-size:22px;color:#a1a1a6;margin-top:4px}
+.chipx{display:inline-flex;align-items:center;gap:8px;font-size:22px;font-weight:650;padding:9px 16px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e5e5ea}
+.chipx.hot{background:rgba(255,159,10,.16);border-color:rgba(255,159,10,.55);color:#ffcc80}
+.chipx.mid{background:rgba(255,214,10,.12);border-color:rgba(255,214,10,.45);color:#ffe58a}
+.blk{position:absolute;padding:22px 26px;border-radius:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1)}
+.blk .lbl{margin-bottom:14px}
+.tl{display:flex;justify-content:space-between;position:relative;margin-top:10px}
+.tl::before{content:"";position:absolute;left:30px;right:30px;top:30px;height:2px;background:rgba(255,255,255,.18)}
+.tl .tch{position:relative;width:110px;text-align:center;font-size:16px;color:#a1a1a6}
+.tl .tch .d{width:60px;height:60px;border-radius:50%;margin:0 auto 8px;display:grid;place-items:center;font-size:15px;font-weight:700;background:#26282e;border:2px solid #3a3a3c;color:#d1d1d6}
+.tl .tch .r{font-size:22px;font-weight:800;margin-top:2px}
+.heat{display:grid;grid-template-columns:repeat(24,1fr);gap:4px;margin-top:6px}
+.heat i{height:54px;border-radius:5px;display:block}
+.hrs{display:flex;justify-content:space-between;font-size:14px;color:#8e8e93;margin-top:6px}
+.pref{display:flex;height:40px;border-radius:10px;overflow:hidden;margin-top:6px}
+.pref span{display:grid;place-items:center;font-size:16px;font-weight:700;color:#fff}
+.dec{display:flex;gap:18px}
+.dec .o{padding:22px 34px;border-radius:20px;border:2px solid rgba(255,255,255,.2);font-size:40px;font-weight:700;background:rgba(255,255,255,.05);color:#d1d1d6}
+.dec .o.on{border-color:var(--acc2);background:rgba(15,118,110,.6);color:#fff;box-shadow:0 0 50px rgba(95,191,180,.35)}
+.dec .o.dim{opacity:.35}
+/* rule cards, channel switches */
+.rule{position:absolute;width:760px;padding:24px 30px;border-radius:24px;display:flex;align-items:center;justify-content:space-between}
+.rule .w{font-size:34px;font-weight:650}.rule .why{font-size:20px;color:#a1a1a6;margin-top:6px}
+.stamp{font-size:20px;font-weight:800;letter-spacing:.1em;color:var(--bad);border:2px solid var(--bad);border-radius:10px;padding:8px 14px}
+.sw{display:flex;justify-content:space-between;align-items:center;font-size:30px;font-weight:600;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.sw .k{width:74px;height:40px;border-radius:20px;background:#30d158;position:relative;transition:background .25s}
+.sw .k::after{content:"";position:absolute;top:4px;left:38px;width:32px;height:32px;border-radius:50%;background:#fff;transition:left .25s}
+.sw.on{color:#8e8e93}.sw.on .k{background:#3a3a3c}.sw.on .k::after{left:4px}
+/* call card */
+.call{right:110px;top:110px;width:720px;padding:30px 34px}
+.wave{display:flex;gap:5px;align-items:center;height:56px}
+.wave i{width:6px;border-radius:3px;background:var(--acc2);height:10px;opacity:.5}
+.wave.on i{animation:wv .5s ease-in-out infinite alternate;opacity:1}
+.wave.b i{background:#ffd60a}
+@keyframes wv{from{height:8px}to{height:52px}}
+.tr{font-size:21px;line-height:1.32;padding:10px 0;border-top:1px solid rgba(255,255,255,.1)}
+.tr .who{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--acc2);margin-bottom:4px}
+.tr.b .who{color:#ffd60a}
+.tr .en{font-size:15px;color:#a1a1a6;margin-top:4px}
+/* checks */
+.chk{display:flex;justify-content:space-between;align-items:center;font-size:30px;font-weight:600;color:#8e8e93;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+.chk b{color:var(--ok);opacity:0;font-size:30px}
 .chk.on{color:#f5f5f7}.chk.on b{opacity:1}
-.rule{position:absolute;width:640px;height:150px;border-radius:24px;background:#fff;border:2px solid #e3e1db;padding:24px 30px;display:flex;align-items:center;justify-content:space-between}
-.rule .w{font-size:32px;font-weight:650}
-.rule .why{font-size:20px;color:var(--grey);margin-top:6px}
-.blocked{font-size:20px;font-weight:800;letter-spacing:.08em;color:var(--bad);border:2px solid var(--bad);border-radius:10px;padding:8px 14px;opacity:0}
-.chanrow{display:flex;justify-content:space-between;align-items:center;font-size:24px;font-weight:600;padding:12px 0;border-bottom:1px solid var(--hair)}
-.chanrow .s{font-size:16px;font-weight:700;letter-spacing:.06em;color:var(--ok)}
-.chanrow.off{color:#a1a1a6}.chanrow.off .s{color:var(--bad)}
-.stampx{position:absolute;padding:10px 22px;border:4px solid #ff453a;color:#ff453a;border-radius:12px;font-weight:800;font-size:40px;letter-spacing:.03em;background:rgba(10,0,0,.85);rotate:-5deg}
-.btnp{display:inline-grid;place-items:center;height:40px;padding:0 20px;border-radius:12px;font-size:16px;font-weight:700;background:var(--accent);color:#fff}
-.btnp.done{background:var(--ok)}
-.costchip{display:inline-flex;gap:14px;align-items:baseline;background:rgba(0,0,0,.55);color:#fff;padding:14px 22px;border-radius:16px;font-size:24px}
-.costchip b{font-size:40px;font-variant-numeric:tabular-nums}
-#cursor{position:absolute;width:40px;height:40px;z-index:7;opacity:0;pointer-events:none}
-/* captions: the exact VO, bottom centre, white on a soft shadow, two lines max (on by default) */
-#cap{position:absolute;left:0;right:0;bottom:44px;display:flex;justify-content:center;z-index:8;pointer-events:none}
-#capText{max-width:1460px;text-align:center;font-size:38px;line-height:1.3;font-weight:600;color:#fff;
-  text-shadow:0 0 2px rgba(0,0,0,.9),0 2px 12px rgba(0,0,0,.85),0 0 30px rgba(0,0,0,.6);opacity:0;transition:opacity .25s;
-  padding:14px 60px;background:radial-gradient(closest-side,rgba(0,0,0,.42),rgba(0,0,0,.28) 60%,rgba(0,0,0,0))}
+/* figures */
+.fig{font-size:120px;font-weight:700;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+.figl{font-size:26px;color:#d1d1d6;margin-top:8px}
+/* architecture diagrams */
+.dg{position:absolute;padding:22px 26px;border-radius:22px;background:rgba(22,24,30,.7);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(14px);color:#f5f5f7}
+.dg.hb{opacity:.45}.dg.hb.on{opacity:1}
+.dg.on{border-color:var(--acc2);box-shadow:0 0 0 6px rgba(95,191,180,.12),0 0 70px rgba(95,191,180,.28)}
+.dg .t{font-size:30px;font-weight:700;letter-spacing:-.01em}
+.dg .c{font-size:13px;font-weight:800;letter-spacing:.14em;color:var(--acc2);text-transform:uppercase;margin-bottom:8px}
+.dg .r{display:flex;justify-content:space-between;gap:20px;font-size:21px;padding:9px 0;border-top:1px solid rgba(255,255,255,.08);color:#d1d1d6}
+.dg .r b{color:#fff;font-weight:650}
+.arrow{position:absolute;height:3px;background:linear-gradient(90deg,rgba(95,191,180,.2),var(--acc2));border-radius:2px}
+.arrow::after{content:"";position:absolute;right:-2px;top:-7px;border:8px solid transparent;border-left:12px solid var(--acc2);border-right:0}
+.pkt{position:absolute;padding:7px 14px;border-radius:999px;font-size:17px;font-weight:700;background:#f5f5f7;color:#1d1d1f;white-space:nowrap;box-shadow:0 10px 30px -10px rgba(0,0,0,.6)}
+.pkt.in{background:#5fbfb4;color:#062a26}.pkt.dup{background:#3a3a3c;color:#a1a1a6;text-decoration:line-through}
+.state{display:inline-block;font-family:var(--mono);font-size:19px;font-weight:700;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:#a1a1a6}
+.state.on{background:rgba(15,118,110,.7);border-color:var(--acc2);color:#fff}
+.state.bad{background:rgba(255,69,58,.2);border-color:var(--bad);color:#ffb4ae}
+.lad{position:absolute;width:640px;padding:22px 28px;border-radius:20px;background:rgba(22,24,30,.72);border:1px solid rgba(255,255,255,.14);display:flex;justify-content:space-between;align-items:center}
+.lad .n{font-size:32px;font-weight:700}.lad .s{font-size:17px;color:#a1a1a6;margin-top:4px}
+.lad.on{border-color:var(--acc2);box-shadow:0 0 50px rgba(95,191,180,.3)}
+.lad .v{font-size:20px;font-weight:800;letter-spacing:.06em}
+.cell{position:absolute;border-radius:6px;background:var(--acc2)}
+.aud{font-family:var(--mono);font-size:19px;color:#d1d1d6;padding:9px 0;border-top:1px solid rgba(255,255,255,.08);white-space:nowrap}
+.mont{position:absolute;width:300px;height:170px;padding:20px;border-radius:20px;background:rgba(18,20,26,.8);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(14px);opacity:.35}
+.mont.on{opacity:1;border-color:var(--acc2);box-shadow:0 0 50px rgba(95,191,180,.35)}
+.mont .c{font-size:13px;font-weight:800;letter-spacing:.14em;color:var(--acc2);text-transform:uppercase}
+.mont .t{font-size:28px;font-weight:700;margin-top:6px}.mont .s{font-size:17px;color:#a1a1a6;margin-top:6px;line-height:1.35}
+.bars3 i{display:block;height:14px;border-radius:7px;background:var(--acc2);margin-top:9px}
+#cursor{position:absolute;width:46px;height:46px;z-index:7;opacity:0;pointer-events:none}
+/* captions: exact VO; dialogue shows the English line with the speaker; two lines max */
+#cap{position:absolute;left:0;right:0;bottom:0;padding:90px 0 40px;display:flex;justify-content:center;z-index:8;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.42) 45%,rgba(0,0,0,.62));opacity:0;transition:opacity .2s}
+#cap.show{opacity:1}
+#capText{max-width:1500px;text-align:center;font-size:37px;line-height:1.3;font-weight:600;color:#fff;
+  text-shadow:0 0 2px rgba(0,0,0,.9),0 2px 12px rgba(0,0,0,.85),0 0 30px rgba(0,0,0,.6);opacity:0;transition:opacity .18s;
+  padding:14px 60px;background:radial-gradient(closest-side,rgba(0,0,0,.45),rgba(0,0,0,.3) 60%,rgba(0,0,0,0))}
+#capText .spk{display:inline-block;font-size:20px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;border-radius:7px;margin-right:12px;vertical-align:4px;background:rgba(95,191,180,.25);color:#9be3da}
+#capText .spk.b{background:rgba(255,214,10,.2);color:#ffe58a}
 #capText.show{opacity:1}
 body.nocap #cap{display:none}
-/* presentation mode: chrome hidden; a thin strip appears on mouse move and hides after 2 s; ?controls=1 forces it */
+/* presentation mode: chrome hidden; a thin strip on mouse move; ?controls=1 forces it */
 #ui{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:16px 14px 10px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.75) 55%);
   color:#e8e8ed;font-size:13px;opacity:0;pointer-events:none;transition:opacity .3s}
 body.showui #ui,body.forceui #ui{opacity:1;pointer-events:auto}
 body.record #ui{display:none} body.record{cursor:none}
 .ctr{display:flex;align-items:center;gap:10px}
 .ctr button{font:inherit;color:#f5f5f7;background:rgba(255,255,255,.14);border:0;border-radius:8px;height:28px;padding:0 10px;cursor:pointer}
+.ctr button.on{background:#0f766e}
 #bPlay,#bMenu{width:34px;padding:0} #bMenu{font-size:17px}
 #scrub{flex:1;accent-color:#f5f5f7;height:4px}
 #time{font-variant-numeric:tabular-nums;min-width:84px;text-align:center;color:#c7c7cc}
-#panel{display:none;position:absolute;right:12px;bottom:46px;width:min(380px,calc(100vw - 24px));max-height:calc(100vh - 70px);overflow:auto;
+#panel{display:none;position:absolute;right:12px;bottom:46px;width:min(400px,calc(100vw - 24px));max-height:calc(100vh - 70px);overflow:auto;
   background:rgba(28,28,30,.96);border:1px solid #3a3a3c;border-radius:12px;padding:10px;box-shadow:0 12px 30px rgba(0,0,0,.55)}
 #ui.open #panel{display:block}
 #chapters{display:flex;flex-direction:column;gap:2px;margin:0 0 8px}
@@ -196,266 +246,540 @@ body.record #ui{display:none} body.record{cursor:none}
 </style>
 </head>
 <body>
-<div id="viewport"><div id="stage"><div id="cam">
+<div id="stage"><div id="cam">
 
-  <!-- n01 · "Every month, millions of people in India repay a loan..." : the city, then the street -->
-  <section class="scene black" id="n01">
-    <div class="clip" data-clip="city_aerial_mumbai_night" data-from="3" data-t="0" data-tout="4.2" data-fx="cut"></div>
-    <div class="clip" data-clip="kolkata_buses" data-from="6" data-t="4.2" data-fx="cut"></div>
-  </section>
+<!-- ============================== PRODUCT STORY ============================== -->
 
-  <!-- n02 · "...lenders remind them the same way. Same message. Same time. To everyone." -->
-  <section class="scene black" id="n02"><div class="spot"></div>
-    <div class="clip" data-clip="phone_notification_closeup" data-from="1" data-t="0" data-tout="2.8" data-fx="cut" style="z-index:4"></div>
-    <div class="rig abs" style="inset:0;perspective:2400px">
-      <div class="iph" id="pL" style="left:425px;top:150px"><div class="frame"><div class="pscr"><div class="lock"><div class="date">Thursday 19 November</div><div class="time">10:00</div></div><div class="stack abs" style="left:0;right:0;top:250px;bottom:0"></div><div class="island"></div><div class="glass"></div></div></div></div>
-      <div class="iph" id="pR" style="left:1105px;top:150px"><div class="frame"><div class="pscr"><div class="lock"><div class="date">Thursday 19 November</div><div class="time">10:00</div></div><div class="stack abs" style="left:0;right:0;top:250px;bottom:0"></div><div class="island"></div><div class="glass"></div></div></div></div>
-      <div class="iph" id="pC" style="left:765px;top:130px"><div class="frame"><div class="pscr"><div class="lock"><div class="date">Thursday 19 November</div><div class="time">10:00</div></div><div class="stack abs" style="left:0;right:0;top:250px;bottom:0"></div><div class="island"></div><div class="glass"></div></div></div></div>
+<!-- 01 · "Every month, millions of people in India repay a loan. For a phone, a bike, a small shop." -->
+<section class="beat" data-lines="01_people" data-name="Millions repay a loan">
+  <div class="clip" data-clip="city_aerial_mumbai_night" data-from="3" data-out="L+4.1"></div>
+  <div class="clip" data-clip="scroll_phone" data-from="2" data-at="L+4.1" data-out="L+5.04" data-fx="cut"></div>
+  <div class="clip" data-clip="rural_moto" data-from="2" data-at="L+5.04" data-out="L+5.92" data-fx="cut"></div>
+  <div class="clip" data-clip="kolkata_buses" data-from="7" data-at="L+5.92" data-fx="cut"></div>
+  <div class="abs shadowtxt" style="left:110px;bottom:170px"><div class="h s" data-at="L+4.15" data-out="L+5.04" data-fx="cut">A phone.</div></div>
+  <div class="abs shadowtxt" style="left:110px;bottom:170px"><div class="h s" data-at="L+5.06" data-out="L+5.92" data-fx="cut">A bike.</div></div>
+  <div class="abs shadowtxt" style="left:110px;bottom:170px"><div class="h s" data-at="L+5.95" data-fx="cut">A small shop.</div></div>
+</section>
+
+<!-- 02 · "(And) every month, lenders remind them the same way. Same message. Same time. To everyone." -->
+<section class="beat" data-lines="02_same 02s_same" data-name="Same message, same time">
+  <div class="clip" data-clip="phone_notification_closeup" data-from="0.6" data-rate="0.6"></div>
+  <div class="abs" style="left:1180px;top:150px;width:560px" id="stackA"></div>
+  <div class="abs" data-at="L:end-1.35" data-fx="cut" style="inset:0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:#000">
+    <div class="clip" data-clip="man_bed_phone" data-from="0" style="position:relative"></div>
+    <div class="clip" data-clip="woman_phone_bed" data-from="-5.5" style="position:relative"></div>
+    <div class="clip" data-clip="man_turban_phone_night" data-from="-6.5" style="position:relative"></div>
+  </div>
+  <div class="abs" data-at="L:end-1.2" data-fx="up" style="left:0;right:0;top:120px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:0 40px">
+    <div class="ntf2">Demo Finance · now<br><b>Your EMI is due. Please pay now.</b></div>
+    <div class="ntf2">Demo Finance · now<br><b>Your EMI is due. Please pay now.</b></div>
+    <div class="ntf2">Demo Finance · now<br><b>Your EMI is due. Please pay now.</b></div>
+  </div>
+  <div class="center shadowtxt" style="top:880px"><div class="h s grad" data-at="L:end-1.3" data-fx="mask">To everyone.</div></div>
+</section>
+
+<!-- 03 · "Most of those messages are ignored. Some annoy people. And every single one costs money." + the real fixed-schedule figures -->
+<section class="beat" data-lines="03_cost" data-name="Ignored, and it costs">
+  <div class="clip dim" data-clip="phone_notif" data-from="3.6" data-out="L+2.48"></div>
+  <div class="clip dim" data-clip="phone_ringing" data-from="0.5" data-at="L+2.48" data-fx="cut"></div>
+  <div class="abs" data-at="L+0.4" data-out="L+2.48" data-fx="up" style="left:1150px;top:250px"><div class="ntf2" style="width:520px">Demo Finance · 10:00 pm<br><b>Reminder: EMI overdue. Pay now.</b><div style="font-size:15px;color:#8e8e93;margin-top:6px">Unread</div></div></div>
+  <div class="abs" data-at="L+2.6" data-fx="pop" style="left:1150px;top:250px"><div class="ntf2" style="width:520px">Missed call<br><b>Demo Finance · declined</b></div></div>
+  <div class="glass" data-at="L+1.2" data-fx="up" style="left:110px;top:150px;width:860px;padding:40px 46px">
+    <div class="lbl">A fixed reminder schedule</div>
+    <div class="row" style="display:flex;align-items:flex-end;gap:30px;margin-top:20px">
+      <div><div class="fig" data-count="0,1262,L+1.2,1.0">1,262</div><div class="figl">reminders sent</div></div>
+      <div class="fig" style="font-size:80px;color:#8e8e93;padding-bottom:30px">→</div>
+      <div data-at="L+1.9" data-fx="pop"><div class="fig bad">23</div><div class="figl">replies</div></div>
     </div>
-    <div class="center" style="top:56px"><div class="h s grad" data-t="5.0" data-fx="mask">Same message. Same time.</div></div>
-  </section>
+    <div data-at="L+3.0" data-fx="up" style="font-size:44px;font-weight:700;margin-top:26px">98 in 100 <span style="color:#8e8e93;font-weight:600">ignored</span></div>
+    <div data-at="L+4.6" data-fx="up" style="font-size:44px;font-weight:700;margin-top:10px">₹575 <span style="color:#8e8e93;font-weight:600">spent on them</span></div>
+    <div class="fine" style="margin-top:22px">Simulated 14-day test · 300 borrowers · seed 42 · fixed schedule (CN10)</div>
+  </div>
+</section>
 
-  <!-- n03 · "Most of those messages are ignored. Some annoy people. And every single one costs money." -->
-  <section class="scene black" id="n03">
-    <div class="clip" data-clip="snoozing_phone" data-from="3" data-t="0" data-tout="3.9" data-fx="cut"></div>
-    <div class="clip" data-clip="woman_phone_bed" data-from="2" data-t="3.9" data-fx="cut"></div>
-    <div class="ontop over" style="left:120px;top:120px"><div class="h m" data-t="0.9" data-tout="3.9" data-fx="mask">Ignored.</div></div>
-    <div class="ontop over" style="left:120px;top:120px"><div class="h m" data-t="3.9" data-tout="5.4" data-fx="mask">Annoying.</div></div>
-    <div class="ontop" style="left:120px;top:120px"><div data-t="5.4" data-fx="up"><span class="costchip">₹ spent on reminders <b id="cost">₹0</b><span style="font-size:15px;opacity:.7">illustrative</span></span></div></div>
-  </section>
+<!-- 04 · "Meet Kairos. An AI that runs loan collections, one person at a time."  (laptop lights on the big hit) -->
+<section class="beat" data-lines="04_meet" data-lead="1.2" data-name="Meet Kairos">
+  <div class="clip" data-clip="hands_laptop_dark" data-from="3" data-out="HIT|L-0.1"></div>
+  <div class="clip neb" data-clip="nebula_a" data-from="4" data-at="HIT|L-0.1" data-fx="cut"></div>
+  <div class="abs" data-at="HIT|L-0.1" data-fx="cut" style="inset:0">
+    <div class="rig abs" style="inset:0" data-cam="HIT|L-0.1=0,40,0.96;L+2.0=0,0,1;L+4.2=0,-30,1.04">
+      <div class="mbp" style="left:460px;top:250px"><div class="lid" id="lid04"><div class="bezel"><div class="notchm"></div><div class="ls">
+        <div class="scr" style="inset:0;border-radius:0;border:0" data-img="assets/real/dash/overview_dark.png" data-focus="L+2.2=0,0,3840,2160;L+3.9=556,358,1590,560"></div>
+        <div class="wordmark" data-out="L+2.2" data-fx="fade">Kairos</div></div></div></div><div class="base"><i></i></div></div>
+    </div>
+  </div>
+  <div class="center shadowtxt" style="top:70px"><div class="h m grad" data-at="L+0.05" data-fx="mask">Meet Kairos.</div></div>
+  <div class="center eyebrow shadowtxt" style="top:182px" data-at="L+2.0" data-fx="up">An AI that runs loan collections, one person at a time.</div>
+  <div class="real" style="left:460px;top:1000px" data-at="L+2.4"><b>REAL SCREEN</b>Kairos live dashboard · SIMULATED run, 300 synthetic borrowers</div>
+</section>
 
-  <!-- n04 · "Meet Kairos. An AI that runs loan collections, one person at a time." : hands on a laptop, then our laptop lights up -->
-  <section class="scene black" id="n04"><div class="spot"></div>
-    <div class="clip" data-clip="hands_laptop_dark" data-from="3" data-t="0" data-tout="1.1" data-fx="cut" style="z-index:5"></div>
-    <div class="center" style="top:60px"><div class="h m grad" data-t="1.25" data-fx="mask">Meet Kairos.</div></div>
-    <div class="center" style="top:190px"><div class="eyebrow" data-t="3.0">AI that runs loan collections, one person at a time.</div></div>
-    <div class="rig abs" style="inset:0;perspective:2400px">
-      <div class="shadow" style="left:520px;top:930px;width:880px"></div>
-      <div class="mbp" style="left:460px;top:300px">
-        <div class="lid" id="n04lid"><div class="bezel"><div class="notchm"></div><div class="scr" id="n04scr"><div class="dash" id="dashA"></div><div class="wordmark" id="n04wm">Kairos</div><div class="glass"></div></div></div></div>
-        <div class="base"><div class="lip"></div></div>
+<!-- 05 + 06 · the borrower profile, then the decision (product screen: nebula) -->
+<section class="beat" data-lines="05_looks 06_decides" data-name="It looks, then decides">
+  <div class="clip neb" data-clip="nebula_a" data-from="9"></div>
+  <div class="glass prof" data-at="L+0.1" data-fx="up">
+    <div class="row" data-at="05_looks+1.2" data-fx="up">
+      <div class="av">SD</div>
+      <div><div class="nm">Sunita D.</div><div class="sub">Two-wheeler loan ••••0243 · EMI ₹4,250 · due 5th</div></div>
+      <div style="margin-left:auto;display:flex;gap:12px">
+        <span class="chipx hot" data-at="05_looks+3.64" data-fx="pop">38 days late</span>
+        <span class="chipx mid" data-at="05_looks+4.0" data-fx="pop">Risk band · Medium</span>
       </div>
     </div>
-  </section>
-
-  <!-- n05 · "Every morning, Kairos looks at each borrower..." : the real CRM borrower page, push-in, three facts -->
-  <section class="scene studio" id="n05"><div class="floor"></div>
-    <div class="abs" style="left:110px;top:110px;width:600px">
-      <div class="eyebrow" data-t="0.3">Every morning, for every borrower</div>
-      <div class="h s gradink" data-t="0.5" data-fx="mask" style="margin-top:8px">It looks first.</div>
-      <div style="margin-top:46px">
-        <div data-t="3.6" data-fx="up" class="card" style="position:relative;padding:20px 26px;margin-bottom:16px"><div class="eyebrow" style="font-size:18px">How late</div><div style="font-size:36px;font-weight:700;margin-top:4px">42 days</div></div>
-        <div data-t="5.0" data-fx="up" class="card" style="position:relative;padding:20px 26px;margin-bottom:16px"><div class="eyebrow" style="font-size:18px">How they replied before</div><div style="font-size:36px;font-weight:700;margin-top:4px">Twice, on WhatsApp</div></div>
-        <div data-t="7.1" data-fx="up" class="card" style="position:relative;padding:20px 26px"><div class="eyebrow" style="font-size:18px">When they read messages</div><div style="font-size:36px;font-weight:700;margin-top:4px">Responsive on WhatsApp</div></div>
+    <div class="blk" style="left:46px;top:170px;width:880px;height:250px" data-at="05_looks+5.08" data-fx="up">
+      <div class="lbl">Past touches</div>
+      <div class="tl">
+        <div class="tch"><div class="d">SMS</div>2 Nov<div class="r bad">–</div></div>
+        <div class="tch"><div class="d">SMS</div>6 Nov<div class="r bad">–</div></div>
+        <div class="tch"><div class="d" style="border-color:#25d366">WA</div>10 Nov<div class="r ok">✓ 7:42 pm</div></div>
+        <div class="tch"><div class="d">IVR</div>14 Nov<div class="r bad">–</div></div>
+        <div class="tch"><div class="d" style="border-color:#25d366">WA</div>19 Nov<div class="r ok">✓ 8:05 pm</div></div>
+        <div class="tch"><div class="d">SMS</div>24 Nov<div class="r bad">–</div></div>
       </div>
     </div>
-    <div class="rig abs" style="inset:0;perspective:2400px">
-      <div class="shadow" style="left:820px;top:930px;width:820px"></div>
-      <div class="mbp" style="left:780px;top:300px">
-        <div class="lid"><div class="bezel"><div class="notchm"></div><div class="scr" style="background:#0f1518"><img src="assets/real/crm_borrower.jpg" alt="Kairos CRM borrower page (synthetic borrower B-1042)" data-kf="0,0,0,1;3.3,-260,0,1.85;5.0,-300,-20,1.85;7.0,-160,-10,2.1;10,-170,-12,2.12"><div class="glass"></div></div></div></div>
-        <div class="base"><div class="lip"></div></div>
-      </div>
+    <div class="blk" style="left:950px;top:170px;width:624px;height:250px" data-at="05_looks+6.96" data-fx="up">
+      <div class="lbl">Best time to reach · 24 h</div>
+      <div class="heat" id="heat"></div>
+      <div class="hrs"><span>12 am</span><span>6 am</span><span>12 pm</span><span>6 pm</span><span>11 pm</span></div>
+      <div style="font-size:22px;margin-top:12px">Usually reads <b class="acc">7–9 pm</b></div>
     </div>
-    <div class="abs realtag" data-t="1" style="left:780px;top:1000px"><b>REAL SCREEN</b>Kairos CRM · synthetic borrower B-1042 · SIMULATED</div>
-  </section>
+    <div class="blk" style="left:46px;top:444px;width:880px;height:150px" data-at="05_looks+8.0" data-fx="up">
+      <div class="lbl">Channel preference</div>
+      <div class="pref"><span style="width:58%;background:#0f766e">WhatsApp 58%</span><span style="width:22%;background:#3a6e8f">SMS 22%</span><span style="width:14%;background:#6b5b95">Voice 14%</span><span style="width:6%;background:#48484a">✉</span></div>
+    </div>
+    <div class="blk" style="left:950px;top:444px;width:624px;height:150px" data-at="05_looks+8.6" data-fx="up">
+      <div class="lbl">Consent and STOP</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:20px"><span class="chipx">SMS <b class="ok">✓</b></span><span class="chipx">WhatsApp <b class="ok">✓</b></span><span class="chipx">Voice <b class="ok">✓</b></span><span class="chipx">STOP · none</span></div>
+    </div>
+    <div class="dec" style="position:absolute;left:46px;top:630px" data-at="06_decides+0.2" data-fx="up">
+      <div class="o" data-on="06_decides+1.0" data-off="06_decides+2.2">Contact today</div>
+      <div class="o" data-on="06_decides+2.2" data-off="06_decides+3.3">Wait</div>
+      <div class="o" style="display:none"></div>
+    </div>
+    <div class="abs" style="left:640px;top:648px;font-size:30px;font-weight:650" data-at="06_decides+3.4" data-fx="pop"><span class="lockpill" style="font-size:30px;padding:14px 24px">✓ Contact today</span> <span style="color:#a1a1a6;font-size:22px;margin-left:12px">a reply is likely this week</span></div>
+  </div>
+  <div class="real" style="left:150px;top:940px" data-at="L+1"><b>PRODUCT VIEW</b>One synthetic borrower · illustrative values</div>
+  <div class="abs" style="left:150px;top:52px" data-at="06_decides+0.1|L+0.1" data-fx="up"><div class="h xs grad">Every morning, for every borrower.</div></div>
+</section>
 
-  <!-- n06 · "Then it decides. Contact them today, or wait." -->
-  <section class="scene studio" id="n06"><div class="floor"></div>
-    <div class="center" style="top:110px"><div class="eyebrow" data-t="0.2">Ravi · synthetic borrower</div></div>
-    <div class="center" style="top:160px"><div class="h s gradink" data-t="0.3" data-fx="mask">Then it decides.</div></div>
-    <div class="opt" id="oC" data-t="1.3" data-fx="up" style="left:280px;top:420px"><div class="t">Contact today</div><div class="s">a message, a call, or a person</div></div>
-    <div class="opt" id="oW" data-t="1.5" data-fx="up" style="left:1000px;top:420px"><div class="t">Wait</div><div class="s">no message today</div></div>
-  </section>
+<!-- 07 · "It picks the channel. SMS, WhatsApp, a voice call in their language, or a human. And the best time of day." -->
+<section class="beat" data-lines="07_channel" data-name="Picks the channel and the hour">
+  <div class="clip soft" data-clip="night_traffic" data-from="4"></div>
+  <div class="ring" id="ring">
+    <div class="hub" style="left:960px;top:520px"><div class="av">SD</div><div style="font-size:22px;font-weight:700">Sunita D.</div><div style="font-size:15px;color:#a1a1a6">38 days late</div></div>
+  </div>
+  <div class="center" style="top:40px"><div class="h xs grad" data-at="L+0.1" data-fx="mask">It picks the channel.</div></div>
+  <div class="center" style="top:930px" data-at="L+5.6" data-fx="up"><span class="lockpill"><span>WhatsApp</span><span style="opacity:.6">·</span><span>7:30 pm</span></span></div>
+</section>
 
-  <!-- n07 · "If it reaches out, it picks the channel... And the best time of day." -->
-  <section class="scene studio" id="n07"><div class="floor"></div>
-    <div class="abs" style="left:120px;top:110px"><div class="h s gradink" data-t="0.3" data-fx="mask">It picks the channel.</div></div>
-    <div class="chan" id="c1" style="left:120px;top:330px"><div class="n">SMS</div><div class="d">a short text</div></div>
-    <div class="chan" id="c2" style="left:540px;top:330px"><div class="n">WhatsApp</div><div class="d">a chat they can answer</div></div>
-    <div class="chan" id="c3" style="left:960px;top:330px"><div class="n">Voice call</div><div class="d">in their own language</div></div>
-    <div class="chan" id="c4" style="left:1380px;top:330px"><div class="n">Human agent</div><div class="d">for anything sensitive</div></div>
-    <div class="abs" style="left:120px;top:640px"><div class="h s gradink" data-t="9.2" data-fx="mask">And the best time.</div></div>
-    <div class="clock" data-t="9.3" data-fx="pop" style="left:1150px;top:610px"><i id="hh" style="width:58px;height:6px;margin:-3px 0 0 0"></i><i id="mmh" style="width:86px;height:4px;margin:-2px 0 0 0"></i></div>
-    <div class="abs" data-t="10.0" data-fx="up" style="left:1410px;top:680px"><div style="font-size:40px;font-weight:700">7:30 pm</div><div class="eyebrow" style="font-size:22px">WhatsApp, for Ravi</div></div>
-  </section>
+<!-- 08 · "Before anything is sent, Aladdin, our safety supervisor, checks it against the lender's rules. Twice." -->
+<section class="beat" data-lines="08_aladdin" data-name="Aladdin checks twice">
+  <div class="clip neb" data-clip="nebula_a" data-from="14"></div>
+  <div class="abs" style="left:110px;top:120px;width:640px">
+    <div class="lbl" data-at="L+0.1">Kairos Supervisor · K06</div>
+    <div class="h m grad" style="margin-top:10px" data-at="L+0.2" data-fx="mask">Aladdin</div>
+    <div class="eyebrow" style="margin-top:14px" data-at="L+2.3" data-fx="up">checks every message against the lender's rules.</div>
+    <div style="margin-top:46px">
+      <div class="chk" data-on="L+2.6">Consent for this channel<b>✓</b></div>
+      <div class="chk" data-on="L+3.0">Quiet hours and quiet days<b>✓</b></div>
+      <div class="chk" data-on="L+3.4">Daily and weekly limits<b>✓</b></div>
+      <div class="chk" data-on="L+3.8">Budget<b>✓</b></div>
+      <div class="chk" data-on="L+4.2">STOP, hardship, holds<b>✓</b></div>
+    </div>
+    <div style="display:flex;gap:16px;margin-top:40px" data-at="L+6.2" data-fx="pop">
+      <span class="lockpill" style="font-size:26px;padding:12px 22px">✓ when planning</span><span class="lockpill" style="font-size:26px;padding:12px 22px">✓ just before sending</span>
+    </div>
+  </div>
+  <div class="scr" style="left:830px;top:150px;width:990px;height:620px" data-at="L+0.4" data-fx="up"
+       data-img="assets/real/dash/rules_dark.png" data-focus="L+0.4=2332,724,1440,900;L+6.1=556,412,1600,256"></div>
+  <div class="real" style="left:830px;top:790px" data-at="L+0.6"><b>REAL SCREEN</b>Rules (Aladdin) · live dashboard · SIMULATED</div>
+</section>
 
-  <!-- n08 · "Before anything is sent, Aladdin, our safety supervisor, checks it against the lender's rules. Twice." -->
-  <section class="scene black" id="n08"><div class="spot"></div>
-    <div class="abs" style="left:120px;top:120px"><div class="eyebrow" data-t="0.2">Aladdin, our safety supervisor</div><div class="h s grad" data-t="0.4" data-fx="mask" style="margin-top:8px">Checks every message.</div></div>
-    <div class="abs" style="left:120px;top:360px">
-      <div class="eyebrow" style="font-size:22px;margin-bottom:8px" data-t="2.2">Check 1 · when planning</div>
-      <div class="chk" id="a1">Consent <b>✓</b></div><div class="chk" id="a2">Quiet hours <b>✓</b></div><div class="chk" id="a3">Contact limit <b>✓</b></div><div class="chk" id="a4">Budget <b>✓</b></div><div class="chk" id="a5">Approved template <b>✓</b></div>
-    </div>
-    <div class="abs" style="left:1000px;top:360px">
-      <div class="eyebrow" style="font-size:22px;margin-bottom:8px" data-t="5.6">Check 2 · just before sending</div>
-      <div class="chk" id="b1">Consent <b>✓</b></div><div class="chk" id="b2">Quiet hours <b>✓</b></div><div class="chk" id="b3">Contact limit <b>✓</b></div><div class="chk" id="b4">Budget <b>✓</b></div><div class="chk" id="b5">Approved template <b>✓</b></div>
-    </div>
-    <div class="abs" style="left:1000px;top:110px"><div class="h m grad" data-t="6.9" data-fx="mask">Twice.</div></div>
-  </section>
+<!-- 09 · "No messages at night. Never more than allowed. And if someone says stop, everything stops. On every channel." -->
+<section class="beat" data-lines="09_rules" data-name="The rules hold">
+  <div class="clip dim" data-clip="mumbai_train_night" data-from="8" data-out="L+4.02"></div>
+  <div class="clip dim" data-clip="woman_phone_bed" data-from="1" data-at="L+4.02" data-fx="cut" data-freeze="L+6.96"></div>
+  <div class="glass rule" style="left:110px;top:200px" data-at="L+0.2" data-out="L+4.02" data-fx="up"><div><div class="w">10:00 pm reminder</div><div class="why">quiet hours</div></div><span class="stamp">BLOCKED</span></div>
+  <div class="glass rule" style="left:110px;top:380px" data-at="L+1.9" data-out="L+4.02" data-fx="up"><div><div class="w">4th message this week</div><div class="why">over the weekly limit</div></div><span class="stamp">BLOCKED</span></div>
+  <div class="abs shadowtxt" style="left:110px;top:300px" data-at="L+4.1" data-fx="up"><div class="h m">“STOP”</div></div>
+  <div class="glass" style="left:1180px;top:170px;width:620px;padding:30px 36px" data-at="L+6.9" data-fx="up">
+    <div class="lbl" style="margin-bottom:8px">Every channel</div>
+    <div class="sw" data-on="L+7.0">SMS<i class="k"></i></div>
+    <div class="sw" data-on="L+7.2">WhatsApp<i class="k"></i></div>
+    <div class="sw" data-on="L+7.4">Voice call<i class="k"></i></div>
+    <div class="sw" data-on="L+7.6">IVR<i class="k"></i></div>
+    <div class="sw" data-on="L+7.8" style="border:0">Email<i class="k"></i></div>
+    <div style="font-size:24px;font-weight:700;margin-top:18px" class="bad" data-at="L+8.3" data-fx="pop">ALL OFF · from the next cycle</div>
+  </div>
+</section>
 
-  <!-- n09 · "No messages at night. Never more than allowed. And if someone says stop, everything stops. On every channel." -->
-  <section class="scene studio" id="n09"><div class="floor"></div>
-    <div class="rule" data-t="0.4" data-fx="up" style="left:110px;top:120px"><div><div class="w">10:00 pm reminder</div><div class="why">quiet hours</div></div><div class="blocked" id="bl1">BLOCKED</div></div>
-    <div class="rule" data-t="2.0" data-fx="up" style="left:110px;top:300px"><div><div class="w">4th message this week</div><div class="why">over the contact limit</div></div><div class="blocked" id="bl2">BLOCKED</div></div>
-    <div class="rule" data-t="3.8" data-fx="up" style="left:110px;top:480px"><div><div class="w">Borrower replied “STOP”</div><div class="why">opt-out, on any channel</div></div><div class="blocked" id="bl3">ALL OFF</div></div>
-    <div class="abs" data-t="5.0" data-fx="up" style="left:110px;top:670px;width:640px">
-      <div class="chanrow" id="s1">SMS <span class="s">ON</span></div><div class="chanrow" id="s2">WhatsApp <span class="s">ON</span></div><div class="chanrow" id="s3">Email <span class="s">ON</span></div><div class="chanrow" id="s4">Voice calls <span class="s">ON</span></div>
-    </div>
-    <div class="rig abs" style="inset:0;perspective:2400px">
-      <div class="shadow" data-t="3.6" style="left:900px;top:930px;width:820px"></div>
-      <div class="mbp" data-t="3.6" data-fx="up" style="left:850px;top:300px">
-        <div class="lid"><div class="bezel"><div class="notchm"></div><div class="scr"><img src="assets/real/cm03_stop.jpg" alt="Kairos CM-03 console: STOP honoured on every channel (synthetic borrower)" data-kf="0,0,0,1;3.8,0,0,1;4.9,-40,-110,2.3;9.3,-40,-110,2.3"><div class="glass"></div></div></div></div>
-        <div class="base"><div class="lip"></div></div>
-      </div>
-    </div>
-    <div class="abs realtag" data-t="4.5" style="left:850px;top:1000px"><b>REAL SCREEN</b>Kairos WhatsApp agent console · STOP honoured · synthetic borrower</div>
-  </section>
+<!-- st_b1 / st_a1 · the STOP conversation on a real phone (green-screen keyed) -->
+<section class="beat" data-lines="st_b1 st_a1" data-name="STOP, confirmed">
+  <div class="gs" data-clip="gs_phone_b" data-from="0" data-rate="0.9" data-chat="stop"></div>
+  <div class="abs" style="left:1240px;top:150px;width:560px" data-at="st_a1:end-1.0" data-fx="up">
+    <div class="glass" style="position:relative;padding:28px 32px"><div class="lbl">Recorded</div><div style="font-size:32px;font-weight:700;margin-top:8px">STOP · all channels paused</div><div class="fine">consent withdrawn · audit row written</div></div>
+  </div>
+</section>
 
-  <!-- n10 · "When a borrower writes back on WhatsApp, Kairos answers in seconds, in Hindi or in English." -->
-  <section class="scene studio" id="n10"><div class="floor"></div>
-    <div class="clip" data-clip="man_turban_phone_night" data-from="1" data-t="0" data-tout="3.6" data-fx="cut" style="z-index:5"></div>
-    <div class="abs" style="left:840px;top:200px;width:960px">
-      <div class="eyebrow" data-t="3.7">On WhatsApp</div>
-      <div class="h s gradink" data-t="3.8" data-fx="mask" style="margin-top:8px">Answers in seconds.</div>
-      <div class="eyebrow" data-t="6.6" style="margin-top:20px">In Hindi, or in English.</div>
+<!-- 10 + wa_* · "When a borrower writes back on WhatsApp..." then the real two-voice chat -->
+<section class="beat" data-lines="10_reply wa_b1 wa_a1 wa_b2 wa_a2 wa_b3 wa_a3" data-name="Answers on WhatsApp">
+  <div class="clip" data-clip="man_turban_phone_night" data-from="0" data-rate="0.85" data-out="wa_b1-0.4"></div>
+  <div class="abs shadowtxt" style="left:110px;top:150px" data-at="10_reply+2.8" data-out="wa_b1-0.4" data-fx="up"><div class="h s">Answers in seconds.</div><div class="eyebrow" style="margin-top:12px;color:#e5e5ea">In Hindi, or in English.</div></div>
+  <div class="gs" data-clip="gs_phone_c" data-from="0.5" data-rate="0.45" data-at="wa_b1-0.4|L" data-fx="cut" data-chat="wa"></div>
+  <div class="abs" style="left:1180px;top:170px;width:620px" data-at="wa_b1+0.2|L">
+    <div class="lbl">WhatsApp · Kairos agent</div>
+    <div class="h xs grad" style="margin-top:10px">Identity first.<br>Then the payment link.</div>
+    <div style="margin-top:28px;display:flex;flex-direction:column;gap:12px;font-size:24px">
+      <div data-at="wa_a1+1.0" data-fx="up"><span class="state on">AWAIT_OTP</span> <span style="color:#a1a1a6">nothing shared yet</span></div>
+      <div data-at="wa_b2:end" data-fx="up"><span class="state on">VERIFIED</span> <span style="color:#a1a1a6">OTP matched</span></div>
+      <div data-at="wa_a3" data-fx="up"><span class="state on">PAY LINK SENT</span> <span style="color:#a1a1a6">₹4,250 · UPI</span></div>
     </div>
-    <div class="rig abs" style="inset:0;perspective:2400px">
-      <div class="iph" style="left:300px;top:120px"><div class="frame"><div class="pscr"><div class="wa"><div class="whd"><div class="av">L</div><div><b>Lender ✓</b><small>verified business · online</small></div></div><div class="wbody">
-        <div class="chipd">YESTERDAY</div>
-        <div class="m i">Hi Ravi, a friendly reminder from your lender: your EMI is due soon.<span class="ts">10:02</span></div>
-        <div class="chipd">TODAY</div>
-        <div class="m o" data-t="4.0" data-fx="up">Hi, when is my EMI due?<span class="ts">19:41</span></div>
-        <div class="typing" data-t="4.6" data-fx="up"><i></i><i></i><i></i></div>
-      </div></div><div class="island"></div><div class="glass"></div></div></div></div>
-    </div>
-    <div class="abs realtag" data-t="5.6" style="left:840px;top:1000px"><b>REAL CONVERSATION</b>replies from the Kairos WhatsApp agent (CM-03), synthetic borrower</div>
-  </section>
+  </div>
+</section>
 
-  <!-- n11 · Neha as the WhatsApp agent, in Hindi (caption carries the English) -->
-  <section class="scene studio" id="n11"><div class="floor"></div>
-    <div class="abs" style="left:840px;top:200px;width:960px">
-      <div class="eyebrow" data-t="0.1">The Kairos WhatsApp agent</div>
-      <div class="h s gradink" data-t="0.2" data-fx="mask" style="margin-top:8px;line-height:1.3">हिंदी में बात।</div>
-      <div class="eyebrow" data-t="0.6" style="margin-top:14px">“Hello! Your EMI is due tomorrow. Shall I send you the payment link?”</div>
+<!-- vc_* · the voice-bot call: promise to pay Friday -->
+<section class="beat" data-lines="vc_a1 vc_b1 vc_a2 vc_b2 vc_a3" data-lead="1.3" data-name="A voice call in Hindi">
+  <div class="clip" data-clip="girl_call" data-from="1" data-out="vc_b1:end|L-0.4"></div>
+  <div class="clip" data-clip="woman_phone_b" data-from="1.5" data-at="vc_b1:end|L-0.4" data-fx="cut"></div>
+  <div class="glass call" data-at="L-0.2" data-fx="up">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div><div class="lbl">Voice call · Sarvam agent · Hindi</div><div style="font-size:30px;font-weight:700;margin-top:6px">Demo Finance → Sunita D.</div></div>
+      <div class="mono" style="font-size:22px;color:#a1a1a6" id="calltime">00:00</div>
     </div>
-    <div class="rig abs" style="inset:0;perspective:2400px">
-      <div class="iph" style="left:300px;top:120px"><div class="frame"><div class="pscr"><div class="wa"><div class="whd"><div class="av">L</div><div><b>Lender ✓</b><small>verified business · online</small></div></div><div class="wbody">
-        <div class="chipd">TODAY</div>
-        <div class="m o">Hi, when is my EMI due?<span class="ts">19:41</span></div>
-        <div class="m i" data-t="0.3" data-fx="up">नमस्ते! आपकी EMI की तारीख कल है। क्या मैं आपको पेमेंट लिंक भेज दूँ?<span class="ts">19:41</span></div>
-        <div class="m o" data-t="4.2" data-fx="up">Haan, bhej do<span class="ts">19:42</span></div>
-        <div class="typing" data-t="4.7" data-tout="5.5" data-fx="up"><i></i><i></i><i></i></div>
-        <div class="pay" data-t="5.5" data-fx="up"><div class="top">Pay your EMI securely</div><div class="bot">Opens the lender's payment page · 19:42</div></div>
-      </div></div><div class="island"></div><div class="glass"></div></div></div></div>
-    </div>
-  </section>
+    <div class="wave" id="waveA" style="margin:16px 0 4px"></div>
+    <div id="callT"></div>
+    <div data-at="vc_a3:end-1.2" data-fx="pop" style="margin-top:14px"><span class="lockpill" style="font-size:24px;padding:12px 20px">Promise to pay · Friday ✓</span> <span class="fine" style="margin-left:10px">reminder scheduled</span></div>
+  </div>
+</section>
 
-  <!-- n12 · "It confirms who they are before sharing any loan details. And if someone sends a fake payment screenshot, it checks with the bank, and catches it." -->
-  <section class="scene studio" id="n12"><div class="floor"></div>
-    <div class="rig abs" style="inset:0;perspective:2400px">
-      <div class="iph" id="n12ph" data-tout="4.6" style="left:300px;top:120px"><div class="frame"><div class="pscr"><div class="wa"><div class="whd"><div class="av">L</div><div><b>Lender ✓</b><small>verified business · online</small></div></div><div class="wbody">
-        <div class="m o">Kal EMI pay kar di thi<span class="ts">19:50</span></div>
-        <div class="m i">For your security, please share the 6-digit code we just sent to your registered number.<span class="ts">19:50</span></div>
-        <div class="m o" data-t="1.2" data-fx="up">• • • • • •<span class="ts">19:51</span></div>
-        <div data-t="2.4" data-fx="pop" style="align-self:center"><span class="okpill" style="font-size:18px;padding:8px 16px">✓ Identity verified</span></div>
-        <div class="m i" data-t="3.0" data-fx="up">Thanks, Ravi. Please send the UTR or a screenshot so I can check it with the bank.<span class="ts">19:51</span></div>
-      </div></div><div class="island"></div><div class="glass"></div></div></div></div>
-      <div class="shadow" data-t="4.6" style="left:820px;top:930px;width:820px"></div>
-      <div class="mbp" data-t="4.6" data-fx="up" style="left:780px;top:300px">
-        <div class="lid"><div class="bezel"><div class="notchm"></div><div class="scr"><img src="assets/real/cm03_fake_caught.jpg" alt="Kairos CM-03 console: an edited payment screenshot flagged as fraud" data-kf="0,0,0,1;5.0,0,0,1;7.6,-1010,-400,2.1;10.5,-1015,-405,2.12">
-          <div class="stampx" data-t="9.4" data-fx="pop" style="left:300px;top:380px">FAKE CAUGHT</div><div class="glass"></div></div></div></div>
-        <div class="base"><div class="lip"></div></div>
-      </div>
+<!-- 12 · identity, then the fake screenshot caught (real CM-03 console) -->
+<section class="beat" data-lines="12_verify" data-name="Verified; fake caught">
+  <div class="clip neb" data-clip="nebula_a" data-from="18"></div>
+  <div class="scr" style="left:110px;top:150px;width:1080px;height:640px" data-at="L+0.1" data-fx="up" data-iw="1920" data-ih="1080"
+       data-img="assets/real/cm03_fake_caught.jpg" data-focus="L+0.1=0,0,1920,1080;L+3.6=962,380,916,571"></div>
+  <div class="real" style="left:110px;top:810px" data-at="L+0.5"><b>REAL SCREEN</b>CM-03 WhatsApp console · synthetic borrower · SIMULATED bank feed</div>
+  <div class="abs" style="left:1260px;top:150px;width:560px">
+    <div class="lbl" data-at="L+0.2">Before any loan detail</div>
+    <div style="margin-top:14px;display:flex;gap:10px;align-items:center;font-size:22px" data-at="L+0.4" data-fx="up"><span class="state">AWAIT_OTP</span>→<span class="state on">VERIFIED</span></div>
+    <div class="glass" style="position:relative;margin-top:40px;padding:26px 30px" data-at="L+6.9" data-fx="up">
+      <div class="lbl">Checked with the bank</div>
+      <div style="font-size:30px;font-weight:700;margin-top:8px">No matching payment <span class="bad">✕</span></div>
+      <div class="fine">UTR not SETTLED in the bank feed</div>
     </div>
-    <div class="abs" style="left:840px;top:240px;width:960px">
-      <div class="eyebrow" data-t="0.2" data-tout="4.6">Before any loan details</div>
-      <div class="h s gradink" data-t="0.3" data-tout="4.6" data-fx="mask" style="margin-top:8px">Identity first.</div>
-      <div class="eyebrow" data-t="2.6" data-tout="4.6" style="margin-top:16px">A one-time code to the registered number.</div>
+    <div style="margin-top:30px" data-at="L+8.38" data-fx="pop"><span class="stamp" style="font-size:34px;padding:12px 22px;border-width:3px;background:rgba(40,0,0,.6)">FAKE CAUGHT</span></div>
+  </div>
+</section>
+
+<!-- fp_b1 / fp_a1 · "I've paid, here's the screenshot." / "The bank doesn't show this payment yet..." -->
+<section class="beat" data-lines="fp_b1 fp_a1" data-name="Fake screenshot to the team">
+  <div class="gs" data-clip="gs_phone_a" data-from="0" data-rate="0.6" data-chat="fake"></div>
+  <div class="abs" style="left:1250px;top:150px;width:600px" data-at="fp_a1+2.6" data-fx="up">
+    <div class="lbl" style="margin-bottom:12px">Sent to the team · Approvals</div>
+    <div class="scr" style="position:relative;width:600px;height:190px" data-img="assets/real/dash/approvals_dark.png" data-focus="beat=604,500,1544,232"></div>
+    <div class="real" style="position:relative;margin-top:10px"><b>REAL SCREEN</b>Approvals · live dashboard</div>
+  </div>
+  <div class="abs" style="left:1290px;top:560px;width:560px" data-at="fp_b1+1.5" data-out="fp_a1+2.6" data-fx="up">
+    <div class="glass" style="position:relative;padding:24px 28px"><div class="lbl">Bank check</div><div style="font-size:28px;font-weight:700;margin-top:8px">UTR 5123 4567 8901</div><div class="bad" style="font-size:24px;font-weight:700;margin-top:4px">no SETTLED match</div></div>
+  </div>
+</section>
+
+<!-- 13 · "Every reply, and every payment, teaches Kairos something new." (short cut: + a fast technical montage) -->
+<section class="beat" data-lines="13_learns" data-name="It learns">
+  <div class="clip neb" data-clip="nebula_a" data-from="2"></div>
+  <div class="scr" style="left:160px;top:110px;width:1600px;height:560px" data-at="L+0.1" data-fx="up"
+       data-img="assets/real/dash/activity_dark.png" data-focus="L+0.1=2552,1288,1224,672;L+4.7=556,380,3220,860"></div>
+  <div class="real" style="left:160px;top:684px" data-at="L+0.5"><b>REAL SCREEN</b>What Kairos is learning · live dashboard · SIMULATED</div>
+  <div class="abs shadowtxt" style="left:160px;top:44px" data-at="L+0.1" data-fx="up"><div class="h xs grad">Every reply teaches it something.</div></div>
+  <div data-cut="short">
+    <div class="mont" style="left:160px;top:760px" data-on="L+0.9" data-off="L+2.2"><div class="c">K03 · record</div><div class="t">One record</div><div class="s">loans · payments · replies · consent</div></div>
+    <div class="mont" style="left:480px;top:760px" data-on="L+2.2" data-off="L+3.5"><div class="c">K09 · model</div><div class="t">Scores</div><div class="s">every channel × hour</div></div>
+    <div class="mont" style="left:800px;top:760px" data-on="L+3.5" data-off="L+4.8"><div class="c">K06 · Aladdin</div><div class="t">Reserves</div><div class="s">budget + limit, re-checks at send</div></div>
+    <div class="mont" style="left:1120px;top:760px" data-on="L+4.8" data-off="L+6.1"><div class="c">APIs · webhooks</div><div class="t">Sends</div><div class="s">receipts back, duplicates ignored</div></div>
+    <div class="mont" style="left:1440px;top:760px" data-on="L+6.1" data-off="L+8.4"><div class="c">Intent ladder</div><div class="t">Understands</div><div class="s">rules → model → Sarvam → human</div></div>
+  </div>
+</section>
+
+<!-- ============================== UNDER THE HOOD (full + tech) ============================== -->
+
+<!-- x01 · "This is how Kairos works, under the hood." -->
+<section class="beat" data-lines="x01_intro" data-name="Under the hood">
+  <div class="clip" data-clip="server_room" data-from="4" data-out="L+1.6"></div>
+  <div class="clip neb" data-clip="nebula_a" data-from="0" data-at="L+1.6" data-fx="cut"></div>
+  <div class="scr" style="left:210px;top:220px;width:1500px;height:640px" data-at="L+1.6" data-fx="up" data-img="assets/real/dash/system_dark.png" data-focus="beat=556,504,3220,1336"></div>
+  <div class="center shadowtxt" style="top:70px"><div class="h m grad" data-at="L+0.1" data-fx="mask">Under the hood.</div></div>
+  <div class="real" style="left:210px;top:880px" data-at="L+1.8"><b>REAL SCREEN</b>System · every Kairos component, end to end · SIMULATED</div>
+</section>
+
+<!-- t1 · the borrower record (K03 spine) -->
+<section class="beat" data-lines="t1_record" data-lead="0.9" data-name="One record (K03)">
+  <div class="clip neb" data-clip="nebula_a" data-from="6"></div>
+  <div class="abs" style="left:120px;top:110px"><div class="lbl" data-at="beat">K03 · the spine</div><div class="h s grad" style="margin-top:8px" data-at="beat+0.1" data-fx="mask">One record per borrower.</div></div>
+  <div class="dg" style="left:120px;top:300px;width:420px" data-at="L+0.3" data-fx="up">
+    <div class="c">tables</div>
+    <div class="r">borrowers</div><div class="r">consents</div><div class="r">loans · EMIs</div><div class="r">payments</div><div class="r">events</div>
+  </div>
+  <div class="dg on" style="left:640px;top:250px;width:1140px;padding:34px 40px" data-at="L+0.6" data-fx="up">
+    <div style="display:flex;align-items:center;gap:22px"><div class="hub" style="position:relative;width:86px;height:86px;margin:0;border-radius:50%"><div class="av" style="width:70px;height:70px;font-size:26px">SD</div></div>
+      <div><div class="t" style="font-size:40px">Sunita D. <span class="mono" style="font-size:22px;color:#a1a1a6">B-1042</span></div><div class="fine">synthetic borrower</div></div></div>
+    <div class="r" style="margin-top:20px" data-at="tech?L+2.5|L+3.28" data-fx="up"><span>Loans</span><b>2 · two-wheeler ••0243 · phone ••0611</b></div>
+    <div class="r" data-at="tech?L+3.32|L+4.1" data-fx="up"><span>Payments</span><b>7 · last ₹4,250 · bank-verified</b></div>
+    <div class="r" data-at="tech?L+4.3|L+5.14" data-fx="up"><span>Replies</span><b>3 · WhatsApp, evenings</b></div>
+    <div class="r" data-at="tech?L+5.32|L+6.18" data-fx="up"><span>Consent</span><b>SMS ✓ · WhatsApp ✓ · Voice ✓ · STOP none</b></div>
+    <div class="r" data-at="tech?L+6.94" data-cut="tech" data-fx="up"><span>Money</span><b class="mono">₹4,250.00 = 425000 paise</b></div>
+  </div>
+</section>
+
+<!-- x02 · the churn engine (K27) re-sorts each borrower -->
+<section class="beat" data-lines="x02_churn" data-name="Churn engine (K27)">
+  <div class="clip neb" data-clip="nebula_a" data-from="11"></div>
+  <div class="abs" style="left:120px;top:90px"><div class="lbl" data-at="beat">K27 · auto-churn · on every event and the daily tick</div><div class="h s grad" style="margin-top:8px" data-at="beat+0.1" data-fx="mask">Re-sorted, every day.</div></div>
+  <div id="churn" class="abs" style="left:120px;top:300px;width:1680px;height:560px"></div>
+  <div class="abs" style="left:120px;top:880px;font-size:22px;color:#a1a1a6" data-at="L+2.2" data-fx="up">Seed-42 run: <b style="color:#fff">439 moves</b> across 5 engines · cohort · risk · journey · layer · lifecycle · <span class="sim" style="font-size:12px">simulated</span></div>
+</section>
+
+<!-- t2 · the learning model (K09) -->
+<section class="beat" data-lines="t2_model" data-name="Learning model (K09)">
+  <div class="clip neb" data-clip="nebula_a" data-from="20"></div>
+  <div class="abs" style="left:120px;top:90px"><div class="lbl" data-at="beat">K09 · learner · channel × time slot</div><div class="h s grad" style="margin-top:8px" data-at="beat+0.1" data-fx="mask">Every channel. Every hour.</div></div>
+  <div class="dg" style="left:120px;top:280px;width:1060px;height:600px" data-at="L+0.4" data-fx="up">
+    <div class="c">chance of a reply · Sunita D.</div>
+    <div id="grid" style="position:relative;height:500px;margin-top:10px"></div>
+  </div>
+  <div class="abs" style="left:1240px;top:280px;width:560px">
+    <div class="dg" style="position:relative;width:560px" data-on="tech?L+4.16|L+4.92" data-at="L+0.6" data-fx="up"><div class="c">level 1</div><div class="t">Similar borrowers</div><div class="fine">cohort · days-late band</div></div>
+    <div style="height:18px"></div>
+    <div class="dg" style="position:relative;width:560px" data-on="tech?L+5.8|L+6.8" data-at="L+0.6" data-fx="up"><div class="c">level 2</div><div class="t">Their region</div><div class="fine">pulled toward level 1 when data is thin</div></div>
+    <div style="height:18px"></div>
+    <div class="dg" style="position:relative;width:560px" data-on="tech?L+7.66|L+8.96" data-at="L+0.6" data-fx="up"><div class="c">level 3</div><div class="t">Them, personally</div><div class="fine">their own replies, shrunk toward level 2</div></div>
+    <div class="fine" style="margin-top:18px" data-at="L+1">Beta–Bernoulli per band × channel × slot (default); hierarchical cohort → region → borrower in K09 RL v2</div>
+  </div>
+</section>
+
+<!-- t3 · Aladdin reserves, then re-checks at send -->
+<section class="beat" data-lines="t3_reserve" data-name="Reserve and re-check (K06)">
+  <div class="clip neb" data-clip="nebula_a" data-from="24"></div>
+  <div class="abs" style="left:120px;top:90px"><div class="lbl" data-at="beat">K06 · Aladdin · the Gate</div><div class="h s grad" style="margin-top:8px" data-at="beat+0.1" data-fx="mask">Reserve first. Check again at send.</div></div>
+  <div class="dg" style="left:120px;top:360px;width:300px" data-at="L+0.2" data-fx="up"><div class="c">K09</div><div class="t">Plan</div><div class="fine">WhatsApp · 7:30 pm</div></div>
+  <div class="arrow" style="left:440px;top:430px;width:90px" data-at="L+0.8" data-fx="wipe"></div>
+  <div class="dg" style="left:550px;top:300px;width:470px" data-at="L+1.0" data-fx="up" data-on="L+1.4" data-off="L+5.2">
+    <div class="c">Aladdin · reserve()</div><div class="t">Atomic check-and-reserve</div>
+    <div class="r" data-at="L+2.2" data-fx="up"><span>Budget</span><b>₹0.40 held <span class="ok">✓</span></b></div>
+    <div class="r" data-at="L+3.0" data-fx="up"><span>Contact limit</span><b>2 of 3 this week <span class="ok">✓</span></b></div>
+  </div>
+  <div class="arrow" style="left:1040px;top:430px;width:90px" data-at="L+3.8" data-fx="wipe"></div>
+  <div class="dg" style="left:1150px;top:360px;width:260px" data-at="L+3.9" data-fx="up"><div class="c">queue</div><div class="t">RESERVED</div></div>
+  <div class="arrow" style="left:1430px;top:430px;width:90px" data-at="L+5.2" data-fx="wipe"></div>
+  <div class="dg" style="left:1540px;top:300px;width:300px" data-at="L+5.3" data-fx="up" data-on="L+6.8">
+    <div class="c">at send · re-check</div><div class="t">Gate again</div>
+    <div style="font-size:54px;font-weight:800;margin-top:6px" class="ok" data-at="L+7.0" data-fx="pop">✓✓</div>
+  </div>
+  <div class="abs mono" style="left:120px;top:640px;font-size:22px;color:#a1a1a6" data-at="L+1.5" data-fx="up">PROPOSED → RESERVED → DISPATCHING → SENT</div>
+  <div class="scr" style="left:120px;top:720px;width:1080px;height:170px" data-at="L+6.2" data-fx="up" data-img="assets/real/dash/rules_dark.png" data-focus="beat=556,412,1600,256"></div>
+  <div class="real" style="left:1230px;top:790px" data-at="L+6.4"><b>REAL SCREEN</b>1,324 sent, all passed both checks</div>
+</section>
+
+<!-- t4 · channel APIs out, webhooks back, duplicates ignored -->
+<section class="beat" data-lines="t4_webhooks" data-name="APIs and webhooks">
+  <div class="clip neb" data-clip="nebula_a" data-from="7"></div>
+  <div class="abs" style="left:120px;top:90px"><div class="lbl" data-at="beat">Executor · channel adapters · webhooks</div><div class="h s grad" style="margin-top:8px" data-at="beat+0.1" data-fx="mask">Out through APIs. Back as webhooks.</div></div>
+  <div class="dg on" style="left:150px;top:420px;width:330px" data-at="L+0.1" data-fx="up"><div class="c">K06 executor</div><div class="t">Kairos</div></div>
+  <div class="dg" style="left:1380px;top:290px;width:400px" data-at="L+0.3" data-fx="up"><div class="c">SMS gateway</div><div class="t">SMS</div></div>
+  <div class="dg" style="left:1380px;top:430px;width:400px" data-at="L+0.4" data-fx="up"><div class="c">WhatsApp Business API</div><div class="t">WhatsApp</div></div>
+  <div class="dg" style="left:1380px;top:570px;width:400px" data-at="L+0.5" data-fx="up"><div class="c">Sarvam voice agents</div><div class="t">Voice</div></div>
+  <div id="pkts" class="abs" style="inset:0"></div>
+  <div class="abs" style="left:150px;top:800px;font-size:22px;color:#a1a1a6" data-at="L+7.9" data-fx="up">Idempotent by <span class="mono" style="color:#fff">dedupe_key</span> · seed-42 trace: <b style="color:#fff">69 duplicate receipts + 12 duplicate webhooks ignored</b></div>
+  <div class="fine" style="position:absolute;left:150px;top:850px" data-at="L+1">SMS / WhatsApp adapters run dry-run in the demo; Sarvam calls are live</div>
+</section>
+
+<!-- x03 · voice: Sarvam agents, dispositions, confidence threshold -->
+<section class="beat" data-lines="x03_voice" data-name="Voice agents (Sarvam)">
+  <div class="clip" data-clip="girl_call" data-from="2" data-out="L+1.96"></div>
+  <div class="clip neb" data-clip="nebula_a" data-from="15" data-at="L+1.96" data-fx="cut"></div>
+  <div class="abs shadowtxt" style="left:110px;top:120px" data-at="L+0.1" data-out="L+1.96" data-fx="up"><div class="lbl">Voice</div><div class="h s">Sarvam agents.</div></div>
+  <div class="abs" style="left:120px;top:90px" data-at="L+1.96" data-fx="cut"><div class="lbl">Voice · 6 Sarvam bots · 8 languages</div><div class="h s grad" style="margin-top:8px">Every call ends with a disposition.</div></div>
+  <div class="abs" style="left:120px;top:290px;width:1680px;display:flex;flex-wrap:wrap;gap:12px;font-size:28px" data-at="L+2.0" data-fx="up">
+    <span class="chipx">हिंदी</span><span class="chipx">English</span><span class="chipx">मराठी</span><span class="chipx">தமிழ்</span><span class="chipx">తెలుగు</span><span class="chipx">ಕನ್ನಡ</span><span class="chipx">বাংলা</span><span class="chipx">ગુજરાતી</span>
+  </div>
+  <div class="dg" style="left:120px;top:420px;width:800px" data-at="L+3.4" data-fx="up">
+    <div class="c">call · Sunita D. · Hindi</div>
+    <div class="r"><span>Disposition</span><b>PROMISE_TO_PAY · Friday</b></div>
+    <div class="r"><span>Confidence</span><b>0.91 ≥ 0.80</b></div>
+    <div class="r"><span>Next</span><b class="ok">applied automatically</b></div>
+  </div>
+  <div class="dg" style="left:980px;top:420px;width:800px" data-at="L+7.1" data-fx="up" data-on="L+7.4">
+    <div class="c">call · another borrower</div>
+    <div class="r"><span>Disposition</span><b>CALLBACK</b></div>
+    <div class="r"><span>Confidence</span><b>0.62 &lt; 0.70</b></div>
+    <div class="r"><span>Next</span><b style="color:#ffd60a">review ticket → a person</b></div>
+  </div>
+  <div class="abs fine" style="left:120px;top:800px;font-size:20px" data-at="L+5" data-fx="up">16 dispositions · thresholds by outcome: STOP / hardship 0.5 · most 0.6 · callback 0.7 · promise to pay 0.8 · low-confidence STOP or hardship always goes to a person</div>
+</section>
+
+<!-- t5 · the intent ladder -->
+<section class="beat" data-lines="t5_intent" data-name="Intent ladder">
+  <div class="clip neb" data-clip="nebula_a" data-from="12"></div>
+  <div class="abs" style="left:120px;top:90px"><div class="lbl" data-at="beat">Intent · reply understanding</div><div class="h s grad" style="margin-top:8px" data-at="beat+0.1" data-fx="mask">Cheapest first. A person last.</div></div>
+  <div class="lad" style="left:1160px;top:270px" data-at="L+0.2" data-fx="up" data-on="tech?L+0.6|L+1.0" data-off="tech?L+3.02|L+2.0"><div><div class="n">Rules</div><div class="s">keywords · STOP · dates</div></div><div class="v" id="v1"></div></div>
+  <div class="lad" style="left:1160px;top:420px" data-at="L+0.3" data-fx="up" data-on="tech?L+3.02|L+2.4" data-off="tech?L+4.56|L+3.8"><div><div class="n">Small model</div><div class="s">Naive Bayes · local</div></div><div class="v" id="v2"></div></div>
+  <div class="lad" style="left:1160px;top:570px" data-at="L+0.4" data-fx="up" data-on="tech?L+4.56|L+4.2" data-off="tech?L+6.86|L+6.0"><div><div class="n">Sarvam decision model</div><div class="s">sarvam-prism</div></div><div class="v" id="v3"></div></div>
+  <div class="lad" style="left:1160px;top:720px" data-at="L+0.5" data-fx="up" data-on="tech?L+8.4|L+7.6"><div><div class="n">A person</div><div class="s">when still unsure</div></div><div class="v" id="v4"></div></div>
+  <div class="pkt" id="reply1" style="left:180px;top:300px;font-size:26px;padding:14px 22px">“Salary late hai, 10 tareekh ko dunga”</div>
+  <div class="pkt" id="reply2" style="left:180px;top:300px;font-size:26px;padding:14px 22px">“Kuch samajh nahi aa raha…”</div>
+  <div class="abs fine" style="left:120px;top:860px;font-size:20px" data-at="L+2" data-fx="up">Gold set of 160 hand-written replies: 95% correct · STOP and hardship recall 100% · <span class="sim" style="font-size:12px">simulated</span></div>
+</section>
+
+<!-- x04 · CM-03: inbound WhatsApp state machine, OTP, bank-checked claims -->
+<section class="beat" data-lines="x04_cm03" data-name="CM-03 inbound WhatsApp">
+  <div class="clip neb" data-clip="nebula_a" data-from="3"></div>
+  <div class="abs" style="left:120px;top:80px"><div class="lbl" data-at="beat">CM-03 · inbound WhatsApp</div><div class="h s grad" style="margin-top:8px" data-at="beat+0.1" data-fx="mask">Its own state machine.</div></div>
+  <div class="abs" style="left:120px;top:240px;width:1680px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:22px;color:#8e8e93" data-at="L+0.6" data-fx="up">
+    <span class="state" data-on="L+0.8">NEW</span>→<span class="state" data-on="L+1.4">AWAIT_LOAN_ID</span>→<span class="state" data-on="L+2.2">AWAIT_OTP</span>→<span class="state" data-on="L+4.6">VERIFIED</span>→<span class="state" data-on="L+7.2">AWAIT_UTR</span>→<span class="state" data-on="L+10.4" id="cmHand">HANDOFF</span><span style="margin-left:6px">/</span><span class="state">CLOSED</span>
+  </div>
+  <div class="glass" style="left:120px;top:360px;width:560px;padding:28px 32px" data-at="L+3.84" data-fx="up">
+    <div class="lbl">Before OTP</div><div style="font-size:30px;font-weight:700;margin-top:8px">0 account details shared</div><div class="fine">checked on 1,000 scripted conversations</div>
+  </div>
+  <div class="glass" style="left:120px;top:560px;width:560px;padding:28px 32px" data-at="L+6.92" data-fx="up">
+    <div class="lbl">Payment claims</div><div style="font-size:28px;font-weight:700;margin-top:8px">Only a SETTLED bank row counts</div>
+    <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap"><span class="state bad" data-at="L+9.0" data-fx="pop">doctored screenshot ✕</span><span class="state bad" data-at="L+10.6" data-fx="pop">reused UTR ✕</span></div>
+  </div>
+  <div class="abs" style="left:120px;top:800px;font-size:24px;color:#d1d1d6" data-at="L+12" data-fx="up"><b style="color:#fff">127 / 127</b> fakes caught · 0 false alarms on 873 genuine · <span class="sim" style="font-size:12px">simulated eval</span></div>
+  <div class="scr" style="left:740px;top:340px;width:1060px;height:600px" data-at="L+1.0" data-fx="up" data-iw="1920" data-ih="1080"
+       data-img="assets/real/cm03_fake_caught.jpg" data-focus="L+1.0=0,0,1920,1080;L+7.0=962,380,916,571"></div>
+  <div class="real" style="left:740px;top:950px" data-at="L+1.2"><b>REAL SCREEN</b>CM-03 console · synthetic borrower</div>
+</section>
+
+<!-- x05 · HITL: a person can take control; every action through Aladdin into the audit log (rendered control panel over the office b-roll; swap in the journey-page capture when it lands) -->
+<section class="beat" data-lines="x05_hitl" data-name="People in control (HITL)">
+  <div class="clip" data-clip="office_team" data-from="1" data-out="L+2.98"></div>
+  <div class="clip soft" data-clip="office_team" data-from="3.98" data-at="L+2.98" data-fx="cut"></div>
+  <div class="abs shadowtxt" style="left:110px;top:120px" data-at="L+0.1" data-out="L+2.98" data-fx="up"><div class="lbl" style="color:#9be3da">Human in the loop · K06 HITL</div><div class="h s" style="margin-top:8px">A person can take control.</div></div>
+  <div class="glass" id="hitl" style="left:110px;top:90px;width:1700px;height:800px;padding:34px 40px" data-at="L+2.98" data-fx="up">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div><div class="lbl">Take control · Demo Finance</div><div style="font-size:40px;font-weight:700;margin-top:6px">Any moment. Every action checked.</div></div>
+      <div style="display:flex;gap:12px;align-items:center;font-size:20px;color:#a1a1a6"><div class="av" style="width:46px;height:46px;border-radius:50%;background:#3a3a3c;display:grid;place-items:center;font-weight:800;color:#fff">AK</div>Asha K. · collections lead</div>
     </div>
-    <div class="abs" style="left:110px;top:150px;width:620px">
-      <div class="h s gradink" data-t="5.0" data-fx="mask">Fake proof?</div>
-      <div data-t="8.2" data-fx="up" class="card" style="position:relative;padding:20px 26px;margin-top:30px"><div class="eyebrow" style="font-size:18px">Checked with the bank</div><div style="font-size:30px;font-weight:700;margin-top:4px;color:var(--bad)">No matching payment</div></div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:30px">
+      <div class="dg hb" style="position:relative" data-on="L+2.98" data-off="L+4.08"><div class="c">outbound</div><div class="t">⏸ Pause</div><div class="fine">global switch · all sends stop</div></div>
+      <div class="dg hb" style="position:relative" data-on="L+4.08" data-off="L+5.18"><div class="c">held voice call</div><div class="t">✓ Approve</div><div class="fine">Gate runs again first</div></div>
+      <div class="dg hb" style="position:relative" data-on="L+5.18" data-off="L+6.86"><div class="c">held voice call</div><div class="t">✕ Reject</div><div class="fine">cancelled, nothing sent</div></div>
+      <div class="dg hb" style="position:relative" data-on="L+6.86" data-off="L+7.94"><div class="c">borrower</div><div class="t">⏸ Hold</div><div class="fine">pause · hold · DNC</div></div>
+      <div class="dg hb" style="position:relative" data-on="L+7.94" data-off="L+10.64"><div class="c">conversation</div><div class="t">⇄ Take over</div><div class="fine">CM-03 HANDOFF · a person owns it</div></div>
     </div>
-    <div class="abs realtag" data-t="5" style="left:780px;top:1000px"><b>REAL SCREEN</b>Kairos WhatsApp agent console · edited screenshot detected · synthetic borrower</div>
-  </section>
-
-  <!-- n13 · "Every reply, and every payment, teaches Kairos something new..." -->
-  <section class="scene studio" id="n13"><div class="floor"></div>
-    <div class="abs" style="left:110px;top:150px;width:620px">
-      <div class="eyebrow" data-t="0.3">Every reply. Every payment.</div>
-      <div class="h s gradink" data-t="0.5" data-fx="mask" style="margin-top:8px">It learns.</div>
-      <div class="fine" data-t="3.4" style="margin-top:30px;font-size:26px;line-height:1.6;color:#424245">Day 7: WhatsApp replies drop.<br>Kairos notices and shifts to what works.</div>
+    <div style="position:relative;height:150px;margin-top:22px">
+      <div class="abs" style="inset:0" data-at="L+4.08" data-out="L+6.86" data-fx="up"><div class="scr" style="position:relative;width:1000px;height:150px" data-img="assets/real/dash/approvals_dark.png" data-focus="beat=604,500,1544,232"></div><div class="real" style="left:1030px;top:60px"><b>REAL SCREEN</b>Approvals queue</div></div>
+      <div class="abs" style="inset:0;font-size:26px" data-at="L+2.98" data-out="L+4.08" data-fx="up"><span class="state on">OUTBOUND PAUSED</span> <span style="color:#a1a1a6;margin-left:10px">POST /control/outbound · resumes on one click</span></div>
+      <div class="abs" style="inset:0;font-size:26px" data-at="L+6.86" data-out="L+7.94" data-fx="up"><span class="state on">B-1042 · ON HOLD</span> <span style="color:#a1a1a6;margin-left:10px">dispute raised · no contact until a person decides</span></div>
+      <div class="abs" style="inset:0;font-size:26px" data-at="L+7.94" data-out="L+10.64" data-fx="up"><span class="state on">HANDOFF</span> <span style="color:#a1a1a6;margin-left:10px">Ravi M. joined the WhatsApp chat · the agent steps back</span></div>
+      <div class="abs" style="inset:0;font-size:28px;font-weight:700" data-at="L+10.64" data-fx="up">Every action → <span class="state on">Aladdin re-check</span> → <span class="state on">audit log</span> <span class="fine" style="margin-left:12px">actor · role · reason; overriding STOP or caps is refused for every role</span></div>
     </div>
-    <div class="rig abs" style="inset:0;perspective:2400px">
-      <div class="shadow" style="left:820px;top:930px;width:820px"></div>
-      <div class="mbp" style="left:780px;top:300px">
-        <div class="lid"><div class="bezel"><div class="notchm"></div><div class="scr"><div class="dash" id="dashL"></div><div class="glass"></div></div></div></div>
-        <div class="base"><div class="lip"></div></div>
-      </div>
+    <div style="margin-top:10px" data-at="L+12.0" data-fx="up">
+      <div class="lbl" style="margin-bottom:4px">audit log · GET /hitl/audit</div>
+      <div class="aud" data-at="L+12.74" data-fx="up">19:41  asha.k · collections lead · pause_outbound · all       · reason: festival day</div>
+      <div class="aud" data-at="L+13.1" data-fx="up">19:42  asha.k · collections lead · approve        · call B-2001 · reason: borrower asked for a call</div>
+      <div class="aud" data-at="L+13.5" data-fx="up">19:44  asha.k · collections lead · hold           · B-1042  · reason: dispute raised</div>
+      <div class="aud" data-at="L+13.9" data-fx="up">19:47  ravi.m · agent            · takeover       · chat B-0877 · reason: hardship</div>
     </div>
-    <div class="abs realtag" data-t="1" style="left:780px;top:1000px"><b>PRODUCT VIEW</b>Live collections, in the product's design · SIMULATED</div>
-  </section>
+  </div>
+</section>
 
-  <!-- n14 · "And the collections team? They watch the money come in, and approve the few decisions that need a human." -->
-  <section class="scene black" id="n14"><div class="spot"></div>
-    <div class="abs" style="left:240px;top:100px"><div class="eyebrow" data-t="0.2">The collections team</div><div class="h s grad" data-t="0.4" data-fx="mask" style="margin-top:6px">Watches. Approves.</div></div>
-    <div class="rig abs" style="inset:0;perspective:2400px">
-      <div class="shadow" style="left:300px;top:940px;width:880px"></div>
-      <div class="mbp" style="left:240px;top:300px">
-        <div class="lid"><div class="bezel"><div class="notchm"></div><div class="scr"><div class="dash" id="dashB"></div><div class="glass"></div></div></div></div>
-        <div class="base"><div class="lip"></div></div>
-      </div>
-      <div class="iph" id="n14ph" style="left:1360px;top:150px;scale:.86"><div class="frame"><div class="pscr"><div class="lock" style="background:linear-gradient(170deg,#1f2733,#3d3a46 60%,#5a4c4c)"><div class="date">Thursday 19 November</div><div class="time">11:02</div></div>
-        <div class="ntf" style="top:260px;height:auto;padding:14px;flex-direction:column;align-items:stretch;gap:8px">
-          <div class="t"><span style="color:#0f766e;font-weight:800">KAIROS</span><span>now</span></div>
-          <div style="font-size:16px;font-weight:700">1 decision needs you</div>
-          <div style="font-size:14px;color:#3a3a3c">A borrower reported a job loss. Gentle call from a senior colleague tomorrow? No payment ask.</div>
-          <div style="display:flex;gap:8px;margin-top:4px"><span class="btnp" id="approve" style="flex:1">Approve</span><span class="btnp" style="background:#e5e5ea;color:#1d1d1f">Later</span></div>
-        </div><div class="island"></div><div class="glass"></div></div></div></div>
-    </div>
-    <div class="abs realtag" data-t="1" style="left:240px;top:1010px"><b>REAL NUMBERS</b>₹ recovered and the rule-breach card are from /demo/live (SIMULATED), in a rebuilt product view</div>
-  </section>
+<!-- t6 · the loop and determinism -->
+<section class="beat" data-lines="t6_loop" data-name="The loop, deterministic">
+  <div class="clip neb" data-clip="nebula_a" data-from="26"></div>
+  <div class="abs" style="left:120px;top:90px"><div class="lbl" data-at="beat">Outcomes → learner · one reward per touch</div><div class="h s grad" style="margin-top:8px" data-at="beat+0.1" data-fx="mask">Written back. Every time.</div></div>
+  <svg class="abs" style="left:120px;top:270px" width="760" height="620" viewBox="0 0 760 620" data-at="L+0.2" data-fx="fade">
+    <circle cx="380" cy="310" r="230" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="3"/>
+    <circle id="loopArc" cx="380" cy="310" r="230" fill="none" stroke="#5fbfb4" stroke-width="5" stroke-linecap="round" stroke-dasharray="0 1446" transform="rotate(-90 380 310)"/>
+    <g font-family="-apple-system,Inter,sans-serif" font-size="24" font-weight="700" fill="#f5f5f7" text-anchor="middle">
+      <text x="380" y="70">Record</text><text x="640" y="230">Model</text><text x="590" y="510">Aladdin</text><text x="170" y="510">Channel</text><text x="120" y="230">Outcome</text>
+    </g>
+  </svg>
+  <div class="glass" style="left:980px;top:300px;width:820px;padding:30px 36px" data-at="tech?L+3.68|L+3.54" data-fx="up">
+    <div class="lbl">Same data in, same decision out</div>
+    <div class="aud" style="border:0;margin-top:12px">run 1 · CRM envelope hash <b style="color:#fff">1bc7d4a67666f318</b></div>
+    <div class="aud" data-at="tech?L+5.12|L+4.86" data-fx="up">run 2 · CRM envelope hash <b style="color:#fff">1bc7d4a67666f318</b></div>
+    <div style="font-size:30px;font-weight:700;margin-top:12px" class="ok" data-at="tech?L+5.6|L+5.4" data-fx="pop">IDENTICAL ✓</div>
+  </div>
+  <div class="glass" style="left:980px;top:640px;width:820px;padding:24px 36px" data-at="tech?L+6.86|L+6.58" data-fx="up">
+    <div class="lbl">On the record</div><div class="fine" style="font-size:22px;color:#d1d1d6;margin-top:6px">every decision, check, send, receipt and reply is an event · 19 deterministic state machines</div>
+  </div>
+</section>
 
-  <!-- n15 · "In our tests, Kairos recovered about twice as much money for every rupee spent, compared to a fixed schedule." -->
-  <section class="scene black" id="n15"><div class="spot"></div>
-    <div class="abs" style="right:80px;top:60px"><span class="sim">Simulated data</span></div>
-    <div class="center" style="top:180px"><div class="eyebrow" data-t="0.25">In our tests</div></div>
-    <div class="center" style="top:240px"><div class="h hero grad" data-t="0.25" data-fx="mask">~<span data-k="numbers.recoveryX">2</span>×</div></div>
-    <div class="center" style="top:610px"><div class="h s grad" data-t="1.0" data-fx="mask">money recovered per ₹ spent</div></div>
-    <div class="center eyebrow" data-t="6.6" style="top:720px">vs a fixed schedule</div>
-    <div class="center fine" data-t="7" style="top:880px">Same budget cap, test runs never used for tuning: <span data-k="numbers.recoveryExamples">517 vs 272</span> (<span data-k="numbers.recoveryRange">1.7× to 2.3×</span>). Kairos spent less of the budget.</div>
-  </section>
+<!-- ============================== PEOPLE AND PROOF ============================== -->
 
-  <!-- n16 · "With zero rule breaches. And every safety test passed." -->
-  <section class="scene black" id="n16"><div class="spot"></div>
-    <div class="abs" style="right:80px;top:60px"><span class="sim">Simulated data</span></div>
-    <div class="center" style="top:160px"><div class="eyebrow" data-t="0.2" data-tout="2.0">Rule breaches</div></div>
-    <div class="center" style="top:220px"><div class="h hero grad" data-t="0.3" data-tout="2.0" data-fx="mask"><span data-k="numbers.ruleBreaches">0</span></div></div>
-    <div class="center" style="top:300px"><div class="h xl grad" data-t="2.05" data-fx="mask"><span data-k="numbers.attacks">49/49</span></div></div>
-    <div class="center" style="top:540px"><div class="eyebrow" data-t="2.15">attack tests passed</div></div>
-    <div class="center" style="top:610px"><div class="h s grad" data-t="2.35" data-fx="mask"><span data-k="numbers.policyCases">148/148</span> policy checks</div></div>
-  </section>
+<!-- 14 · "And the collections team? They watch the money come in, and approve the few decisions that need a human." -->
+<section class="beat" data-lines="14_operator" data-name="The team approves">
+  <div class="clip" data-clip="office_three" data-from="3" data-out="L+1.14"></div>
+  <div class="clip neb" data-clip="nebula_a" data-from="16" data-at="L+1.14" data-fx="cut"></div>
+  <div class="scr" style="left:160px;top:120px;width:1600px;height:700px" data-at="L+1.14" data-fx="cut"
+       data-img="assets/real/dash/overview_dark.png" data-focus="L+1.14=556,358,775,238;L+2.0=556,763,2023,712;L+2.85=556,1514,2023,602"></div>
+  <div class="abs" id="tap14" style="left:0;top:0" data-at="L+4.7" data-fx="pop"></div>
+  <div class="abs" style="left:640px;top:520px" data-at="L+5.0" data-fx="pop"><span class="lockpill" style="font-size:30px">Approved ✓ · Aladdin re-checks before it goes</span></div>
+  <div class="real" style="left:160px;top:840px" data-at="L+1.5"><b>REAL SCREEN</b>Overview · live dashboard · SIMULATED 14-day run, 300 synthetic borrowers</div>
+  <div class="abs shadowtxt" style="left:110px;top:120px" data-at="L+0.1" data-out="L+1.14" data-fx="up"><div class="h s">The collections team.</div></div>
+</section>
 
-  <!-- n17 · good news, then the end card: "Kairos. The right message, at the right time. Or none at all." -->
-  <section class="scene black" id="n17"><div class="spot"></div>
-    <div class="clip" data-clip="man_good_news_phone" data-from="3" data-t="0" data-tout="1.2" data-fx="cut" style="z-index:5"></div>
-    <div class="center" style="top:300px"><div class="h xl grad" data-t="1.2" data-fx="mask"><span data-k="product">Kairos</span></div></div>
-    <div class="center" style="top:560px"><div class="h s grad" data-t="2.0" data-fx="mask">The right message, at the right time.</div></div>
-    <div class="center" style="top:650px"><div class="h s" data-t="4.8" data-fx="mask" style="color:#a1a1a6">Or none at all.</div></div>
-    <div class="center fine" data-t="6.2" style="top:790px"><span data-k="team">The A Team</span> · <span data-k="event">CreditNirvana Agentathon 2026</span></div>
-    <div class="center fine" data-t="6.6" style="top:830px;font-size:15px">Synthetic data · SIMULATED results · Voice: Sarvam bulbul:v3 (Neha), AI-generated · Music: original score · Stock footage: Pexels</div>
-  </section>
+<!-- 15 · "In our tests, Kairos recovered about twice as much money for every rupee spent, compared to a fixed schedule." -->
+<section class="beat" data-lines="15_proof" data-lead="0.3" data-name="~2× per rupee">
+  <div class="clip dim" data-clip="city_aerial_mumbai_night" data-from="8"></div>
+  <div class="abs" style="right:80px;top:60px"><span class="sim">Simulated data</span></div>
+  <div class="center" style="top:170px"><div class="eyebrow" data-at="L">In our tests</div></div>
+  <div class="center" style="top:230px"><div class="h hero grad" data-at="L-0.1" data-fx="mask">~2×</div></div>
+  <div class="center" style="top:590px"><div class="h s grad" data-at="L+0.9" data-fx="mask">money recovered per ₹ spent</div></div>
+  <div class="center eyebrow" style="top:700px" data-at="L+5.6" data-fx="up">vs a fixed schedule</div>
+  <div class="center fine" style="top:860px" data-at="L+6">Same budget cap, three test runs never used for tuning: 517 vs 272 · 530 vs 229 · 459 vs 268 (1.7× to 2.3×). Kairos spent less of the budget.</div>
+</section>
 
-  <svg id="cursor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="rgba(255,255,255,.55)" stroke="#fff" stroke-width="1.5"/></svg>
+<!-- 16 · "With zero rule breaches. And every safety test passed." -->
+<section class="beat" data-lines="16_safe" data-name="0 breaches, tests passed">
+  <div class="clip dim" data-clip="city_aerial_mumbai_night" data-from="1"></div>
+  <div class="abs" style="right:80px;top:60px"><span class="sim">Simulated data</span></div>
+  <div class="center" style="top:150px"><div class="eyebrow" data-at="L" data-out="L+1.62">Rule breaches</div></div>
+  <div class="center" style="top:220px"><div class="h hero grad" data-at="L" data-out="L+1.62" data-fx="mask">0</div></div>
+  <div class="center" style="top:250px"><div class="h xl grad" data-at="L+1.62" data-fx="mask">49/49</div></div>
+  <div class="center" style="top:500px"><div class="eyebrow" data-at="L+1.7">attack tests passed</div></div>
+  <div class="center" style="top:580px"><div class="h s grad" data-at="L+2.0" data-fx="mask">148/148 policy checks</div></div>
+</section>
+
+<!-- x06 · "Fifty thousand decisions in about two minutes. Zero cap breaches. And 49 of 49 red-team attacks, blocked." -->
+<section class="beat" data-lines="x06_proof" data-name="50k in 2 min · 0 · 49/49">
+  <div class="clip dim" data-clip="server_room" data-from="14"></div>
+  <div class="abs" style="right:80px;top:60px"><span class="sim">Simulated data</span></div>
+  <div class="center" style="top:120px"><div class="h xl grad" data-at="L-0.1" data-fx="mask"><span data-count="0,50000,L-0.1,1.4">50,000</span></div></div>
+  <div class="center eyebrow" style="top:380px" data-at="L+1.5" data-fx="up">decisions in about 2 minutes · 402 per second, one laptop</div>
+  <div style="position:absolute;left:0;right:0;top:500px;display:flex;justify-content:center;gap:140px">
+    <div style="text-align:center" data-at="L+2.98" data-fx="pop"><div class="h xl grad">0</div><div class="eyebrow">cap breaches</div></div>
+    <div style="text-align:center" data-at="L+4.6" data-fx="pop"><div class="h xl grad">49/49</div><div class="eyebrow">red-team attacks blocked</div></div>
+  </div>
+</section>
+
+<!-- 17 / x07 · end card -->
+<section class="beat" data-lines="17_end x07_end" data-lead="1.15" data-name="End card">
+  <div class="clip" data-clip="man_good_news_phone" data-from="3" data-out="L+0.0" data-cut="short full"></div>
+  <div class="clip dim" data-clip="server_room" data-from="20" data-out="L+0.0" data-cut="tech"></div>
+  <div class="clip dim" data-clip="kolkata_traffic" data-from="1" data-at="L" data-fx="cut"></div>
+  <div class="center" style="top:300px"><div class="h xl grad" data-at="L" data-fx="mask">Kairos</div></div>
+  <div data-cut="short full">
+    <div class="center" style="top:580px"><div class="h s" data-at="L+0.7" data-fx="up">The right message, at the right time.</div></div>
+    <div class="center" style="top:670px"><div class="h s" style="color:#a1a1a6" data-at="L+3.2" data-fx="up">Or none at all.</div></div>
+  </div>
+  <div data-cut="tech">
+    <div class="center" style="top:580px"><div class="h s" data-at="L+0.7" data-fx="up">Built to be trusted</div></div>
+    <div class="center" style="top:670px"><div class="h s" style="color:#a1a1a6" data-at="L+2.0" data-fx="up">with every rupee, and every borrower.</div></div>
+  </div>
+  <div class="center fine" style="top:850px" data-at="L+3.6">The A Team · CreditNirvana Agentathon 2026</div>
+  <div class="center fine" style="top:885px;font-size:15px" data-at="L+3.8">Synthetic data · SIMULATED results · Voices: Sarvam bulbul:v3 (Neha, Ritu, Pooja), AI-generated · Music: original score · Stock footage: Pexels (pexels.com/license)</div>
+</section>
+
   <div id="cap"><div id="capText"></div></div>
 </div>
+  <svg id="cursor" viewBox="0 0 24 24"><path d="M5 2l14 10-6 1.4 3.6 7-2.6 1.3-3.5-7L5 18z" fill="#fff" stroke="#000" stroke-width="1"/></svg>
   <div id="flash"></div>
   <div id="grain"></div>
-</div></div>
+</div>
 
 <div id="ui">
   <div id="panel"><div id="chapters"></div>
-    <div id="more"><button id="bMusic" class="on" title="M">Music</button><button id="bVO" class="on" title="V">Voice</button><button id="bCC" class="on" title="C">Captions</button><button id="bRec" title="R">Record mode</button></div></div>
+    <div id="more"><button data-cut="short">Product 2:00</button><button data-cut="tech">Technical 2:16</button><button data-cut="full">Full 4:08</button>
+      <button id="bMusic" class="on" title="M">Music</button><button id="bVO" class="on" title="V">Voice</button><button id="bCC" class="on" title="C">Captions</button><button id="bRec" title="R">Record mode</button></div></div>
   <div class="ctr">
     <button id="bPlay" title="Play (Space)">▶</button>
     <span id="time">0:00 / 0:00</span>
@@ -464,244 +788,325 @@ body.record #ui{display:none} body.record{cursor:none}
   </div>
 </div>
 
-<script>
-/* ---------------- scene table: one scene per Neha line; secs snap cuts to the music's beat grid (148 BPM);
-   vo = [line in audio/vo_neha, seconds from scene start]. music/mix.py reads this table. ---------------- */
-const ALL_SCENES = [
-  {id:"n01", name:"Millions repay a loan", secs:8.946, vo:[["01_people",1.5]], vdur:7.146, dvo:0.6, ddur:7.52},
-  {id:"n02", name:"Same message, same time", secs:7.776, vo:[["02_same",0.3]], vdur:7.176, dvo:0.106, ddur:7.93},
-  {id:"n03", name:"Ignored, annoying, costly", secs:8.505, vo:[["03_cost",0.3]], vdur:7.555, dvo:0.428, ddur:7.28},
-  {id:"n04", name:"Meet Kairos", secs:7.375, vo:[["04_meet",1.15]], vdur:5.925, dvo:1.22, ddur:7.35},
-  {id:"n05", name:"It looks first", secs:10.482, vo:[["05_looks",0.3]], vdur:9.882, dvo:0.308, ddur:9.83},
-  {id:"n06", name:"Contact or wait", secs:5.006, vo:[["06_decides",0.3]], vdur:4.406, dvo:0.256, ddur:4.55},
-  {id:"n07", name:"Channel and time", secs:10.581, vo:[["07_channel",0.3]], vdur:9.981, dvo:0.193, ddur:11.49},
-  {id:"n08", name:"Aladdin checks twice", secs:7.778, vo:[["08_aladdin",0.3]], vdur:7.178, dvo:0.177, ddur:7.6},
-  {id:"n09", name:"The rules hold", secs:10.222, vo:[["09_rules",0.3]], vdur:9.622, dvo:0.326, ddur:8.53},
-  {id:"n10", name:"Answers on WhatsApp", secs:7.774, vo:[["10_reply",0.3]], vdur:7.024, dvo:0.19, ddur:8.37},
-  {id:"n11", name:"In Hindi", secs:6.693, vo:[["11_agent_hi",0.45]], vdur:5.943, dvo:0.298, ddur:6.51},
-  {id:"n12", name:"Verified; fake caught", secs:9.891, vo:[["12_verify",0.3]], vdur:9.291, dvo:0.168, ddur:10.1},
-  {id:"n13", name:"It learns", secs:8.897, vo:[["13_learns",0.3]], vdur:8.297, dvo:0.384, ddur:8.92},
-  {id:"n14", name:"The team approves", secs:7.364, vo:[["14_operator",0.3]], vdur:6.164, dvo:0.232, ddur:7.06},
-  {id:"n15", name:"~2x per rupee", secs:9.21, vo:[["15_proof",0.9]], vdur:8.01, dvo:0.247, ddur:8.77},
-  {id:"n16", name:"0 breaches, tests passed", secs:3.662, vo:[["16_safe",0.3]], vdur:3.912, dvo:0.192, ddur:4.42},
-  {id:"n17", name:"End card", secs:9.473, vo:[["17_end",1.15]], vdur:4.723, dvo:1.198, ddur:5.46}
-];
-const CUTS = { hero: ALL_SCENES.map(s=>s.id) };
-/* camera rigs: [seconds, x, y, scale, rotateY, rotateX] */
-const CAM = {
-  n02:[[2.8,0,140,1.25,-16,4],[5,0,0,1.0,0,0],[8.1,0,20,.95,0,0]],
-  n04:[[1.2,0,60,1.06,0,6],[3.5,0,0,1,0,0],[8.9,0,-6,1.02,0,0]],
-  n05:[[0,60,0,.96,-10,0],[4,0,0,1.0,-4,0],[10.5,-10,0,1.02,-3,0]],
-  n09:[[3.6,30,0,.97,-6,0],[4.9,0,0,1,-4,0],[9.3,0,0,1,-4,0]],
-  n10:[[3.6,-120,0,.96,16,0],[6,0,0,1,6,0],[8.9,0,0,1.02,4,0]],
-  n11:[[0,0,0,1,6,0],[7.3,0,0,1.03,3,0]],
-  n12:[[0,0,0,1,6,0],[4.6,0,0,1.0,0,0],[6,0,0,1,-4,0],[10.5,-8,0,1.02,-3,0]],
-  n13:[[0,60,0,.96,-10,0],[5,0,0,1.02,-4,0],[9.7,-10,0,1.03,-3,0]],
-  n14:[[0,0,60,.92,0,0],[3,0,0,1,0,0],[7.7,-20,0,1.03,2,0]]
-};
-const VO_TEXT = {
-  "01_people":"Every month, millions of people in India repay a loan. For a phone, a bike, a small shop.",
-  "02_same":"And every month, lenders remind them the same way. Same message. Same time. To everyone.",
-  "03_cost":"Most of those messages are ignored. Some annoy people. And every single one costs money.",
-  "04_meet":"Meet Kairos. An AI that runs loan collections, one person at a time.",
-  "05_looks":"Every morning, Kairos looks at each borrower. How late they are, how they replied before, and when they usually read their messages.",
-  "06_decides":"Then it decides. Contact them today, or wait.",
-  "07_channel":"If it reaches out, it picks the channel. SMS, WhatsApp, a voice call in their own language, or a human agent. And the best time of day.",
-  "08_aladdin":"Before anything is sent, Aladdin, our safety supervisor, checks it against the lender's rules. Twice.",
-  "09_rules":"No messages at night. Never more than allowed. And if someone says stop, everything stops. On every channel.",
-  "10_reply":"When a borrower writes back on WhatsApp, Kairos answers in seconds, in Hindi or in English.",
-  "11_agent_hi":"(in Hindi) “Hello! Your EMI is due tomorrow. Shall I send you the payment link?”",
-  "12_verify":"It confirms who they are before sharing any loan details. And if someone sends a fake payment screenshot, it checks with the bank, and catches it.",
-  "13_learns":"Every reply, and every payment, teaches Kairos something new. So it gets better, every single day.",
-  "14_operator":"And the collections team? They watch the money come in, and approve the few decisions that need a human.",
-  "15_proof":"In our tests, Kairos recovered about twice as much money for every rupee spent, compared to a fixed schedule.",
-  "16_safe":"With zero rule breaches. And every safety test passed.",
-  "17_end":"Kairos. The right message, at the right time. Or none at all."};
-const VO_DUR = {"01_people": 7.146, "02_same": 7.176, "03_cost": 7.555, "04_meet": 5.925, "05_looks": 9.882, "06_decides": 4.406, "07_channel": 9.981, "08_aladdin": 7.178, "09_rules": 9.622, "10_reply": 7.024, "11_agent_hi": 5.943, "12_verify": 9.291, "13_learns": 8.297, "14_operator": 6.164, "15_proof": 8.01, "16_safe": 3.912, "17_end": 4.723};
+<style>
+.ntf2{padding:16px 20px;border-radius:22px;background:rgba(245,245,247,.86);backdrop-filter:blur(14px);color:#1d1d1f;font-size:18px;line-height:1.4;box-shadow:0 20px 40px -20px rgba(0,0,0,.6)}
+.ntf2 b{font-size:21px}
+</style>
 
-/* ---------------- helpers ---------------- */
+<script>
+/* ======================= engine ======================= */
 const $=(q,r=document)=>r.querySelector(q), $$=(q,r=document)=>[...r.querySelectorAll(q)];
-const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)), lerp=(a,b,p)=>a+(b-a)*p, prog=(lt,a,d)=>clamp((lt-a)/Math.max(d,1e-6));
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)), lerp=(a,b,p)=>a+(b-a)*p, prog=(t,a,d)=>clamp((t-a)/Math.max(d,1e-6));
 function bezier(x1,y1,x2,y2){ const A=(a,b)=>1-3*b+3*a, Bf=(a,b)=>3*b-6*a, C=a=>3*a;
   const f=(t,a,b)=>((A(a,b)*t+Bf(a,b))*t+C(a))*t, d=(t,a,b)=>3*A(a,b)*t*t+2*Bf(a,b)*t+C(a);
   return x=>{ if(x<=0) return 0; if(x>=1) return 1; let t=x; for(let i=0;i<6;i++){ const e=f(t,x1,x2)-x, dd=d(t,x1,x2); if(Math.abs(dd)<1e-6) break; t-=e/dd; } return f(clamp(t),y1,y2); }; }
-const launch=bezier(.22,1,.36,1), easeIO=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;      // cubic-bezier(0.22, 1, 0.36, 1)
+const launch=bezier(.22,1,.36,1), easeIO=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
 const hash=(a,b)=>{let h=Math.sin(a*127.1+b*311.7)*43758.5453;return h-Math.floor(h);};
 const mq=matchMedia('(prefers-reduced-motion: reduce)'); let RM=mq.matches; mq.addEventListener&&mq.addEventListener('change',e=>RM=e.matches);
-const get=p=>p.split('.').reduce((o,k)=>o==null?o:o[k],CONFIG);
 const mmss=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
-
-/* ---------------- timeline ---------------- */
 const QS=new URLSearchParams(location.search);
-const CUT='hero';
-const SCENES=CUTS[CUT].map(id=>({...ALL_SCENES.find(d=>d.id===id)}));
-let acc=0; SCENES.forEach((s,i)=>{s.idx=i;s.start=acc;s.dur=s.secs;s.end=acc+s.dur;acc=s.end; s.voAbs=s.start+s.vo[0][1];});
-const TOTAL=acc;
-/* Trailer hits (music/original/v3_hits.json when present). Cuts within 0.45 s of a hit snap onto it (hard cut);
-   every hit gets a picture event: a 2-frame exposure bump and a 1.00 -> 1.04 camera punch-in. */
-let HITS=[[0.0,'boom'],[26.28,'big'],[43.28,'hit'],[58.87,'hit'],[66.65,'stop'],[76.87,'hit'],[84.8,'soft'],[91.34,'hit'],[101.23,'build'],
-  [118.09,'big'],[126.7,'hit'],[131.21,'hit'],[139.0,'boom']];
-const HARD=new Set();
-function snapCuts(){ SCENES.forEach(s=>{s.start=+s.start;}); for(let i=1;i<SCENES.length;i++){ const b=SCENES[i].start, h=HITS.find(([ht,ty])=>ty!=='soft'&&Math.abs(ht-b)<=(ty==='big'?0.85:0.45));
-    if(h){ SCENES[i].start=h[0]; HARD.add(i); } }
-  SCENES.forEach((s,i)=>{ s.end=i+1<SCENES.length?SCENES[i+1].start:TOTAL; s.dur=s.end-s.start; s.vo[0][1]=s.voAbs-s.start; }); }
+const CUT=CONFIG.cuts[QS.get('cut')]?QS.get('cut'):CONFIG.defaultCut, CC=CONFIG.cuts[CUT], TL=DATA.cuts[CUT];
+const LINES={}; TL.lines.forEach(l=>LINES[l.line]=l);
+const TOTAL=TL.runtime_s;
+document.title='Kairos · '+CC.label;
+$$('[data-cut]').forEach(el=>{ if(el.tagName==='BUTTON') return; if(!el.dataset.cut.split(/\s+/).includes(CUT)) el.remove(); });
+
+/* ---------- beats: a scene is in this cut if any of its lines is; ordered by its first line ---------- */
+let BEATS=$$('.beat').map(el=>{ const keys=el.dataset.lines.split(/\s+/).filter(k=>LINES[k]).sort((a,b)=>LINES[a].start-LINES[b].start);
+  return {el,keys,name:el.dataset.name||'',first:keys.length?LINES[keys[0]]:null,last:keys.length?LINES[keys[keys.length-1]]:null}; });
+BEATS.filter(b=>!b.first).forEach(b=>b.el.remove());
+BEATS=BEATS.filter(b=>b.first).sort((a,b)=>a.first.start-b.first.start);
+const orphan=TL.lines.filter(l=>!BEATS.some(b=>b.keys.includes(l.line))); if(orphan.length) console.warn('lines without a scene',orphan.map(l=>l.line));
+BEATS.forEach((b,i)=>{ b.idx=i; const prev=BEATS[i-1]; if(!prev){ b.start=0; return; }
+  const lo=prev.last.end+0.05, mid=(prev.last.end+b.first.start)/2, lead=b.el.dataset.lead!=null?+b.el.dataset.lead:null;
+  b.start=lead!=null?Math.max(lo,b.first.start-lead):mid; });
+function settle(){ BEATS.forEach((b,i)=>{ b.end=i+1<BEATS.length?BEATS[i+1].start:TOTAL; b.dur=b.end-b.start; }); }
+settle();
+
+/* ---------- hits (music/original/*_hits*.json): cuts within 0.45 s (big 0.85 s) snap to a hit = hard cut ---------- */
+const KIND={cold_open:'boom',boom:'boom',big:'big',biggest:'big',lift:'big',hood:'big',riser:'soft',cut:'soft',pullback:'soft',pad:'soft',soft:'soft',ring:'soft'};
+const M=TL.markers||{};
+let HITS=[[0,'boom']]; if(M.lift_meet_kairos) HITS.push([M.lift_meet_kairos+0.2,'big']); if(M.hitl) HITS.push([M.hitl,'big']);
+if(M.climax_proof) HITS.push([M.climax_proof+0.2,'big']); if(M.final_line) HITS.push([M.final_line-0.1,'hit']); HITS.push([TOTAL-2.4,'boom']);
+const BASE=BEATS.map(b=>b.start), HARD=new Set();
+function snapCuts(){ HARD.clear(); BEATS.forEach((b,i)=>{ if(!i) return; b.start=BASE[i];
+    const h=HITS.find(([ht,ty])=>ty!=='soft'&&Math.abs(ht-b.start)<=(ty==='big'?0.85:0.45)&&ht>BEATS[i-1].start+0.5&&ht<=b.first.start+0.3);
+    if(h){ b.start=h[0]; HARD.add(i); } }); settle(); }
 snapCuts();
-fetch('music/original/v3_hits.json').then(r=>r.ok?r.json():null).then(j=>{ if(!j) return; const arr=Array.isArray(j)?j:(j.hits||[]);
-  /* composer types -> picture events: big/biggest = BIG hit; riser, groove cut and pull-back = no cut, no flash */
-  const KIND={cold_open:'boom',boom:'boom',big:'big',biggest:'big',stop:'stop',build:'build',riser:'soft',cut:'soft',pullback:'soft',soft:'soft'};
+fetch(CC.hits).then(r=>r.ok?r.json():null).then(j=>{ if(!j) return; if(j.runtime_s&&Math.abs(j.runtime_s-TOTAL)>1) return;   // stale hits for another edit
+  const arr=Array.isArray(j)?j:(j.hits||[]);
   const h=arr.map(x=>Array.isArray(x)?[+x[0],String(x[1]||'hit')]:[+(x.t??x.time),String(x.type||x.kind||'hit')]).filter(x=>isFinite(x[0])).map(([t,ty])=>[t,KIND[ty]||'hit']);
-  if(h.length){ HITS=h.sort((a,b)=>a[0]-b[0]); HARD.clear(); snapCuts(); } }).catch(()=>{});
+  if(h.length){ HITS=h.sort((a,b)=>a[0]-b[0]); snapCuts(); resolveAll(); buildChapters(); } }).catch(()=>{});
 
-$$('[data-k]').forEach(el=>{const v=get(el.dataset.k); if(v!=null) el.textContent=v;});
-$$('[data-fx="mask"]').forEach(el=>{ const g=['grad','gradink'].filter(c=>el.classList.contains(c)); g.forEach(c=>el.classList.remove(c));
-  el.innerHTML=`<span class="mask"><span class="mi ${g.join(' ')}">${el.innerHTML}</span></span>`; });
-$$('[data-t]').forEach(el=>{ el.dataset.in=el.dataset.t; if(!el.dataset.fx) el.dataset.fx='fade'; });
-$$('[data-tout]').forEach(el=>{ el.dataset.out=el.dataset.tout; if(!el.dataset.in){ el.dataset.in='0'; el.dataset.fx=el.dataset.fx||'cut'; } });
+/* ---------- anchors: "KEY[:end][@frac][±s]" alternatives split by "|", optional "cut?" prefix.
+   KEY = a line, L (beat's first line), E (beat's last line) or beat (scene start). Unknown lines fall through. ---------- */
+function anchor(spec,b){ if(spec==null) return null;
+  for(let alt of String(spec).split('|')){ alt=alt.trim(); const q=alt.indexOf('?'); if(q>0){ if(alt.slice(0,q)!==CUT) continue; alt=alt.slice(q+1); }
+    const m=alt.match(/^([A-Za-z0-9_]+)(:end)?(@[\d.]+)?([+-][\d.]+)?$/); if(!m) continue;
+    let base, key=m[1];
+    if(key==='HIT'){ const h=HITS.find(([ht,ty])=>ty==='big'&&ht>=b.start-0.01&&ht<=b.first.start+0.5); if(!h) continue; base=h[0]; }
+    else if(key==='beat'){ base=m[2]?b.end:b.start; }
+    else { const ln=key==='L'?b.first:key==='E'?b.last:LINES[key]; if(!ln) continue;
+      base=m[2]?ln.end:ln.start; if(m[3]) base=ln.start+(ln.end-ln.start)*parseFloat(m[3].slice(1)); }
+    return base+(m[4]?parseFloat(m[4]):0); }
+  return null; }
+const ITEMS=[];   // timed elements
+function resolveAll(){ ITEMS.forEach(it=>{ const b=it.beat;
+  it.a=it.el.dataset.at!=null?anchor(it.el.dataset.at,b):null; if(it.a==null) it.a=-1e9;
+  it.o=it.el.dataset.out!=null?anchor(it.el.dataset.out,b):null; if(it.o==null) it.o=1e9;
+  it.on=it.el.dataset.on!=null?anchor(it.el.dataset.on,b):null; it.off=it.el.dataset.off!=null?anchor(it.el.dataset.off,b):null;
+  if(it.focus) it.focus.forEach(f=>f.t=anchor(f.spec,b)??-1e9);
+  if(it.cam) it.cam.forEach(f=>f.t=anchor(f.spec,b)??-1e9);
+  if(it.freeze!=null) it.fz=anchor(it.freeze,b); it.el._a=it.a; }); }
 
-/* ---------------- real footage (Pexels b-roll): muted, poster frame, seek to the chosen moment, follow the film clock ---------------- */
-const clips=$$('.clip[data-clip]').map(el=>{ const name=el.dataset.clip, v=document.createElement('video');
-  v.muted=true; v.playsInline=true; v.preload='auto'; v.poster=`assets/broll/posters/${name}.jpg`; v.src=`assets/broll/${name}.mp4`;
-  el.style.backgroundImage=`url(assets/broll/posters/${name}.jpg)`; el.appendChild(v);
-  return {el,v,from:+(el.dataset.from||0),scene:el.closest('.scene').id}; });
+/* ---------- product content built in code ---------- */
+const heat=$('#heat'); if(heat){ const P=[2,1,1,1,1,2,4,9,12,10,8,7,9,8,7,9,12,18,30,52,61,44,20,8];
+  P.forEach(v=>{ const i=document.createElement('i'); i.style.background=`rgba(95,191,180,${0.08+0.9*v/61})`; heat.appendChild(i); }); }
+/* notification stack on the phone close-up (02) */
+const stackA=$('#stackA'); if(stackA){ for(let i=0;i<6;i++){ const d=document.createElement('div'); d.className='ntf2'; d.style.cssText='position:absolute;left:0;right:0;';
+  d.innerHTML='Demo Finance · 10:00<br><b>Your EMI is due. Please pay now.</b>'; d.dataset.at=`L:end-${(3.55-i*0.26).toFixed(2)}`; d.dataset.out='L:end-1.35'; d.dataset.fx='drop'; d.dataset.i=i; stackA.appendChild(d);} }
+/* channel ring (07) */
+const RING=[
+  {n:'SMS',k:'L+1.24',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></svg>',
+   b:'<small>SMS</small>Demo Finance: EMI ₹4,250 due 5 Dec. Pay securely: dfin.in/p/7KQ2'},
+  {n:'WhatsApp',k:'L+1.98',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.8L3.5 20.5l4.3-1.1A8.5 8.5 0 1 0 12 3.5z"/><path d="M9 8.6c.2 2.9 2.6 5.3 5.5 5.6l1.1-1.2-1.8-.9-.8.8c-1-.5-1.9-1.4-2.4-2.4l.8-.8-.9-1.8z" fill="#fff" stroke="none"/></svg>',
+   b:'<small>WhatsApp</small>नमस्ते सुनीता जी, आपकी ₹4,250 की EMI 5 Dec को ड्यू है। Pay now ›'},
+  {n:'Voice call',k:'L+2.92',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M6.6 3.5l3 .4 1.2 4-2 1.5a12 12 0 0 0 5.8 5.8l1.5-2 4 1.2.4 3c0 1-1 2-2 2C10.5 19.4 4.6 13.5 4.6 5.5c0-1 1-2 2-2z"/></svg>',
+   b:'<small>Voice · Sarvam agent · Hindi</small>“…क्या आप शुक्रवार तक पेमेंट कर पाएँगी?”'},
+  {n:'Human agent',k:'L+4.54',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="13" width="4" height="6" rx="1.5"/><rect x="17" y="13" width="4" height="6" rx="1.5"/><path d="M19 19c0 1.5-2 2.5-5 2.5"/></svg>',
+   b:'<small>Human agent</small>Hardship mentioned → a senior colleague calls back'}];
+const ringEl=$('#ring'); if(ringEl){ RING.forEach((r,i)=>{ const n=document.createElement('div'); n.className='node'; n.innerHTML=r.ic+`<div class="nm">${r.n}</div>`; ringEl.appendChild(n); r.node=n;
+  const b=document.createElement('div'); b.className='bub'; b.innerHTML=r.b; ringEl.appendChild(b); r.bub=b; }); }
+/* churn engine columns (x02) */
+const churn=$('#churn'); if(churn){ const C=[['cohort','C3 · medium risk','C4 · high risk','tech?L+4.6'],['risk','MEDIUM','HIGH','tech?L+5.68'],['journey','day 3','day 4 · WhatsApp','tech?L+6.64'],['layer','L2 · WhatsApp','L3 · IVR / voice','tech?L+7.72'],['lifecycle','ACTIVE','PAID_EXIT ✓','tech?L+10.04']];
+  churn.innerHTML=C.map((c,i)=>`<div class="dg" style="left:${i*340}px;top:0;width:320px;height:300px" data-at="L+${(0.3+i*0.15).toFixed(2)}" data-fx="up" data-on="${c[3]}|L+${(3+i*1.4).toFixed(1)}" data-off="${i<4?C[i+1][3]+'|L+'+(4.4+i*1.4).toFixed(1):'L+99'}">
+    <div class="c">${c[0]}</div><div class="t" style="font-size:26px;color:#8e8e93">${c[1]}</div><div style="font-size:30px;margin:8px 0;color:#8e8e93">↓</div>
+    <div class="t" style="font-size:28px" data-at="${c[3]}+0.4|L+${(3.4+i*1.4).toFixed(1)}" data-fx="pop">${c[2]}</div></div>`).join('')+
+    `<div class="glass" style="left:0;top:340px;width:1680px;padding:24px 30px" data-at="tech?L+10.04|L+10" data-fx="up"><div class="lbl">exits win</div>
+     <div style="font-size:30px;font-weight:700;margin-top:8px">Bank-verified payment → <span class="state on">PAID_EXIT</span> &nbsp; Says STOP → <span class="state bad">STOPPED_OPT_OUT</span> &nbsp;<span class="fine">every channel suppressed from the next cycle</span></div></div>`; }
+/* K09 grid (t2) */
+const grid=$('#grid'); if(grid){ const CH=['WhatsApp','SMS','Voice','Email'], SL=['8–11','11–14','14–17','17–19','19–21','21–22'];
+  const V=[[3,4,5,7,10,6],[3,3,4,4,4,2],[2,3,6,7,5,1],[1,1,1,1,1,0.5]];
+  let h=''; CH.forEach((c,r)=>{ h+=`<div style="position:absolute;left:0;top:${30+r*110}px;font-size:22px;font-weight:650;width:140px">${c}</div>`;
+    SL.forEach((s,k)=>{ const v=V[r][k]; h+=`<div class="cell" data-v="${v}" style="left:${160+k*140}px;top:${80+r*110-v*7}px;width:110px;height:${v*7}px;${r===0&&k===4?'background:#fff;box-shadow:0 0 30px rgba(95,191,180,.8)':''}"></div>`; }); });
+  SL.forEach((s,k)=>h+=`<div style="position:absolute;left:${160+k*140}px;top:470px;width:110px;text-align:center;font-size:16px;color:#8e8e93">${s}</div>`);
+  h+=`<div class="pkt in" style="left:650px;top:0" data-at="tech?L+7.66|L+8.96" data-fx="pop">WhatsApp · 7–9 pm · 9.8 in 100</div>`;
+  grid.innerHTML=h; }
+/* packets (t4) */
+const pk=$('#pkts'); if(pk){ const P=[['SMS',330,'L+1.3','out'],['WhatsApp',470,'L+1.6','out'],['Voice',610,'L+1.9','out'],
+  ['delivered',470,'tech?L+4.14|L+3.72','in'],['read',470,'tech?L+5.0|L+4.54','in'],['reply',470,'tech?L+5.8|L+5.3','in'],['delivered (duplicate)',330,'tech?L+7.9|L+8.1','dup']];
+  pk.innerHTML=P.map(p=>`<div class="pkt ${p[3]==='out'?'':p[3]}" data-fly="${p[3]}" data-at="${p[2]}" data-y="${p[1]}">${p[0]}</div>`).join('')+
+    `<div class="abs" style="left:900px;top:300px;font-size:26px;font-weight:800" class="bad" data-at="tech?L+8.6|L+8.8" data-fx="pop"><span class="stamp">IGNORED</span></div>`; }
+/* call transcript (vc) */
+const callT=$('#callT'); if(callT){ ['vc_a1','vc_b1','vc_a2','vc_b2','vc_a3'].forEach(k=>{ const d=DATA.dialogue[k]; const div=document.createElement('div'); div.className='tr'+(d.role==='borrower'?' b':'');
+  div.innerHTML=`<div class="who">${d.role==='agent'?'Agent':'Borrower'}</div>${d.text}<div class="en">${d.en}</div>`; div.dataset.at=k; div.dataset.fx='up'; callT.appendChild(div); });
+  const w=$('#waveA'); for(let i=0;i<46;i++){ const s=document.createElement('i'); s.style.animationDelay=(hash(i,3)*0.5).toFixed(2)+'s'; w.appendChild(s); } }
 
-/* ---------------- product content ---------------- */
-function notifStack(stack,n){ const out=[]; for(let i=0;i<n;i++){ const d=document.createElement('div'); d.className='ntf';
-  d.innerHTML='<div class="ic">✉</div><div style="flex:1"><div class="t">LENDER <span>now</span></div><div class="b">Your EMI is due. Please pay now.</div></div>';
-  stack.appendChild(d); out.push(d);} return out; }
-const N2T=[3.0,3.45,3.9,4.35,4.8,5.25,5.7,6.15];
-const stacks=['#pC','#pL','#pR'].map(id=>notifStack($(id+' .stack'),8));
-function dashHTML(kind){ return `<div class="top"><div class="k">K</div><b>Kairos</b><span style="color:#5b6577">· Live collections</span><span class="pill">SIMULATED</span>
-  <span style="margin-left:auto;color:#5b6577;font-size:13px">Day <b id="${kind}day">2</b> of 14</span></div>
-  ${kind==='L'?`
-  <div class="cardd" style="left:16px;top:62px;right:16px;height:236px"><div class="lab">₹ RECOVERED OVER THE CAMPAIGN</div>
-    <svg width="896" height="190" viewBox="0 0 896 190" style="margin-top:6px"><line x1="0" y1="170" x2="896" y2="170" stroke="#e3e7ee"/><line x1="448" y1="10" x2="448" y2="170" stroke="#b26a00" stroke-dasharray="4 4"/>
-    <text x="456" y="22" fill="#b26a00" font-size="12" font-weight="600">Day 7: WhatsApp replies drop</text>
-    <path d="M0 170 C120 140, 220 70, 448 52 S 760 22, 896 14" stroke="#0f766e" stroke-width="3" fill="none"/><path d="M0 170 C200 160, 500 150, 896 138" stroke="#94a3b8" stroke-width="2.5" stroke-dasharray="6 5" fill="none"/></svg></div>
-  <div class="cardd bars" style="left:16px;top:312px;right:16px;bottom:16px"><div class="lab">WHAT KAIROS IS LEARNING <span style="float:right;font-weight:600;letter-spacing:0">chance of a reply, per channel</span></div>
-    <div class="b"><span>WhatsApp</span><i id="lbW" style="width:520px"></i></div><div class="b"><span>SMS</span><i id="lbS" style="width:230px"></i></div>
-    <div class="b"><span>Email</span><i style="width:90px;opacity:.6"></i></div><div class="b"><span>Voice call</span><i id="lbV" style="width:380px"></i></div></div>`
-  :kind==='A'?`
-  <div class="cardd" style="left:16px;top:62px;width:440px;height:150px"><div class="lab">KAIROS · RECOVERED</div><img src="assets/real/live_recovered_3.png" alt="" style="width:300px;margin:8px 0 0 -6px"></div>
-  <div class="cardd" style="left:470px;top:62px;width:300px;height:150px;padding:10px"><img src="assets/real/live_breaches.png" alt="" style="width:280px;margin-top:22px"></div>
-  <div class="cardd" style="left:784px;top:62px;right:16px;height:150px"><div class="lab">TODAY</div><div style="font-size:30px;font-weight:700;margin-top:10px">300</div><div style="font-size:12px;color:#5b6577">borrowers · decided</div></div>
-  <div class="cardd" style="left:16px;top:226px;right:16px;bottom:16px"><div class="lab">WHY DID KAIROS DO THAT?</div>
-    <div class="row"><span class="tag">SEND</span>Deepak gets a WhatsApp at 2:30 pm. People like Deepak reply most on WhatsApp in the afternoon.</div>
-    <div class="row"><span class="tag" style="background:#eef0f4;color:#5b6577">RESTING</span>Karan is not contacted today. A message is unlikely to help right now.</div>
-    <div class="row"><span class="tag" style="background:#fdecec;color:#b4232c">STOP</span>Karan said STOP on WhatsApp. All channels stopped for Karan.</div></div>`
-  :`
-  <div class="cardd" style="left:16px;top:62px;right:16px;height:190px"><div class="lab">KAIROS · ₹ RECOVERED, BANK-CONFIRMED</div>
-    <div style="position:relative;height:120px;margin-top:10px">${[1,2,3,4].map(i=>`<img class="rec" src="assets/real/live_recovered_${i}.png" alt="₹ recovered, bank-confirmed (real /demo/live)" style="position:absolute;left:-6px;top:0;width:375px;opacity:${i===1?1:0}">`).join('')}</div></div>
-  <div class="cardd" style="left:16px;top:266px;width:440px;height:150px;padding:10px"><img src="assets/real/live_breaches.png" alt="0 rule breaches, checked by Aladdin twice (real /demo/live)" style="width:300px;margin:22px 0 0 10px"></div>
-  <div class="cardd" style="left:470px;top:266px;right:16px;bottom:16px"><div class="lab">NEEDS A HUMAN</div>
-    <div class="row"><span class="tag" style="background:#fff4e0;color:#b26a00">APPROVE</span>Job loss reported. Gentle call from a senior colleague?</div>
-    <div class="row" style="opacity:.6"><span class="tag" style="background:#eef0f4;color:#5b6577">DONE</span>Dispute routed to the lender's team.</div></div>`}`; }
-$('#dashA').innerHTML=dashHTML('A'); $('#dashL').innerHTML=dashHTML('L'); $('#dashB').innerHTML=dashHTML('B');
-const recImgs=$$('#dashB .rec');
-
-/* ---------------- animators ---------------- */
-SCENES.forEach(s=>{s.el=$('#'+s.id); s.reveals=$$('[data-in]',s.el); s.kfs=$$('[data-kf]',s.el); s.rig=$('.rig',s.el);});
-function reveal(el,lt){
-  const a=+el.dataset.in, fx=el.dataset.fx, dur=fx==='mask'?0.6:fx==='pop'?0.35:fx==='cut'?0.06:0.5;
-  const p=launch(prog(lt,a,dur));
-  let o=(fx==='mask')?(lt>=a?1:0):p;
-  if(el.dataset.out) o*=1-prog(lt,+el.dataset.out,fx==='cut'?0.08:0.2);
-  el.style.opacity=o; el.style.visibility=o<=0.001?'hidden':'visible';
-  if(fx==='mask'){ const mi=el.querySelector('.mi'); if(mi) mi.style.transform=`translateY(${RM?0:(1-p)*110}%)`; }
-  else if(fx==='up'){ el.style.translate=`0 ${RM?0:(1-p)*28}px`; }
-  else if(fx==='pop'){ el.style.scale=String(RM?1:.88+.12*p); }
-  else if(fx==='cut'&&el.classList.contains('clip')){ el.style.scale=String(RM?1:1.06-.06*launch(prog(lt,a,3))); }   // slow push-in on footage
-}
-function keyframes(el,lt){ const ks=el.dataset.kf.split(';').map(r=>r.split(',').map(Number)); let c=ks[0].slice(1);
-  if(!RM) for(let i=1;i<ks.length;i++){ if(lt<=ks[i][0]){ const p=launch(prog(lt,ks[i-1][0],ks[i][0]-ks[i-1][0])); c=ks[i].slice(1).map((v,j)=>lerp(ks[i-1][j+1],v,p)); break; } c=ks[i].slice(1); }
-  else c=ks[ks.length-1].slice(1);
-  el.style.transform=`translate(${c[0]}px,${c[1]}px) scale(${c[2]})`; }
-function camAt(id,L){ const ks=CAM[id]; if(!ks) return [0,0,1,0,0];
-  if(L<=ks[0][0]) return ks[0].slice(1); for(let i=1;i<ks.length;i++){ if(L<=ks[i][0]){ const p=launch((L-ks[i-1][0])/(ks[i][0]-ks[i-1][0])); return ks[i].slice(1).map((v,j)=>lerp(ks[i-1][j+1],v,p)); } }
-  return ks[ks.length-1].slice(1); }
-function applyRig(s,L){ if(!s.rig) return; const c=RM?[0,0,1,0,0]:camAt(s.id,L), c2=RM?c:camAt(s.id,Math.max(0,L-0.035));
-  s.rig.style.transform=`translate(${c[0]}px,${c[1]}px) scale(${c[2]}) rotateY(${c[3]}deg) rotateX(${c[4]}deg)`;
-  const v=Math.abs(c[0]-c2[0])+Math.abs(c[1]-c2[1])+Math.abs(c[2]-c2[2])*900+Math.abs(c[3]-c2[3])*12;
-  const bl=(!RM&&v>4)?Math.min(4,(v-4)*.3):0; s.rig.style.filter=bl>0.1?`blur(${bl.toFixed(2)}px)`:'none'; }
-const FX={
-  n02(L){ $('.rig',$('#n02')).style.visibility=L>=2.8?'visible':'hidden';
-    stacks.forEach((st,si)=>st.forEach((c,i)=>{ const t0=N2T[i]+0.05*si, p=launch(prog(L,t0,.35)); let y=0;
-      for(let j=i+1;j<st.length;j++) y+=launch(prog(L,N2T[j]+0.05*si,.35))*88; c.style.top=y+'px'; c.style.opacity=p*(1-.07*Math.min(5,st.length-i-1)); c.style.transform=`translateY(${(1-p)*-20}px)`;})); },
-  n03(L){ const p=launch(prog(L,5.6,1.9)); $('#cost').textContent='₹'+Math.round(240000*p).toLocaleString('en-IN'); },
-  n04(L){ const p=RM?1:launch(prog(L,1.1,0.9)); $('#n04lid').style.transform=`perspective(2000px) rotateX(${-92*(1-p)}deg)`;
-    $('#n04scr').style.filter=`brightness(${0.12+0.88*launch(prog(L,1.5,1.2))})`; $('#n04wm').style.opacity=1-launch(prog(L,4.0,0.6)); $('#Aday').textContent='8'; },
-  n06(L){ const c=$('#oC'), w=$('#oW'); const phase=L<2.4?0:L<3.4?1:L<4.3?2:3;
-    c.classList.toggle('on',phase===1||phase===3); w.classList.toggle('on',phase===2); w.classList.toggle('dim',phase===3);
-    $('.t',c).textContent=phase===3?'✓ Contact today':'Contact today'; },
-  n07(L){ const T=[3.7,4.3,5.1,7.9]; T.forEach((t,i)=>{ const el=$('#c'+(i+1)); const cur=L>=t&&(i===3||L<T[i+1]+0.6);
-      el.classList.toggle('hi',L>=t&&L<10.0); el.classList.toggle('pick',L>=10.0&&i===1); el.style.opacity=L>=10.0?(i===1?1:.35):(L>=t?1:.45); });
-    const h=launch(prog(L,9.3,1.0)); const ang=lerp(-90,-90+(7.5/12)*360,h), mang=lerp(-90,-90+180,h);
-    $('#hh').style.transform=`rotate(${ang}deg)`; $('#mmh').style.transform=`rotate(${mang}deg)`; },
-  n08(L){ [1,2,3,4,5].forEach(i=>{ $('#a'+i).classList.toggle('on',L>=2.4+i*0.45); $('#b'+i).classList.toggle('on',L>=5.8+i*0.22); }); },
-  n09(L){ [[1,1.4],[2,3.0],[3,4.8]].forEach(([i,t])=>{ $('#bl'+i).style.opacity=launch(prog(L,t,.3)); });
-    [1,2,3,4].forEach(i=>{ const off=L>=5.0+i*0.25; const el=$('#s'+i); el.classList.toggle('off',off); el.lastElementChild.textContent=off?'OFF':'ON'; }); },
-  n13(L){ const p=launch(prog(L,3.4,3)); $('#lbW').style.width=lerp(520,170,p)+'px'; $('#lbS').style.width=lerp(230,360,p)+'px'; $('#lbV').style.width=lerp(380,450,p)+'px'; $('#Lday').textContent=L<3.4?'6':'9'; },
-  n14(L){ recImgs.forEach((im,i)=>{ im.style.opacity=i===0?1:launch(prog(L,0.6+i*1.1,0.5)); }); $('#Bday').textContent=String(Math.min(14,2+Math.floor(L/0.6)));
-    const ph=$('#n14ph'), sl=RM?1:launch(prog(L,3.0,1.2)); ph.style.translate=`${(1-sl)*520}px 0`; ph.style.opacity=L<3.0?0:sl;
-    const ap=$('#approve'), done=L>=6.0; ap.classList.toggle('done',done); ap.textContent=done?'Approved ✓':'Approve';
-    const cur=$('#cursor'); const r=ap.getBoundingClientRect(), st=$('#stage').getBoundingClientRect(), sc=st.width/1920;
-    const tap=prog(L,5.7,0.3); cur.style.left=((r.left-st.left+r.width/2)/sc-20)+'px'; cur.style.top=((r.top-st.top+r.height/2)/sc-20)+'px';
-    cur.style.opacity=(L>5.0&&L<6.8)?1:0; cur.style.transform=`scale(${1-0.25*Math.sin(Math.PI*tap)})`; }
+/* ---------- WhatsApp-style chats for the keyed phones ---------- */
+const DIA=DATA.dialogue;
+const CHATS={
+  wa:{name:'Demo Finance',items:[['chip','Today'],['o','wa_b1','7:41 pm'],['typing','wa_b1:end','wa_a1'],['i','wa_a1','7:41 pm'],['o','wa_b2','7:42 pm'],['chipok','wa_b2:end+0.3','🔒 Identity verified'],
+     ['typing','wa_b2:end+0.4','wa_a2'],['i','wa_a2','7:42 pm'],['o','wa_b3','7:42 pm'],['typing','wa_b3:end','wa_a3'],['i','wa_a3','7:43 pm'],['pay','wa_a3+1.2']]},
+  stop:{name:'Demo Finance',items:[['chip','Yesterday'],['i0','Reminder: your EMI of ₹4,250 is due on the 5th.','6:30 pm'],['chip','Today'],['o','st_b1','8:12 pm'],['typing','st_b1:end','st_a1'],['i','st_a1','8:12 pm'],['chipsys','st_a1:end-0.6','STOP recorded · all channels paused']]},
+  fake:{name:'Demo Finance',items:[['chip','Today'],['i0','Your EMI of ₹4,250 is due tomorrow. Pay: dfin.in/p/7KQ2','10:02 am'],['shot','fp_b1','6:15 pm'],['typing','fp_b1:end','fp_a1'],['i','fp_a1','6:15 pm'],['chipsys','fp_a1:end-0.8','Sent to the team for review']]}
 };
-function driveClips(s,L,visible){ clips.forEach(c=>{ if(c.scene!==s.id) return; const v=c.v; const a=+c.el.dataset.in||0, out=c.el.dataset.out?+c.el.dataset.out:1e9;
-    const on=visible&&L>=a-0.2&&L<out; if(!on){ if(!v.paused) v.pause(); return; }
-    const want=c.from+Math.max(0,L-a); if(v.readyState>=1&&Math.abs(v.currentTime-want)>0.3) try{v.currentTime=want;}catch(e){}
-    if(playing&&v.paused) v.play().catch(()=>{}); if(!playing&&!v.paused) v.pause(); }); }
+function chatHTML(c){ const ts=(t)=>`<span class="ts">${t}</span>`, tk=(t)=>`<span class="ts">${t}<span class="tk">✓✓</span></span>`;
+  const body=c.items.map(it=>{ const [ty,a,b]=it;
+    if(ty==='chip') return `<div class="chip">${a}</div>`;
+    if(ty==='chipok') return `<div class="chip okc" data-at="${a}" data-fx="pop" data-collapse="1">${b}</div>`;
+    if(ty==='chipsys') return `<div class="chip sys" data-at="${a}" data-fx="pop" data-collapse="1">${b}</div>`;
+    if(ty==='i0') return `<div class="m i">${a}${ts(b)}</div>`;
+    if(ty==='typing') return `<div class="typing" data-at="${a}+0.15" data-out="${b}" data-fx="pop" data-collapse="1"><i></i><i></i><i></i></div>`;
+    if(ty==='pay') return `<div class="pay" data-at="${a}" data-fx="up" data-collapse="1"><div class="top"><div class="k">K</div><div><b style="font-size:16px">Pay ₹4,250</b><div style="font-size:13px;color:#54656f">UPI · Demo Finance · secure link</div></div></div><div class="bt">Pay now</div></div>`;
+    if(ty==='shot') return `<div class="m o" data-at="${a}" data-fx="up" data-collapse="1" style="padding:4px 4px 18px"><div class="shot"><div class="ck">✓</div><b style="font-size:16px">Payment successful</b>₹4,250.00<span class="mono" style="font-size:11px">UTR 512345678901</span></div><div style="padding:2px 6px">${DIA[a].text}</div>${tk(b)}</div>`;
+    const d=DIA[a]; return `<div class="m ${ty}" data-at="${a}" data-fx="up" data-collapse="1">${d.text}${ty==='o'?tk(b):ts(b)}</div>`; }).join('');
+  return `<div class="wa"><div class="wall"></div>
+    <div class="sb"><span>7:41</span><span class="ic"><svg width="18" height="12" viewBox="0 0 18 12" fill="#fff"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#fff" stroke-width="1.8"><path d="M1 4.5a10 10 0 0 1 14 0M3.5 7a6.5 6.5 0 0 1 9 0"/><circle cx="8" cy="10" r="1.2" fill="#fff"/></svg>
+      <svg width="27" height="13" viewBox="0 0 27 13" fill="none"><rect x=".5" y=".5" width="23" height="12" rx="3.5" stroke="#fff" opacity=".6"/><rect x="2.5" y="2.5" width="16" height="8" rx="2" fill="#fff"/><path d="M25 4.5v4" stroke="#fff" stroke-width="1.5"/></svg></span></div>
+    <div class="hd"><span class="bk">‹</span><div class="av">DF</div><div><b>${c.name} <span class="vt">✓</span></b><small>Official business account</small></div><div class="ri"><span>☏</span><span>⋮</span></div></div>
+    <div class="body">${body}</div>
+    <div class="inp"><div class="f">☺ <span style="flex:1">Message</span> 📎</div><div class="mic">🎤</div></div></div>`; }
 
-/* ---------------- render: calm dissolves ---------------- */
-const TR=0.4, capEl=$('#capText'), chapBtns=[]; let lastCue=null;
-function sceneAt(t){for(const s of SCENES) if(t<s.end) return s; return SCENES[SCENES.length-1];}
-/* Each scene was designed against a VO window (dvo, ddur); the timeline gives the real one (vo offset, vdur).
-   Warp real time onto design time so every visual stays on its word. */
-function warp(s,L){ const vo0=s.vo[0][1]; if(L<vo0) return vo0>0?L*(s.dvo/vo0):L; return s.dvo+(L-vo0)*(s.ddur/s.vdur); }
-function drawScene(s,t,o,sc,blur){
-  const lt=t-s.start, L=warp(s,Math.max(lt,0));
-  s.el.style.display='block'; s.el.style.opacity=o;
-  s.el.style.transform=RM?'none':`scale(${sc})`;
-  s.el.style.filter=(!RM&&blur>0.1)?`blur(${blur.toFixed(1)}px)`:'none';
-  s.reveals.forEach(r=>reveal(r,L)); s.kfs.forEach(k=>keyframes(k,L)); applyRig(s,L);
-  FX[s.id]&&FX[s.id](L); driveClips(s,L,true);
-}
+/* ---------- registries ---------- */
+BEATS.forEach(b=>{
+  $$('.gs[data-chat]',b.el).forEach(g=>{ const ui=document.createElement('div'); ui.className='gsui'; ui.innerHTML=chatHTML(CHATS[g.dataset.chat]); g.appendChild(ui); });
+  $$('[data-fx="mask"]',b.el).forEach(el=>{ const g=['grad'].filter(c=>el.classList.contains(c)); g.forEach(c=>el.classList.remove(c));
+    el.innerHTML=`<span class="mask"><span class="mi ${g.join(' ')}">${el.innerHTML}</span></span>`; });
+  $$('[data-at],[data-out],[data-on],[data-off],[data-focus],[data-cam],[data-freeze]',b.el).forEach(el=>{
+    const it={el,beat:b,fx:el.dataset.fx||'fade'};
+    if(el.dataset.focus) it.focus=el.dataset.focus.split(';').map(s=>{ const [spec,r]=s.split('='); return {spec,r:r.split(',').map(Number)}; });
+    if(el.dataset.cam) it.cam=el.dataset.cam.split(';').map(s=>{ const [spec,r]=s.split('='); return {spec,r:r.split(',').map(Number)}; });
+    if(el.dataset.freeze) it.freeze=el.dataset.freeze;
+    ITEMS.push(it); });
+  b.items=ITEMS.filter(it=>it.beat===b);
+});
+$$('.scr[data-img]').forEach(s=>{ const im=document.createElement('img'); im.src=s.dataset.img; im.alt='Kairos product screen (SIMULATED data)'; im.decoding='async'; s.prepend(im); s._img=im;
+  s._iw=+(s.dataset.iw||3840); s._ih=+(s.dataset.ih||2160); im.style.width=s._iw+'px'; im.style.height=s._ih+'px'; });
+resolveAll();
+
+/* ---------- footage: muted, poster first, follows the film clock (rate, freeze) ---------- */
+const CLIPS=[];
+$$('.clip[data-clip], .gs[data-clip]').forEach(el=>{ const name=el.dataset.clip, v=document.createElement('video');
+  v.muted=true; v.playsInline=true; v.preload='auto'; v.crossOrigin='anonymous'; v.src=`assets/broll/${name}.mp4`;
+  const isGS=el.classList.contains('gs');
+  if(!isGS){ v.poster=`assets/broll/posters/${name}.jpg`; el.style.backgroundImage=`url(assets/broll/posters/${name}.jpg)`; el.appendChild(v); }
+  const it=ITEMS.find(i=>i.el===el)||{a:-1e9,o:1e9}; const beat=BEATS.find(b=>b.el.contains(el));
+  const c={el,v,name,from:+(el.dataset.from||0),rate:+(el.dataset.rate||1),it,beat,gs:isGS}; if(isGS) setupGS(c); CLIPS.push(c); });
+function clipTime(c,t){ const a=Math.max(c.it.a,c.beat.start); let lt=t-a; if(c.it.fz!=null&&t>c.it.fz) lt=c.it.fz-a; return Math.max(0,c.from+Math.max(0,lt)*c.rate); }
+function driveClip(c,t,vis){ const v=c.v;
+  const on=vis&&t>=c.it.a-0.3&&t<c.it.o; if(!on){ if(!v.paused) v.pause(); return; }
+  const frozen=c.it.fz!=null&&t>c.it.fz; c.el.classList.toggle('frozen',frozen);
+  let want=clipTime(c,t); if(v.duration&&want>v.duration-0.05) want=v.duration-0.05;
+  if(v.playbackRate!==c.rate) v.playbackRate=c.rate;
+  if(v.readyState>=1&&Math.abs(v.currentTime-want)>(playing&&!frozen?0.3:0.04)) try{v.currentTime=want;}catch(e){}
+  if(playing&&!frozen&&v.paused) v.play().catch(()=>{}); if((!playing||frozen)&&!v.paused) v.pause();
+  if(c.gs) drawGS(c); }
+
+/* ---------- green-screen phones: key the green (WebGL, 2D fallback), find the screen's corners, map the chat onto it ---------- */
+function setupGS(c){ const cv=document.createElement('canvas'); cv.width=1920; cv.height=1080; cv.className='key'; c.el.prepend(cv); c.cv=cv;
+  c.an=document.createElement('canvas'); c.an.width=192; c.an.height=108; c.actx=c.an.getContext('2d',{willReadFrequently:true});
+  c.ui=$('.gsui',c.el); c.q=null;
+  const gl=cv.getContext('webgl',{premultipliedAlpha:true,preserveDrawingBuffer:true});
+  if(gl){ const vs=`attribute vec2 p;varying vec2 uv;void main(){uv=vec2((p.x+1.)/2.,1.-(p.y+1.)/2.);gl_Position=vec4(p,0,1);}`;
+    const fs=`precision mediump float;varying vec2 uv;uniform sampler2D tx;void main(){vec4 c=texture2D(tx,uv);float d=c.g-max(c.r,c.b);float a=1.-smoothstep(.08,.22,d);
+      if(d>0.){c.g=min(c.g,max(c.r,c.b)+.02);} gl_FragColor=vec4(c.rgb*a,a);}`;
+    const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o;};
+    const pr=gl.createProgram(); gl.attachShader(pr,sh(gl.VERTEX_SHADER,vs)); gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,fs)); gl.linkProgram(pr); gl.useProgram(pr);
+    const bf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,bf); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+    const loc=gl.getAttribLocation(pr,'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+    const tx=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,tx); [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(k=>gl.texParameteri(gl.TEXTURE_2D,k,gl.CLAMP_TO_EDGE));
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); c.gl=gl; }
+  else c.ctx=cv.getContext('2d',{willReadFrequently:true}); }
+function drawGS(c){ const v=c.v; if(v.readyState<2) return;
+  if(c.gl){ const gl=c.gl; gl.viewport(0,0,1920,1080); try{ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,v); }catch(e){ return; } gl.drawArrays(gl.TRIANGLE_STRIP,0,4); }
+  else { const x=c.ctx; x.drawImage(v,0,0,1920,1080); const im=x.getImageData(0,0,1920,1080), d=im.data;
+    for(let i=0;i<d.length;i+=4){ const g=d[i+1], m=Math.max(d[i],d[i+2]), k=(g-m)/255; if(k>0.08){ const a=1-clamp((k-0.08)/0.14); d[i+3]=255*a; d[i+1]=Math.min(g,m+5); } } x.putImageData(im,0,0); }
+  /* corners of the green screen from a 192 x 108 copy */
+  const a=c.actx; a.drawImage(v,0,0,192,108); const p=a.getImageData(0,0,192,108).data; let tl=[1e9,0,0],tr=[-1e9,0,0],br=[-1e9,0,0],bl=[-1e9,0,0],n=0;
+  for(let y=0;y<108;y++) for(let x=0;x<192;x++){ const i=(y*192+x)*4, g=p[i+1], m=Math.max(p[i],p[i+2]); if(g-m<40||g<90) continue; n++;
+    if(x+y<tl[0]) tl=[x+y,x,y]; if(x-y>tr[0]) tr=[x-y,x,y]; if(x+y>br[0]) br=[x+y,x,y]; if(y-x>bl[0]) bl=[y-x,x,y]; }
+  if(n<60) return;
+  let q=[tl,tr,bl,br].map(o=>[o[1]*10+5,o[2]*10+5]); const cx=q.reduce((s,o)=>s+o[0],0)/4, cy=q.reduce((s,o)=>s+o[1],0)/4;
+  q=q.map(([x,y])=>[cx+(x-cx)*1.06,cy+(y-cy)*1.04]);
+  if(c.q&&playing){ c.q=c.q.map((o,i)=>[lerp(o[0],q[i][0],.45),lerp(o[1],q[i][1],.45)]); } else c.q=q;
+  c.ui.style.transform=homography(400,866,c.q); }
+function adj(m){return [m[4]*m[8]-m[5]*m[7],m[2]*m[7]-m[1]*m[8],m[1]*m[5]-m[2]*m[4],m[5]*m[6]-m[3]*m[8],m[0]*m[8]-m[2]*m[6],m[2]*m[3]-m[0]*m[5],m[3]*m[7]-m[4]*m[6],m[1]*m[6]-m[0]*m[7],m[0]*m[4]-m[1]*m[3]];}
+function mm(a,b){const c=[];for(let i=0;i<3;i++)for(let j=0;j<3;j++){let s=0;for(let k=0;k<3;k++)s+=a[3*i+k]*b[3*k+j];c[3*i+j]=s;}return c;}
+function mv(m,v){return [m[0]*v[0]+m[1]*v[1]+m[2]*v[2],m[3]*v[0]+m[4]*v[1]+m[5]*v[2],m[6]*v[0]+m[7]*v[1]+m[8]*v[2]];}
+function basis(x1,y1,x2,y2,x3,y3,x4,y4){const m=[x1,x2,x3,y1,y2,y3,1,1,1];const v=mv(adj(m),[x4,y4,1]);return mm(m,[v[0],0,0,0,v[1],0,0,0,v[2]]);}
+function homography(w,h,q){ const s=basis(0,0,w,0,0,h,w,h), d=basis(q[0][0],q[0][1],q[1][0],q[1][1],q[2][0],q[2][1],q[3][0],q[3][1]); const r=mm(d,adj(s)), t=r.map(x=>x/r[8]);
+  return `matrix3d(${t[0]},${t[3]},0,${t[6]},${t[1]},${t[4]},0,${t[7]},0,0,1,0,${t[2]},${t[5]},0,${t[8]})`; }
+
+/* ---------- per-frame element animation ---------- */
+function reveal(it,t){ const el=it.el, fx=it.fx;
+  if(it.on!=null) el.classList.toggle('on',t>=it.on&&(it.off==null||t<it.off));
+  if(el.dataset.at==null&&el.dataset.out==null){ el.style.visibility='visible'; return; }
+  const dur=fx==='mask'?0.55:fx==='pop'?0.3:fx==='cut'?0.001:fx==='wipe'?0.45:fx==='drop'?0.28:0.42;
+  const p=launch(prog(t,it.a,dur)); let o=fx==='mask'?(t>=it.a?1:0):(fx==='cut'?(t>=it.a?1:0):p);
+  if(t>=it.o) o=0; else if(it.o<1e8&&fx!=='cut'&&!el.classList.contains('clip')) o*=1-prog(t,it.o-0.12,0.12);
+  if(el.dataset.collapse) el.style.display=(t>=it.a&&t<it.o)?'':'none';
+  el.style.opacity=o; el.style.visibility=o<=0.001?'hidden':'visible';
+  if(RM) return;
+  if(fx==='mask'){ const mi=el.querySelector('.mi'); if(mi) mi.style.transform=`translateY(${(1-p)*110}%)`; }
+  else if(fx==='up') el.style.translate=`0 ${(1-p)*26}px`;
+  else if(fx==='pop') el.style.scale=String(.86+.14*p);
+  else if(fx==='wipe') el.style.clipPath=`inset(0 ${(1-p)*100}% 0 0)`;
+  else if(fx==='drop'){ const i=+el.dataset.i; const later=$$('.ntf2',el.parentNode).filter(x=>+x.dataset.i>i&&t>=(x._a??1e9)).length; el.style.top=(later*104+(1-p)*-30)+'px'; el.style.scale=String(1-.03*later); }
+  if(el.classList.contains('clip')&&fx==='cut') el.style.scale=String(1.05-.05*launch(prog(t,it.a,4))); }
+function focusRect(it,t){ const s=it.el; if(!s._img) return; const W=s.clientWidth||+s.style.width.replace('px',''), H=s.clientHeight||+s.style.height.replace('px','');
+  const ks=it.focus; let cur=ks[0].r;
+  for(let i=1;i<ks.length;i++){ if(t<ks[i].t) break; const p=RM?1:launch(prog(t,ks[i].t,0.9)); cur=ks[i-1].r.map((v,j)=>lerp(v,ks[i].r[j],p)); if(p<1) break; cur=ks[i].r; }
+  const [x,y,w,h]=cur, sc=Math.min(W/w,H/h), ox=(W-w*sc)/2-x*sc, oy=(H-h*sc)/2-y*sc;
+  s._img.style.transform=`translate(${ox}px,${oy}px) scale(${sc})`; }
+function camRig(it,t){ const ks=it.cam; let cur=ks[0].r;
+  for(let i=1;i<ks.length;i++){ if(t<ks[i].t) break; const p=RM?1:launch(prog(t,ks[i].t,1.4)); cur=ks[i-1].r.map((v,j)=>lerp(v,ks[i].r[j],p)); if(p<1) break; cur=ks[i].r; }
+  it.el.style.transform=`translate(${cur[0]}px,${cur[1]}px) scale(${cur[2]})`; }
+const FX=[];   /* scene-specific motion */
+FX.push((t)=>{ const lid=$('#lid04'); if(!lid) return; const b=BEATS.find(x=>x.el.contains(lid)); const a=anchor('HIT|L-0.1',b);
+  const p=RM?1:launch(prog(t,a,0.9)); lid.style.transform=`perspective(2000px) rotateX(${-92*(1-p)}deg)`; });
+FX.push((t)=>{ if(!ringEl) return; const b=BEATS.find(x=>x.el.contains(ringEl)); if(!b) return;
+  const T=RING.map(r=>anchor(r.k,b)), lockT=anchor('L+5.6',b); let act=-1; T.forEach((x,i)=>{ if(t>=x) act=i; });
+  const locked=t>=lockT; if(locked) act=1;
+  const target=act<0?20:-act*90;  // bring the active node to the right, its message beside it
+  if(b._rot==null||!playing) b._rot=target; b._rot+= (target-b._rot)*(RM?1:0.18);
+  const R=330, cx=960, cy=520;
+  RING.forEach((r,i)=>{ const ang=(b._rot+i*90)*Math.PI/180; const x=cx+R*Math.cos(ang), y=cy+R*Math.sin(ang);
+    r.node.style.left=x+'px'; r.node.style.top=y+'px';
+    r.node.className='node'+(locked?(i===1?' lock':' dim'):(i===act?' on':(act>=0?' dim':'')));
+    r.bub.style.left=(cx+R+330)+'px'; r.bub.style.top=(cy-70)+'px';
+    const show=(i===act&&!locked)||(locked&&i===1); r.bub.style.opacity=show?1:(act<0?0:0.0); r.bub.style.display=show?'block':'none'; });
+  const rv=$$('.node,.hub,.bub',ringEl); rv.forEach(x=>x.style.visibility=t>=b.start?'visible':'hidden'); });
+FX.push((t)=>{ $$('[data-fly]').forEach(el=>{ const it=ITEMS.find(i=>i.el===el); if(!it) return; const p=launch(prog(t,it.a,1.1)), y=+el.dataset.y+40;
+  const k=el.dataset.fly; let x;
+  if(k==='out') x=lerp(500,1360,p); else if(k==='in') x=lerp(1360,500,p); else { const q=prog(t,it.a,1.4); x=q<.6?lerp(1360,700,q/.6):lerp(700,900,(q-.6)/.4); el.style.rotate=(q>.6?(q-.6)*40:0)+'deg'; }
+  el.style.left=x+'px'; el.style.top=y+'px'; el.style.opacity=k==='out'?(p<1?1:clamp(1-(t-it.a-1.1)*2)):(k==='in'?(t-it.a<1.6?1:clamp(1-(t-it.a-1.6)*2)):1); }); });
+FX.push((t)=>{ const r1=$('#reply1'), r2=$('#reply2'); if(!r1) return; const b=BEATS.find(x=>x.el.contains(r1));
+  const st=(spec)=>anchor(spec,b); const y1=[300,300,450,600];   // rules → small model → prism ✓
+  const tA=[st('tech?L+0.6|L+1.0'),st('tech?L+3.02|L+2.4'),st('tech?L+4.56|L+4.2')]; let yy=200, xx=180, op=t>=b.first.start+0.3?1:0;
+  if(t>=tA[0]){ yy=285; xx=430; } if(t>=tA[1]){ yy=435; } if(t>=tA[2]){ yy=585; }
+  r1.style.top=yy+'px'; r1.style.left=xx+'px'; r1.style.opacity=op*(t>=st('tech?L+6.86|L+6.6')?0.35:1);
+  $('#v1').innerHTML=t>=tA[1]?'<span class="bad">no match ↓</span>':''; $('#v2').innerHTML=t>=tA[2]?'<span style="color:#ffd60a">0.58 · unsure ↓</span>':'';
+  $('#v3').innerHTML=t>=tA[2]+1.2?'<span class="ok">PROMISE_TO_PAY · 10th ✓</span>':'';
+  const t2=st('tech?L+6.86|L+6.6'), t4=st('tech?L+8.4|L+7.6'); r2.style.opacity=t>=t2?1:0; r2.style.left=(t>=t2+0.3?430:180)+'px'; r2.style.top=(t>=t4?735:t>=t2+0.6?585:300)+'px';
+  $('#v4').innerHTML=t>=t4+0.4?'<span style="color:#ffd60a">review ticket → a person</span>':''; });
+FX.push((t)=>{ const arc=$('#loopArc'); if(!arc) return; const b=BEATS.find(x=>x.el.contains(arc)); const p=(t-b.first.start)/2.4; const f=p<0?0:(p%1);
+  arc.setAttribute('stroke-dasharray',`${(RM?1:f)*1446} 1446`); });
+FX.push((t)=>{ const ct=$('#calltime'); if(!ct) return; const b=BEATS.find(x=>x.el.contains(ct)); const s=Math.max(0,t-b.start); ct.textContent='00:'+String(Math.floor(s)).padStart(2,'0');
+  const w=$('#waveA'); const ln=b.keys.map(k=>LINES[k]).find(l=>t>=l.start&&t<l.end); w.classList.toggle('on',!!ln); w.classList.toggle('b',!!ln&&ln.role==='borrower'); });
+FX.push((t)=>{ $$('[data-count]').forEach(el=>{ const [a,z,spec,d]=el.dataset.count.split(','); const b=BEATS.find(x=>x.el.contains(el)); if(!b) return;
+  const p=launch(prog(t,anchor(spec,b),+d)); el.textContent=Math.round(lerp(+a,+z,p)).toLocaleString('en-IN'); }); });
+FX.push((t)=>{ const tap=$('#tap14'), cur=$('#cursor'); if(!tap){ cur.style.opacity=0; return; } const b=BEATS.find(x=>x.el.contains(tap)); if(t<b.start||t>b.end){ cur.style.opacity=0; return; }
+  const a=anchor('L+4.0',b); const p=launch(prog(t,a,0.8)); cur.style.left=lerp(1500,700,p)+'px'; cur.style.top=lerp(900,640,p)+'px';
+  cur.style.opacity=(t>a&&t<a+2.2)?1:0; cur.style.transform=`scale(${1-0.25*Math.sin(Math.PI*prog(t,a+0.85,0.25))})`; });
+
+/* ---------- render: fast transitions (whip / wipe), hard cuts on hits ---------- */
+const TR=0.32, capEl=$('#capText'), chapBtns=[]; let lastCap=null;
+function beatAt(t){ for(const b of BEATS) if(t<b.end) return b; return BEATS[BEATS.length-1]; }
+function drawBeat(b,t,style){ const el=b.el; el.style.display='block'; Object.assign(el.style,style);
+  b.items.forEach(it=>{ reveal(it,t); if(it.focus) focusRect(it,t); if(it.cam) camRig(it,t); }); }
+const CLEAR={opacity:1,transform:'none',filter:'none',clipPath:'none'};
 function render(t){
-  const sc=sceneAt(t), i=sc.idx, prev=SCENES[i-1], next=SCENES[i+1], h=TR/2, shown=new Set([sc]);
-  let o=1, s=1, bl=0;
-  if(prev&&t<sc.start+h&&!HARD.has(i)){const p=prog(t,sc.start-h,TR), e=easeIO(p); shown.add(prev); drawScene(prev,t,1-e,1+.02*e,5*e); o=e; s=1.02-.02*e; bl=5*(1-e);}
-  else if(next&&t>sc.end-h&&!HARD.has(i+1)){const p=prog(t,next.start-h,TR), e=easeIO(p); shown.add(next); drawScene(next,t,e,1.02-.02*e,5*(1-e)); o=1-e; s=1+.02*e; bl=5*e;}
-  drawScene(sc,t,o,s,bl);
-  SCENES.forEach(z=>{z.el.style.zIndex=z===sc?2:1; if(!shown.has(z)){ z.el.style.display='none'; driveClips(z,0,false); }});
-  // picture event on every hit: 2-frame exposure bump + camera punch-in 1.00 -> 1.04 (big: 1.06) over 120 ms, then settle
+  const cur=beatAt(t), i=cur.idx, prev=BEATS[i-1], shown=new Set([cur]);
+  if(prev&&t<cur.start+TR&&!HARD.has(i)&&!RM){ const e=easeIO(prog(t,cur.start,TR)); shown.add(prev); const tr=cur.el.dataset.tr||'whip';
+    if(tr==='wipe'){ drawBeat(prev,t,CLEAR); drawBeat(cur,t,{...CLEAR,clipPath:`inset(0 0 0 ${(1-e)*100}%)`}); }
+    else if(tr==='fade'){ drawBeat(prev,t,CLEAR); drawBeat(cur,t,{...CLEAR,opacity:e}); }
+    else { drawBeat(prev,t,{...CLEAR,transform:`translateX(${-e*260}px)`,filter:`blur(${(e*16).toFixed(1)}px)`});
+           drawBeat(cur,t,{...CLEAR,opacity:clamp(e*1.6),transform:`translateX(${(1-e)*260}px)`,filter:`blur(${((1-e)*16).toFixed(1)}px)`}); } }
+  else drawBeat(cur,t,CLEAR);
+  BEATS.forEach(z=>{ z.el.style.zIndex=z===cur?2:1; if(!shown.has(z)) z.el.style.display='none'; });
+  CLIPS.forEach(c=>driveClip(c,t,shown.has(c.beat)));
+  FX.forEach(f=>f(t));
+  /* hits: 2-frame exposure bump + 1.00 -> 1.04 punch over 120 ms (big 1.06) */
   let fl=0, pz=1; for(const [ht,ty] of HITS){ const d=t-ht; if(d<0||d>1.2||ty==='soft'||ty==='build') continue;
-    const big=ty==='big'||ty==='boom'; if(d<0.067) fl=Math.max(fl,big?0.45:0.22);
-    const amp=big?0.06:0.04; pz=Math.max(pz,1+amp*(d<0.12?launch(d/0.12):1-easeIO(clamp((d-0.12)/1.0)))); }
+    const big=ty==='big'||ty==='boom'; if(d<0.067) fl=Math.max(fl,big?0.42:0.18);
+    pz=Math.max(pz,1+(big?0.06:0.04)*(d<0.12?launch(d/0.12):1-easeIO(clamp((d-0.12)/1.0)))); }
   if(RM){fl=0;pz=1;} $('#flash').style.opacity=fl; $('#cam').style.transform=pz>1.0005?`scale(${pz})`:'none';
   if(!RM) $('#grain').style.transform=`translate(${(hash(Math.floor(t*24),1)-.5)*120}px,${(hash(Math.floor(t*24),2)-.5)*120}px)`;
-  let cue=null; for(const z of SCENES) for(const [k,off] of (z.vo||[])){ const a=z.start+off; if(t>=a-0.05&&t<a+VO_DUR[k]+0.25) cue=k; }
-  if(cue!==lastCue){ capEl.textContent=cue?VO_TEXT[cue]:''; capEl.classList.toggle('show',!!cue); lastCue=cue; }
-  $('#time').textContent=`${mmss(t)} / ${mmss(TOTAL)}`;
-  if(!dragging) $('#scrub').value=t;
-  chapBtns.forEach((b,k)=>{const z=SCENES[k]; b.classList.toggle('cur',z===sc); b.firstChild.style.width=(clamp((t-z.start)/z.dur)*100)+'%';});
+  const cap=capAt(t); if(cap!==lastCap){ capEl.innerHTML=cap||''; capEl.classList.toggle('show',!!cap); $('#cap').classList.toggle('show',!!cap); lastCap=cap; }
+  $('#time').textContent=`${mmss(t)} / ${mmss(TOTAL)}`; if(!dragging) $('#scrub').value=t;
+  chapBtns.forEach((bt,k)=>{const z=BEATS[k]; bt.classList.toggle('cur',z===cur); bt.firstChild.style.width=(clamp((t-z.start)/z.dur)*100)+'%';});
 }
+/* captions: narrator text split into chunks of two lines max, timed by length; dialogue = English line + speaker */
+const CAPS=[]; TL.lines.forEach(l=>{ if(l.kind==='dialogue'){ const who=l.role==='agent'?'Agent':'Borrower';
+    CAPS.push([l.start-0.05,l.end+0.2,`<span class="spk${l.role==='agent'?'':' b'}">${who}</span>${l.en}`]); return; }
+  let parts=l.text.match(/[^.?!।]+[.?!।]+["”]?|[^.?!।]+$/g)||[l.text]; parts=parts.map(s=>s.trim()).filter(Boolean);
+  const out=[]; parts.forEach(s=>{ if(out.length&&(out[out.length-1]+' '+s).length<=96) out[out.length-1]+=' '+s; else out.push(s); });
+  const fin=[]; out.forEach(s=>{ if(s.length<=110){ fin.push(s); return; } const c=s.split(/(?<=,)\s+/); let acc=''; c.forEach(x=>{ if((acc+' '+x).trim().length>96&&acc){ fin.push(acc.trim()); acc=x; } else acc=(acc+' '+x).trim(); }); if(acc) fin.push(acc); });
+  const tot=fin.reduce((s,x)=>s+x.length,0); let a=l.start; fin.forEach((s,k)=>{ const d=(l.end-l.start)*s.length/tot; CAPS.push([a-0.05,k===fin.length-1?l.end+0.25:a+d,s]); a+=d; }); });
+function capAt(t){ let c=null; for(const [a,b,s] of CAPS) if(t>=a&&t<b) c=s; return c; }
 
-/* ---------------- audio: Neha's voice track is the master clock; the music is one line (MUSIC_SRC) ----------------
-   The music is ducked under every line in the player itself (-11 dB, 20 ms attack, 300 ms release), driven by the
-   VO timeline, so any score dropped in at MUSIC_SRC sits under the voice. A missing file is simply silent. */
-const MUSIC_SRC = 'music/original/v3_cinematic_trailer.m4a';   // the score (music/original/v1|v2|v3 …); missing file = silent
-const MUSIC_LEVEL = 0.8, DUCK_DB = -11;                 // bed level in the gaps; duck depth under the voice
-const VO_SRC = 'music/vo_hero.m4a';                     // rendered by music/mix.py from audio/vo_neha/timeline.json
-let t=0, playing=false, last=null, seeking=false, dragging=false;
-let musicOn=true, voOn=true;
-const vo=new Audio(VO_SRC), mus=new Audio(MUSIC_SRC); vo.preload=mus.preload='auto';
+/* ---------- audio: the voice track is the master clock; the score is ducked under every line ---------- */
+const MUSIC_LEVEL=0.8, DUCK_DB=-11;
+let t=0, playing=false, last=null, dragging=false, musicOn=true, voOn=true;
+const vo=new Audio(CC.vo), mus=new Audio(CC.music); vo.preload=mus.preload='auto';
 let voOK=true, musOK=true;
 vo.addEventListener('error',()=>{voOK=false;}); mus.addEventListener('error',()=>{musOK=false;});
+mus.addEventListener('loadedmetadata',()=>{ if(Math.abs(mus.duration-TOTAL)>1.5){ musOK=false; console.warn('score length does not match this cut; silent'); } });
 [vo,mus].forEach(a=>a.addEventListener('loadedmetadata',()=>{ try{a.currentTime=t;}catch(e){} if(playing&&t<TOTAL) a.play().catch(()=>{}); }));
-const VOW=[]; SCENES.forEach(z=>(z.vo||[]).forEach(([k,off])=>VOW.push([z.start+off, z.start+off+VO_DUR[k]])));
-let duckG=1;
+const VOW=TL.lines.map(l=>[l.start,l.end]); let duckG=1;
 function duckTarget(x){ return VOW.some(([a,b])=>x>=a-0.03&&x<b)?Math.pow(10,DUCK_DB/20):1; }
-function syncOne(a,ok,on){ if(!ok) return; a.muted=!on;
+function syncOne(a,ok,on){ if(!ok){ if(!a.paused) a.pause(); return; } a.muted=!on;
   if(Math.abs(a.currentTime-t)>0.25){ try{a.currentTime=t;}catch(e){} }
   if(playing&&t<TOTAL){ if(a.paused) a.play().catch(()=>{}); } else if(!a.paused) a.pause(); }
 function syncAudio(){ syncOne(vo,voOK,voOn); syncOne(mus,musOK,musicOn); }
@@ -712,18 +1117,19 @@ function frame(now){
     if(clk){ const d=clk.currentTime-t; if(Math.abs(d)>1){ try{clk.currentTime=t;}catch(e){} } else if(Math.abs(d)>0.06) t=clk.currentTime; }
     if(musOK&&!mus.paused&&Math.abs(mus.currentTime-t)>0.15){ try{mus.currentTime=t;}catch(e){} }
     if(t>=TOTAL){t=TOTAL;pause();} } else last=null;
-  const tg=duckTarget(t), rate=tg<duckG?(1-Math.exp(-dt/0.02)):(1-Math.exp(-dt/0.30)); duckG+= (tg-duckG)*(dt?rate:1);
+  const tg=duckTarget(t), rate=tg<duckG?(1-Math.exp(-dt/0.02)):(1-Math.exp(-dt/0.30)); duckG+=(tg-duckG)*(dt?rate:1);
   mus.volume=clamp(MUSIC_LEVEL*duckG*(t>TOTAL-2.5?clamp((TOTAL-t)/2.5):1));
-  render(t); seeking=false; requestAnimationFrame(frame);
-}
+  render(t); requestAnimationFrame(frame); }
 function play(){ if(t>=TOTAL) seek(0); playing=true; last=null; playLabel(); syncAudio(); }
 function pause(){ playing=false; playLabel(); syncAudio(); }
-function seek(x){ t=clamp(x,0,TOTAL); seeking=true; lastCue='(seek)'; [vo,mus].forEach(a=>{ try{a.currentTime=t;}catch(e){} }); duckG=duckTarget(t); }
-function sceneJump(d){ const sc=sceneAt(t); seek(SCENES[clamp(sc.idx+d,0,SCENES.length-1)].start+0.001); }
+function seek(x){ t=clamp(x,0,TOTAL); lastCap='(seek)'; [vo,mus].forEach(a=>{ try{a.currentTime=t;}catch(e){} }); duckG=duckTarget(t); }
+function sceneJump(d){ const b=beatAt(t); seek(BEATS[clamp(b.idx+d,0,BEATS.length-1)].start+0.001); }
 
-/* ---------------- presentation-mode controls ---------------- */
-SCENES.forEach(s=>{const b=document.createElement('button'); b.innerHTML='<i class="pf"></i><span>'+(s.idx+1)+' · '+s.name+' · '+mmss(s.start)+'</span>';
-  b.onclick=()=>seek(s.start+0.001); $('#chapters').appendChild(b); chapBtns.push(b);});
+/* ---------- presentation-mode controls ---------- */
+function buildChapters(){ $('#chapters').innerHTML=''; chapBtns.length=0; BEATS.forEach(b=>{const bt=document.createElement('button'); bt.innerHTML='<i class="pf"></i><span>'+(b.idx+1)+' · '+b.name+' · '+mmss(b.start)+'</span>';
+  bt.onclick=()=>seek(b.start+0.001); $('#chapters').appendChild(bt); chapBtns.push(bt);}); }
+buildChapters();
+$$('#more button[data-cut]').forEach(bt=>{ bt.classList.toggle('on',bt.dataset.cut===CUT); bt.onclick=()=>{ const q=new URLSearchParams(location.search); q.set('cut',bt.dataset.cut); q.delete('t'); location.search=q.toString(); }; });
 $('#bPlay').onclick=()=>playing?pause():play();
 const scrub=$('#scrub'); scrub.max=TOTAL;
 scrub.addEventListener('input',()=>{dragging=true;seek(+scrub.value);}); scrub.addEventListener('change',()=>{dragging=false;});
@@ -752,11 +1158,13 @@ function fit(){const s=Math.min(innerWidth/1920,innerHeight/1080), st=$('#stage'
   st.style.transform=`translate(${(innerWidth-1920*s)/2}px,${(innerHeight-1080*s)/2}px) scale(${s})`;}
 addEventListener('resize',fit); fit();
 if(QS.has('t')) seek(+QS.get('t'));
-if(QS.has('scene')){const v=QS.get('scene'); const i=isNaN(+v)?SCENES.findIndex(s=>s.id===v):+v-1; if(i>=0) seek(SCENES[clamp(i,0,SCENES.length-1)].start+0.001);}
+if(QS.has('scene')){ const v=QS.get('scene'); const i=+v-1; if(BEATS[i]) seek(BEATS[i].start+0.001); }
 if(QS.get('cc')==='0') setCC(false);
 if(QS.get('record')==='1') enterRecord(); else if(QS.get('autoplay')==='1') play();
-window.KAIROS_FILM={seek:x=>{seek(x);render(t);},play,pause,get t(){return t;},TOTAL,SCENES,vo,mus,clips,get duck(){return duckG;}};
+window.KAIROS_FILM={cut:CUT,seek:x=>{seek(x);render(t);},play,pause,get t(){return t;},TOTAL,BEATS,HITS,HARD,vo,mus,CLIPS,get duck(){return duckG;},
+  shots:()=>BEATS.map(b=>({name:b.name,start:+b.start.toFixed(3),end:+b.end.toFixed(3),lines:b.keys,hard:HARD.has(b.idx)}))};
 requestAnimationFrame(frame);
+if(QS.get('dump')==='1') setTimeout(()=>{ const pre=document.createElement('pre'); pre.id='dump'; pre.textContent=JSON.stringify({cut:CUT,total:TOTAL,shots:window.KAIROS_FILM.shots(),hits:HITS}); document.body.appendChild(pre); },2500);
 </script>
 </body>
 </html>

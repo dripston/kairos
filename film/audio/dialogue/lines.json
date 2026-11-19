@@ -1,0 +1,152 @@
+{
+ "wa_b1": {
+  "role": "borrower",
+  "speaker": "pooja",
+  "model": "bulbul:v3",
+  "pace": 1.05,
+  "lang": "hi-IN",
+  "text": "नमस्ते, मेरी EMI कब ड्यू है?",
+  "en": "Hi, when is my EMI due?",
+  "ok": true
+ },
+ "wa_a1": {
+  "role": "agent",
+  "speaker": "ritu",
+  "model": "bulbul:v3",
+  "pace": 1.05,
+  "lang": "hi-IN",
+  "text": "नमस्ते सुनीता जी! पहले आपकी पहचान कन्फर्म कर लूँ। आपके रजिस्टर्ड नंबर पर एक OTP भेजा है।",
+  "en": "Hello Sunita ji! First let me confirm it's you. I've sent an OTP to your registered number.",
+  "ok": true
+ },
+ "wa_b2": {
+  "role": "borrower",
+  "speaker": "pooja",
+  "model": "bulbul:v3",
+  "pace": 1.05,
+  "lang": "hi-IN",
+  "text": "OTP है चार आठ दो नौ।",
+  "en": "The OTP is 4829.",
+  "ok": true
+ },
+ "wa_a2": {
+  "role": "agent",
+  "speaker": "ritu",
+  "model": "bulbul:v3",
+  "pace": 1.05,
+  "lang": "hi-IN",
+  "text": "धन्यवाद! आपकी EMI, चार हज़ार दो सौ पचास रुपये, कल ड्यू है। क्या मैं पेमेंट लिंक भेज दूँ?",
+  "en": "Thank you! Your EMI of ₹4,250 is due tomorrow. Shall I send a payment link?",
+  "ok": true
+ },
+ "wa_b3": {
+  "role": "borrower",
+  "speaker": "pooja",
+  "model": "bulbul:v3",
+  "pace": 1.05,
+  "lang": "hi-IN",
+  "text": "हाँ, भेज दीजिए।",
+  "en": "Yes, please send it.",
+  "ok": true
+ },
+ "wa_a3": {
+  "role": "agent",
+  "speaker": "ritu",
+  "model": "bulbul:v3",
+  "pace": 1.05,
+  "lang": "hi-IN",
+  "text": "लिंक भेज दिया है। पेमेंट होते ही मैं कन्फर्म कर दूँगी।",
+  "en": "Link sent. I'll confirm as soon as the payment lands.",
+  "ok": true
+ },
+ "fp_b1": {
+  "role": "borrower",
+  "speaker": "pooja",
+  "model": "bulbul:v3",
+  "pace": 1.05,
+  "lang": "hi-IN",
+  "text": "मैंने पेमेंट कर दिया है, ये रहा स्क्रीनशॉट।",
+  "en": "I've paid, here's the screenshot.",
+  "ok": true
+ },
+ "fp_a1": {
+  "role": "agent",
+  "speaker": "ritu",
+  "model": "bulbul:v3",
+  "pace": 1.05,
+  "lang": "hi-IN",
+  "text": "शुक्रिया! बैंक में अभी ये पेमेंट नहीं दिख रहा। मैंने इसे वेरिफिकेशन के लिए टीम को भेज दिया है।",
+  "en": "Thanks! The bank doesn't show this payment yet. I've sent it to the team to verify.",
+  "ok": true
+ },
+ "vc_a1": {
+  "role": "agent",
+  "speaker": "ritu",
+  "model": "bulbul:v3",
+  "pace": 1.05,
+  "lang": "hi-IN",
+  "text": "नमस्ते, मैं डेमो फाइनेंस की तरफ़ से बोल रही हूँ। क्या मेरी बात सुनीता जी से हो रही है?",
+  "en": "Hello, I'm calling from Demo Finance. Am I speaking with Sunita ji?",
+  "ok": true
+ },
+ "vc_b1": {
+  "role": "borrower",
+  "speaker": "pooja",
+  "model": "bulbul:v3",
+  "pace": 1.05,
+  "lang": "hi-IN",
+  "text": "हाँ, बोलिए।",
+  "en": "Yes, go ahead.",
+  "ok": true
+ },
+ "vc_a2": {
+  "role": "agent",
+  "speaker": "ritu",
+  "model": "bulbul:v3",
+  "pace": 1.05,
+  "lang": "hi-IN",
+  "text": "आपकी EMI पिछले हफ़्ते ड्यू थी। क्या आप शुक्रवार तक पेमेंट कर पाएँगी?",
+  "en": "Your EMI was due last week. Could you pay by Friday?",
+  "ok": true
+ },
+ "vc_b2": {
+  "role": "borrower",
+  "speaker": "pooja",
+  "model": "bulbul:v3",
+  "pace": 1.05,
+  "lang": "hi-IN",
+  "text": "हाँ, शुक्रवार को कर दूँगी।",
+  "en": "Yes, I'll pay on Friday.",
+  "ok": true
+ },
+ "vc_a3": {
+  "role": "agent",
+  "speaker": "ritu",
+  "model": "bulbul:v3",
+  "pace": 1.05,
+  "lang": "hi-IN",
+  "text": "बहुत अच्छा। मैंने शुक्रवार का वादा नोट कर लिया है, और आपको एक रिमाइंडर भेज दूँगी।",
+  "en": "Great. I've noted your promise for Friday, and I'll send you a reminder.",
+  "ok": true
+ },
+ "st_b1": {
+  "role": "borrower",
+  "speaker": "pooja",
+  "model": "bulbul:v3",
+  "pace": 1.05,
+  "lang": "en-IN",
+  "text": "Please stop messaging me.",
+  "en": "Please stop messaging me.",
+  "ok": true
+ },
+ "st_a1": {
+  "role": "agent",
+  "speaker": "ritu",
+  "model": "bulbul:v3",
+  "pace": 1.05,
+  "lang": "en-IN",
+  "text": "Understood. You won't get any more messages from us.",
+  "en": "Understood. You won't get any more messages from us.",
+  "ok": true
+ }
+}

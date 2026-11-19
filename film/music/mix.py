@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Render the film's voice track from the fixed timeline, and (optionally) a ducked soundtrack for the MP4.
 
-    python3 film/music/mix.py                                    # music/vo_hero.m4a (Neha, placed by timeline.json)
+    python3 film/music/mix.py                                    # music/vo_hero.m4a (every line, placed by film_timeline.json)
+    python3 film/music/mix.py --cut short                        # music/vo_short.m4a (film_timeline_short.json)
+    python3 film/music/mix.py --cut tech                         # music/vo_tech.m4a (film_timeline_tech.json)
     python3 film/music/mix.py --music music/original/v1_uplifting.m4a
                                                                  # + music/soundtrack_hero.m4a (score ducked under Neha), for mux.swift
 
-Voice: film/audio/vo_neha/*.wav (Sarvam bulbul:v3, speaker neha, pace 1.2), placed at the starts in
-film/audio/vo_neha/timeline.json (runtime 139.635 s). High-pass 90 Hz, light 3-5 kHz presence lift, normalised to
+Voices: narrator Neha (film/audio/vo_neha) and the conversations, agent Ritu and borrower Pooja
+(film/audio/dialogue), all Sarvam bulbul:v3, placed at the starts in film/audio/film_timeline.json
+(built by tools/build_timeline.py). Each line is levelled to the same loudness first. High-pass 90 Hz, light 3-5 kHz presence lift, normalised to
 about -16 LUFS (RMS of voiced blocks). With --music the score is ducked 11 dB under every line (20 ms attack,
 300 ms release) and the master is limited to -1 dBFS. The player (kairos_film.html) applies the same ducking live,
 so the .m4a soundtrack is only needed for exporting a video. Python stdlib + afconvert (macOS).
@@ -28,7 +31,8 @@ from operator import add, mul
 
 SR = 44100
 HERE = os.path.dirname(os.path.abspath(__file__))
-VO_DIR = os.path.join(HERE, "..", "audio", "vo_neha")
+FILM = os.path.join(HERE, "..")
+TIMELINE = os.path.join(FILM, "audio", "film_timeline.json")
 
 
 def read_wav(path):
@@ -62,10 +66,11 @@ def onepole(x, fc, high=False):
 def render_vo(n, lines):
     vo = array("d", bytes(8 * n))
     for ln in lines:
-        x, _ = read_wav(os.path.join(VO_DIR, ln["line"] + ".wav"))
+        x, _ = read_wav(os.path.join(FILM, ln["src"]))
         x = onepole(x, 90, high=True)
         band = onepole(onepole(x, 2800, high=True), 5500)
         x = array("d", map(lambda a, b: a + 0.26 * b, x, band))
+        x = level(x)  # every line to the same loudness, so Neha, Ritu and Pooja sit together
         st = int(ln["start"] * SR)
         m = min(len(x), n - st)
         vo[st:st + m] = array("d", map(add, vo[st:st + m], x[:m]))
@@ -77,6 +82,17 @@ def render_vo(n, lines):
             acc, cnt = acc + e, cnt + 1
     g = 10 ** (-16 / 20) / math.sqrt(acc / max(cnt, 1))
     return array("d", map(mul, vo, repeat(g, n)))
+
+
+def level(x, target_db=-20.0):
+    blk, acc, cnt = int(0.05 * SR), 0.0, 0
+    for b in range(0, len(x), blk):
+        seg = x[b:b + blk]
+        e = sum(map(mul, seg, seg)) / max(1, len(seg))
+        if e > 1e-5:
+            acc, cnt = acc + e, cnt + 1
+    g = 10 ** (target_db / 20) / math.sqrt(acc / max(cnt, 1) + 1e-12)
+    return array("d", map(mul, x, repeat(g, len(x))))
 
 
 def duck_gains(lines, n, depth_db=-11.0, block=220, attack=0.02, release=0.30):
@@ -128,11 +144,14 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--music", help="score to duck under the voice (m4a/wav/mp3)")
     ap.add_argument("--music-level-db", type=float, default=-15.5, help="score RMS before ducking")
+    ap.add_argument("--cut", choices=["full", "short", "tech"], default="full",
+                    help="full: audio/film_timeline.json -> vo_hero.m4a; short / tech: film_timeline_<cut>.json -> vo_<cut>.m4a")
     a = ap.parse_args()
-    tl = json.load(open(os.path.join(VO_DIR, "timeline.json"), encoding="utf-8"))
+    tl = json.load(open(TIMELINE if a.cut == "full" else TIMELINE.replace(".json", f"_{a.cut}.json"), encoding="utf-8"))
+    tag = "hero" if a.cut == "full" else a.cut
     n = int(tl["runtime_s"] * SR)
     vo = render_vo(n, tl["lines"])
-    tmp = write(os.path.join(HERE, "vo_hero.m4a"), limit(vo), limit(vo))
+    tmp = write(os.path.join(HERE, f"vo_{tag}.m4a"), limit(vo), limit(vo))
     os.remove(tmp)
     if a.music:
         L, R = decode(a.music)
@@ -146,7 +165,7 @@ def main():
                 break
             L[i:z] = array("d", map(mul, L[i:z], repeat(g0 * g, z - i)))
             R[i:z] = array("d", map(mul, R[i:z], repeat(g0 * g, z - i)))
-        tmp = write(os.path.join(HERE, "soundtrack_hero.m4a"), limit(array("d", map(add, L, vo))), limit(array("d", map(add, R, vo))))
+        tmp = write(os.path.join(HERE, f"soundtrack_{tag}.m4a"), limit(array("d", map(add, L, vo))), limit(array("d", map(add, R, vo))))
         os.remove(tmp)
 
 

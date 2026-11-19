@@ -1,0 +1,255 @@
+{
+ "variant": "v3_cinematic_trailer",
+ "timeline": "audio/film_timeline.json",
+ "runtime_s": 247.665,
+ "dialogue_sections_pad_only": [
+  [
+   74.5,
+   79.41
+  ],
+  [
+   87.5,
+   111.04
+  ],
+  [
+   112.44,
+   130.11
+  ],
+  [
+   140.5,
+   149.13
+  ]
+ ],
+ "tempo_anchors_beat_s": [
+  [
+   0,
+   0.0
+  ],
+  [
+   44,
+   26.28
+  ],
+  [
+   72,
+   43.28
+  ],
+  [
+   80,
+   48.29
+  ],
+  [
+   94,
+   56.51
+  ],
+  [
+   107,
+   64.29
+  ],
+  [
+   119,
+   71.35
+  ],
+  [
+   133,
+   79.9
+  ],
+  [
+   187,
+   112.44
+  ],
+  [
+   217,
+   130.6
+  ],
+  [
+   249,
+   149.63
+  ],
+  [
+   266,
+   159.72
+  ],
+  [
+   279,
+   167.5
+  ],
+  [
+   298,
+   178.85
+  ],
+  [
+   314,
+   188.17
+  ],
+  [
+   332,
+   199.02
+  ],
+  [
+   348,
+   208.77
+  ],
+  [
+   365,
+   218.76
+  ],
+  [
+   378,
+   226.72
+  ],
+  [
+   392,
+   235.33
+  ],
+  [
+   400,
+   239.84
+  ],
+  [
+   412,
+   247.52
+  ]
+ ],
+ "hits": [
+  {
+   "t": 0.0,
+   "type": "cold_open",
+   "cue": "problem: cold-open boom + sub drop, pizzicato/tick pulse"
+  },
+  {
+   "t": 24.6,
+   "type": "riser",
+   "cue": "riser 24.60-25.98, near-silence to 26.28"
+  },
+  {
+   "t": 26.28,
+   "type": "big",
+   "cue": "04_meet: Meet Kairos"
+  },
+  {
+   "t": 43.28,
+   "type": "medium",
+   "cue": "06_decides: contact or wait"
+  },
+  {
+   "t": 48.29,
+   "type": "flourish",
+   "cue": "07_channel: channel ring flourish"
+  },
+  {
+   "t": 56.51,
+   "type": "medium_brass",
+   "cue": "08_aladdin: safety supervisor, brass stab"
+  },
+  {
+   "t": 64.29,
+   "type": "light",
+   "cue": "09_rules"
+  },
+  {
+   "t": 71.35,
+   "type": "stop",
+   "cue": "09_rules: everything stops; near-silence to 74.50"
+  },
+  {
+   "t": 74.5,
+   "type": "pad",
+   "cue": "st dialogue (Please stop messaging me): pad only"
+  },
+  {
+   "t": 79.9,
+   "type": "light",
+   "cue": "10_reply: WhatsApp"
+  },
+  {
+   "t": 87.5,
+   "type": "pad",
+   "cue": "wa dialogue: pad only"
+  },
+  {
+   "t": 112.44,
+   "type": "ring",
+   "cue": "vc dialogue: phone-ring accent, pad only"
+  },
+  {
+   "t": 130.6,
+   "type": "medium",
+   "cue": "12_verify"
+  },
+  {
+   "t": 140.5,
+   "type": "pad",
+   "cue": "fp dialogue: suspense pad only"
+  },
+  {
+   "t": 149.63,
+   "type": "build",
+   "cue": "13_learns: build begins"
+  },
+  {
+   "t": 158.1,
+   "type": "riser",
+   "cue": "riser 158.10-159.50"
+  },
+  {
+   "t": 159.72,
+   "type": "hood",
+   "cue": "t1_record: Under the hood, C minor electronic texture"
+  },
+  {
+   "t": 167.5,
+   "type": "step",
+   "cue": "t2_model"
+  },
+  {
+   "t": 178.85,
+   "type": "step",
+   "cue": "t3_reserve"
+  },
+  {
+   "t": 188.17,
+   "type": "step",
+   "cue": "t4_webhooks"
+  },
+  {
+   "t": 199.02,
+   "type": "step",
+   "cue": "t5_intent"
+  },
+  {
+   "t": 208.77,
+   "type": "step",
+   "cue": "t6_loop"
+  },
+  {
+   "t": 218.76,
+   "type": "lift",
+   "cue": "14_operator: lift, back towards D"
+  },
+  {
+   "t": 225.1,
+   "type": "riser",
+   "cue": "riser 225.10-226.40, silence to 226.72"
+  },
+  {
+   "t": 226.72,
+   "type": "biggest",
+   "cue": "15_proof: climax, choir"
+  },
+  {
+   "t": 235.33,
+   "type": "big",
+   "cue": "16_safe: zero rule breaches"
+  },
+  {
+   "t": 239.84,
+   "type": "final",
+   "cue": "17_end: final statement, sustained D major"
+  },
+  {
+   "t": 244.7,
+   "type": "boom",
+   "cue": "final low boom, tail to 247.665"
+  }
+ ]
+}
