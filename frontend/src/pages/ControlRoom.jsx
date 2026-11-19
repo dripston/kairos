@@ -172,13 +172,13 @@ function CollectionsTrend({ share, scopeLabel }) {
       <div className="h-[250px] px-3 pb-3">
         <ResponsiveContainer>
           <BarChart data={data} margin={{ top: 8, right: 16, bottom: 0, left: 4 }} barGap={4}>
-            <CartesianGrid stroke="#222" vertical={false} />
-            <XAxis dataKey="day" stroke="#6b6b6b" tickLine={false} axisLine={false} fontSize={12} />
-            <YAxis stroke="#6b6b6b" tickLine={false} axisLine={false} fontSize={12} tickFormatter={(v) => `₹${Math.round(v / 1000)}k`} />
-            <Tooltip formatter={(v) => inr(v)} contentStyle={{ background: '#1c1c1c', border: '1px solid #333', borderRadius: 8, fontSize: 12 }} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+            <CartesianGrid stroke="var(--color-grid)" vertical={false} />
+            <XAxis dataKey="day" stroke="var(--color-faint)" tickLine={false} axisLine={false} fontSize={12} />
+            <YAxis stroke="var(--color-faint)" tickLine={false} axisLine={false} fontSize={12} tickFormatter={(v) => `₹${Math.round(v / 1000)}k`} />
+            <Tooltip formatter={(v) => inr(v)} contentStyle={{ background: 'var(--color-raised)', border: '1px solid var(--color-line-strong)', borderRadius: 8, fontSize: 12, color: 'var(--color-fg)' }} cursor={{ fill: 'var(--color-hover)' }} />
             <Legend wrapperStyle={{ fontSize: 12 }} iconType="circle" iconSize={8} />
-            <RBar isAnimationActive={false} dataKey="Kairos" fill="#22c55e" radius={[4, 4, 0, 0]} barSize={22} />
-            <RBar isAnimationActive={false} dataKey="Fixed cadence" fill="#3b3b3b" radius={[4, 4, 0, 0]} barSize={22} />
+            <RBar isAnimationActive={false} dataKey="Kairos" fill="var(--color-ok)" radius={[4, 4, 0, 0]} barSize={22} />
+            <RBar isAnimationActive={false} dataKey="Fixed cadence" fill="var(--color-bar-muted)" radius={[4, 4, 0, 0]} barSize={22} />
           </BarChart>
         </ResponsiveContainer>
       </div>

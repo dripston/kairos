@@ -135,10 +135,10 @@ export function ArmScores({ campaignId = DEFAULT_CAMPAIGN }) {
         {view.slice(0, 16).map((a) => {
           const ci = betaCi(a.alpha, a.beta)
           return (
-            <div key={`${a.band}-${a.channel}-${a.slot}`} className="grid grid-cols-[200px_minmax(0,1fr)_170px] items-center gap-3 py-1">
-              <div className="flex items-center gap-1.5 text-[12.5px]"><span className="w-6 font-mono text-faint">{a.band}</span><ChannelTag ch={knownCh(a.channel)} /><span className="text-faint">{a.slot}</span></div>
+            <div key={`${a.band}-${a.channel}-${a.slot}`} className="grid grid-cols-[230px_minmax(0,1fr)_170px] items-center gap-3 py-1">
+              <div className="flex items-center gap-1.5 text-[12.5px]"><span className="w-[58px] shrink-0 truncate font-mono text-faint" title={a.band}>{a.band}</span><ChannelTag ch={knownCh(a.channel)} /><span className="text-faint">{a.slot}</span></div>
               <div className="relative h-3 rounded-full bg-raised">
-                <div className="absolute top-0 h-3 rounded-full" style={{ width: `${(ci.m / max) * 100}%`, background: CHANNEL_META[a.channel]?.color || '#888', opacity: 0.85 }} />
+                <div className="absolute top-0 h-3 rounded-full" style={{ width: `${(ci.m / max) * 100}%`, background: CHANNEL_META[a.channel]?.color || 'var(--color-faint)', opacity: 0.85 }} />
                 <div className="absolute top-1/2 h-px bg-fg" style={{ left: `${(ci.lo / max) * 100}%`, width: `${((ci.hi - ci.lo) / max) * 100}%` }} />
                 <div className="absolute top-0 h-3 w-px bg-fg" style={{ left: `${(ci.lo / max) * 100}%` }} />
                 <div className="absolute top-0 h-3 w-px bg-fg" style={{ left: `${(ci.hi / max) * 100}%` }} />

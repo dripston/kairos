@@ -40,7 +40,7 @@ export const EVENT_META = {
 }
 
 export const TONE_TEXT = { neutral: 'text-muted', ok: 'text-ok', warn: 'text-warn', bad: 'text-bad', info: 'text-info', violet: 'text-violet' }
-export const TONE_BG = { neutral: 'bg-white/[0.06]', ok: 'bg-ok/10', warn: 'bg-warn/10', bad: 'bg-bad/10', info: 'bg-info/10', violet: 'bg-violet/10' }
+export const TONE_BG = { neutral: 'bg-fg/[0.06]', ok: 'bg-ok/10', warn: 'bg-warn/10', bad: 'bg-bad/10', info: 'bg-info/10', violet: 'bg-violet/10' }
 
 // events that belong in the guardrail & audit log
 export const AUDIT_TYPES = new Set([

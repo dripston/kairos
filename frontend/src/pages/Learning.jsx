@@ -6,7 +6,7 @@ import { CAMPAIGN_DAYS, CHANNEL_META, ESTIMATES, LEARNING, SERIES, UNCERTAINTY, 
 import { ArmScores, ChannelSwitches, DailySegmentTable, ProofCard } from '../components/LiveLearning'
 import { Button, Card, CardHead, ChannelTag, Chip, KpiStrip, PageHeader, Segmented, Td, Th, cx, inr, pct } from '../components/ui'
 
-const TT = { contentStyle: { background: '#1c1c1c', border: '1px solid #333', borderRadius: 8, fontSize: 12 }, cursor: { stroke: '#333' } }
+const TT = { contentStyle: { background: 'var(--color-raised)', border: '1px solid var(--color-line-strong)', borderRadius: 8, fontSize: 12, color: 'var(--color-fg)' }, cursor: { stroke: 'var(--color-line-strong)' } }
 const CH = ['whatsapp', 'sms', 'ivr']
 const THRESHOLD = 0.1
 
@@ -76,13 +76,13 @@ export default function Learning() {
             <div className="h-[250px] px-3 pb-3">
               <ResponsiveContainer>
                 <LineChart data={cum} margin={{ top: 10, right: 20, bottom: 0, left: -10 }}>
-                  <CartesianGrid stroke="#222" vertical={false} />
-                  <XAxis dataKey="day" stroke="#6b6b6b" tickLine={false} axisLine={false} fontSize={12} />
-                  <YAxis stroke="#6b6b6b" tickLine={false} axisLine={false} fontSize={12} domain={['dataMin - 0.02', 'dataMax + 0.02']} tickFormatter={(v) => v.toFixed(2)} />
+                  <CartesianGrid stroke="var(--color-grid)" vertical={false} />
+                  <XAxis dataKey="day" stroke="var(--color-faint)" tickLine={false} axisLine={false} fontSize={12} />
+                  <YAxis stroke="var(--color-faint)" tickLine={false} axisLine={false} fontSize={12} domain={['dataMin - 0.02', 'dataMax + 0.02']} tickFormatter={(v) => v.toFixed(2)} />
                   <Tooltip {...TT} />
                   <Legend wrapperStyle={{ fontSize: 12 }} iconType="circle" iconSize={8} />
-                  <Line isAnimationActive={false} type="monotone" dataKey="Kairos" stroke="#22c55e" strokeWidth={2.5} dot={{ r: 3 }} />
-                  <Line isAnimationActive={false} type="monotone" dataKey="Fixed cadence" stroke="#6b6b6b" strokeWidth={2} strokeDasharray="5 4" dot={false} />
+                  <Line isAnimationActive={false} type="monotone" dataKey="Kairos" stroke="var(--color-ok)" strokeWidth={2.5} dot={{ r: 3 }} />
+                  <Line isAnimationActive={false} type="monotone" dataKey="Fixed cadence" stroke="var(--color-faint)" strokeWidth={2} strokeDasharray="5 4" dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -105,12 +105,12 @@ function SliceChart({ est, day, switches }) {
     <div className="h-[190px]">
       <ResponsiveContainer>
         <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -18 }}>
-          <CartesianGrid stroke="#222" vertical={false} />
-          <XAxis dataKey="day" stroke="#6b6b6b" tickLine={false} axisLine={false} fontSize={11} />
-          <YAxis stroke="#6b6b6b" tickLine={false} axisLine={false} fontSize={11} tickFormatter={(v) => v.toFixed(1)} />
+          <CartesianGrid stroke="var(--color-grid)" vertical={false} />
+          <XAxis dataKey="day" stroke="var(--color-faint)" tickLine={false} axisLine={false} fontSize={11} />
+          <YAxis stroke="var(--color-faint)" tickLine={false} axisLine={false} fontSize={11} tickFormatter={(v) => v.toFixed(1)} />
           <Tooltip {...TT} />
-          {switches.filter((s) => s.day <= day).map((s) => <ReferenceLine key={s.day} x={`D${s.day}`} stroke="#ef4444" strokeDasharray="4 4" />)}
-          <ReferenceLine y={THRESHOLD} stroke="#444" strokeDasharray="2 4" />
+          {switches.filter((s) => s.day <= day).map((s) => <ReferenceLine key={s.day} x={`D${s.day}`} stroke="var(--color-bad)" strokeDasharray="4 4" />)}
+          <ReferenceLine y={THRESHOLD} stroke="var(--color-faint)" strokeDasharray="2 4" />
           {CH.map((c) => <Line isAnimationActive={false} key={c} type="monotone" dataKey={CHANNEL_META[c].label} stroke={CHANNEL_META[c].color} strokeWidth={c === 'ivr' ? 1.5 : 2.2} dot={{ r: 2 }} />)}
         </LineChart>
       </ResponsiveContainer>
@@ -170,9 +170,9 @@ function ByChannel() {
         <div className="h-[280px] px-3 pb-3">
           <ResponsiveContainer>
             <LineChart data={data} margin={{ top: 10, right: 20, bottom: 0, left: -10 }}>
-              <CartesianGrid stroke="#222" vertical={false} />
-              <XAxis dataKey="day" stroke="#6b6b6b" tickLine={false} axisLine={false} fontSize={12} />
-              <YAxis stroke="#6b6b6b" tickLine={false} axisLine={false} fontSize={12} unit="%" />
+              <CartesianGrid stroke="var(--color-grid)" vertical={false} />
+              <XAxis dataKey="day" stroke="var(--color-faint)" tickLine={false} axisLine={false} fontSize={12} />
+              <YAxis stroke="var(--color-faint)" tickLine={false} axisLine={false} fontSize={12} unit="%" />
               <Tooltip {...TT} />
               <Legend wrapperStyle={{ fontSize: 12 }} iconType="circle" iconSize={8} />
               {['whatsapp', 'sms', 'ivr', 'email'].map((c) => <Line isAnimationActive={false} key={c} type="monotone" dataKey={CHANNEL_META[c].label} stroke={CHANNEL_META[c].color} strokeWidth={2} dot={{ r: 2.5 }} />)}

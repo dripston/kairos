@@ -1,12 +1,13 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   Gauge, Megaphone, Database, TrendingUp, Layers, Search, FlaskConical, ChevronRight, RotateCcw,
-  CircleCheck, TriangleAlert, Info, CircleX, X, ShieldCheck, Pause, Play, Sun, AudioLines, MessagesSquare, ExternalLink, Route,
+  CircleCheck, TriangleAlert, Info, CircleX, X, ShieldCheck, Pause, Play, Sun, Moon, AudioLines, MessagesSquare, ExternalLink, Route,
 } from 'lucide-react'
 import { useKairos, useDerived, fmtClock } from '../lib/store'
 import { CAMPAIGN_DAYS, CHANNEL_META, HERO_ID } from '../lib/mock'
 import { Button, Chip, Dot, cx, inr, Segmented } from './ui'
 import { ApiStatusPill } from './live'
+import { toggleTheme, useTheme } from '../lib/theme'
 import { useApi, useApiStatus, useHealthPoll } from '../api/hooks'
 import { CM03_CONSOLE_URL, getCapBreaches, getRoutes } from '../api/kairos'
 import { ROLE_ACTOR, ROLE_LABEL } from '../api/config'
@@ -90,7 +91,7 @@ function Sidebar() {
             <div className="truncate text-[13px] font-semibold">{ROLE_ACTOR[state.role]}</div>
             <div className="text-[11.5px] text-muted">{state.role === 'operator' ? 'Campaign operator' : ROLE_LABEL[state.role]} · X-Kairos-Role</div>
           </div>
-          <Sun size={15} className="text-muted" />
+          <ThemeButton />
         </div>
       </div>
     </aside>
@@ -127,7 +128,19 @@ function StatusBar() {
         <ShieldCheck size={12} /> Cap breaches: {nBreach}
       </span>
       <Button size="sm" variant="ghost" icon={FlaskConical} onClick={() => dispatch({ type: 'TOGGLE_SIM' })}>Simulation <span className="text-faint">⇧S</span></Button>
+      <ThemeButton />
     </div>
+  )
+}
+
+function ThemeButton() {
+  const theme = useTheme()
+  const next = theme === 'light' ? 'dark' : 'light'
+  return (
+    <button type="button" onClick={toggleTheme} title={`Switch to ${next} mode`} aria-label={`Switch to ${next} mode`}
+      className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-raised hover:text-fg">
+      {theme === 'light' ? <Moon size={15} /> : <Sun size={15} />}
+    </button>
   )
 }
 

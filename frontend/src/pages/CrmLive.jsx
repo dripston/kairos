@@ -186,7 +186,7 @@ export default function CrmLive({ b, res }) {
               <tbody>
                 {(b.loans || []).flatMap((l) => (l.obligations || []).map((o, i) => (
                   <tr key={o.obligation_id}>
-                    <Td><span className="font-mono">{i === 0 ? l.loan_id : ''}</span><div className="font-mono text-[11.5px] text-muted">#{o.installment_no} · {o.obligation_id}</div></Td>
+                    <Td className="whitespace-nowrap"><span className="font-mono">{i === 0 ? l.loan_id : ''}</span><div className="font-mono text-[11.5px] text-muted">EMI #{o.installment_no}</div></Td>
                     <Td className="font-mono text-[12px]">{o.due_date}</Td>
                     <Td className="tabular">{paiseInr(o.amount_due_paise, 0)}</Td>
                     <Td className="tabular">{paiseInr(o.amount_paid_paise, 0)}</Td>
