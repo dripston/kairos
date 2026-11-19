@@ -10,6 +10,8 @@ Everything is SIMULATED. Run from backend/:
     python3 scripts/run_k09_replay.py --no-context           # K09 without the borrower-context layer
     python3 scripts/run_k09_replay.py --dataset data/synthetic_50k.csv   # a K03 dataset file as-is
     python3 scripts/run_k09_replay.py --check-determinism    # run everything twice and compare
+    python3 scripts/run_k09_replay.py --journeys churn       # Kairos arm = K09 + K27 auto-churn (cohort/journey/layer)
+    python3 scripts/run_k09_replay.py --journeys both        # K09 alone AND K09 + K27, same seed/budget/caps
 
 Baselines: cn10 = CreditNirvana's own "Personal Loan 10-Day Post-Due Digital Collections Strategy"
 (HDFC project), a stand-in until the official fixed-cadence policy file (K02) arrives; k15 = the K15
@@ -51,12 +53,16 @@ def main() -> int:
     p.add_argument("--no-context", action="store_true", help="K09 without the borrower-context layer")
     p.add_argument("--dataset", default=None, help="K03-format CSV to use instead of generating one")
     p.add_argument("--check-determinism", action="store_true")
+    p.add_argument("--journeys", choices=("none", "churn", "both"), default="none",
+                   help="churn: the Kairos arm runs K27 cohort/risk/journey/layer reassignment on top of K09 "
+                        "(CN10 baseline unchanged); both: K09 alone and K09 + K27 side by side")
     p.add_argument("--budget-per-case-paise", type=int, default=None,
                    help="fixed paise per loan for every arm (default: match the baseline's spend)")
     a = p.parse_args()
     drift = None if a.no_drift else a.drift_day - 1
     baselines = ("cn10", "k15") if a.baseline == "both" else (a.baseline,)
-    kwargs = dict(baselines=baselines, context=not a.no_context, explore=a.explore, dataset=a.dataset)
+    kwargs = dict(baselines=baselines, context=not a.no_context, explore=a.explore, dataset=a.dataset,
+                  journeys=a.journeys)
 
     t0 = time.perf_counter()
     r = run_comparison(a.borrowers, a.days, a.seed, drift, a.budget_per_case_paise, **kwargs)
@@ -67,7 +73,8 @@ def main() -> int:
           f"budget ₹{m['budget_pool_paise'] / 100:,.2f} ({m['budget_basis']}), caps {m['caps']}")
     print(f"Dataset: {m['dataset']}")
     print(f"Simulator: {k['simulator']}\n")
-    arms = [(b, r["baselines"][b]) for b in baselines] + [("K09", k)]
+    names = {"kairos": "K09", "kairos_churn": "K09+K27"}
+    arms = [(b, r["baselines"][b]) for b in baselines] + [(names[a], x) for a, x in r["learning_arms"].items()]
     rows = [
         ("Attempted (unique)", lambda x: x["funnel_unique_borrowers"]["attempted"]),
         ("Reached (unique)", lambda x: x["funnel_unique_borrowers"]["reached"]),
@@ -83,10 +90,21 @@ def main() -> int:
         ("K15 safety violations", lambda x: sum(x["k15_safety_violations"].values())),
         ("Decisions / second", lambda x: x["decisions_per_second"]),
     ]
-    print(f"{'':28}" + "".join(f"{name:>12}" for name, _ in arms) + f"{'K09 vs ' + baselines[0]:>14}")
+    learn = [n for n, _ in arms[len(baselines):]]
+    print(f"{'':28}" + "".join(f"{name:>12}" for name, _ in arms)
+          + "".join(f"{n + ' vs ' + baselines[0]:>18}" for n in learn))
     for title, get in rows:
         vals = [get(x) for _, x in arms]
-        print(f"{title:28}" + "".join(f"{fmt(v):>12}" for v in vals) + f"{pct(vals[-1] or 0, vals[0] or 0):>14}")
+        print(f"{title:28}" + "".join(f"{fmt(v):>12}" for v in vals)
+              + "".join(f"{pct(v or 0, vals[0] or 0):>18}" for v in vals[len(baselines):]))
+    for name, x in arms:
+        if "k27" in x:
+            kk = x["k27"]
+            print(f"\nK27 ({name}) cohorts at start {kk['initial_cohorts']}")
+            print(f"K27 ({name}) cohorts at end   {kk['final_cohorts']}")
+            print(f"K27 ({name}) lifecycle {kk['final_lifecycle']}  layers {kk['final_layers']}  risk {kk['final_risk']}")
+            print(f"K27 ({name}) transitions {kk['transitions_by_engine']}  journey waits {kk['journey_waits']}")
+            print(f"K27 ({name}) top rules {kk['top_rules']}")
 
     for name, x in arms:
         print(f"\nSupervisor decisions {name:6}: {x['decisions']}   top WAIT/CANCEL rules: {x['wait_rules']}")
