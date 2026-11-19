@@ -11,6 +11,10 @@
     POST /cm03/demo/settle             mark a synthetic D7 feed row SETTLED, then recheck
     GET  /cm03/demo/inbox?phone=       the SIMULATED phone's inbox (OTP messages). Off unless
                                        KAIROS_CM03_DEMO_INBOX=1, and only for synthetic +910 numbers.
+    POST /cm03/conversations/{id}/takeover        {"agent"}: a person owns the chat; the bot goes silent
+    POST /cm03/conversations/{id}/agent-message   {"agent","text"}: the owner replies (dry-run adapter)
+    POST /cm03/conversations/{id}/claim-decision  {"agent","decision":"approve"|"reject"}: never marks paid
+    POST /cm03/conversations/{id}/hand-back       {"agent"}: the bot owns it again
 
 If WA_APP_SECRET is set, POSTs must carry a valid X-Hub-Signature-256 (HMAC-SHA256 of the raw body).
 """
@@ -30,6 +34,7 @@ from starlette.concurrency import run_in_threadpool
 
 from . import PROVENANCE
 from .engine import ConversationEngine
+from .takeover import Takeover, TakeoverError
 from .world import DEMO_BORROWERS, DEMO_FEED, seed_demo, settle_feed
 
 SYNTHETIC_NUMBER = re.compile(r"^\+910\d{9}$")
@@ -152,5 +157,31 @@ def build_router(engine: ConversationEngine) -> APIRouter:
         if not SYNTHETIC_NUMBER.match(phone):
             raise HTTPException(403, "only synthetic +910 numbers have a simulated inbox")
         return {"provenance": PROVENANCE, "messages": engine.adapter.inbox(phone)}
+
+    # ---- human takeover (takeover.py): owner flag + bot-silence guard + agent messages, all audited ----
+    takeover = Takeover(engine)
+
+    def _human(fn, *a, **k):
+        try:
+            return {"provenance": PROVENANCE, **fn(*a, **k)}
+        except TakeoverError as e:
+            raise HTTPException(e.http, e.as_dict())
+
+    @r.post("/conversations/{conversation_id}/takeover")
+    def take_over(conversation_id: str, body: dict):
+        return _human(takeover.take_over, conversation_id, str(body.get("agent") or ""), str(body.get("reason") or "taken over"))
+
+    @r.post("/conversations/{conversation_id}/agent-message")
+    def agent_message(conversation_id: str, body: dict):
+        return _human(takeover.agent_message, conversation_id, str(body.get("agent") or ""), str(body.get("text") or ""))
+
+    @r.post("/conversations/{conversation_id}/claim-decision")
+    def claim_decision(conversation_id: str, body: dict):
+        return _human(takeover.decide_claim, conversation_id, str(body.get("agent") or ""), str(body.get("decision") or ""),
+                      str(body.get("reason") or ""))
+
+    @r.post("/conversations/{conversation_id}/hand-back")
+    def hand_back(conversation_id: str, body: dict):
+        return _human(takeover.hand_back, conversation_id, str(body.get("agent") or ""))
 
     return r
