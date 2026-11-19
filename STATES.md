@@ -72,8 +72,8 @@ happens next.
 
 | Machine | Version | States | Transitions | Declared from | Conformance |
 |---|---|---|---|---|---|
-| [`k06.touch`](#k06touch-v1) | 1 | 9 | 48 | this branch | tests/fsm/test_conformance_touch.py |
-| [`k06.touch+hitl`](#k06touchhitl-v1) | 1 | 10 | 59 | this branch | tests/fsm/test_conformance_touch.py |
+| [`k06.touch`](#k06touch-v1) | 1 | 9 | 52 | this branch | tests/fsm/test_conformance_touch.py |
+| [`k06.touch+hitl`](#k06touchhitl-v1) | 1 | 10 | 67 | this branch | tests/fsm/test_conformance_touch.py |
 | [`k01.gate`](#k01gate-v110) | 1.1.0 | 24 | 41 | this branch | tests/fsm/test_conformance_gate.py |
 | [`k06.supervisor.plan`](#k06supervisorplan-v1) | 1 | 7 | 15 | this branch | tests/fsm/test_conformance_supervisor.py |
 | [`k06.supervisor.dispatch`](#k06supervisordispatch-v1) | 1 | 5 | 6 | this branch | tests/fsm/test_conformance_supervisor.py |
@@ -140,7 +140,7 @@ stateDiagram-v2
     CANCELED --> [*]
 ```
 
-States: `PROPOSED`, `REFUSED`, `RESERVED`, `DISPATCHING`, `UNCERTAIN`, `SENT`, `DELIVERED`, `FAILED`, `CANCELED`. Initial: `PROPOSED`. Final: `CANCELED`, `DELIVERED`, `FAILED`, `REFUSED`. Fingerprint `e2d7eabc7c57`.
+States: `PROPOSED`, `REFUSED`, `RESERVED`, `DISPATCHING`, `UNCERTAIN`, `SENT`, `DELIVERED`, `FAILED`, `CANCELED`. Initial: `PROPOSED`. Final: `CANCELED`, `DELIVERED`, `FAILED`, `REFUSED`. Fingerprint `7a2ca7e33989`.
 
 Transitions (self-loops are events that are accepted and change nothing):
 
@@ -194,6 +194,10 @@ Transitions (self-loops are events that are accepted and change nothing):
 | CANCELED | PROVIDER_DELIVERED | — | CANCELED | — | final: provider callbacks change nothing |
 | CANCELED | PROVIDER_UNKNOWN | — | CANCELED | — | final: provider callbacks change nothing |
 | CANCELED | PROVIDER_REJECTED | — | CANCELED | — | final: provider callbacks change nothing |
+| RESERVED | PROVIDER_ACCEPTED | — | RESERVED | audit PROVIDER_STATUS_ORPHAN; touch unchanged | FSM-F1: not dispatched yet -> orphan receipt; the send-time re-check and dispatch still run |
+| RESERVED | PROVIDER_DELIVERED | — | RESERVED | audit PROVIDER_STATUS_ORPHAN; touch unchanged | FSM-F1: not dispatched yet -> orphan receipt; the send-time re-check and dispatch still run |
+| RESERVED | PROVIDER_UNKNOWN | — | RESERVED | audit PROVIDER_STATUS_ORPHAN; touch unchanged | FSM-F1: not dispatched yet -> orphan receipt; the send-time re-check and dispatch still run |
+| RESERVED | PROVIDER_REJECTED | — | RESERVED | audit PROVIDER_STATUS_ORPHAN; touch unchanged | FSM-F1: not dispatched yet -> orphan receipt; the send-time re-check and dispatch still run |
 
 **Enforced by:** `kairos_backend/ledger.py: Ledger.reserve / begin_dispatch / record_provider_status / _cancel_queued`; `kairos_backend/executor.py: Executor.dispatch / resolve_uncertain`; `kairos_backend/fsm_strict.py: KAIROS_FSM_STRICT=1 SQLite trigger rejects undeclared status changes`
 
@@ -229,7 +233,7 @@ stateDiagram-v2
     CANCELED --> [*]
 ```
 
-States: `PROPOSED`, `REFUSED`, `RESERVED`, `PENDING_APPROVAL`, `DISPATCHING`, `UNCERTAIN`, `SENT`, `DELIVERED`, `FAILED`, `CANCELED`. Initial: `PROPOSED`. Final: `CANCELED`, `DELIVERED`, `FAILED`, `REFUSED`. Fingerprint `954e8ee1263c`.
+States: `PROPOSED`, `REFUSED`, `RESERVED`, `PENDING_APPROVAL`, `DISPATCHING`, `UNCERTAIN`, `SENT`, `DELIVERED`, `FAILED`, `CANCELED`. Initial: `PROPOSED`. Final: `CANCELED`, `DELIVERED`, `FAILED`, `REFUSED`. Fingerprint `426c1253bb6a`.
 
 Transitions (self-loops are events that are accepted and change nothing):
 
@@ -294,6 +298,14 @@ Transitions (self-loops are events that are accepted and change nothing):
 | CANCELED | PROVIDER_DELIVERED | — | CANCELED | — | final: provider callbacks change nothing |
 | CANCELED | PROVIDER_UNKNOWN | — | CANCELED | — | final: provider callbacks change nothing |
 | CANCELED | PROVIDER_REJECTED | — | CANCELED | — | final: provider callbacks change nothing |
+| RESERVED | PROVIDER_ACCEPTED | — | RESERVED | audit PROVIDER_STATUS_ORPHAN; touch unchanged | FSM-F1: not dispatched yet -> orphan receipt; the send-time re-check and dispatch still run |
+| RESERVED | PROVIDER_DELIVERED | — | RESERVED | audit PROVIDER_STATUS_ORPHAN; touch unchanged | FSM-F1: not dispatched yet -> orphan receipt; the send-time re-check and dispatch still run |
+| RESERVED | PROVIDER_UNKNOWN | — | RESERVED | audit PROVIDER_STATUS_ORPHAN; touch unchanged | FSM-F1: not dispatched yet -> orphan receipt; the send-time re-check and dispatch still run |
+| RESERVED | PROVIDER_REJECTED | — | RESERVED | audit PROVIDER_STATUS_ORPHAN; touch unchanged | FSM-F1: not dispatched yet -> orphan receipt; the send-time re-check and dispatch still run |
+| PENDING_APPROVAL | PROVIDER_ACCEPTED | — | PENDING_APPROVAL | audit PROVIDER_STATUS_ORPHAN; touch unchanged | FSM-F1: not dispatched yet -> orphan receipt; the send-time re-check and dispatch still run |
+| PENDING_APPROVAL | PROVIDER_DELIVERED | — | PENDING_APPROVAL | audit PROVIDER_STATUS_ORPHAN; touch unchanged | FSM-F1: not dispatched yet -> orphan receipt; the send-time re-check and dispatch still run |
+| PENDING_APPROVAL | PROVIDER_UNKNOWN | — | PENDING_APPROVAL | audit PROVIDER_STATUS_ORPHAN; touch unchanged | FSM-F1: not dispatched yet -> orphan receipt; the send-time re-check and dispatch still run |
+| PENDING_APPROVAL | PROVIDER_REJECTED | — | PENDING_APPROVAL | audit PROVIDER_STATUS_ORPHAN; touch unchanged | FSM-F1: not dispatched yet -> orphan receipt; the send-time re-check and dispatch still run |
 
 **Enforced by:** `kairos_backend/ledger.py: Ledger.reserve / begin_dispatch / record_provider_status / _cancel_queued`; `kairos_backend/executor.py: Executor.dispatch / resolve_uncertain`; `kairos_backend/hitl.py (k06/hitl-control): HITL._on_reserve / approve / reject / expire_due / cancel_scheduled`; `kairos_backend/fsm_strict.py: KAIROS_FSM_STRICT=1 SQLite trigger rejects undeclared status changes`
 

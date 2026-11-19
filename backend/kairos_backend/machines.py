@@ -123,6 +123,10 @@ def touch_machine(hitl: bool = False) -> Machine:
                  "E04 never downgrade: a late / lower status is ignored")
     tr += _loops(["DELIVERED", "FAILED", "CANCELED"], TOUCH_PROVIDER_EVENTS,
                  "final: provider callbacks change nothing")
+    # FSM-F1 (fixed): a provider word for a touch that was never dispatched is an orphan / early receipt.
+    tr += _loops(queued, TOUCH_PROVIDER_EVENTS,
+                 "FSM-F1: not dispatched yet -> orphan receipt; the send-time re-check and dispatch still run",
+                 action="audit PROVIDER_STATUS_ORPHAN; touch unchanged")
     states = ["PROPOSED", "REFUSED"] + rows
     terminal = ["REFUSED", "DELIVERED", "FAILED", "CANCELED"]
     name = "k06.touch+hitl" if hitl else "k06.touch"

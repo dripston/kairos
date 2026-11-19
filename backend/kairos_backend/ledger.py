@@ -39,7 +39,7 @@ from .pii import scrub
 from .policy import Policy
 
 __all__ = ["Ledger", "Instruction", "ReserveResult", "PaymentError", "stable_instruction_id", "MAX_PAISE", "check_paise",
-           "CONFLICT_INSTRUCTION_ID"]
+           "CONFLICT_INSTRUCTION_ID", "PROVIDER_STATUSES"]
 
 CONFLICT_INSTRUCTION_ID = "CONFLICT_INSTRUCTION_ID"  # instruction id reused for a different touch (RT-F07)
 
@@ -51,6 +51,9 @@ LIVE = ("RESERVED", "PENDING_APPROVAL", "DISPATCHING", "UNCERTAIN", "SENT", "DEL
 QUEUED = ("RESERVED", "PENDING_APPROVAL")
 # provider status ranks: an older/lower status never overwrites a newer one (E04)
 RANK = {"RESERVED": 0, "DISPATCHING": 1, "UNCERTAIN": 2, "SENT": 3, "DELIVERED": 4}
+# The provider vocabulary record_provider_status accepts (FSM-F1). Our own internal statuses
+# (RESERVED, DISPATCHING, CANCELED, PENDING_APPROVAL) are never provider words: anything else -> ValueError (422).
+PROVIDER_STATUSES = ("ACCEPTED", "SENT", "DELIVERED", "READ", "UNKNOWN", "UNCERTAIN", "FAILED", "REJECTED")
 # Ceiling for any single money value (budget per case, cost estimate, actual charge): 10^12 paise = Rs.1,000 crore.
 # Far above any real figure, far below SQLite's INTEGER limit (2^63 - 1), so sums never overflow (RT-F01).
 MAX_PAISE = 10 ** 12
@@ -682,14 +685,27 @@ class Ledger:
                                reason: Optional[str] = None) -> str:
         """Provider callbacks. Never downgrade (a late SENT after DELIVERED is ignored — E04).
         FAILED/REJECTED releases the reservation; UNKNOWN keeps it (conservative). The first time a
-        touch is confirmed sent, a K03 'touch_sent' event is written against its EMI."""
-        status = status.upper()
+        touch is confirmed sent, a K03 'touch_sent' event is written against its EMI.
+
+        FSM-F1: a provider status only applies to a touch the Executor already handed over
+        (DISPATCHING or later). For a touch that is still queued (RESERVED / PENDING_APPROVAL) the
+        callback is an orphan / early receipt: it is audited (PROVIDER_STATUS_ORPHAN) and the touch is
+        NOT changed, so the send-time re-check and the real dispatch still happen. Only provider words
+        (PROVIDER_STATUSES) are accepted; RESERVED / DISPATCHING / anything else raise ValueError (422)."""
+        status = str(status or "").strip().upper()
+        if status not in PROVIDER_STATUSES:
+            raise ValueError(f"unknown provider status {status!r}: one of {', '.join(PROVIDER_STATUSES)}")
         with self.tx() as c:
             t = c.execute("SELECT * FROM touches WHERE instruction_id=?", (instruction_id,)).fetchone()
             if t is None:
                 raise KeyError(instruction_id)
             cur = t["status"]
             if cur in ("CANCELED", "FAILED"):
+                return cur
+            if cur in QUEUED:  # never dispatched: an orphan / early receipt, recorded but never applied
+                self._audit(c, "provider", "PROVIDER_STATUS_ORPHAN", t["borrower_id"], instruction_id,
+                            reason=status, previous=cur, now=cur, provider_ref=provider_ref,
+                            note="touch not dispatched yet: status recorded, touch unchanged")
                 return cur
             if status in ("FAILED", "REJECTED"):
                 if cur in ("SENT", "DELIVERED"):
@@ -701,8 +717,6 @@ class Ledger:
             else:
                 # READ is reachability only (never a reply, K01 §7) — it ranks with DELIVERED
                 target = {"ACCEPTED": "SENT", "UNKNOWN": "UNCERTAIN", "READ": "DELIVERED"}.get(status, status)
-                if target not in RANK:
-                    raise ValueError(f"unknown provider status {status}")
                 new = target if RANK[target] > RANK.get(cur, -1) else cur
                 c.execute("UPDATE touches SET status=?, provider_ref=COALESCE(?, provider_ref), updated_at=?"
                           " WHERE instruction_id=?", (new, provider_ref, self._iso(self.policy.now()), instruction_id))

@@ -31,7 +31,7 @@ from spine.ledger import record_event
 
 from ..contracts import SYNTHETIC_COSTS, CrmSink, RecordingSink, crm_envelope
 from ..exceptions import ExceptionEvent
-from ..ledger import Instruction, Ledger
+from ..ledger import QUEUED, Instruction, Ledger
 from .dispositions import (DISPOSITIONS, UNCLEAR, Disposition, parse_disposition, report_level, scrub_text)
 from .registry import agent_use_case, load_registry, load_thresholds, max_ptp_days, normalize_language
 from .store import ensure_schema
@@ -295,7 +295,11 @@ class VoiceIngester:
         effects: dict[str, Any] = {}
         # 1. provider delivery (reach) — never a reply
         if touch is not None and p["connected"] is True and touch["status"] not in ("CANCELED", "FAILED"):
+            # Only a touch the Executor dispatched moves. For a touch still queued (RESERVED /
+            # PENDING_APPROVAL) the ledger records an orphan receipt and leaves it unchanged (FSM-F1).
             effects["touch_status"] = lg.record_provider_status(touch["instruction_id"], "DELIVERED")
+            if touch["status"] in QUEUED:
+                effects["touch_not_dispatched"] = True
         if self.finalizer is not None and touch is not None and p["connected"] is not None:
             self.finalizer.record_reach(touch["instruction_id"], bool(p["connected"]), at)
         if p["duration_seconds"] is not None and p["connected"] is not False:

@@ -47,7 +47,7 @@ from typing import Callable, Mapping, Optional, Union
 from spine.ledger import record_event
 
 from .executor import ProviderResult
-from .ledger import RANK, Ledger
+from .ledger import QUEUED, RANK, Ledger
 
 CHANNEL = "email"
 KINDS = ("delivered", "soft_bounce", "hard_bounce", "unsubscribe")
@@ -284,9 +284,10 @@ class EmailEvents:
 
     # -- helpers (run inside the caller's transaction) --
     def _upgrade(self, c, t, target: str) -> str:
-        """Same rule as Ledger.record_provider_status: never downgrade; CANCELED/FAILED stay."""
+        """Same rule as Ledger.record_provider_status: never downgrade; CANCELED/FAILED stay; a touch that
+        was never dispatched (RESERVED / PENDING_APPROVAL) is not moved by a provider event (FSM-F1)."""
         cur = t["status"]
-        if cur not in RANK or RANK[target] <= RANK[cur]:
+        if cur in QUEUED or cur not in RANK or RANK[target] <= RANK[cur]:
             return cur
         c.execute("UPDATE touches SET status=?, updated_at=? WHERE instruction_id=?",
                   (target, self.ledger._iso(self.ledger.policy.now()), t["instruction_id"]))
