@@ -147,3 +147,47 @@ colour per subsystem.
 | "Pause outbound" (if shown) | global or per-borrower pause only | never "pause campaign" in narration |
 
 SMS and WhatsApp sends in the demo are dry-run; nothing in either film is sent to a real person.
+
+---
+
+## Rev 3: as built (20 Nov, early morning)
+
+These changes came out of building it against the real pages and from the coordinator's review of the previews.
+
+**Both films**
+- **Focus mode.** When a beat is about one component, that component stays crisp and lifted, and the rest of the page blurs (12 px) and fades 72% toward cream.
+  - Overlays sit on that calm space.
+  - `render --qa` walks each film at 10 fps and fails on any overlay that touches a focused subject or sits on unfocused live UI.
+- **Motion.**
+  - Every hold breathes (±1% scale, 5–10 px drift), so no two consecutive seconds are identical (`qa_frames`).
+  - The cursor appears only around real operator clicks and hides when idle.
+  - In the inbound journey the borrower's messages simply arrive; only the operator has a cursor.
+- **Lockups** start at the hard stop. Audio is silent from the stop, and no picture frame is empty.
+
+**Product film**
+- **Hook:** a unit chart of the real seed-42 counts. 1,262 dots appear, then 23 light up in teal, under "1,262 messages." / "23 replies."
+- **Vikram's beats are taken from the frames that show each event.** Step indices drift between runs, so the film follows what is on screen:
+  - learner picks SMS 9:30
+  - Aladdin passes every rule
+  - no reply → the learner's SMS estimate drops from 8.0 to 4.6 in 100
+  - Day 3: "Contact: WhatsApp at 09:30" (overlay "SMS → WhatsApp.")
+  - Hindi promise (overlay "Promise noted. Kairos goes quiet.")
+  - paid ₹7,409, ₹0.65 spent
+- **Aarav:** approve the held voice-bot call → audit row "approved" → the operator tries **SMS at 20:00** → Aladdin blocks it: *outside the allowed contact hours, locked by guardrails*. (WhatsApp at 20:00 would have been blocked for CONSENT first.)
+- **Breath beat:** "Now the borrower writes first." over the inbound page arriving blurred.
+- **Inbound:** EMI question → code → verified → pay link; edited screenshot caught; hardship → **Take over** → suggested reply sent by the person; STOP on every channel. The injection beat is left out for clarity.
+- **Results:** the STOP / "Rule breaches 0" card from a finished full-system-trace run, then the proof card.
+  - The /demo/live Rules page rendered all-zero counters after that run, so it is not used.
+  - The full-trace run has no fixed-schedule ratio tiles, so no 9.9× / 15.9× can appear.
+- **Console tour:** live activity in plain words ("Kairos now prefers SMS over WhatsApp … after WhatsApp replies dropped"), then "Needs you".
+
+**Technical film**
+- **Diagram framings** are fixed per beat so that every visible node is whole. K03 opens as the hero at 1.45×.
+- **Terminal:** each command types in ≤ 0.5 s. Then the real result line is lifted into a dark mono callout (50 px) while the terminal blurs back:
+  - Deterministic replay: IDENTICAL
+  - 49 attacks: 49 PASS, 0 FAIL
+  - 50,000 atomic decisions in 11.1 s, cap breaches 0
+  - 3030 passed
+  - OPE on the CN10 row: from logs 18.2, truth 18.4 (SIMULATED)
+- **"Built on research":** the 8 verified citations plus Angelopoulos et al. (Learn then Test) and Dudík, Langford & Li (ICML 2011). Both are VERIFIED in `backend/README.md` → "Research lineage" on `research/calibration-ope`.
+- **Overlays rewritten so they never echo the narration:** "The rules decide.", "Every receipt, once.", "Fails closed.", "Even overrides are checked."

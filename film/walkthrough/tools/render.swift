@@ -109,6 +109,11 @@ if let cp = opts["clicks"] {
     let arr = (js("return KAIROS.clicks()") as? [Double]) ?? []
     try! JSONSerialization.data(withJSONObject: arr).write(to: URL(fileURLWithPath: cp)); print("clicks \(arr.count) → \(cp)"); exit(0)
 }
+if let dp = opts["describe"] { // JSON lines: what is on screen every N seconds
+    let ev = Double(opts["every"] ?? "5")!; var t = 0.0; var lines: [String] = []
+    while t < duration { let j = (js("return JSON.stringify({t: \(t), layers: KAIROS.describe(\(t))})") as? String) ?? "{}"; lines.append(j); t += ev }
+    try! lines.joined(separator: "\n").write(toFile: dp, atomically: true, encoding: .utf8); print("describe \(lines.count) → \(dp)"); exit(0)
+}
 if opts["qa"] != nil { // walk the film at 10 fps without snapshots and report overlay collisions
     var t = 0.0; while t < duration { seek(t); t += 0.1 }
     let q = (js("return JSON.stringify(KAIROS.qa())") as? String) ?? "[]"

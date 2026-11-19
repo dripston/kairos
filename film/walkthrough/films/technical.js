@@ -38,13 +38,13 @@
     id: "dia", kind: "diagram", t0: 5.0, t1: HARD_STOP, enter: { dur: 0.6 }, exit: { dur: 0 }, ww: WW, wh: WH,
     nodes: nodes, edges: edges,
     away: cuts.map(function (c) { return [c[0] - 0.1, c[1] - 0.05]; }).concat([[101.5, 105.6]]),
-    cam: [
-      { t: 0, nodes: ["rec"], z: 1.3 },
-      { t: 17.4, nodes: ["churn", "learn"], z: 1.25, dur: 1.1 },
-      { t: 29.4, nodes: ["learn", "ald"], z: 1.25, dur: 1.1 },
-      { t: 41.4, nodes: ["exec", "chan", "hook"], z: 1.15, dur: 1.1 },
-      { t: 53.4, nodes: ["hook", "intent"], z: 1.2, dur: 1.1 },
-      { t: 65.4, nodes: ["people", "ald"], z: 1.2, dur: 1.1 },
+    cam: [ // framings chosen so every visible node is whole (no half-cut neighbours at the frame edge)
+      { t: 0, cx: 270, cy: 490, z: 1.45 },
+      { t: 17.4, cx: 750, cy: 490, z: 1.25, dur: 1.1 },
+      { t: 29.4, cx: 1230, cy: 490, z: 1.3, dur: 1.1 },
+      { t: 41.4, cx: 2200, cy: 680, z: 1.3, dur: 1.1 },
+      { t: 53.4, cx: 1470, cy: 680, z: 0.98, dur: 1.1 },
+      { t: 65.4, cx: 1710, cy: 310, z: 1.3, dur: 1.1 },
       { t: 77.4, full: true, z: 0.74, dur: 1.2 },
       { t: 105.5, full: true, z: 0.74, dur: 0.1 }
     ],
@@ -96,36 +96,38 @@
       focus: [{ t0: 58.4, t1: 64.8, rect: [349, 380, 658, 222] }] }),
     { kind: "callout", t0: 59.2, t1: 64.5, pos: "bl", text: "Fails closed." },
     // 7 · people: approve a held call; an override at 8 pm is blocked by Aladdin; both land in the audit log
-    cutWin(cuts[5], { cap: "aarav", url: OUT, frames: [{ at: 0, label: "held" }, { at: 71.25, label: "approved" }, { at: 73.0, label: "set2000" }, { at: 73.85, label: "blocked" }],
-      cam: [{ t: 0, full: true }, { t: 70.0, ev: "appr_me", z: 2.3, ay: 460 }, { t: 72.6, rect: [1040, 462, 375, 190], z: 2.2, ay: 470 },
+    cutWin(cuts[5], { cap: "aarav", url: OUT, frames: [{ at: 0, label: "held" }, { at: 71.25, label: "approved" }, { at: 72.6, label: "set2000" }, { at: 73.85, label: "blocked" }],
+      cam: [{ t: 0, full: true }, { t: 70.0, ev: "appr_me", z: 2.3, ay: 460 }, { t: 71.35, rect: [349, 659, 658, 67], z: 2.1, ay: 470 }, { t: 72.6, rect: [1040, 462, 375, 190], z: 2.2, ay: 470 },
             { t: 74.2, u: 678, v: 426, z: 2.1, ay: 430 }],
-      focus: [{ t0: 70.0, t1: 72.6, ev: "appr_me", pad: 6 }, { t0: 72.6, t1: 74.2, rect: [1040, 462, 375, 190] }, { t0: 74.2, t1: 76.8, rect: [349, 333, 658, 187] }],
+      focus: [{ t0: 70.0, t1: 71.35, ev: "appr_me", pad: 6 }, { t0: 71.35, t1: 72.6, rect: [349, 659, 658, 67] }, { t0: 72.6, t1: 74.2, rect: [1040, 462, 375, 190] }, { t0: 74.2, t1: 76.8, rect: [349, 333, 658, 187] }],
       cursor: [{ t: 70.4, ev: "approve_btn", move: 0.01 }, { t: 71.2, ev: "approve_btn", click: true, move: 0.5 }, { t: 73.8, ev: "apply_btn", click: true, move: 0.7 }], cursorHold: 0.4 }),
     { kind: "callout", t0: 74.9, t1: 76.7, pos: "bl", text: "Even overrides are checked." },
     // 8–9 · the loop closes; real runs in the terminal (recorded 20 Nov; badges say how much each is sped up)
     { kind: "term", t0: cuts[6][0], t1: cuts[6][1], title: "kairos/backend — zsh", prompt: "%", rows: 17, maxCols: 90,
       enter: { type: "fromRect", dia: "dia", node: "learn", dur: 0.75 }, exit: { type: "toRect", dia: "dia", node: "learn", dur: 0.7 },
       cam: [{ t: 0, full: true }, { t: 84.4, u: 800, v: 330, z: 1.14, ay: 470 }],
-      runs: [
-        { rec: "determinism", at: 83.95, cadence: 0.012, fit: 1.2, keep: "^Matched|Verified payment \\(unique\\)|K01 cap breaches|K15 safety|Deterministic replay", hi: "IDENTICAL", badge: "638 s run · shown 500× faster" },
-        { rec: "redteam", at: 88.0, cadence: 0.025, fit: 1.2, clear: true, keep: "PASS|FAIL|attacks:", hi: "49 PASS", badge: "3.7 s run" },
-        { rec: "bench", at: 91.8, cadence: 0.025, fit: 0.6, clear: true, hi: "atomic decisions|cap breaches: 0", badge: "ledger benchmark · 15 s run, 15× faster" },
-        { rec: "pytest", at: 94.6, cadence: 0.03, fit: 1.0, clear: true, hi: "passed", badge: "74 s run · shown 70× faster" },
-        { rec: "ope", at: 97.2, cadence: 0.022, fit: 0.8, clear: true, keep: "^OPE|^replies per 1,000 decisions|^Greedy K09|^CN10|\\* = ground", hi: "^CN10", badge: "SIMULATED · 20 s run, 25× faster", prompt: "kairos/backend (research) %" }
+      runs: [ // each command types in ≤ 0.5 s; the time goes to the result line
+        { rec: "determinism", at: 84.0, cadence: 0.0045, fit: 1.0, keep: "^Matched|Verified payment \\(unique\\)|K01 cap breaches|K15 safety|Deterministic replay", hi: "IDENTICAL", badge: "638 s run · shown 600× faster" },
+        { rec: "redteam", at: 88.0, cadence: 0.012, fit: 1.0, clear: true, keep: "PASS|FAIL|attacks:", hi: "49 PASS", badge: "3.7 s run · real output" },
+        { rec: "bench", at: 91.7, cadence: 0.012, fit: 0.5, clear: true, hi: "atomic decisions|cap breaches: 0", badge: "ledger benchmark · 15 s run, 30× faster" },
+        { rec: "pytest", at: 94.9, cadence: 0.06, fit: 0.8, clear: true, hi: "passed", badge: "74 s run · shown 90× faster" },
+        { rec: "ope", at: 97.7, cadence: 0.012, fit: 0.4, clear: true, keep: "^OPE|^replies per 1,000 decisions|^CN10.*18\\.4 +18\\.2", hi: "^CN10", badge: "SIMULATED · 20 s run, 50× faster", prompt: "kairos/backend (research) %" }
       ] },
-    { kind: "callout", t0: 85.9, t1: 87.9, pos: "br", text: "Same seed. Same hash." },
-    { kind: "callout", t0: 89.9, t1: 91.7, pos: "br", text: "On our own red-team suite." },
-    { kind: "callout", t0: 98.4, t1: 101.3, pos: "br", kicker: "Off-policy evaluation · SIMULATED", text: "From logs: 18.2. Truth: 18.4.", size: 60 },
+    { kind: "callout", t0: 85.6, t1: 87.9, dark: true, x: 160, y: 640, maxw: 1600, kicker: "Same seed, run twice", mono: true, html: "Deterministic replay: <em>IDENTICAL</em>" },
+    { kind: "callout", t0: 89.7, t1: 91.6, dark: true, x: 160, y: 640, maxw: 1600, kicker: "Our own red-team suite", mono: true, html: "49 attacks: <em>49 PASS</em>, 0 FAIL" },
+    { kind: "callout", t0: 92.6, t1: 94.8, dark: true, x: 160, y: 640, maxw: 1600, kicker: "Ledger benchmark", mono: true, html: "<em>50,000</em> atomic decisions in 11.1 s<br>cap breaches: <em>0</em>" },
+    { kind: "callout", t0: 96.1, t1: 97.6, dark: true, x: 160, y: 640, maxw: 1600, kicker: "Full test suite", mono: true, html: "<em>3030 passed</em> in 74 s" },
+    { kind: "callout", t0: 98.5, t1: 101.3, dark: true, x: 160, y: 640, maxw: 1600, kicker: "Off-policy evaluation · CN10 fixed schedule · SIMULATED", mono: true, html: "From logs: <em>18.2</em>. Truth: <em>18.4</em>." },
     // 10 · built on research
-    { kind: "callout", t0: 101.8, t1: 105.4, pos: "c", bare: true, text: "Built on research.", size: 76, stagger: 0.05,
-      subHtml: '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 70px;margin-top:30px;font-size:36px;line-height:1.3;color:#57534E;text-align:left">' +
+    { kind: "callout", t0: 101.8, t1: 105.4, pos: "c", bare: true, text: "Built on research.", size: 88, stagger: 0.05,
+      subHtml: '<div style="display:inline-grid;grid-template-columns:auto auto;gap:14px 80px;margin-top:34px;font-size:40px;line-height:1.3;color:#57534E;text-align:left">' +
         "<div>Thompson · <i>Biometrika</i> 1933</div><div>Chapelle &amp; Li · NeurIPS 2011</div>" +
         "<div>Li et al. · WWW 2010</div><div>Badanidiyuru, Kleinberg &amp; Slivkins · FOCS 2013</div>" +
         "<div>Clayton &amp; Kaldor · <i>Biometrics</i> 1987</div><div>Abe et al. · KDD 2010</div>" +
         "<div>Yancey &amp; Settles · KDD 2020</div><div>Alshiekh et al. · AAAI 2018</div>" +
         "<div>Angelopoulos et al. · Learn then Test</div><div>Dudík, Langford &amp; Li · ICML 2011</div></div>", sub: " " },
     // 12 · hard stop → lockup in silence
-    { kind: "logo", t0: HARD_STOP - 0.12, t1: END, y: 360, line: "Built to be trusted with every rupee.", lineSize: 60, stagger: 0.08,
+    { kind: "logo", t0: HARD_STOP - 0.1, t1: END, y: 360, line: "Built to be trusted with every rupee.", lineSize: 60, stagger: 0.08, enterDur: 0.22,
       credits: "Music: “Inspiring Technology” by The_Mountain (Pixabay licence) · Voice: Sarvam bulbul:v3 (Neha), AI-generated<br>Every screen and terminal run is the real software · All data SIMULATED", creditsY: 900, exit: { dur: 0 } }
   ];
 

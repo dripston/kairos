@@ -18,11 +18,12 @@ guard let vt = video.tracks(withMediaType: .video).first else { fail("no video t
 guard let at = audio.tracks(withMediaType: .audio).first else { fail("no audio track") }
 let dur = video.duration
 let cv = comp.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid)!
-try! cv.insertTimeRange(CMTimeRange(start: .zero, duration: dur), of: vt, at: .zero)
+do { try cv.insertTimeRange(vt.timeRange, of: vt, at: .zero) } catch { fail("video insert: \(error)") }
 cv.preferredTransform = vt.preferredTransform
 let ca = comp.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid)!
-let ad = CMTimeMinimum(dur, audio.duration)
-try! ca.insertTimeRange(CMTimeRange(start: .zero, duration: ad), of: at, at: .zero)
+let ar = at.timeRange
+let ad = CMTimeMinimum(dur, ar.duration)
+do { try ca.insertTimeRange(CMTimeRange(start: ar.start, duration: ad), of: at, at: .zero) } catch { fail("audio insert: \(error)") }
 
 func export(_ asset: AVAsset, _ preset: String, _ url: URL) {
     try? FileManager.default.removeItem(at: url)

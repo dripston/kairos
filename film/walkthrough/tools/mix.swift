@@ -210,6 +210,8 @@ let ob = AVAudioPCMBuffer(pcmFormat: fmt, frameCapacity: AVAudioFrameCount(N))!
 ob.frameLength = AVAudioFrameCount(N)
 for i in 0..<N { ob.floatChannelData![0][i] = L[i]; ob.floatChannelData![1][i] = R[i] }
 try? FileManager.default.removeItem(atPath: outPath)
-let of = try! AVAudioFile(forWriting: URL(fileURLWithPath: outPath), settings: [AVFormatIDKey: kAudioFormatLinearPCM, AVSampleRateKey: SR, AVNumberOfChannelsKey: 2, AVLinearPCMBitDepthKey: 24, AVLinearPCMIsFloatKey: false, AVLinearPCMIsBigEndianKey: false], commonFormat: .pcmFormatFloat32, interleaved: false)
-try! of.write(from: ob)
+do { // scoped so the file is closed (header written) before the process exits
+    let of = try AVAudioFile(forWriting: URL(fileURLWithPath: outPath), settings: [AVFormatIDKey: kAudioFormatLinearPCM, AVSampleRateKey: SR, AVNumberOfChannelsKey: 2, AVLinearPCMBitDepthKey: 24, AVLinearPCMIsFloatKey: false, AVLinearPCMIsBigEndianKey: false], commonFormat: .pcmFormatFloat32, interleaved: false)
+    try of.write(from: ob)
+} catch { fail("write: \(error)") }
 print("wrote \(outPath)")

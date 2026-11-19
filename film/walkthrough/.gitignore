@@ -14,3 +14,4 @@ tools/thumbs
 tools/qa_frames
 tools/beats
 tools/*.new
+tools/render_desc

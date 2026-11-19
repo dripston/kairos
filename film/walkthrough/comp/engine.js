@@ -412,6 +412,11 @@
   function updateTerm(L, t) {
     var out = termLines(L, t), rows = L.lines.length, start = Math.max(0, out.length - rows);
     if (L.badgeEl) { L.badgeEl.textContent = L.badgeNow || ""; L.badgeEl.style.display = L.badgeNow ? "" : "none"; }
+    // while a result line is lifted out (dark callout), the terminal behind it steps back: no text on text
+    var dim = 0;
+    layers.forEach(function (C) { if (C.kind === "callout" && C.dark && t >= C.t0 - 0.1 && t < C.t1) dim = Math.max(dim, Math.min(E.enter(clamp((t - C.t0 + 0.1) / 0.35, 0, 1)), E.enter(clamp((C.t1 - t) / 0.3, 0, 1)))); });
+    L.content.style.filter = dim > 0.01 ? "blur(" + (4 * dim).toFixed(2) + "px)" : "";
+    L.content.style.opacity = 1 - 0.6 * dim;
     for (var i = 0; i < rows; i++) {
       var o = out[start + i], e = L.lines[i];
       if (!o) { e.innerHTML = ""; e.className = "ln"; continue; }
@@ -446,10 +451,10 @@
   function buildText(L) {
     var root = el("div", "layer", stage); L.root = root; root.style.width = W + "px"; root.style.height = H + "px";
     if (L.kind === "callout" || L.kind === "headline") {
-      var c = el("div", "callout" + (L.bare || L.kind === "headline" ? " bare" : ""), root);
+      var c = el("div", "callout" + (L.bare || L.kind === "headline" ? " bare" : "") + (L.dark ? " dark" : ""), root);
       L.parts = [];
       if (L.kicker) L.parts.push(el("div", "k", c, esc(L.kicker)));
-      L.parts.push(el("div", "h" + (L.xl ? " xl" : ""), c, L.html || esc(L.text)));
+      L.parts.push(el("div", "h" + (L.xl ? " xl" : "") + (L.mono ? " mono" : ""), c, L.html || esc(L.text)));
       if (L.sub) L.parts.push(el("div", "s", c, L.subHtml || esc(L.sub)));
       if (L.kind === "headline") { L.parts[L.parts.length - 1 === 0 ? 0 : 0].style.fontSize = (L.size || 96) + "px"; if (L.sub) L.parts[L.parts.length - 1].style.fontSize = "46px"; }
       if (L.size && L.kind === "callout") L.parts[L.kicker ? 1 : 0].style.fontSize = L.size + "px";
@@ -520,6 +525,35 @@
     });
   }
 
+  // ---------------------------------------------------------------- dots (a unit chart of real counts)
+  function buildDots(L) {
+    var root = el("div", "layer", stage); root.style.width = W + "px"; root.style.height = H + "px"; L.root = root;
+    var cv = el("canvas", "", root); cv.width = W; cv.height = H; cv.style.cssText = "position:absolute;left:0;top:0;width:1920px;height:1080px";
+    L.cv = cv; L.ctx = cv.getContext("2d");
+    var n = L.n, cols = L.cols || 61, gap = L.gap || 30, rows = Math.ceil(n / cols);
+    L.x0 = (W - (cols - 1) * gap) / 2; L.y0 = (H - (rows - 1) * gap) / 2;
+    // deterministic choice of the highlighted items
+    var idx = [], used = {}, k = 0; while (idx.length < (L.hi || 0)) { var j = Math.floor(hash01(k++ * 7.31) * n); if (!used[j]) { used[j] = 1; idx.push(j); } }
+    L.hiSet = used; L.cols = cols;
+  }
+  function updateDots(L, t) {
+    var env = envelope(L, t), ctx = L.ctx, n = L.n;
+    ctx.clearRect(0, 0, W, H);
+    var appear = clamp((t - L.t0) / (L.fill || 1.2), 0, 1), lit = E.enter(clamp((t - (L.tHi || 1e9)) / 0.6, 0, 1));
+    var a = E.enter(env.p) * E.enter(env.q), drift = 1 + 0.015 * clamp((t - L.t0) / (L.t1 - L.t0), 0, 1);
+    ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(drift, drift); ctx.translate(-W / 2, -H / 2);
+    for (var i = 0; i < n; i++) {
+      var show = i / n <= appear; if (!show) break;
+      var x = L.x0 + (i % L.cols) * L.gap, y = L.y0 + Math.floor(i / L.cols) * L.gap, isHi = !!L.hiSet[i];
+      ctx.globalAlpha = a * (isHi ? 1 : lerp(0.9, 0.55, lit));
+      ctx.fillStyle = isHi && lit > 0 ? "rgba(15,118,110," + (0.25 + 0.75 * lit) + ")" : "#E2D9C8";
+      var r = isHi ? lerp(7, 9, lit) : 7;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore(); ctx.globalAlpha = 1;
+    return null;
+  }
+
   // ---------------------------------------------------------------- diagram
   // L.nodes: [{id, x, y, w, h, title, idt (e.g. "K06"), sub, color, t (appear)}]
   // L.edges: [{id, from, to, pts (optional [[x,y]…] waypoints), t, label}]
@@ -582,6 +616,7 @@
     return [cx + dx * s, cy + dy * s];
   }
   function diaCam(L, key) {
+    if (key && key.cx != null) return { cx: key.cx, cy: key.cy, z: key.z || 1 };
     if (!key || key.full) { var fz = key && key.z || 1; return { cx: (L.ww || W) / 2, cy: (L.wh || H) / 2 + (key && key.dy || 0), z: fz }; }
     var r = key.rect;
     if (key.node) { var n = L.byId[key.node]; r = [n.x, n.y, n.w, n.h]; }
@@ -695,6 +730,7 @@
         if (L.kind === "win" || L.kind === "term") buildWin(L);
         else if (L.kind === "video") vids.push(buildVideo(L));
         else if (L.kind === "diagram") buildDiagram(L);
+        else if (L.kind === "dots") buildDots(L);
         else buildText(L);
         L.root.style.zIndex = L.z;
         show(L.root, false);
@@ -713,6 +749,7 @@
       if (L.kind === "win" || L.kind === "term") r = updateWin(L, t);
       else if (L.kind === "video") r = updateVideo(L, t);
       else if (L.kind === "diagram") r = updateDiagram(L, t);
+      else if (L.kind === "dots") r = updateDots(L, t);
       else r = updateText(L, t);
       if (r) pending.push(r);
     });
@@ -732,10 +769,28 @@
     return Promise.all(pending).then(function () { return FRESH; });
   }
   window.seek = seek;
+  function describe(t) { // what is on screen at t (for QA.md): layers, focus subject, UI scale
+    var out = [];
+    layers.forEach(function (L) {
+      if (!(t >= L.t0 && t < L.t1)) return;
+      if (L.kind === "win" || L.kind === "term") {
+        var cam = camAt(L, L.g, t), sc = L.g.k * cam.z;
+        var fo = null; (L.focus || []).forEach(function (f) { if (t >= f.t0 && t < f.t1) fo = f; });
+        out.push({ kind: L.kind, src: L.cap || (L.runs ? "terminal" : ""), url: L.url || L.title || "", zoom: +cam.z.toFixed(2), uiScale: +sc.toFixed(2),
+                   text13px: Math.round(13 * sc), text16px: Math.round(16 * sc), focus: fo ? (fo.ev || (fo.rects ? fo.rects.length + " rect(s)" : "rect")) : null,
+                   frame: L.track ? trackAt(L.track, t) : null });
+      } else if (L.kind === "diagram") {
+        var dc = diaCamAt(L, t); out.push({ kind: "diagram", zoom: +dc.z.toFixed(2), title_px: Math.round(48 * dc.z), sub_px: Math.round(36 * dc.z) });
+      } else if (L.kind === "callout" || L.kind === "headline") {
+        out.push({ kind: L.kind, text: (L.text || L.html || "").replace(/<[^>]+>/g, ""), px: L.size || (L.kind === "headline" ? 96 : (L.mono ? 50 : 72)) });
+      } else out.push({ kind: L.kind, text: L.text || (L.words ? L.words.map(function (w) { return w.html; }).join(" / ") : "") });
+    });
+    return out;
+  }
   function clicks() { // every cursor click time that is actually on screen (for the click sound in the mix)
     var out = [];
     layers.forEach(function (L) { (L.cursor || []).forEach(function (k) { if (k.click && k.t >= L.t0 && k.t < L.t1) out.push(Math.round(k.t * 1000) / 1000); }); });
     return out.sort(function (a, b) { return a - b; });
   }
-  window.KAIROS = { load: load, caps: caps, E: E, clicks: clicks, qa: function () { return QA; }, duration: function () { return FILM.duration; } };
+  window.KAIROS = { load: load, caps: caps, E: E, clicks: clicks, describe: describe, qa: function () { return QA; }, duration: function () { return FILM.duration; } };
 })();

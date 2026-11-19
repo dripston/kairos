@@ -68,8 +68,8 @@ body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: anti
 .callout .h.xl { font-size: 92px; }
 .callout .h em { font-style: normal; color: var(--accent); }
 .callout .s { font-size: 30px; font-weight: 500; color: var(--ink2); margin-top: 12px; letter-spacing: -.005em; }
-.tag { position: absolute; height: 50px; padding: 0 22px; border-radius: 25px; background: #fff; border: 1px solid var(--line); display: flex; align-items: center; gap: 12px;
-  font-size: 28px; font-weight: 600; color: var(--ink2); letter-spacing: .005em; box-shadow: 0 10px 24px -14px rgba(70, 48, 16, .35); white-space: nowrap; }
+.tag { position: absolute; height: 56px; padding: 0 24px; border-radius: 28px; background: #fff; border: 1px solid var(--line); display: flex; align-items: center; gap: 12px;
+  font-size: 32px; font-weight: 600; color: var(--ink2); letter-spacing: .005em; box-shadow: 0 10px 24px -14px rgba(70, 48, 16, .35); white-space: nowrap; }
 .tag i { width: 12px; height: 12px; border-radius: 50%; background: #D97706; display: block; }
 
 /* ---------- full-bleed video ---------- */
@@ -85,10 +85,10 @@ body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: anti
 
 /* ---------- stat cards ---------- */
 .stats { position: absolute; display: flex; gap: 36px; }
-.stat { width: 520px; padding: 40px 44px 44px; border-radius: 30px; background: #fff; box-shadow: var(--shadow); }
-.stat .n { font-size: 120px; font-weight: 760; letter-spacing: -.045em; line-height: 1; color: var(--ink); }
+.stat { width: 580px; padding: 46px 50px 50px; border-radius: 30px; background: #fff; box-shadow: var(--shadow); }
+.stat .n { font-size: 150px; font-weight: 760; letter-spacing: -.045em; line-height: 1; color: var(--ink); }
 .stat .n em { font-style: normal; color: var(--accent); }
-.stat .l { font-size: 34px; font-weight: 600; margin-top: 18px; letter-spacing: -.01em; }
+.stat .l { font-size: 40px; font-weight: 600; margin-top: 18px; letter-spacing: -.01em; }
 .stat .f { font-size: 32px; color: var(--ink2); margin-top: 12px; line-height: 1.3; }
 .fine { position: absolute; font-size: 32px; color: var(--ink2); line-height: 1.35; }
 
@@ -105,3 +105,8 @@ body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: anti
 .edge.on path { stroke: var(--accent); }
 .edge text { font: 600 24px var(--sans); fill: var(--ink2); }
 .token { fill: var(--accent); }
+.callout .h.mono { font-family: var(--mono); font-weight: 600; letter-spacing: -.01em; font-size: 50px; }
+.callout.dark { background: rgba(34, 37, 40, .96); box-shadow: 0 30px 70px -24px rgba(0, 0, 0, .6), 0 0 0 1px rgba(94, 234, 212, .35); }
+.callout.dark .h { color: #F1F5F9; }
+.callout.dark .h em { color: #5EEAD4; font-style: normal; }
+.callout.dark .k { color: #5EEAD4; }
