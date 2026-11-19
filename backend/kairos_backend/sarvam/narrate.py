@@ -25,7 +25,8 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence
 from .. import pii
 from .client import DEEPSEEK, SarvamClient
 
-NARRATIVE_VERSION = "narrative-1"
+NARRATIVE_VERSION = "narrative-2"
+MAX_TOKENS = 1200
 AI_LABEL = "AI-generated ({model}) from the recorded facts; not a decision. Check the audit trail."
 DECISION_WORDS = ("recommend", "should", "must ", "advise", "waive", "approve", "write off", "write-off", "settle for",
                   "i suggest", "we suggest", "guarantee")
@@ -117,7 +118,9 @@ class Narrator:
                 {"role": "user", "content": json.dumps({"kind": kind, "facts": facts}, ensure_ascii=False,
                                                       sort_keys=True, default=str)}]
         try:
-            rep = self.client.chat(self.model, msgs, temperature=0.0, top_p=1.0, max_tokens=400, reasoning_effort="low")
+            # reasoning tokens count against max_tokens: 400 ran out inside reasoning_content on the live run
+            rep = self.client.chat(self.model, msgs, temperature=0.0, top_p=1.0, max_tokens=MAX_TOKENS,
+                                   reasoning_effort="low")
         except Exception as e:  # defensive
             self._count("model_errors", type(e).__name__)
             return Narrative(kind, deterministic, False, DETERMINISTIC_LABEL, f"MODEL_ERROR:{type(e).__name__}",

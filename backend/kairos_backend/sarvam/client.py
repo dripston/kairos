@@ -218,14 +218,26 @@ class SarvamClient:
         rep = self.post(CHAT_PATH, body, model)
         if not rep.ok:
             return rep
+        if finish_reason(rep.data) == "length":
+            # max_tokens ran out (for a reasoning model, often inside reasoning_content): the content, if any,
+            # is cut off. Never used; reasoning text is never used as output either.
+            return ModelReply(None, "schema: truncated (finish_reason=length)", rep.latency_ms, model, rep.version,
+                              rep.cached)
         text = chat_text(rep.data)
         if text is None:
             return ModelReply(None, "schema: no message content", rep.latency_ms, model, rep.version, rep.cached)
         return ModelReply({"text": text}, None, rep.latency_ms, model, rep.version, rep.cached)
 
 
+def finish_reason(resp: Any) -> Optional[str]:
+    try:
+        return resp["choices"][0].get("finish_reason")
+    except Exception:
+        return None
+
+
 def chat_text(resp: Any) -> Optional[str]:
-    """OpenAI-style choices[0].message.content; reasoning text (if any) is ignored."""
+    """OpenAI-style choices[0].message.content. message.reasoning_content (deepseek) is never read."""
     try:
         msg = resp["choices"][0]["message"]
         content = msg.get("content")
