@@ -617,3 +617,35 @@ def report_sheet(name: str, start: Optional[str] = None, end: Optional[str] = No
     return _report_response(name, rows, reports.SHEET_COLUMNS[key], format,
                             {"sheet": reports.SHEET_TITLES[key], "start": start, "end": end,
                              "campaign_id": campaign_id, "hashed_ids": hash_ids})
+
+
+# ---------- demo recipients (phone-demo adapters; numbers stay on this machine, always masked) ----------
+class DemoRecipientIn(BaseModel):
+    number: str
+
+
+@app.get("/demo/recipients")
+def demo_recipients():
+    from .channels import demo_recipients as dr
+    return {"recipients": dr.masked(), "note": "Masked. Being listed never sends by itself; the channel "
+            "flag, an approved template and dry_run=False are still required."}
+
+
+@app.post("/demo/recipients")
+def demo_recipient_add(body: DemoRecipientIn):
+    from .channels import demo_recipients as dr
+    from .channels.phone_demo import DemoSafetyError, mask_number
+    try:
+        return {"added": mask_number(dr.add(body.number)), "recipients": dr.masked()}
+    except DemoSafetyError as e:
+        raise HTTPException(422, str(e))
+
+
+@app.delete("/demo/recipients/{number}")
+def demo_recipient_remove(number: str):
+    from .channels import demo_recipients as dr
+    from .channels.phone_demo import DemoSafetyError
+    try:
+        return {"removed": dr.remove(number), "recipients": dr.masked()}
+    except DemoSafetyError as e:
+        raise HTTPException(422, str(e))
