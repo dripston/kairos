@@ -95,7 +95,7 @@ from typing import Callable, Dict, List, Mapping, Optional, Tuple
 
 from ..executor import ProviderResult
 from .phone_demo import (DEMO_SMS_TEMPLATES, PROVENANCE, DemoPreview, DemoSafetyError, _DemoBase, mask_number,
-                         mask_secret, render_demo_sms)
+                         render_demo_sms)
 
 log = logging.getLogger("kairos.channels.demo")
 
@@ -251,8 +251,7 @@ class AndroidSmsGatewayProvider(_DemoBase):
                 "json": payload}
 
     def masked(self, req: dict) -> dict:
-        auth = f"Basic <{mask_secret(self.env.get('SMSGATE_USER'))}:{mask_secret(self.env.get('SMSGATE_PASSWORD'))}>"
-        out = {**req, "headers": {**req["headers"], "Authorization": auth}}
+        out = {**req, "headers": {**req["headers"], "Authorization": "Basic ****"}}   # user:password never shown
         if "json" in req:
             out["json"] = {**req["json"], "phoneNumbers": [mask_number(n) for n in req["json"]["phoneNumbers"]]}
         return out
