@@ -13,723 +13,749 @@ const CONFIG = {
   product: "Kairos",
   team: "The A Team",
   event: "CreditNirvana Agentathon 2026",
-  dataLabel: "SIMULATED data",
-  film: { bpm: 128 },                     // every scene is a whole number of bars on this grid
   numbers: {
     recoveryX: "2",                       // "~2x money recovered per rupee spent" (K09 vs CN10, unseen seeds)
-    recoveryKairos: 517, recoveryBaseline: 272,
     recoveryExamples: "517 vs 272 · 530 vs 229 · 459 vs 268",
     recoveryRange: "1.7× to 2.3×",
-    repliesLift: "+80% to +105%",
     ruleBreaches: 0,
-    attacksPassed: 49, attacksTotal: 49,
-    fakesCaught: 127, fakesTotal: 127,
-    waResolvedPct: 73.2,
-    decisions: 50000, decisionsTime: "about 2 minutes",
-    policyCases: "148/148",               // POLICY_COVERAGE.md: K01 38, K10 33 (identity_mode k10), K13 25, K21 20, K24 32
-    understandingPct: 95,
-    disclosuresBeforeOtp: 0,
-    concurrentChats: 500
+    attacks: "49/49",
+    policyCases: "148/148"                // POLICY_COVERAGE.md: K01 38, K10 33 (identity_mode k10), K13 25, K21 20, K24 32
   }
 };
 </script>
 <style>
 :root{
-  --bg:#05080f; --bg2:#0a1424; --surface:#0e1a2c; --raised:#13233a; --line:#1f3450; --line2:#2c4a6e;
-  --fg:#f4f8fd; --muted:#9db2c8; --faint:#7d93ad;
-  --teal:#2ee6c9; --teal2:#14b8a6; --mint:#a7f7e8; --sms:#60a5fa; --chat:#22c39b; --violet:#a78bfa;
-  --amber:#fbbf24; --red:#ff5d6c; --ok:#34d399;
-  --sans:"Inter",-apple-system,"SF Pro Display","Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans Devanagari","Kohinoor Devanagari",sans-serif;
+  --ink:#1d1d1f; --grey:#6e6e73; --hair:#d2d2d7; --studio:#f2efe9; --studio2:#e7e3dc;
+  --accent:#0f766e; --accent-soft:#e3f1ef; --ok:#2e7d4f; --bad:#b4232c; --warn:#b26a00;
+  --sans:"SF Pro Display","Inter",-apple-system,"Helvetica Neue",Arial,"Noto Sans Devanagari","Kohinoor Devanagari",sans-serif;
 }
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:#000;color:var(--fg);font-family:var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased}
-#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;
-  background:radial-gradient(1300px 800px at 70% 20%,rgba(46,230,201,.10),transparent 60%),radial-gradient(1000px 700px at 10% 95%,rgba(96,165,250,.10),transparent 60%),
-  linear-gradient(160deg,var(--bg2),var(--bg) 62%)}
+html,body{margin:0;height:100%;background:#000;color:var(--ink);font-family:var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;background:#000}
 #cam{position:absolute;inset:0}
-#stage::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:7;background:radial-gradient(ellipse at 50% 45%,transparent 55%,rgba(0,0,0,.5))}
 .abs{position:absolute}
-.scene{position:absolute;inset:0;display:none;transform-origin:50% 50%;will-change:transform,opacity}
-#brand{position:absolute;left:72px;top:46px;font-weight:800;letter-spacing:.34em;font-size:20px;z-index:6;opacity:.85}
-#brand i{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--teal);margin-right:12px;box-shadow:0 0 16px var(--teal);vertical-align:1px}
-#pulse{position:absolute;inset:0;pointer-events:none;z-index:1;background:radial-gradient(900px 600px at 50% 55%,rgba(46,230,201,.22),transparent 70%);opacity:0}
-#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:9}
-#leak{position:absolute;inset:-200px;pointer-events:none;z-index:8;opacity:0;mix-blend-mode:screen;
-  background:radial-gradient(600px 900px at 20% 40%,rgba(255,170,90,.55),transparent 70%),radial-gradient(700px 700px at 80% 60%,rgba(46,230,201,.45),transparent 70%)}
-/* kinetic type */
-.kt{font-weight:850;letter-spacing:-.04em;line-height:.98;font-size:140px;white-space:nowrap}
-.kt.xl{font-size:300px;letter-spacing:-.05em}.kt.l{font-size:190px}.kt.m{font-size:118px}.kt.s{font-size:70px}.kt.xs{font-size:46px;letter-spacing:-.02em}
-.accent{color:var(--teal)}.warn{color:var(--red)}.dim{color:#5b6f88}
+.scene{position:absolute;inset:0;display:none;transform-origin:50% 50%;will-change:transform,opacity,filter;overflow:hidden}
+.black{background:#000;color:#f5f5f7}
+.black .spot{position:absolute;inset:0;background:radial-gradient(900px 520px at 50% 80%,rgba(255,255,255,.12),rgba(255,255,255,.03) 55%,transparent 72%)}
+.studio{background:radial-gradient(1400px 900px at 50% 40%,#f8f6f2,var(--studio) 55%,var(--studio2));color:var(--ink)}
+.studio .floor{position:absolute;left:0;right:0;bottom:0;height:300px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.035))}
+.clip{position:absolute;inset:0;overflow:hidden;background:#000 center/cover no-repeat}
+.clip video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:contrast(1.07) saturate(.85) sepia(.05) brightness(.95)}
+.clip::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(0,0,0,.45)),linear-gradient(180deg,rgba(0,0,0,0) 55%,rgba(0,0,0,.5))}
+.ontop{position:absolute;z-index:3}
+.over{color:#fff;text-shadow:0 2px 30px rgba(0,0,0,.35)}
+#grain{position:absolute;inset:-50%;pointer-events:none;z-index:9;opacity:.03;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:8}
+/* type */
+.eyebrow{font-size:28px;font-weight:600;color:var(--grey);letter-spacing:-.005em}
+.black .eyebrow,.over .eyebrow{color:#a1a1a6}
+.h{font-weight:650;letter-spacing:-.035em;line-height:1.04;font-size:132px;white-space:nowrap}
+.h.xl{font-size:220px;letter-spacing:-.045em;font-weight:700}.h.hero{font-size:340px;letter-spacing:-.05em;font-weight:700;line-height:.95}
+.h.m{font-size:92px}.h.s{font-size:62px;letter-spacing:-.025em}
+.grad{background:linear-gradient(180deg,#ffffff 20%,#a1a1aa);-webkit-background-clip:text;background-clip:text;color:transparent}
+.gradink{background:linear-gradient(180deg,#1d1d1f 30%,#6e6e73);-webkit-background-clip:text;background-clip:text;color:transparent}
+.acc{color:var(--accent)}
 .center{position:absolute;left:0;right:0;text-align:center}
-.sub{font-size:34px;color:var(--muted);font-weight:500}
-.fine{font-size:20px;color:var(--faint);line-height:1.45}
-.chip{display:inline-flex;align-items:center;gap:10px;padding:10px 20px;border-radius:999px;font-size:26px;border:1px solid var(--line2);background:rgba(19,35,58,.85);color:var(--fg);white-space:nowrap}
-.chip.teal{border-color:rgba(46,230,201,.55);color:var(--mint);background:rgba(20,184,166,.14)}
-.chip.red{border-color:rgba(255,93,108,.6);color:#ffd0d5;background:rgba(255,93,108,.12)}
-.chip.ok{border-color:rgba(52,211,153,.6);color:#c9fbe6;background:rgba(52,211,153,.12)}
-.card{position:absolute;background:linear-gradient(180deg,rgba(19,35,58,.95),rgba(12,24,42,.95));border:1px solid var(--line);border-radius:26px;box-shadow:0 40px 90px rgba(0,0,0,.45)}
-.realtag{font-size:16px;color:var(--faint);letter-spacing:.04em}
-.realtag b{color:var(--mint);font-weight:800;letter-spacing:.14em;font-size:13px;margin-right:8px;border:1px solid rgba(46,230,201,.5);padding:2px 7px;border-radius:5px}
-#simlabel{font-size:20px;letter-spacing:.14em;font-weight:800;color:#ddd6fe;border:2px solid rgba(167,139,250,.7);background:rgba(167,139,250,.14);padding:8px 16px;border-radius:10px;text-transform:uppercase}
-.num{font-variant-numeric:tabular-nums}
-/* devices */
-.phone{position:relative;width:380px;height:760px;border-radius:58px;background:#02060c;border:10px solid #1d2c40;box-shadow:0 60px 110px -20px rgba(0,0,0,.75),0 0 0 1px #3a5170}
-.phone::after{content:"";position:absolute;inset:0;border-radius:48px;pointer-events:none;z-index:5;background:linear-gradient(115deg,rgba(255,255,255,.12),rgba(255,255,255,0) 32%)}
-.phone .notch{position:absolute;left:50%;top:14px;width:118px;height:30px;border-radius:20px;background:#000;transform:translateX(-50%);z-index:4}
-.screen{position:absolute;inset:0;border-radius:48px;overflow:hidden;background:linear-gradient(170deg,#13263f,#060d18 70%)}
-.statusbar{position:absolute;left:34px;right:30px;top:18px;font-size:17px;font-weight:600;color:#dbe7f5;display:flex;justify-content:space-between;z-index:3}
-.notif{position:absolute;left:14px;right:14px;height:84px;border-radius:22px;background:rgba(235,242,250,.14);border:1px solid rgba(255,255,255,.08);display:flex;gap:14px;align-items:center;padding:0 16px}
-.notif .ni{flex:none;width:44px;height:44px;border-radius:12px;background:#3b82f6;display:grid;place-items:center;font-size:20px;font-weight:800}
-.notif .nt{font-size:15px;color:#c8d6e6;font-weight:700;letter-spacing:.04em;display:flex;justify-content:space-between}
-.notif .nb{font-size:17px;margin-top:3px}
-.monitor{position:absolute;border-radius:18px;background:#05080e;border:14px solid #0d131c;outline:2px solid #2f3d50;box-shadow:0 60px 120px -20px rgba(0,0,0,.8);overflow:hidden}
-.monitor::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(118deg,rgba(255,255,255,.08),rgba(255,255,255,0) 36%)}
-.monitor img{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform,opacity;display:block}
-.stand{position:absolute;height:60px;background:linear-gradient(180deg,#2c394a,#141c27);clip-path:polygon(38% 0,62% 0,70% 100%,30% 100%)}
-.bub{max-width:300px;padding:12px 16px;border-radius:20px;font-size:18px;line-height:1.32;margin-bottom:12px}
-.bub.in{background:#1e2b3a;border-bottom-left-radius:6px}
-.bub.out{background:#0f5f6e;margin-left:auto;border-bottom-right-radius:6px}
-.wave{display:flex;gap:6px;align-items:center;justify-content:center;height:80px}
-.wave i{width:8px;border-radius:4px;background:var(--teal);display:block}
-.subtitle{display:inline-block;background:rgba(0,0,0,.72);padding:12px 26px;border-radius:12px;font-size:36px;line-height:1.35;font-weight:600}
-.subtitle small{display:block;font-size:26px;color:#d8e6f3;font-weight:500}
-.pill{position:absolute;width:280px;height:96px;border-radius:48px;border:2px solid var(--line2);background:var(--surface);display:grid;place-items:center;font-size:40px;font-weight:800;color:var(--muted)}
-.pill.sel{border-color:var(--teal);color:#03211c;background:var(--teal);box-shadow:0 0 50px rgba(46,230,201,.5)}
-.dot{position:absolute;width:16px;height:16px;border-radius:50%;background:#22324a}
-.dot.on{background:var(--teal);box-shadow:0 0 12px rgba(46,230,201,.7)}
-.chan{display:flex;align-items:center;justify-content:space-between;height:74px;padding:0 26px;border-radius:16px;background:#12243a;margin-top:14px;font-size:32px;font-weight:700;border:1px solid transparent}
-.chan .s{font-size:20px;font-weight:900;letter-spacing:.1em;color:var(--ok)}
-.chan.off{background:rgba(255,93,108,.08);border-color:rgba(255,93,108,.4);color:#8e9db0}
-.chan.off .s{color:var(--red)}
-.stamp{position:absolute;padding:14px 26px;border:5px solid var(--red);color:var(--red);border-radius:14px;font-weight:900;font-size:44px;letter-spacing:.04em;background:rgba(10,4,8,.88);rotate:-6deg}
-.rule{display:inline-flex;align-items:center;gap:12px;font-size:28px;font-weight:650;padding:12px 22px;border-radius:14px;background:rgba(52,211,153,.10);border:1px solid rgba(52,211,153,.45);margin:0 12px 14px 0}
-.rule b{color:var(--ok)}
-.stream{position:absolute;overflow:hidden}
-.srow{position:absolute;left:0;right:0;height:52px;display:flex;align-items:center;gap:10px;padding:0 14px;font-size:17px;white-space:nowrap;border-radius:10px;background:rgba(14,26,44,.9);border:1px solid var(--line)}
-.srow .ok{color:var(--ok);font-weight:800;margin-left:auto}
-.bar{position:absolute;height:64px;border-radius:12px;display:flex;align-items:center;padding-left:20px;font-size:26px;font-weight:800;white-space:nowrap;overflow:hidden}
-.aislot{position:absolute;overflow:hidden}
-.aislot video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}
-.aislot.ready video{opacity:1}
-.aislot.ready .fallback{display:none}
-#cursor{position:absolute;width:44px;height:44px;z-index:6;opacity:0;pointer-events:none}
-.btn{display:inline-grid;place-items:center;height:68px;padding:0 36px;border-radius:16px;font-size:28px;font-weight:800;border:2px solid var(--line2);color:var(--fg);background:var(--raised)}
-.btn.pri{background:var(--teal);border-color:var(--teal);color:#03211c}
-.btn.done{background:var(--ok);border-color:var(--ok)}
-/* captions (optional; off by default: the type is the copy, Hindi subtitles are burned in) */
-#cap{position:absolute;left:0;right:0;bottom:40px;display:flex;justify-content:center;z-index:8;pointer-events:none}
-#capText{max-width:1500px;text-align:center;font-size:34px;line-height:1.3;font-weight:600;background:rgba(0,0,0,.7);padding:10px 24px;border-radius:14px;opacity:0;transition:opacity .2s}
+.fine{font-size:19px;color:var(--grey);line-height:1.5}
+.black .fine{color:#8e8e93}
+.mask{display:inline-block;overflow:hidden;padding:0 .05em .22em;margin:0 -.05em -.22em;vertical-align:bottom}
+.mask>.mi{display:inline-block;will-change:transform}
+.sim{display:inline-block;font-size:15px;font-weight:600;letter-spacing:.08em;color:#8e8e93;border:1px solid #3a3a3c;border-radius:999px;padding:6px 14px;text-transform:uppercase}
+.realtag{font-size:15px;color:var(--grey)}
+.black .realtag{color:#8e8e93}
+.realtag b{font-weight:700;letter-spacing:.1em;font-size:12px;margin-right:8px;color:var(--accent)}
+.black .realtag b{color:#5fbfb4}
+/* laptop: an original aluminium-laptop render (no logos) */
+.mbp{position:absolute;width:1000px;-webkit-box-reflect:below 4px linear-gradient(transparent 82%,rgba(255,255,255,.10))}
+.studio .mbp{-webkit-box-reflect:below 4px linear-gradient(transparent 85%,rgba(255,255,255,.35))}
+.mbp .lid{position:relative;width:1000px;height:640px;border-radius:24px 24px 6px 6px;background:linear-gradient(180deg,#e2e3e6,#a9acb1);padding:3px;transform-origin:50% 100%}
+.mbp .bezel{position:absolute;inset:3px;border-radius:21px 21px 4px 4px;background:#0b0b0c;padding:16px 16px 20px}
+.mbp .notchm{position:absolute;left:50%;top:3px;width:128px;height:20px;margin-left:-64px;background:#0b0b0c;border-radius:0 0 11px 11px;z-index:4}
+.mbp .scr{position:relative;width:100%;height:100%;border-radius:5px;overflow:hidden;background:#000}
+.mbp .scr>img{position:absolute;left:0;top:0;width:962px;transform-origin:0 0;will-change:transform}
+.glass{position:absolute;inset:0;pointer-events:none;z-index:6;background:linear-gradient(115deg,rgba(255,255,255,.12),rgba(255,255,255,0) 34%,rgba(255,255,255,0) 70%,rgba(255,255,255,.04))}
+.mbp .base{position:relative;width:1190px;margin-left:-95px;height:24px;border-radius:3px 3px 18px 18px;background:linear-gradient(180deg,#eceef0 0%,#c3c6ca 40%,#8b8e93 100%);box-shadow:0 26px 40px -14px rgba(0,0,0,.55)}
+.mbp .base .lip{position:absolute;left:50%;top:0;width:190px;height:9px;margin-left:-95px;border-radius:0 0 9px 9px;background:linear-gradient(180deg,#9fa2a7,#d0d2d5)}
+.shadow{position:absolute;height:60px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.35),transparent);filter:blur(8px)}
+/* phone: an original titanium-edge phone render (no logos) */
+.iph{position:absolute;width:390px;height:810px;border-radius:66px;padding:4px;background:linear-gradient(135deg,#8c8d91,#e6e7e9 28%,#76777b 58%,#cfd0d3 85%,#8f9094);
+  box-shadow:0 60px 90px -40px rgba(0,0,0,.6);-webkit-box-reflect:below 6px linear-gradient(transparent 86%,rgba(255,255,255,.12))}
+.iph::before{content:"";position:absolute;right:-4px;top:200px;width:4px;height:110px;border-radius:2px;background:linear-gradient(90deg,#9a9b9f,#5f6064)}
+.iph::after{content:"";position:absolute;left:-4px;top:170px;width:4px;height:64px;border-radius:2px;background:linear-gradient(90deg,#5f6064,#9a9b9f);box-shadow:0 90px 0 #8a8b8f}
+.iph .frame{position:absolute;inset:4px;border-radius:62px;background:#050505;padding:11px}
+.iph .pscr{position:relative;width:100%;height:100%;border-radius:52px;overflow:hidden;background:#fff;color:var(--ink)}
+.iph .island{position:absolute;left:50%;top:12px;width:116px;height:34px;margin-left:-58px;border-radius:20px;background:#000;z-index:7}
+.lock{position:absolute;inset:0;background:linear-gradient(170deg,#2f3a4f,#5e5466 55%,#8c6f6a)}
+.lock .time{position:absolute;left:0;right:0;top:92px;text-align:center;color:#fff;font-size:92px;font-weight:300;letter-spacing:-.02em}
+.lock .date{position:absolute;left:0;right:0;top:78px;text-align:center;color:rgba(255,255,255,.85);font-size:19px;font-weight:600}
+.ntf{position:absolute;left:12px;right:12px;height:78px;border-radius:22px;background:rgba(245,245,247,.8);backdrop-filter:blur(12px);display:flex;gap:12px;align-items:center;padding:0 14px;color:#1d1d1f}
+.ntf .ic{flex:none;width:38px;height:38px;border-radius:10px;background:#8e8e93;display:grid;place-items:center;color:#fff;font-size:18px;font-weight:800}
+.ntf .t{font-size:14px;font-weight:700;display:flex;justify-content:space-between}
+.ntf .t span{font-weight:500;color:#6e6e73}
+.ntf .b{font-size:15px;margin-top:2px}
+.chat{position:absolute;inset:0;background:#fff}
+.chat .hd{position:absolute;left:0;right:0;top:0;height:112px;background:rgba(248,248,250,.95);border-bottom:1px solid #e5e5ea;display:flex;align-items:center;justify-content:flex-end;padding-bottom:12px;font-weight:600;font-size:18px;flex-direction:column}
+.chat .hd small{font-weight:400;color:#6e6e73;font-size:13px}
+.chat .body{position:absolute;left:14px;right:14px;top:128px}
+.bub{max-width:280px;padding:10px 14px;border-radius:20px;font-size:17px;line-height:1.36;margin-bottom:10px}
+.bub.in{background:#e9e9eb;color:#1d1d1f;border-bottom-left-radius:6px}
+.bub.out{background:var(--accent);color:#fff;margin-left:auto;border-bottom-right-radius:6px}
+.meta{font-size:12px;color:#8e8e93;margin:-4px 0 10px}
+.okpill{display:inline-block;background:#e3f4ea;color:var(--ok);font-weight:700;font-size:15px;padding:6px 12px;border-radius:999px}
+/* realistic generic chat (no messenger logo or doodle pattern): muted-teal header, warm beige textured background */
+.wa{position:absolute;inset:0;background:#ece5da radial-gradient(rgba(60,40,20,.06) 1.2px,transparent 1.6px) 0 0/18px 18px}
+.wa .whd{position:absolute;left:0;right:0;top:0;height:118px;background:#0f5f58;color:#fff;display:flex;align-items:flex-end;gap:12px;padding:0 18px 14px}
+.wa .whd .av{width:44px;height:44px;border-radius:50%;background:#e8f3f1;color:#0f5f58;display:grid;place-items:center;font-weight:800;font-size:18px}
+.wa .whd b{font-size:19px;display:block}.wa .whd small{font-size:13px;opacity:.85}
+.wa .wbody{position:absolute;left:12px;right:12px;top:132px;bottom:12px;display:flex;flex-direction:column;justify-content:flex-end;gap:10px}
+.wa .m{max-width:84%;padding:10px 13px 18px;border-radius:14px;font-size:19px;line-height:1.36;position:relative;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+.wa .m.i{background:#fff;align-self:flex-start;border-top-left-radius:4px}
+.wa .m.o{background:#d6efe4;align-self:flex-end;border-top-right-radius:4px}
+.wa .m .ts{position:absolute;right:10px;bottom:4px;font-size:11px;color:#7b8794}
+.wa .chipd{align-self:center;background:#dfe9ee;color:#46545f;font-size:12px;font-weight:600;padding:5px 10px;border-radius:8px}
+.wa .typing{align-self:flex-start;background:#fff;border-radius:14px;padding:12px 16px;display:flex;gap:5px}
+.wa .typing i{width:8px;height:8px;border-radius:50%;background:#9aa5ae;animation:tdot 1s infinite}
+.wa .typing i:nth-child(2){animation-delay:.15s}.wa .typing i:nth-child(3){animation-delay:.3s}
+@keyframes tdot{0%,60%,100%{opacity:.35;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+.wa .pay{background:#fff;border-radius:14px;overflow:hidden;align-self:flex-start;width:84%;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+.wa .pay .top{background:#0f766e;color:#fff;padding:14px 14px;font-weight:700;font-size:18px}
+.wa .pay .bot{padding:10px 14px;font-size:15px;color:#46545f}
+/* rebuilt light dashboard in the product's own style (#f3f5f8, white cards, #0f766e) */
+.dash{position:absolute;inset:0;background:#f3f5f8;color:#1d2430}
+.dash .top{height:46px;background:#fff;border-bottom:1px solid #e3e7ee;display:flex;align-items:center;gap:10px;padding:0 16px;font-size:15px}
+.dash .k{width:24px;height:24px;border-radius:6px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
+.dash .pill{font-size:10px;font-weight:800;letter-spacing:.08em;background:#f6c344;color:#3d2c00;padding:3px 8px;border-radius:5px}
+.dash .cardd{position:absolute;background:#fff;border:1px solid #e3e7ee;border-radius:14px;padding:14px 16px}
+.dash .lab{font-size:11px;font-weight:700;letter-spacing:.1em;color:#5b6577}
+.dash .row{font-size:13px;line-height:1.4;padding:8px 10px;border-radius:9px;background:#f6f8fb;margin-top:8px;display:flex;gap:10px}
+.dash .tag{flex:none;font-size:9.5px;font-weight:800;letter-spacing:.08em;padding:3px 7px;border-radius:5px;background:var(--accent-soft);color:var(--accent);height:fit-content}
+.dash .bars .b{display:flex;align-items:center;gap:10px;font-size:14px;margin-top:14px}
+.dash .bars .b span{width:96px}
+.dash .bars .b i{height:12px;border-radius:6px;background:var(--accent);display:block}
+.wordmark{position:absolute;inset:0;display:grid;place-items:center;background:#0b0b0c;color:#f5f5f7;font-size:110px;font-weight:700;letter-spacing:-.04em}
+/* explainer pieces */
+.card{position:absolute;background:#fff;border:1px solid #e3e1db;border-radius:28px;box-shadow:0 30px 60px -30px rgba(0,0,0,.25)}
+.opt{position:absolute;width:640px;height:300px;border-radius:32px;background:#fff;border:2px solid #e3e1db;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:none}
+.opt .t{font-size:64px;font-weight:700;letter-spacing:-.03em}
+.opt .s{font-size:24px;color:var(--grey)}
+.opt.on{border-color:var(--accent);box-shadow:0 0 0 6px rgba(15,118,110,.12),0 30px 60px -30px rgba(0,0,0,.3)}
+.opt.on .t{color:var(--accent)}
+.opt.dim{opacity:.35}
+.chan{position:absolute;width:380px;height:220px;border-radius:28px;background:#fff;border:2px solid #e3e1db;padding:30px 30px;opacity:.45}
+.chan .n{font-size:44px;font-weight:700;letter-spacing:-.02em}
+.chan .d{font-size:21px;color:var(--grey);margin-top:8px}
+.chan.hi{opacity:1;border-color:#b9c6c4}
+.chan.pick{opacity:1;border-color:var(--accent);box-shadow:0 0 0 6px rgba(15,118,110,.12)}
+.clock{position:absolute;width:220px;height:220px;border-radius:50%;background:#fff;border:2px solid #e3e1db;box-shadow:0 20px 40px -24px rgba(0,0,0,.3)}
+.clock i{position:absolute;left:50%;top:50%;transform-origin:0 0;border-radius:3px;background:#1d1d1f}
+.chk{font-size:34px;font-weight:600;color:#6e6e73;padding:12px 0;border-bottom:1px solid #2c2c2e;display:flex;justify-content:space-between;width:560px}
+.chk b{color:#30d158;opacity:0}
+.chk.on{color:#f5f5f7}.chk.on b{opacity:1}
+.rule{position:absolute;width:640px;height:150px;border-radius:24px;background:#fff;border:2px solid #e3e1db;padding:24px 30px;display:flex;align-items:center;justify-content:space-between}
+.rule .w{font-size:32px;font-weight:650}
+.rule .why{font-size:20px;color:var(--grey);margin-top:6px}
+.blocked{font-size:20px;font-weight:800;letter-spacing:.08em;color:var(--bad);border:2px solid var(--bad);border-radius:10px;padding:8px 14px;opacity:0}
+.chanrow{display:flex;justify-content:space-between;align-items:center;font-size:24px;font-weight:600;padding:12px 0;border-bottom:1px solid var(--hair)}
+.chanrow .s{font-size:16px;font-weight:700;letter-spacing:.06em;color:var(--ok)}
+.chanrow.off{color:#a1a1a6}.chanrow.off .s{color:var(--bad)}
+.stampx{position:absolute;padding:10px 22px;border:4px solid #ff453a;color:#ff453a;border-radius:12px;font-weight:800;font-size:40px;letter-spacing:.03em;background:rgba(10,0,0,.85);rotate:-5deg}
+.btnp{display:inline-grid;place-items:center;height:40px;padding:0 20px;border-radius:12px;font-size:16px;font-weight:700;background:var(--accent);color:#fff}
+.btnp.done{background:var(--ok)}
+.costchip{display:inline-flex;gap:14px;align-items:baseline;background:rgba(0,0,0,.55);color:#fff;padding:14px 22px;border-radius:16px;font-size:24px}
+.costchip b{font-size:40px;font-variant-numeric:tabular-nums}
+#cursor{position:absolute;width:40px;height:40px;z-index:7;opacity:0;pointer-events:none}
+/* captions: the exact VO, bottom centre, white on a soft shadow, two lines max (on by default) */
+#cap{position:absolute;left:0;right:0;bottom:44px;display:flex;justify-content:center;z-index:8;pointer-events:none}
+#capText{max-width:1460px;text-align:center;font-size:38px;line-height:1.3;font-weight:600;color:#fff;
+  text-shadow:0 0 2px rgba(0,0,0,.9),0 2px 12px rgba(0,0,0,.85),0 0 30px rgba(0,0,0,.6);opacity:0;transition:opacity .25s;
+  padding:14px 60px;background:radial-gradient(closest-side,rgba(0,0,0,.42),rgba(0,0,0,.28) 60%,rgba(0,0,0,0))}
 #capText.show{opacity:1}
 body.nocap #cap{display:none}
-/* controls */
-#ui{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);width:min(1200px,calc(100vw - 32px));z-index:20;background:rgba(6,12,22,.9);border:1px solid #23405f;
-  border-radius:18px;padding:12px 16px 10px;font-size:14px;color:#cfe0f1;backdrop-filter:blur(8px);transition:opacity .35s;box-shadow:0 20px 50px rgba(0,0,0,.5)}
-#ui.idle{opacity:0;pointer-events:none}
-#groups{display:flex;gap:6px;margin-bottom:8px;align-items:center}
-#groups button{font:inherit;font-size:12px;height:26px;border-radius:13px;border:1px solid #2a4b6e;background:transparent;color:#cfe0f1;padding:0 12px;cursor:pointer}
-#groups button.cur{background:#0f5f58;border-color:var(--teal)}
-#groups .sp{flex:1}
-#groups a{font-size:12px;color:#93a9c2;text-decoration:none;border:1px solid #2a4b6e;border-radius:13px;padding:4px 12px}
-#groups a.cur{color:#03211c;background:var(--teal);border-color:var(--teal)}
-#chapters{display:flex;gap:3px;margin-bottom:10px}
-#chapters button{position:relative;height:28px;border:0;border-radius:6px;background:#132a43;color:#93a9c2;font:inherit;font-size:11px;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0 4px}
-#chapters button .pf{position:absolute;left:0;top:0;bottom:0;background:rgba(46,230,201,.28);pointer-events:none}
-#chapters button span{position:relative}
-#chapters button.cur{color:#fff;outline:1px solid var(--teal)}
+/* presentation mode: chrome hidden; a thin strip appears on mouse move and hides after 2 s; ?controls=1 forces it */
+#ui{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:16px 14px 10px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.75) 55%);
+  color:#e8e8ed;font-size:13px;opacity:0;pointer-events:none;transition:opacity .3s}
+body.showui #ui,body.forceui #ui{opacity:1;pointer-events:auto}
+body.record #ui{display:none} body.record{cursor:none}
 .ctr{display:flex;align-items:center;gap:10px}
-.ctr button{font:inherit;color:#e6f0fa;background:#173451;border:1px solid #2a4b6e;border-radius:10px;height:34px;padding:0 14px;cursor:pointer}
-.ctr button.on{background:#0f5f58;border-color:var(--teal)}
-#bPlay{width:90px;background:var(--teal);color:#03211c;border-color:var(--teal);font-weight:700}
-#scrub{flex:1;accent-color:var(--teal)}
-#time{font-variant-numeric:tabular-nums;min-width:96px;text-align:center}
-#hint{margin-top:6px;font-size:12px;color:#6f86a1;text-align:center}
-#more{display:flex;gap:10px;align-items:center}
-#bMenu{display:none}
-body.record #ui{display:none}
-body.record{cursor:none}
-body.compact #ui{left:0;right:0;bottom:0;width:auto;transform:none;border-radius:0;border:0;padding:14px 10px 8px;box-shadow:none;backdrop-filter:none;
-  background:linear-gradient(180deg,rgba(4,8,16,0),rgba(4,8,16,.9) 40%)}
-body.compact #hint{display:none}
-body.compact #panel{display:none;position:absolute;right:8px;bottom:46px;width:min(380px,calc(100vw - 16px));max-height:calc(100vh - 64px);overflow:auto;
-  background:rgba(6,12,22,.97);border:1px solid #23405f;border-radius:12px;padding:10px;box-shadow:0 12px 30px rgba(0,0,0,.55)}
-body.compact #ui.open #panel{display:block}
-body.compact #groups{flex-wrap:wrap}
-body.compact #groups .sp{flex-basis:100%;height:0}
-body.compact #chapters{flex-direction:column;gap:2px;margin:6px 0 8px}
-body.compact #chapters button{flex:none!important;width:100%;height:24px;text-align:left;padding:0 8px;font-size:12px}
-body.compact #more{flex-wrap:wrap;gap:6px}
-body.compact .ctr{gap:8px}
-body.compact .ctr button{height:28px;padding:0 10px;font-size:12px;border-radius:8px}
-body.compact #bPlay{width:34px;padding:0;font-size:13px}
-body.compact #bMenu{display:inline-block;width:34px;padding:0;font-size:18px;line-height:1}
-body.compact #time{font-size:12px;min-width:82px}
-@media (prefers-reduced-motion: reduce){ #flash,#leak,#pulse{display:none} }
+.ctr button{font:inherit;color:#f5f5f7;background:rgba(255,255,255,.14);border:0;border-radius:8px;height:28px;padding:0 10px;cursor:pointer}
+#bPlay,#bMenu{width:34px;padding:0} #bMenu{font-size:17px}
+#scrub{flex:1;accent-color:#f5f5f7;height:4px}
+#time{font-variant-numeric:tabular-nums;min-width:84px;text-align:center;color:#c7c7cc}
+#panel{display:none;position:absolute;right:12px;bottom:46px;width:min(380px,calc(100vw - 24px));max-height:calc(100vh - 70px);overflow:auto;
+  background:rgba(28,28,30,.96);border:1px solid #3a3a3c;border-radius:12px;padding:10px;box-shadow:0 12px 30px rgba(0,0,0,.55)}
+#ui.open #panel{display:block}
+#chapters{display:flex;flex-direction:column;gap:2px;margin:0 0 8px}
+#chapters button{position:relative;width:100%;height:24px;text-align:left;border:0;border-radius:6px;background:#2c2c2e;color:#c7c7cc;font:inherit;font-size:12px;cursor:pointer;overflow:hidden;padding:0 8px}
+#chapters button .pf{position:absolute;left:0;top:0;bottom:0;background:rgba(15,118,110,.45);pointer-events:none}
+#chapters button span{position:relative}
+#chapters button.cur{color:#fff}
+#more{display:flex;flex-wrap:wrap;gap:6px}
+#more button{font:inherit;font-size:12px;color:#f5f5f7;background:#3a3a3c;border:0;border-radius:8px;height:28px;padding:0 10px;cursor:pointer}
+#more button.on{background:#0f766e}
 </style>
 </head>
-<body class="nocap">
+<body>
 <div id="viewport"><div id="stage"><div id="cam">
-  <div id="pulse"></div>
-  <div id="brand"><i></i><span data-k="product" data-upper="1">KAIROS</span></div>
 
-  <!-- k1 COLD OPEN -->
-  <section class="scene" id="k1">
-    <div class="aislot" data-slot="slot_phone_night" style="inset:0;opacity:.5"><div class="fallback"></div></div>
-    <div class="abs" data-beat="0" data-fx="fade" data-depth="1.4" style="left:300px;top:150px">
-      <div class="phone" id="k1phone"><div class="notch"></div><div class="screen">
-        <div class="statusbar"><span>23:47</span><span>●●● 5G</span></div>
-        <div class="abs" style="left:0;right:0;top:76px;text-align:center;font-size:84px;font-weight:300">23:47</div>
-        <div class="abs" id="k1stack" style="left:0;right:0;top:220px;height:520px;overflow:hidden"></div>
-      </div></div>
+  <!-- n01 · "Every month, millions of people in India repay a loan..." : the city, then the street -->
+  <section class="scene black" id="n01">
+    <div class="clip" data-clip="city_aerial_mumbai_night" data-from="3" data-t="0" data-tout="4.2" data-fx="cut"></div>
+    <div class="clip" data-clip="kolkata_buses" data-from="6" data-t="4.2" data-fx="cut"></div>
+  </section>
+
+  <!-- n02 · "...lenders remind them the same way. Same message. Same time. To everyone." -->
+  <section class="scene black" id="n02"><div class="spot"></div>
+    <div class="clip" data-clip="phone_notification_closeup" data-from="1" data-t="0" data-tout="2.8" data-fx="cut" style="z-index:4"></div>
+    <div class="rig abs" style="inset:0;perspective:2400px">
+      <div class="iph" id="pL" style="left:425px;top:150px"><div class="frame"><div class="pscr"><div class="lock"><div class="date">Thursday 19 November</div><div class="time">10:00</div></div><div class="stack abs" style="left:0;right:0;top:250px;bottom:0"></div><div class="island"></div><div class="glass"></div></div></div></div>
+      <div class="iph" id="pR" style="left:1105px;top:150px"><div class="frame"><div class="pscr"><div class="lock"><div class="date">Thursday 19 November</div><div class="time">10:00</div></div><div class="stack abs" style="left:0;right:0;top:250px;bottom:0"></div><div class="island"></div><div class="glass"></div></div></div></div>
+      <div class="iph" id="pC" style="left:765px;top:130px"><div class="frame"><div class="pscr"><div class="lock"><div class="date">Thursday 19 November</div><div class="time">10:00</div></div><div class="stack abs" style="left:0;right:0;top:250px;bottom:0"></div><div class="island"></div><div class="glass"></div></div></div></div>
     </div>
-    <div class="abs" style="left:840px;top:250px">
-      <div class="kt m" data-beat="0" data-hit="stab">Same message.</div>
-      <div class="kt m" data-beat="4" data-hit="stab">Every borrower.</div>
-      <div class="kt m accent" data-beat="8" data-hit="stab">Every day.</div>
-      <div class="sub" data-beat="12" data-hit="tom" data-fx="up" style="margin-top:44px;font-size:40px"><b class="num" id="k1n" style="color:var(--fg)">0</b> reminders · <b class="warn">0 replies</b></div>
+    <div class="center" style="top:56px"><div class="h s grad" data-t="5.0" data-fx="mask">Same message. Same time.</div></div>
+  </section>
+
+  <!-- n03 · "Most of those messages are ignored. Some annoy people. And every single one costs money." -->
+  <section class="scene black" id="n03">
+    <div class="clip" data-clip="snoozing_phone" data-from="3" data-t="0" data-tout="3.9" data-fx="cut"></div>
+    <div class="clip" data-clip="woman_phone_bed" data-from="2" data-t="3.9" data-fx="cut"></div>
+    <div class="ontop over" style="left:120px;top:120px"><div class="h m" data-t="0.9" data-tout="3.9" data-fx="mask">Ignored.</div></div>
+    <div class="ontop over" style="left:120px;top:120px"><div class="h m" data-t="3.9" data-tout="5.4" data-fx="mask">Annoying.</div></div>
+    <div class="ontop" style="left:120px;top:120px"><div data-t="5.4" data-fx="up"><span class="costchip">₹ spent on reminders <b id="cost">₹0</b><span style="font-size:15px;opacity:.7">illustrative</span></span></div></div>
+  </section>
+
+  <!-- n04 · "Meet Kairos. An AI that runs loan collections, one person at a time." : hands on a laptop, then our laptop lights up -->
+  <section class="scene black" id="n04"><div class="spot"></div>
+    <div class="clip" data-clip="hands_laptop_dark" data-from="3" data-t="0" data-tout="1.1" data-fx="cut" style="z-index:5"></div>
+    <div class="center" style="top:60px"><div class="h m grad" data-t="1.25" data-fx="mask">Meet Kairos.</div></div>
+    <div class="center" style="top:190px"><div class="eyebrow" data-t="3.0">AI that runs loan collections, one person at a time.</div></div>
+    <div class="rig abs" style="inset:0;perspective:2400px">
+      <div class="shadow" style="left:520px;top:930px;width:880px"></div>
+      <div class="mbp" style="left:460px;top:300px">
+        <div class="lid" id="n04lid"><div class="bezel"><div class="notchm"></div><div class="scr" id="n04scr"><div class="dash" id="dashA"></div><div class="wordmark" id="n04wm">Kairos</div><div class="glass"></div></div></div></div>
+        <div class="base"><div class="lip"></div></div>
+      </div>
     </div>
   </section>
 
-  <!-- k2 THE PROBLEM -->
-  <section class="scene" id="k2">
-    <div class="abs" id="k2grid" style="left:120px;top:150px;width:1680px;height:780px;opacity:.28"></div>
-    <div class="center kt l" data-beat="1" data-outbeat="4" data-hit="stab" style="top:330px">Expensive.</div>
-    <div class="center sub" data-beat="1.5" data-outbeat="4" style="top:560px">₹ <b class="num warn" data-count="spend" data-atbeat="1.5" data-cbeats="2.5">0</b> spent on reminders nobody reads</div>
-    <div class="center kt l" data-beat="4" data-outbeat="7" data-hit="stab" style="top:330px">Annoying.</div>
-    <div class="center kt l warn" data-beat="7" data-outbeat="12" data-hit="stab" style="top:330px">Ignored.</div>
-    <div class="center" data-beat="7.5" data-outbeat="12" style="top:580px"><span class="chip red" style="font-size:30px">0 replies</span></div>
-    <div class="center kt s" data-beat="12" data-fx="up" data-hit="whoosh" style="top:430px">There's a better way.</div>
+  <!-- n05 · "Every morning, Kairos looks at each borrower..." : the real CRM borrower page, push-in, three facts -->
+  <section class="scene studio" id="n05"><div class="floor"></div>
+    <div class="abs" style="left:110px;top:110px;width:600px">
+      <div class="eyebrow" data-t="0.3">Every morning, for every borrower</div>
+      <div class="h s gradink" data-t="0.5" data-fx="mask" style="margin-top:8px">It looks first.</div>
+      <div style="margin-top:46px">
+        <div data-t="3.6" data-fx="up" class="card" style="position:relative;padding:20px 26px;margin-bottom:16px"><div class="eyebrow" style="font-size:18px">How late</div><div style="font-size:36px;font-weight:700;margin-top:4px">42 days</div></div>
+        <div data-t="5.0" data-fx="up" class="card" style="position:relative;padding:20px 26px;margin-bottom:16px"><div class="eyebrow" style="font-size:18px">How they replied before</div><div style="font-size:36px;font-weight:700;margin-top:4px">Twice, on WhatsApp</div></div>
+        <div data-t="7.1" data-fx="up" class="card" style="position:relative;padding:20px 26px"><div class="eyebrow" style="font-size:18px">When they read messages</div><div style="font-size:36px;font-weight:700;margin-top:4px">Responsive on WhatsApp</div></div>
+      </div>
+    </div>
+    <div class="rig abs" style="inset:0;perspective:2400px">
+      <div class="shadow" style="left:820px;top:930px;width:820px"></div>
+      <div class="mbp" style="left:780px;top:300px">
+        <div class="lid"><div class="bezel"><div class="notchm"></div><div class="scr" style="background:#0f1518"><img src="assets/real/crm_borrower.jpg" alt="Kairos CRM borrower page (synthetic borrower B-1042)" data-kf="0,0,0,1;3.3,-260,0,1.85;5.0,-300,-20,1.85;7.0,-160,-10,2.1;10,-170,-12,2.12"><div class="glass"></div></div></div></div>
+        <div class="base"><div class="lip"></div></div>
+      </div>
+    </div>
+    <div class="abs realtag" data-t="1" style="left:780px;top:1000px"><b>REAL SCREEN</b>Kairos CRM · synthetic borrower B-1042 · SIMULATED</div>
   </section>
 
-  <!-- k3 MEET KAIROS (drop 1) -->
-  <section class="scene" id="k3">
-    <div class="aislot" data-slot="slot_data_flow" style="inset:0;opacity:.6"><div class="fallback"><svg id="k3flow" width="1920" height="1080" viewBox="0 0 1920 1080"></svg></div></div>
-    <div class="center kt s" data-beat="0" data-hit="impact" style="top:300px;color:var(--muted)">Meet</div>
-    <div class="center kt xl" data-beat="0" style="top:380px;text-shadow:0 0 80px rgba(46,230,201,.45)"><span data-k="product">Kairos</span>.</div>
-    <div class="center sub" data-beat="4" data-fx="up" style="top:720px">The decision engine for collections.</div>
+  <!-- n06 · "Then it decides. Contact them today, or wait." -->
+  <section class="scene studio" id="n06"><div class="floor"></div>
+    <div class="center" style="top:110px"><div class="eyebrow" data-t="0.2">Ravi · synthetic borrower</div></div>
+    <div class="center" style="top:160px"><div class="h s gradink" data-t="0.3" data-fx="mask">Then it decides.</div></div>
+    <div class="opt" id="oC" data-t="1.3" data-fx="up" style="left:280px;top:420px"><div class="t">Contact today</div><div class="s">a message, a call, or a person</div></div>
+    <div class="opt" id="oW" data-t="1.5" data-fx="up" style="left:1000px;top:420px"><div class="t">Wait</div><div class="s">no message today</div></div>
   </section>
 
-  <!-- k4 IT DECIDES -->
-  <section class="scene" id="k4">
-    <div class="aislot" data-slot="slot_city_timelapse" style="inset:0;opacity:.35"><div class="fallback"></div></div>
-    <div class="abs" id="k4dots" style="left:880px;top:190px;width:920px;height:700px"></div>
-    <div class="abs" style="left:120px;top:260px">
-      <div class="kt m" data-beat="0" data-hit="stab">It decides.</div>
-      <div class="kt m accent" data-beat="2" data-hit="tom">Per person.</div>
-      <div class="kt m accent" data-beat="4" data-hit="tom">Per day.</div>
-      <div class="fine" data-beat="5" data-fx="fade" style="margin-top:30px">each dot is a borrower · teal: contact today · grey: wait</div>
-    </div>
+  <!-- n07 · "If it reaches out, it picks the channel... And the best time of day." -->
+  <section class="scene studio" id="n07"><div class="floor"></div>
+    <div class="abs" style="left:120px;top:110px"><div class="h s gradink" data-t="0.3" data-fx="mask">It picks the channel.</div></div>
+    <div class="chan" id="c1" style="left:120px;top:330px"><div class="n">SMS</div><div class="d">a short text</div></div>
+    <div class="chan" id="c2" style="left:540px;top:330px"><div class="n">WhatsApp</div><div class="d">a chat they can answer</div></div>
+    <div class="chan" id="c3" style="left:960px;top:330px"><div class="n">Voice call</div><div class="d">in their own language</div></div>
+    <div class="chan" id="c4" style="left:1380px;top:330px"><div class="n">Human agent</div><div class="d">for anything sensitive</div></div>
+    <div class="abs" style="left:120px;top:640px"><div class="h s gradink" data-t="9.2" data-fx="mask">And the best time.</div></div>
+    <div class="clock" data-t="9.3" data-fx="pop" style="left:1150px;top:610px"><i id="hh" style="width:58px;height:6px;margin:-3px 0 0 0"></i><i id="mmh" style="width:86px;height:4px;margin:-2px 0 0 0"></i></div>
+    <div class="abs" data-t="10.0" data-fx="up" style="left:1410px;top:680px"><div style="font-size:40px;font-weight:700">7:30 pm</div><div class="eyebrow" style="font-size:22px">WhatsApp, for Ravi</div></div>
   </section>
 
-  <!-- k5 CONTACT OR WAIT -->
-  <section class="scene" id="k5">
-    <div class="card" data-beat="0" data-fx="left" style="left:120px;top:300px;width:520px;height:400px;padding:36px">
-      <div style="display:flex;gap:20px;align-items:center"><div style="width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,#1e40af,#0d9488);display:grid;place-items:center;font-size:40px;font-weight:800">R</div>
-        <div><div style="font-size:40px;font-weight:800">Ravi</div><span class="chip" style="font-size:16px;padding:4px 12px">synthetic borrower</span></div></div>
-      <div style="margin-top:30px;font-size:27px;line-height:1.9;color:#d8e4f1">EMI 6 days late<br>Read the SMS · no reply<br>Free in the evening · prefers Hindi</div>
+  <!-- n08 · "Before anything is sent, Aladdin, our safety supervisor, checks it against the lender's rules. Twice." -->
+  <section class="scene black" id="n08"><div class="spot"></div>
+    <div class="abs" style="left:120px;top:120px"><div class="eyebrow" data-t="0.2">Aladdin, our safety supervisor</div><div class="h s grad" data-t="0.4" data-fx="mask" style="margin-top:8px">Checks every message.</div></div>
+    <div class="abs" style="left:120px;top:360px">
+      <div class="eyebrow" style="font-size:22px;margin-bottom:8px" data-t="2.2">Check 1 · when planning</div>
+      <div class="chk" id="a1">Consent <b>✓</b></div><div class="chk" id="a2">Quiet hours <b>✓</b></div><div class="chk" id="a3">Contact limit <b>✓</b></div><div class="chk" id="a4">Budget <b>✓</b></div><div class="chk" id="a5">Approved template <b>✓</b></div>
     </div>
-    <div class="pill" id="k5c" style="left:720px;top:360px">Contact</div>
-    <div class="pill" id="k5w" style="left:720px;top:500px">Wait</div>
-    <div class="abs" style="left:1100px;top:300px">
-      <div class="kt m" data-beat="0" data-hit="stab">Contact.</div>
-      <div class="kt m dim" data-beat="2" data-hit="tom">Or wait.</div>
-      <div data-beat="5" data-hit="stab" data-fx="pop" style="margin-top:40px"><span class="chip teal" style="font-size:30px">✓ WhatsApp · 7:30 pm · Hindi</span></div>
+    <div class="abs" style="left:1000px;top:360px">
+      <div class="eyebrow" style="font-size:22px;margin-bottom:8px" data-t="5.6">Check 2 · just before sending</div>
+      <div class="chk" id="b1">Consent <b>✓</b></div><div class="chk" id="b2">Quiet hours <b>✓</b></div><div class="chk" id="b3">Contact limit <b>✓</b></div><div class="chk" id="b4">Budget <b>✓</b></div><div class="chk" id="b5">Approved template <b>✓</b></div>
     </div>
+    <div class="abs" style="left:1000px;top:110px"><div class="h m grad" data-t="6.9" data-fx="mask">Twice.</div></div>
   </section>
 
-  <!-- k6 EVERY CHANNEL -->
-  <section class="scene" id="k6">
-    <div class="abs" style="left:120px;top:150px;width:1680px;display:grid;grid-template-columns:repeat(4,1fr);gap:28px">
-      <div data-beat="0" data-hit="stab"><div class="kt s">SMS.</div><div class="card" style="position:relative;margin-top:24px;height:430px;padding:26px">
-        <div class="bub in" style="font-size:20px">Hi Ravi, your EMI is due. Pay securely in the lender's app.</div><div class="fine">Read 10:02 · no reply</div></div></div>
-      <div data-beat="1.5" data-hit="stab"><div class="kt s">WhatsApp.</div><div class="card" style="position:relative;margin-top:24px;height:430px;padding:26px">
-        <div class="bub in" style="font-size:20px">Namaste Ravi ji, can we help with your EMI?</div><div class="bub out" style="font-size:20px">need time, salary late hai</div><div class="fine">7:32 pm · replied</div></div></div>
-      <div data-beat="3" data-hit="stab"><div class="kt s">Voice.</div><div class="card" style="position:relative;margin-top:24px;height:430px;padding:26px;text-align:center">
-        <div style="font-size:24px;font-weight:800;margin-top:20px">Ritu · voice agent</div><div class="fine">Sarvam · 8 languages</div><div class="wave" id="k6wave" style="margin-top:60px"></div></div></div>
-      <div data-beat="4.5" data-hit="stab"><div class="kt s accent">Human.</div><div class="card" style="position:relative;margin-top:24px;height:430px;padding:26px">
-        <div style="font-size:24px;font-weight:800">Handed to a person</div><div class="fine" style="margin-top:10px">Job loss, disputes, anything sensitive goes to the lender's team.</div>
-        <div class="chip ok" style="margin-top:40px;font-size:20px">Bots step back</div></div></div>
+  <!-- n09 · "No messages at night. Never more than allowed. And if someone says stop, everything stops. On every channel." -->
+  <section class="scene studio" id="n09"><div class="floor"></div>
+    <div class="rule" data-t="0.4" data-fx="up" style="left:110px;top:120px"><div><div class="w">10:00 pm reminder</div><div class="why">quiet hours</div></div><div class="blocked" id="bl1">BLOCKED</div></div>
+    <div class="rule" data-t="2.0" data-fx="up" style="left:110px;top:300px"><div><div class="w">4th message this week</div><div class="why">over the contact limit</div></div><div class="blocked" id="bl2">BLOCKED</div></div>
+    <div class="rule" data-t="3.8" data-fx="up" style="left:110px;top:480px"><div><div class="w">Borrower replied “STOP”</div><div class="why">opt-out, on any channel</div></div><div class="blocked" id="bl3">ALL OFF</div></div>
+    <div class="abs" data-t="5.0" data-fx="up" style="left:110px;top:670px;width:640px">
+      <div class="chanrow" id="s1">SMS <span class="s">ON</span></div><div class="chanrow" id="s2">WhatsApp <span class="s">ON</span></div><div class="chanrow" id="s3">Email <span class="s">ON</span></div><div class="chanrow" id="s4">Voice calls <span class="s">ON</span></div>
     </div>
-    <div class="center sub" data-beat="6" data-fx="up" style="top:800px">Kairos picks one. Or none.</div>
+    <div class="rig abs" style="inset:0;perspective:2400px">
+      <div class="shadow" data-t="3.6" style="left:900px;top:930px;width:820px"></div>
+      <div class="mbp" data-t="3.6" data-fx="up" style="left:850px;top:300px">
+        <div class="lid"><div class="bezel"><div class="notchm"></div><div class="scr"><img src="assets/real/cm03_stop.jpg" alt="Kairos CM-03 console: STOP honoured on every channel (synthetic borrower)" data-kf="0,0,0,1;3.8,0,0,1;4.9,-40,-110,2.3;9.3,-40,-110,2.3"><div class="glass"></div></div></div></div>
+        <div class="base"><div class="lip"></div></div>
+      </div>
+    </div>
+    <div class="abs realtag" data-t="4.5" style="left:850px;top:1000px"><b>REAL SCREEN</b>Kairos WhatsApp agent console · STOP honoured · synthetic borrower</div>
   </section>
 
-  <!-- k6b RITU, LIVE: the agent switches language -->
-  <section class="scene" id="k6b">
-    <div class="abs" data-beat="0" data-fx="left" data-depth="1.3" style="left:200px;top:150px">
-      <div class="phone"><div class="notch"></div><div class="screen">
-        <div class="statusbar"><span>19:41</span><span>●●● 5G</span></div>
-        <div class="abs" style="left:20px;right:20px;top:70px;text-align:center">
-          <div style="width:84px;height:84px;margin:0 auto;border-radius:50%;background:linear-gradient(135deg,#0d9488,#6d28d9);display:grid;place-items:center;font-size:34px">◉</div>
-          <div style="font-size:22px;font-weight:800;margin-top:12px">Ritu · Kairos voice agent</div>
-          <div class="fine" id="k6blang">Hindi · on call</div>
-          <div class="wave" id="k6bwave" style="margin-top:22px"></div>
-        </div>
-        <div class="abs" style="left:20px;right:20px;top:420px">
-          <div class="bub out" data-beat="11" data-fx="up" style="font-size:18px">Yes please, send it.</div>
-          <div class="bub in" data-beat="15" data-fx="up" data-hit="click" style="font-size:18px;border:1px solid rgba(46,230,201,.5)">🔗 Payment link · pay securely<br><span class="fine" style="font-size:14px">sent on WhatsApp · 19:42</span></div>
-        </div>
-      </div></div>
+  <!-- n10 · "When a borrower writes back on WhatsApp, Kairos answers in seconds, in Hindi or in English." -->
+  <section class="scene studio" id="n10"><div class="floor"></div>
+    <div class="clip" data-clip="man_turban_phone_night" data-from="1" data-t="0" data-tout="3.6" data-fx="cut" style="z-index:5"></div>
+    <div class="abs" style="left:840px;top:200px;width:960px">
+      <div class="eyebrow" data-t="3.7">On WhatsApp</div>
+      <div class="h s gradink" data-t="3.8" data-fx="mask" style="margin-top:8px">Answers in seconds.</div>
+      <div class="eyebrow" data-t="6.6" style="margin-top:20px">In Hindi, or in English.</div>
     </div>
-    <div class="abs" style="left:760px;top:190px">
-      <div class="kt s" data-beat="0" data-hit="stab">Ritu, our voice agent.</div>
-      <div class="kt s accent" data-beat="2" data-fx="up" style="margin-top:22px;line-height:1.3">हिंदी</div>
-      <div class="kt s accent" data-beat="12" data-fx="up" data-hit="stab" style="margin-top:10px">→ English.</div>
-      <div class="sub" data-beat="13" data-fx="up" style="margin-top:10px">Switches language mid-call.</div>
+    <div class="rig abs" style="inset:0;perspective:2400px">
+      <div class="iph" style="left:300px;top:120px"><div class="frame"><div class="pscr"><div class="wa"><div class="whd"><div class="av">L</div><div><b>Lender ✓</b><small>verified business · online</small></div></div><div class="wbody">
+        <div class="chipd">YESTERDAY</div>
+        <div class="m i">Hi Ravi, a friendly reminder from your lender: your EMI is due soon.<span class="ts">10:02</span></div>
+        <div class="chipd">TODAY</div>
+        <div class="m o" data-t="4.0" data-fx="up">Hi, when is my EMI due?<span class="ts">19:41</span></div>
+        <div class="typing" data-t="4.6" data-fx="up"><i></i><i></i><i></i></div>
+      </div></div><div class="island"></div><div class="glass"></div></div></div></div>
     </div>
-    <div class="center" data-beat="0.5" data-outbeat="11" style="top:780px;left:660px;right:40px"><div class="subtitle">नमस्ते! आपकी EMI की तारीख कल है। क्या मैं आपको पेमेंट लिंक भेज दूँ?<small>Hello! Your EMI is due tomorrow. Shall I send you the payment link?</small></div></div>
-    <div class="center" data-beat="12" style="top:800px;left:660px;right:40px"><div class="subtitle">Sure, sending your payment link on WhatsApp right now.</div></div>
+    <div class="abs realtag" data-t="5.6" style="left:840px;top:1000px"><b>REAL CONVERSATION</b>replies from the Kairos WhatsApp agent (CM-03), synthetic borrower</div>
   </section>
 
-  <!-- k7 ALADDIN -->
-  <section class="scene" id="k7">
-    <div class="abs" style="left:120px;top:200px">
-      <div class="kt m" data-beat="0.5" data-hit="stab">Checked by <span class="accent">Aladdin.</span></div>
-      <div class="kt l" data-beat="5.5" data-hit="stab" style="margin-top:10px">Twice. <span class="accent">✓✓</span></div>
+  <!-- n11 · Neha as the WhatsApp agent, in Hindi (caption carries the English) -->
+  <section class="scene studio" id="n11"><div class="floor"></div>
+    <div class="abs" style="left:840px;top:200px;width:960px">
+      <div class="eyebrow" data-t="0.1">The Kairos WhatsApp agent</div>
+      <div class="h s gradink" data-t="0.2" data-fx="mask" style="margin-top:8px;line-height:1.3">हिंदी में बात।</div>
+      <div class="eyebrow" data-t="0.6" style="margin-top:14px">“Hello! Your EMI is due tomorrow. Shall I send you the payment link?”</div>
     </div>
-    <div class="abs" style="left:120px;top:690px;width:1680px">
-      <span class="rule" data-beat="2" data-hit="tick" data-fx="pop"><b>✓</b> Consent</span><span class="rule" data-beat="2.5" data-hit="tick" data-fx="pop"><b>✓</b> Quiet hours</span>
-      <span class="rule" data-beat="3" data-hit="tick" data-fx="pop"><b>✓</b> Daily cap</span><span class="rule" data-beat="3.5" data-hit="tick" data-fx="pop"><b>✓</b> Budget</span>
-      <span class="rule" data-beat="4" data-hit="tick" data-fx="pop"><b>✓</b> STOP list</span><span class="rule" data-beat="4.5" data-hit="tick" data-fx="pop"><b>✓</b> Approved template</span>
-      <div class="fine" data-beat="6" data-fx="fade" style="margin-top:10px">Aladdin = the Kairos supervisor: checks when planning, and again just before sending.</div>
-    </div>
-  </section>
-
-  <!-- k8 STOP -->
-  <section class="scene" id="k8">
-    <div class="abs" style="left:120px;top:220px">
-      <div class="kt m" data-beat="0.5" data-hit="stab">STOP means stop.</div>
-      <div class="kt l accent" data-beat="3.5" data-hit="stab">Everywhere.</div>
-    </div>
-    <div class="abs" style="left:1260px;top:200px;width:540px">
-      <div style="display:flex;justify-content:flex-end" data-beat="0" data-hit="stamp" data-fx="pop"><div class="bub out" style="font-size:34px;font-weight:900;letter-spacing:.08em;margin:0">STOP</div></div>
-      <div class="chan" id="k8c1">SMS <span class="s">ON</span></div><div class="chan" id="k8c2">WhatsApp <span class="s">ON</span></div>
-      <div class="chan" id="k8c3">Email <span class="s">ON</span></div><div class="chan" id="k8c4">Voice <span class="s">ON</span></div>
-      <div data-beat="4" data-fx="pop" style="margin-top:18px"><span class="chip red">Blocked by Aladdin · all channels</span></div>
+    <div class="rig abs" style="inset:0;perspective:2400px">
+      <div class="iph" style="left:300px;top:120px"><div class="frame"><div class="pscr"><div class="wa"><div class="whd"><div class="av">L</div><div><b>Lender ✓</b><small>verified business · online</small></div></div><div class="wbody">
+        <div class="chipd">TODAY</div>
+        <div class="m o">Hi, when is my EMI due?<span class="ts">19:41</span></div>
+        <div class="m i" data-t="0.3" data-fx="up">नमस्ते! आपकी EMI की तारीख कल है। क्या मैं आपको पेमेंट लिंक भेज दूँ?<span class="ts">19:41</span></div>
+        <div class="m o" data-t="4.2" data-fx="up">Haan, bhej do<span class="ts">19:42</span></div>
+        <div class="typing" data-t="4.7" data-tout="5.5" data-fx="up"><i></i><i></i><i></i></div>
+        <div class="pay" data-t="5.5" data-fx="up"><div class="top">Pay your EMI securely</div><div class="bot">Opens the lender's payment page · 19:42</div></div>
+      </div></div><div class="island"></div><div class="glass"></div></div></div></div>
     </div>
   </section>
 
-  <!-- k9 FAKE PROOF (real CM-03 console) -->
-  <section class="scene" id="k9">
-    <div class="monitor" data-beat="0" data-fx="right" style="left:700px;top:170px;width:1100px;height:640px">
-      <img src="assets/real/cm03_fake_caught.jpg" alt="Kairos CM-03 console: edited payment screenshot flagged as fraud suspect" style="width:1920px" data-kb="-30,-60,0.6,-1300,-560,1.25" data-kbbeat="1.5,3">
-      <div class="stamp" data-beat="3" data-fx="pop" style="left:560px;top:420px">FRAUD SUSPECT</div>
+  <!-- n12 · "It confirms who they are before sharing any loan details. And if someone sends a fake payment screenshot, it checks with the bank, and catches it." -->
+  <section class="scene studio" id="n12"><div class="floor"></div>
+    <div class="rig abs" style="inset:0;perspective:2400px">
+      <div class="iph" id="n12ph" data-tout="4.6" style="left:300px;top:120px"><div class="frame"><div class="pscr"><div class="wa"><div class="whd"><div class="av">L</div><div><b>Lender ✓</b><small>verified business · online</small></div></div><div class="wbody">
+        <div class="m o">Kal EMI pay kar di thi<span class="ts">19:50</span></div>
+        <div class="m i">For your security, please share the 6-digit code we just sent to your registered number.<span class="ts">19:50</span></div>
+        <div class="m o" data-t="1.2" data-fx="up">• • • • • •<span class="ts">19:51</span></div>
+        <div data-t="2.4" data-fx="pop" style="align-self:center"><span class="okpill" style="font-size:18px;padding:8px 16px">✓ Identity verified</span></div>
+        <div class="m i" data-t="3.0" data-fx="up">Thanks, Ravi. Please send the UTR or a screenshot so I can check it with the bank.<span class="ts">19:51</span></div>
+      </div></div><div class="island"></div><div class="glass"></div></div></div></div>
+      <div class="shadow" data-t="4.6" style="left:820px;top:930px;width:820px"></div>
+      <div class="mbp" data-t="4.6" data-fx="up" style="left:780px;top:300px">
+        <div class="lid"><div class="bezel"><div class="notchm"></div><div class="scr"><img src="assets/real/cm03_fake_caught.jpg" alt="Kairos CM-03 console: an edited payment screenshot flagged as fraud" data-kf="0,0,0,1;5.0,0,0,1;7.6,-1010,-400,2.1;10.5,-1015,-405,2.12">
+          <div class="stampx" data-t="9.4" data-fx="pop" style="left:300px;top:380px">FAKE CAUGHT</div><div class="glass"></div></div></div></div>
+        <div class="base"><div class="lip"></div></div>
+      </div>
     </div>
-    <div class="stand" data-beat="0" data-fx="fade" style="left:1150px;top:808px;width:200px"></div>
-    <div class="abs" style="left:120px;top:300px">
-      <div class="kt m" data-beat="0" data-hit="stab">Fake proof?</div>
-      <div class="kt l warn" data-beat="3" data-hit="stamp">Caught.</div>
+    <div class="abs" style="left:840px;top:240px;width:960px">
+      <div class="eyebrow" data-t="0.2" data-tout="4.6">Before any loan details</div>
+      <div class="h s gradink" data-t="0.3" data-tout="4.6" data-fx="mask" style="margin-top:8px">Identity first.</div>
+      <div class="eyebrow" data-t="2.6" data-tout="4.6" style="margin-top:16px">A one-time code to the registered number.</div>
     </div>
-    <div class="abs realtag" data-beat="1" data-fx="fade" style="left:700px;top:880px"><b>REAL SCREEN</b>Kairos CM-03 console · edited screenshot detected · synthetic borrower</div>
+    <div class="abs" style="left:110px;top:150px;width:620px">
+      <div class="h s gradink" data-t="5.0" data-fx="mask">Fake proof?</div>
+      <div data-t="8.2" data-fx="up" class="card" style="position:relative;padding:20px 26px;margin-top:30px"><div class="eyebrow" style="font-size:18px">Checked with the bank</div><div style="font-size:30px;font-weight:700;margin-top:4px;color:var(--bad)">No matching payment</div></div>
+    </div>
+    <div class="abs realtag" data-t="5" style="left:780px;top:1000px"><b>REAL SCREEN</b>Kairos WhatsApp agent console · edited screenshot detected · synthetic borrower</div>
   </section>
 
-  <!-- k10 ON THE RECORD (real CRM) -->
-  <section class="scene" id="k10">
-    <div class="monitor" data-beat="0" data-fx="left" style="left:120px;top:170px;width:1100px;height:640px">
-      <img src="assets/real/crm_borrower.jpg" alt="Kairos CRM borrower page: Loan A cleared, Loan B reminder pending" style="width:1920px" data-kb="0,0,0.573,-560,-835,1.45" data-kbbeat="1,5">
+  <!-- n13 · "Every reply, and every payment, teaches Kairos something new..." -->
+  <section class="scene studio" id="n13"><div class="floor"></div>
+    <div class="abs" style="left:110px;top:150px;width:620px">
+      <div class="eyebrow" data-t="0.3">Every reply. Every payment.</div>
+      <div class="h s gradink" data-t="0.5" data-fx="mask" style="margin-top:8px">It learns.</div>
+      <div class="fine" data-t="3.4" style="margin-top:30px;font-size:26px;line-height:1.6;color:#424245">Day 7: WhatsApp replies drop.<br>Kairos notices and shifts to what works.</div>
     </div>
-    <div class="stand" data-beat="0" data-fx="fade" style="left:570px;top:808px;width:200px"></div>
-    <div class="abs" style="left:1290px;top:260px">
-      <div class="kt s" data-beat="0" data-hit="stab">Every step.</div>
-      <div class="kt s accent" data-beat="2" data-hit="stab">On the record.</div>
-      <div data-beat="4" data-hit="tick" data-fx="right" style="margin-top:40px"><span class="chip ok">✓ Loan A cleared · bank-verified</span></div>
-      <div data-beat="5" data-hit="tick" data-fx="right" style="margin-top:14px"><span class="chip teal">Loan B · reminder still due</span></div>
+    <div class="rig abs" style="inset:0;perspective:2400px">
+      <div class="shadow" style="left:820px;top:930px;width:820px"></div>
+      <div class="mbp" style="left:780px;top:300px">
+        <div class="lid"><div class="bezel"><div class="notchm"></div><div class="scr"><div class="dash" id="dashL"></div><div class="glass"></div></div></div></div>
+        <div class="base"><div class="lip"></div></div>
+      </div>
     </div>
-    <div class="abs realtag" data-beat="1" data-fx="fade" style="left:120px;top:880px"><b>REAL SCREEN</b>Kairos CRM · synthetic borrower B-1042 · SIMULATED</div>
+    <div class="abs realtag" data-t="1" style="left:780px;top:1000px"><b>PRODUCT VIEW</b>Live collections, in the product's design · SIMULATED</div>
   </section>
 
-  <!-- k11 IT LEARNS -->
-  <section class="scene" id="k11">
-    <div class="abs" style="left:120px;top:250px">
-      <div class="kt m" data-beat="1" data-hit="stab">It learns.</div>
-      <div class="kt l accent" data-beat="2.5" data-hit="stab">Live.</div>
+  <!-- n14 · "And the collections team? They watch the money come in, and approve the few decisions that need a human." -->
+  <section class="scene black" id="n14"><div class="spot"></div>
+    <div class="abs" style="left:240px;top:100px"><div class="eyebrow" data-t="0.2">The collections team</div><div class="h s grad" data-t="0.4" data-fx="mask" style="margin-top:6px">Watches. Approves.</div></div>
+    <div class="rig abs" style="inset:0;perspective:2400px">
+      <div class="shadow" style="left:300px;top:940px;width:880px"></div>
+      <div class="mbp" style="left:240px;top:300px">
+        <div class="lid"><div class="bezel"><div class="notchm"></div><div class="scr"><div class="dash" id="dashB"></div><div class="glass"></div></div></div></div>
+        <div class="base"><div class="lip"></div></div>
+      </div>
+      <div class="iph" id="n14ph" style="left:1360px;top:150px;scale:.86"><div class="frame"><div class="pscr"><div class="lock" style="background:linear-gradient(170deg,#1f2733,#3d3a46 60%,#5a4c4c)"><div class="date">Thursday 19 November</div><div class="time">11:02</div></div>
+        <div class="ntf" style="top:260px;height:auto;padding:14px;flex-direction:column;align-items:stretch;gap:8px">
+          <div class="t"><span style="color:#0f766e;font-weight:800">KAIROS</span><span>now</span></div>
+          <div style="font-size:16px;font-weight:700">1 decision needs you</div>
+          <div style="font-size:14px;color:#3a3a3c">A borrower reported a job loss. Gentle call from a senior colleague tomorrow? No payment ask.</div>
+          <div style="display:flex;gap:8px;margin-top:4px"><span class="btnp" id="approve" style="flex:1">Approve</span><span class="btnp" style="background:#e5e5ea;color:#1d1d1f">Later</span></div>
+        </div><div class="island"></div><div class="glass"></div></div></div></div>
     </div>
-    <div class="monitor" data-beat="0" data-fx="right" style="left:880px;top:200px;width:920px;height:560px">
-      <img src="assets/real/live_4.jpg" alt="Kairos live view: what Kairos is learning, reply rates per channel" style="width:1920px" data-kb="-1209,-578,1.06,-1235,-596,1.09">
-    </div>
-    <svg class="abs" id="k11chart" data-beat="3" data-fx="fade" style="left:880px;top:790px" width="920" height="120" viewBox="0 0 920 120"></svg>
-    <div class="abs" data-beat="5" data-fx="pop" style="left:1380px;top:780px"><span class="chip teal" style="font-size:20px">WhatsApp dipped → switched by itself</span></div>
-    <div class="abs realtag" data-beat="1" data-fx="fade" style="left:880px;top:930px"><b>REAL SCREEN</b>/demo/live · what Kairos is learning · SIMULATED</div>
+    <div class="abs realtag" data-t="1" style="left:240px;top:1010px"><b>REAL NUMBERS</b>₹ recovered and the rule-breach card are from /demo/live (SIMULATED), in a rebuilt product view</div>
   </section>
 
-  <!-- k12 AUTOPILOT (real /demo/live frames + live overlays) -->
-  <section class="scene" id="k12">
-    <div class="aislot" data-slot="slot_ops_desk" style="inset:0;opacity:.35;filter:blur(6px)"><div class="fallback"></div></div>
-    <div class="center kt xl" id="k12title" data-beat="0" data-outbeat="3.5" data-hit="stab" style="top:360px">Autopilot.</div>
-    <div class="monitor" id="k12mon" data-beat="3.5" data-fx="pop" style="left:120px;top:140px;width:1240px;height:698px">
-      <img class="lf" src="assets/real/live_1.jpg" alt="Kairos live collections, day 2" style="width:1440px;top:-150px">
-      <img class="lf" src="assets/real/live_2.jpg" alt="" style="width:1440px;top:-150px">
-      <img class="lf" src="assets/real/live_3.jpg" alt="" style="width:1440px;top:-150px">
-      <img class="lf" src="assets/real/live_4.jpg" alt="Kairos live collections, day 8" style="width:1440px;top:-150px">
-    </div>
-    <div class="stand" data-beat="3.5" data-fx="fade" style="left:640px;top:836px;width:200px"></div>
-    <div class="abs realtag" data-beat="4" data-fx="fade" style="left:120px;top:900px"><b>REAL SCREEN</b>/demo/live · decision river, “Checked by Aladdin”, money over the campaign · SIMULATED</div>
-    <div class="card" data-beat="4" data-fx="right" style="left:1400px;top:140px;width:400px;height:520px;padding:18px">
-      <div style="font-size:15px;letter-spacing:.16em;font-weight:800;color:var(--muted)">DECISIONS · LIVE</div>
-      <div class="stream" id="k12stream" style="left:18px;right:18px;top:52px;bottom:18px"></div>
-    </div>
-    <div class="card" data-beat="5" data-fx="right" style="left:1400px;top:680px;width:400px;height:158px;padding:18px 22px">
-      <div style="font-size:15px;letter-spacing:.16em;font-weight:800;color:var(--muted)">CHECKED BY ALADDIN</div>
-      <div class="num" style="font-size:54px;font-weight:850;color:var(--ok)" id="k12checks">0</div>
-      <div class="fine" style="font-size:16px">rule breaches: <b style="color:var(--ok)">0</b> · illustrative count</div>
-    </div>
-    <div class="card" id="k12card" data-beat="12" data-fx="up" data-hit="whoosh" style="left:520px;top:300px;width:880px;padding:30px 36px;z-index:3">
-      <div style="font-size:20px;font-weight:800;letter-spacing:.12em;color:var(--amber)">1 DECISION NEEDS YOU</div>
-      <div style="font-size:34px;font-weight:750;margin-top:12px">A borrower reported a job loss.</div>
-      <div class="sub" style="font-size:24px;margin-top:6px">Gentle call from a senior colleague, tomorrow 11:00? No payment ask.</div>
-      <div style="display:flex;gap:16px;margin-top:22px"><span class="btn pri" id="k12approve">Approve</span><span class="btn">Not now</span></div>
-    </div>
-    <div class="aislot" data-slot="slot_hand_tap" data-beat="13" data-outbeat="17" data-fx="fade" style="left:1420px;top:680px;width:380px;height:214px;border-radius:16px;z-index:4"><div class="fallback"></div></div>
-    <div class="abs" style="left:520px;top:640px;z-index:4">
-      <div class="kt s" data-beat="16" data-hit="stab">One tap.</div>
-      <div class="kt s accent" data-beat="18" data-hit="stab">Aladdin re-checks.</div>
-    </div>
+  <!-- n15 · "In our tests, Kairos recovered about twice as much money for every rupee spent, compared to a fixed schedule." -->
+  <section class="scene black" id="n15"><div class="spot"></div>
+    <div class="abs" style="right:80px;top:60px"><span class="sim">Simulated data</span></div>
+    <div class="center" style="top:180px"><div class="eyebrow" data-t="0.25">In our tests</div></div>
+    <div class="center" style="top:240px"><div class="h hero grad" data-t="0.25" data-fx="mask">~<span data-k="numbers.recoveryX">2</span>×</div></div>
+    <div class="center" style="top:610px"><div class="h s grad" data-t="1.0" data-fx="mask">money recovered per ₹ spent</div></div>
+    <div class="center eyebrow" data-t="6.6" style="top:720px">vs a fixed schedule</div>
+    <div class="center fine" data-t="7" style="top:880px">Same budget cap, test runs never used for tuning: <span data-k="numbers.recoveryExamples">517 vs 272</span> (<span data-k="numbers.recoveryRange">1.7× to 2.3×</span>). Kairos spent less of the budget.</div>
   </section>
 
-  <!-- k13 PROOF 1: money (drop 2) -->
-  <section class="scene" id="k13">
-    <div class="abs" data-beat="0" data-fx="fade" style="right:120px;top:120px"><span id="simlabel" data-k="dataLabel">SIMULATED data</span></div>
-    <div class="abs kt xl accent" data-beat="0" data-hit="impact" style="left:120px;top:170px">~<span data-k="numbers.recoveryX">2</span>×</div>
-    <div class="abs kt s" data-beat="1" style="left:130px;top:500px">money recovered per ₹ spent</div>
-    <div class="bar" id="k13b1" style="left:130px;top:640px;background:#2a3d55;color:#cbd5e1"><span>Lender's own schedule · <span data-k="numbers.recoveryBaseline">272</span></span></div>
-    <div class="bar" id="k13b2" style="left:130px;top:724px;background:linear-gradient(90deg,var(--teal2),var(--teal));color:#03211c"><span><span data-k="product">Kairos</span> · <span data-k="numbers.recoveryKairos">517</span></span></div>
-    <div class="abs fine" data-beat="4" data-fx="fade" style="left:130px;top:830px;width:1500px">₹ recovered per ₹ spent vs the lender's own 10-day schedule, on test runs never used for tuning: <span data-k="numbers.recoveryExamples">517 vs 272</span> (<span data-k="numbers.recoveryRange">1.7× to 2.3×</span>). Same budget cap (Kairos spent less of it). <b data-k="numbers.repliesLift">+80% to +105%</b> more replies per rupee.</div>
+  <!-- n16 · "With zero rule breaches. And every safety test passed." -->
+  <section class="scene black" id="n16"><div class="spot"></div>
+    <div class="abs" style="right:80px;top:60px"><span class="sim">Simulated data</span></div>
+    <div class="center" style="top:160px"><div class="eyebrow" data-t="0.2" data-tout="2.0">Rule breaches</div></div>
+    <div class="center" style="top:220px"><div class="h hero grad" data-t="0.3" data-tout="2.0" data-fx="mask"><span data-k="numbers.ruleBreaches">0</span></div></div>
+    <div class="center" style="top:300px"><div class="h xl grad" data-t="2.05" data-fx="mask"><span data-k="numbers.attacks">49/49</span></div></div>
+    <div class="center" style="top:540px"><div class="eyebrow" data-t="2.15">attack tests passed</div></div>
+    <div class="center" style="top:610px"><div class="h s grad" data-t="2.35" data-fx="mask"><span data-k="numbers.policyCases">148/148</span> policy checks</div></div>
   </section>
 
-  <!-- k14 PROOF 2: safe -->
-  <section class="scene" id="k14">
-    <div class="abs" style="right:120px;top:120px"><span id="simlabel2" class="sim2" style="font-size:20px;letter-spacing:.14em;font-weight:800;color:#ddd6fe;border:2px solid rgba(167,139,250,.7);background:rgba(167,139,250,.14);padding:8px 16px;border-radius:10px">SIMULATED DATA</span></div>
-    <div class="abs kt xl" data-beat="0" data-hit="stab" style="left:120px;top:170px;color:var(--ok)"><span data-k="numbers.ruleBreaches">0</span></div>
-    <div class="abs kt m" data-beat="0.5" style="left:400px;top:260px">rule breaches.</div>
-    <div class="abs" style="left:130px;top:560px">
-      <div data-beat="3" data-hit="tick" data-fx="right"><span class="chip ok" style="font-size:34px"><b><span data-k="numbers.attacksPassed">49</span>/<span data-k="numbers.attacksTotal">49</span></b>&nbsp;attacks blocked</span></div>
-      <div data-beat="4" data-hit="tick" data-fx="right" style="margin-top:20px"><span class="chip ok" style="font-size:34px"><b><span data-k="numbers.fakesCaught">127</span>/<span data-k="numbers.fakesTotal">127</span></b>&nbsp;fake payment proofs caught</span></div>
-      <div data-beat="5" data-hit="tick" data-fx="right" style="margin-top:20px"><span class="chip ok" style="font-size:34px"><b><span data-k="numbers.policyCases">148/148</span></b>&nbsp;lender-policy test cases pass</span></div>
-    </div>
+  <!-- n17 · good news, then the end card: "Kairos. The right message, at the right time. Or none at all." -->
+  <section class="scene black" id="n17"><div class="spot"></div>
+    <div class="clip" data-clip="man_good_news_phone" data-from="3" data-t="0" data-tout="1.2" data-fx="cut" style="z-index:5"></div>
+    <div class="center" style="top:300px"><div class="h xl grad" data-t="1.2" data-fx="mask"><span data-k="product">Kairos</span></div></div>
+    <div class="center" style="top:560px"><div class="h s grad" data-t="2.0" data-fx="mask">The right message, at the right time.</div></div>
+    <div class="center" style="top:650px"><div class="h s" data-t="4.8" data-fx="mask" style="color:#a1a1a6">Or none at all.</div></div>
+    <div class="center fine" data-t="6.2" style="top:790px"><span data-k="team">The A Team</span> · <span data-k="event">CreditNirvana Agentathon 2026</span></div>
+    <div class="center fine" data-t="6.6" style="top:830px;font-size:15px">Synthetic data · SIMULATED results · Voice: Sarvam bulbul:v3 (Neha), AI-generated · Music: original score · Stock footage: Pexels</div>
   </section>
 
-  <!-- k15 PROOF 3: runs itself -->
-  <section class="scene" id="k15">
-    <div class="abs" style="right:120px;top:120px"><span style="font-size:20px;letter-spacing:.14em;font-weight:800;color:#ddd6fe;border:2px solid rgba(167,139,250,.7);background:rgba(167,139,250,.14);padding:8px 16px;border-radius:10px">SIMULATED DATA</span></div>
-    <div class="abs kt xl" data-beat="0" data-hit="stab" style="left:120px;top:170px"><span class="num" data-count="waResolvedPct" data-dec="1" data-atbeat="0" data-cbeats="2">0</span>%</div>
-    <div class="abs kt s" data-beat="1" style="left:130px;top:500px">of chats resolved without a human</div>
-    <div class="abs" style="left:130px;top:620px">
-      <div data-beat="3" data-hit="tick" data-fx="right"><span class="chip teal" style="font-size:34px"><b class="num" data-count="decisions" data-atbeat="3" data-cbeats="1.5">0</b>&nbsp;decisions in <span data-k="numbers.decisionsTime">about 2 minutes</span></span></div>
-      <div data-beat="4" data-hit="tick" data-fx="right" style="margin-top:20px"><span class="chip teal" style="font-size:34px">Hard cases go to people · nothing shared before a one-time code</span></div>
-    </div>
-    <div class="abs fine" data-beat="5" data-fx="fade" style="left:130px;top:900px;width:1660px">CM-03 eval: 732 of 1,000 scripted chats (67.3% counting only bank-confirmed claims) · <span data-k="numbers.understandingPct">95</span>% message understanding · <span data-k="numbers.concurrentChats">500</span> chats at once · all figures SIMULATED. Sources: TRUTH_TABLE.md</div>
-  </section>
-
-  <!-- k16 FINAL HIT, SILENCE, LOGO STING -->
-  <section class="scene" id="k16">
-    <div class="center kt m" data-beat="0" data-outbeat="1" data-hit="impact" style="top:400px">Right message. Right time.</div>
-    <div class="center kt xl" data-beat="2" style="top:250px;text-shadow:0 0 90px rgba(46,230,201,.5)"><span data-k="product">Kairos</span>.</div>
-    <div class="center kt s accent" data-beat="5" data-fx="up" style="top:600px">Or none at all.</div>
-    <div class="center sub" data-beat="7" data-fx="fade" style="top:760px;font-size:28px"><span data-k="team">The A Team</span> · <span data-k="event">CreditNirvana Agentathon 2026</span></div>
-    <div class="center fine" data-beat="8" data-fx="fade" style="top:812px">Synthetic data · SIMULATED results · Voices: AI-generated with Sarvam bulbul:v3 · Original music</div>
-  </section>
-
-  <svg id="cursor" viewBox="0 0 24 24"><path d="M3 2l7 19 2.6-7.4L20 11z" fill="#fff" stroke="#0b1a2c" stroke-width="1.4"/></svg>
+  <svg id="cursor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="rgba(255,255,255,.55)" stroke="#fff" stroke-width="1.5"/></svg>
   <div id="cap"><div id="capText"></div></div>
 </div>
-  <div id="leak"></div>
   <div id="flash"></div>
+  <div id="grain"></div>
 </div></div>
 
 <div id="ui">
-  <div id="panel"><div id="groups"></div><div id="chapters"></div><div id="moreSlot"></div></div>
+  <div id="panel"><div id="chapters"></div>
+    <div id="more"><button id="bMusic" class="on" title="M">Music</button><button id="bVO" class="on" title="V">Voice</button><button id="bCC" class="on" title="C">Captions</button><button id="bRec" title="R">Record mode</button></div></div>
   <div class="ctr">
-    <button id="bPlay">▶ Play</button>
+    <button id="bPlay" title="Play (Space)">▶</button>
     <span id="time">0:00 / 0:00</span>
     <input type="range" id="scrub" min="0" max="100" step="0.01" value="0" aria-label="Scrub">
-    <div id="more">
-      <button id="bMusic" class="on" title="M">Music</button>
-      <button id="bVO" class="on" title="V">Voice</button>
-      <button id="bCC" title="C">Captions</button>
-      <button id="bRec" title="R">Record mode</button>
-    </div>
-    <button id="bMenu" title="More controls" aria-label="More controls" aria-expanded="false">⋯</button>
+    <button id="bMenu" title="More" aria-label="More controls" aria-expanded="false">⋯</button>
   </div>
-  <div id="hint">Space play/pause · ← → scene · M music · V voice · C captions · R record mode (Esc exits; restarts at 0:00 with sound)</div>
 </div>
 
 <script>
-/* ---------------- scene table: lengths in bars on the CONFIG.film.bpm grid; vo = [line, seconds from scene start] ----------------
-   music/compose.py reads this table and every data-beat / data-hit in the sections below. */
+/* ---------------- scene table: one scene per Neha line; secs snap cuts to the music's beat grid (148 BPM);
+   vo = [line in audio/vo_neha, seconds from scene start]. music/mix.py reads this table. ---------------- */
 const ALL_SCENES = [
-  {id:"k1", name:"Cold open", bars:4, mode:"intro", vo:[["vo01_problem",1.0]]},
-  {id:"k2", name:"The problem", bars:4, mode:"build", vo:[["vo02_pain",0.1]]},
-  {id:"k3", name:"Meet Kairos", bars:2, drop:true, vo:[["vo03_meet",0.05]]},
-  {id:"k4", name:"It decides", bars:2, mode:"drive", vo:[["vo04_decides",0.15]]},
-  {id:"k5", name:"Contact or wait", bars:2, mode:"drive"},
-  {id:"k6", name:"Every channel", bars:2, mode:"drive", vo:[["vo05_channels",0.1]]},
-  {id:"k6b", name:"Ritu, live", bars:5, mode:"groove", vo:[["agent01_hi",0.25],["agent02_en",5.6]]},
-  {id:"k7", name:"Aladdin", bars:2, mode:"tight", vo:[["vo06_aladdin",0.1]]},
-  {id:"k8", name:"STOP", bars:2, mode:"tight", vo:[["vo07_stop",0.1]]},
-  {id:"k9", name:"Fake proof", bars:2, mode:"tight", vo:[["vo08_fake",0.1]]},
-  {id:"k10", name:"On the record", bars:2, mode:"tight"},
-  {id:"k11", name:"It learns", bars:2, mode:"lift", vo:[["vo09_learns",0.1]]},
-  {id:"k12", name:"Autopilot", bars:6, mode:"breakdown"},
-  {id:"k13", name:"Proof: money", bars:2, drop:true, vo:[["vo10_proof",0.25]]},
-  {id:"k14", name:"Proof: safe", bars:2, mode:"drive"},
-  {id:"k15", name:"Proof: hands-free", bars:2, mode:"drive"},
-  {id:"k16", name:"Logo", bars:4, final:true, vo:[["vo11_end",0.99]]}
+  {id:"n01", name:"Millions repay a loan", secs:8.946, vo:[["01_people",1.5]], vdur:7.146, dvo:0.6, ddur:7.52},
+  {id:"n02", name:"Same message, same time", secs:7.776, vo:[["02_same",0.3]], vdur:7.176, dvo:0.106, ddur:7.93},
+  {id:"n03", name:"Ignored, annoying, costly", secs:8.505, vo:[["03_cost",0.3]], vdur:7.555, dvo:0.428, ddur:7.28},
+  {id:"n04", name:"Meet Kairos", secs:7.375, vo:[["04_meet",1.15]], vdur:5.925, dvo:1.22, ddur:7.35},
+  {id:"n05", name:"It looks first", secs:10.482, vo:[["05_looks",0.3]], vdur:9.882, dvo:0.308, ddur:9.83},
+  {id:"n06", name:"Contact or wait", secs:5.006, vo:[["06_decides",0.3]], vdur:4.406, dvo:0.256, ddur:4.55},
+  {id:"n07", name:"Channel and time", secs:10.581, vo:[["07_channel",0.3]], vdur:9.981, dvo:0.193, ddur:11.49},
+  {id:"n08", name:"Aladdin checks twice", secs:7.778, vo:[["08_aladdin",0.3]], vdur:7.178, dvo:0.177, ddur:7.6},
+  {id:"n09", name:"The rules hold", secs:10.222, vo:[["09_rules",0.3]], vdur:9.622, dvo:0.326, ddur:8.53},
+  {id:"n10", name:"Answers on WhatsApp", secs:7.774, vo:[["10_reply",0.3]], vdur:7.024, dvo:0.19, ddur:8.37},
+  {id:"n11", name:"In Hindi", secs:6.693, vo:[["11_agent_hi",0.45]], vdur:5.943, dvo:0.298, ddur:6.51},
+  {id:"n12", name:"Verified; fake caught", secs:9.891, vo:[["12_verify",0.3]], vdur:9.291, dvo:0.168, ddur:10.1},
+  {id:"n13", name:"It learns", secs:8.897, vo:[["13_learns",0.3]], vdur:8.297, dvo:0.384, ddur:8.92},
+  {id:"n14", name:"The team approves", secs:7.364, vo:[["14_operator",0.3]], vdur:6.164, dvo:0.232, ddur:7.06},
+  {id:"n15", name:"~2x per rupee", secs:9.21, vo:[["15_proof",0.9]], vdur:8.01, dvo:0.247, ddur:8.77},
+  {id:"n16", name:"0 breaches, tests passed", secs:3.662, vo:[["16_safe",0.3]], vdur:3.912, dvo:0.192, ddur:4.42},
+  {id:"n17", name:"End card", secs:9.473, vo:[["17_end",1.15]], vdur:4.723, dvo:1.198, ddur:5.46}
 ];
-const CUTS = {
-  hero:   ["k1","k2","k3","k4","k5","k6","k6b","k7","k8","k9","k10","k11","k12","k13","k14","k15","k16"],
-  teaser: ["k1","k3","k6","k8","k12","k13","k16"]
+const CUTS = { hero: ALL_SCENES.map(s=>s.id) };
+/* camera rigs: [seconds, x, y, scale, rotateY, rotateX] */
+const CAM = {
+  n02:[[2.8,0,140,1.25,-16,4],[5,0,0,1.0,0,0],[8.1,0,20,.95,0,0]],
+  n04:[[1.2,0,60,1.06,0,6],[3.5,0,0,1,0,0],[8.9,0,-6,1.02,0,0]],
+  n05:[[0,60,0,.96,-10,0],[4,0,0,1.0,-4,0],[10.5,-10,0,1.02,-3,0]],
+  n09:[[3.6,30,0,.97,-6,0],[4.9,0,0,1,-4,0],[9.3,0,0,1,-4,0]],
+  n10:[[3.6,-120,0,.96,16,0],[6,0,0,1,6,0],[8.9,0,0,1.02,4,0]],
+  n11:[[0,0,0,1,6,0],[7.3,0,0,1.03,3,0]],
+  n12:[[0,0,0,1,6,0],[4.6,0,0,1.0,0,0],[6,0,0,1,-4,0],[10.5,-8,0,1.02,-3,0]],
+  n13:[[0,60,0,.96,-10,0],[5,0,0,1.02,-4,0],[9.7,-10,0,1.03,-3,0]],
+  n14:[[0,0,60,.92,0,0],[3,0,0,1,0,0],[7.7,-20,0,1.03,2,0]]
 };
-const VO_TEXT = { /* captions for the Sarvam bulbul:v3 lines (audio/vo_sarvam/lines.json) */
-  vo01_problem:"Every day, lenders send the same reminder to every borrower.", vo02_pain:"It's expensive. It's annoying. And it gets ignored.",
-  vo03_meet:"Meet Kairos.", vo04_decides:"It decides, for each person, each day, whether to reach out, or wait.",
-  vo05_channels:"SMS. WhatsApp. Voice. Or a human.", agent01_hi:"Ritu: नमस्ते! आपकी EMI की तारीख कल है। क्या मैं आपको पेमेंट लिंक भेज दूँ?",
-  agent02_en:"Ritu: Sure, sending your payment link on WhatsApp right now.", vo06_aladdin:"Every decision is checked by Aladdin. Twice.",
-  vo07_stop:"Say stop, and it stops. Everywhere.", vo08_fake:"Fake payment proof? Caught.", vo09_learns:"And it learns, live, from every reply.",
-  vo10_proof:"Twice the money recovered for every rupee spent. Zero rule breaches.", vo11_end:"Kairos. The right message, at the right time. Or none at all."};
-const VO_DUR = {vo01_problem:3.9,vo02_pain:3.99,vo03_meet:1.15,vo04_decides:4.15,vo05_channels:2.56,agent01_hi:4.95,agent02_en:3.41,
-  vo06_aladdin:3.26,vo07_stop:2.52,vo08_fake:2.05,vo09_learns:2.93,vo10_proof:4.78,vo11_end:4.66};
-const GROUP = {k1:"problem",k2:"problem",k3:"kairos",k4:"kairos",k5:"kairos",k6:"kairos",k6b:"kairos",k7:"kairos",k8:"kairos",k9:"kairos",k10:"kairos",k11:"kairos",
-  k12:"autopilot",k13:"proof",k14:"proof",k15:"proof",k16:"proof"};
-const GROUP_NAME = {problem:"Problem",kairos:"Kairos",autopilot:"Autopilot",proof:"Proof & logo"};
+const VO_TEXT = {
+  "01_people":"Every month, millions of people in India repay a loan. For a phone, a bike, a small shop.",
+  "02_same":"And every month, lenders remind them the same way. Same message. Same time. To everyone.",
+  "03_cost":"Most of those messages are ignored. Some annoy people. And every single one costs money.",
+  "04_meet":"Meet Kairos. An AI that runs loan collections, one person at a time.",
+  "05_looks":"Every morning, Kairos looks at each borrower. How late they are, how they replied before, and when they usually read their messages.",
+  "06_decides":"Then it decides. Contact them today, or wait.",
+  "07_channel":"If it reaches out, it picks the channel. SMS, WhatsApp, a voice call in their own language, or a human agent. And the best time of day.",
+  "08_aladdin":"Before anything is sent, Aladdin, our safety supervisor, checks it against the lender's rules. Twice.",
+  "09_rules":"No messages at night. Never more than allowed. And if someone says stop, everything stops. On every channel.",
+  "10_reply":"When a borrower writes back on WhatsApp, Kairos answers in seconds, in Hindi or in English.",
+  "11_agent_hi":"(in Hindi) “Hello! Your EMI is due tomorrow. Shall I send you the payment link?”",
+  "12_verify":"It confirms who they are before sharing any loan details. And if someone sends a fake payment screenshot, it checks with the bank, and catches it.",
+  "13_learns":"Every reply, and every payment, teaches Kairos something new. So it gets better, every single day.",
+  "14_operator":"And the collections team? They watch the money come in, and approve the few decisions that need a human.",
+  "15_proof":"In our tests, Kairos recovered about twice as much money for every rupee spent, compared to a fixed schedule.",
+  "16_safe":"With zero rule breaches. And every safety test passed.",
+  "17_end":"Kairos. The right message, at the right time. Or none at all."};
+const VO_DUR = {"01_people": 7.146, "02_same": 7.176, "03_cost": 7.555, "04_meet": 5.925, "05_looks": 9.882, "06_decides": 4.406, "07_channel": 9.981, "08_aladdin": 7.178, "09_rules": 9.622, "10_reply": 7.024, "11_agent_hi": 5.943, "12_verify": 9.291, "13_learns": 8.297, "14_operator": 6.164, "15_proof": 8.01, "16_safe": 3.912, "17_end": 4.723};
 
 /* ---------------- helpers ---------------- */
 const $=(q,r=document)=>r.querySelector(q), $$=(q,r=document)=>[...r.querySelectorAll(q)];
-const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
-const easeOut=x=>1-Math.pow(1-x,3), expo=x=>x>=1?1:1-Math.pow(2,-10*x), easeIO=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
-const backOut=x=>{const c1=1.6,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2);};
-const prog=(lt,a,d)=>clamp((lt-a)/d), lerp=(a,b,p)=>a+(b-a)*p;
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)), lerp=(a,b,p)=>a+(b-a)*p, prog=(lt,a,d)=>clamp((lt-a)/Math.max(d,1e-6));
+function bezier(x1,y1,x2,y2){ const A=(a,b)=>1-3*b+3*a, Bf=(a,b)=>3*b-6*a, C=a=>3*a;
+  const f=(t,a,b)=>((A(a,b)*t+Bf(a,b))*t+C(a))*t, d=(t,a,b)=>3*A(a,b)*t*t+2*Bf(a,b)*t+C(a);
+  return x=>{ if(x<=0) return 0; if(x>=1) return 1; let t=x; for(let i=0;i<6;i++){ const e=f(t,x1,x2)-x, dd=d(t,x1,x2); if(Math.abs(dd)<1e-6) break; t-=e/dd; } return f(clamp(t),y1,y2); }; }
+const launch=bezier(.22,1,.36,1), easeIO=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;      // cubic-bezier(0.22, 1, 0.36, 1)
 const hash=(a,b)=>{let h=Math.sin(a*127.1+b*311.7)*43758.5453;return h-Math.floor(h);};
 const mq=matchMedia('(prefers-reduced-motion: reduce)'); let RM=mq.matches; mq.addEventListener&&mq.addEventListener('change',e=>RM=e.matches);
-const M=()=>RM?0:1;
 const get=p=>p.split('.').reduce((o,k)=>o==null?o:o[k],CONFIG);
-const fmt=n=>Math.round(n).toLocaleString('en-IN');
 const mmss=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
-const BEAT=60/CONFIG.film.bpm, BAR=4*BEAT;
 
-/* ---------------- cut + timeline ---------------- */
+/* ---------------- timeline ---------------- */
 const QS=new URLSearchParams(location.search);
-const CUT=CUTS[QS.get('cut')]?QS.get('cut'):'hero';
-const DEF=Object.fromEntries(ALL_SCENES.map(d=>[d.id,d]));
-const SCENES=CUTS[CUT].map(id=>({...DEF[id],group:GROUP[id]}));
-let acc=0; SCENES.forEach((s,i)=>{s.idx=i;s.start=acc;s.dur=s.bars*BAR;s.end=acc+s.dur;acc=s.end;});
+const CUT='hero';
+const SCENES=CUTS[CUT].map(id=>({...ALL_SCENES.find(d=>d.id===id)}));
+let acc=0; SCENES.forEach((s,i)=>{s.idx=i;s.start=acc;s.dur=s.secs;s.end=acc+s.dur;acc=s.end; s.voAbs=s.start+s.vo[0][1];});
 const TOTAL=acc;
-document.title = CUT==='teaser'?'Kairos Launch Teaser':'Kairos Launch Film';
+/* Trailer hits (music/original/v3_hits.json when present). Cuts within 0.45 s of a hit snap onto it (hard cut);
+   every hit gets a picture event: a 2-frame exposure bump and a 1.00 -> 1.04 camera punch-in. */
+let HITS=[[0.0,'boom'],[26.28,'big'],[43.28,'hit'],[58.87,'hit'],[66.65,'stop'],[76.87,'hit'],[84.8,'soft'],[91.34,'hit'],[101.23,'build'],
+  [118.09,'big'],[126.7,'hit'],[131.21,'hit'],[139.0,'boom']];
+const HARD=new Set();
+function snapCuts(){ SCENES.forEach(s=>{s.start=+s.start;}); for(let i=1;i<SCENES.length;i++){ const b=SCENES[i].start, h=HITS.find(([ht,ty])=>ty!=='soft'&&Math.abs(ht-b)<=(ty==='big'?0.85:0.45));
+    if(h){ SCENES[i].start=h[0]; HARD.add(i); } }
+  SCENES.forEach((s,i)=>{ s.end=i+1<SCENES.length?SCENES[i+1].start:TOTAL; s.dur=s.end-s.start; s.vo[0][1]=s.voAbs-s.start; }); }
+snapCuts();
+fetch('music/original/v3_hits.json').then(r=>r.ok?r.json():null).then(j=>{ if(!j) return; const arr=Array.isArray(j)?j:(j.hits||[]);
+  /* composer types -> picture events: big/biggest = BIG hit; riser, groove cut and pull-back = no cut, no flash */
+  const KIND={cold_open:'boom',boom:'boom',big:'big',biggest:'big',stop:'stop',build:'build',riser:'soft',cut:'soft',pullback:'soft',soft:'soft'};
+  const h=arr.map(x=>Array.isArray(x)?[+x[0],String(x[1]||'hit')]:[+(x.t??x.time),String(x.type||x.kind||'hit')]).filter(x=>isFinite(x[0])).map(([t,ty])=>[t,KIND[ty]||'hit']);
+  if(h.length){ HITS=h.sort((a,b)=>a[0]-b[0]); HARD.clear(); snapCuts(); } }).catch(()=>{});
 
-/* fill CONFIG text, convert beats to seconds */
-$$('[data-k]').forEach(el=>{const v=get(el.dataset.k); if(v!=null) el.textContent=el.dataset.upper?String(v).toUpperCase():v;});
-$$('[data-beat]').forEach(el=>{el.dataset.in=(+el.dataset.beat*BEAT).toFixed(4); if(!el.dataset.fx) el.dataset.fx=el.classList.contains('kt')?'slam':'up';});
-$$('[data-outbeat]').forEach(el=>{el.dataset.out=(+el.dataset.outbeat*BEAT).toFixed(4);});
-$$('[data-count]').forEach(el=>{const k=el.dataset.count; el._target=k==='spend'?184000:+get('numbers.'+k)||0;
-  el.dataset.at=(+(el.dataset.atbeat||0)*BEAT); el.dataset.cdur=(+(el.dataset.cbeats||3)*BEAT);});
-$$('[data-kbbeat]').forEach(el=>{const [a,b]=el.dataset.kbbeat.split(',').map(Number); const k=el.dataset.kb.split(','); k[6]=a*BEAT; k[7]=b*BEAT; el.dataset.kb=k.join(',');});
+$$('[data-k]').forEach(el=>{const v=get(el.dataset.k); if(v!=null) el.textContent=v;});
+$$('[data-fx="mask"]').forEach(el=>{ const g=['grad','gradink'].filter(c=>el.classList.contains(c)); g.forEach(c=>el.classList.remove(c));
+  el.innerHTML=`<span class="mask"><span class="mi ${g.join(' ')}">${el.innerHTML}</span></span>`; });
+$$('[data-t]').forEach(el=>{ el.dataset.in=el.dataset.t; if(!el.dataset.fx) el.dataset.fx='fade'; });
+$$('[data-tout]').forEach(el=>{ el.dataset.out=el.dataset.tout; if(!el.dataset.in){ el.dataset.in='0'; el.dataset.fx=el.dataset.fx||'cut'; } });
 
-/* ---------------- builders ---------------- */
-const K1T=[0,2,4,6,8,10,12,14].map(b=>b*BEAT);
-const k1cards=K1T.map(()=>{const d=document.createElement('div');d.className='notif';
-  d.innerHTML='<div class="ni">✉</div><div style="flex:1"><div class="nt">LENDER · SMS <span>now</span></div><div class="nb">Your EMI is overdue. Please pay now.</div></div>';
-  $('#k1stack').appendChild(d);return d;});
-const k2cells=[];for(let r=0;r<6;r++)for(let c=0;c<14;c++){const d=document.createElement('div');d.className='abs';
-  Object.assign(d.style,{left:c*120+'px',top:r*130+'px',width:'100px',height:'100px',borderRadius:'22px',background:'#1b2d45',display:'grid',placeItems:'center',fontSize:'36px'});
-  d.textContent='✉';$('#k2grid').appendChild(d);k2cells.push(d);}
-const k4dots=[];for(let r=0;r<12;r++)for(let c=0;c<16;c++){const d=document.createElement('div');d.className='dot';d.style.left=(c*58)+'px';d.style.top=(r*58)+'px';$('#k4dots').appendChild(d);k4dots.push(d);}
-function waveBars(sel,n){const w=$(sel);const out=[];for(let i=0;i<n;i++){const b=document.createElement('i');w.appendChild(b);out.push(b);}return out;}
-const k6bars=waveBars('#k6wave',18), k6bbars=waveBars('#k6bwave',22);
-{let svg='';for(let i=0;i<14;i++){const y=80+i*70, a=40+30*Math.sin(i);svg+=`<path class="fl" d="M-50 ${y} C 500 ${y-a}, 1300 ${y+a}, 1980 ${y}" stroke="${i%3?'#2ee6c9':'#60a5fa'}" stroke-opacity="${.15+.05*(i%4)}" stroke-width="${1+i%3}" fill="none" stroke-dasharray="40 30"/>`;}$('#k3flow').innerHTML=svg;}
-const k3lines=$$('#k3flow .fl');
-{const pts=(f)=>Array.from({length:14},(_,i)=>`${i?'L':'M'}${(i/13*900+10).toFixed(1)} ${(110-f(i)*100).toFixed(1)}`).join(' ');
- $('#k11chart').innerHTML=`<path id="k11wa" d="${pts(i=>i<7?.75:.3)}" stroke="#22c39b" stroke-width="4" fill="none" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
-  <path id="k11sms" d="${pts(i=>.35+i*.02)}" stroke="#60a5fa" stroke-width="4" fill="none" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>`;}
-const STREAM=["B-2041 · WhatsApp 7:30 pm","B-1187 · wait · resting","B-3310 · SMS 9:30 am","B-0762 · voice · Hindi","B-2208 · STOP · all quiet","B-1499 · WhatsApp 6 pm",
-  "B-0315 · SMS 10 am","B-2874 · wait · paid today","B-1726 · voice · Tamil","B-0903 · to a person","B-3052 · WhatsApp 8 pm","B-1640 · SMS 11 am"];
-const k12rows=STREAM.map((txt,i)=>{const d=document.createElement('div');d.className='srow';
-  d.innerHTML=`<span>${txt}</span><span class="ok">Aladdin ✓</span>`;$('#k12stream').appendChild(d);return d;});
-const k12frames=$$('#k12mon .lf');
+/* ---------------- real footage (Pexels b-roll): muted, poster frame, seek to the chosen moment, follow the film clock ---------------- */
+const clips=$$('.clip[data-clip]').map(el=>{ const name=el.dataset.clip, v=document.createElement('video');
+  v.muted=true; v.playsInline=true; v.preload='auto'; v.poster=`assets/broll/posters/${name}.jpg`; v.src=`assets/broll/${name}.mp4`;
+  el.style.backgroundImage=`url(assets/broll/posters/${name}.jpg)`; el.appendChild(v);
+  return {el,v,from:+(el.dataset.from||0),scene:el.closest('.scene').id}; });
 
-/* ---------------- AI b-roll slots: play assets/ai/<slot>.mp4 if present, else the rendered fallback ---------------- */
-const slots=$$('.aislot').map(el=>{const v=document.createElement('video');v.muted=true;v.playsInline=true;v.loop=true;v.preload='auto';
-  v.src=`assets/ai/${el.dataset.slot}.mp4`; v.addEventListener('loadeddata',()=>el.classList.add('ready')); v.addEventListener('error',()=>{});
-  el.insertBefore(v,el.firstChild); return {el,v,scene:el.closest('.scene').id};});
+/* ---------------- product content ---------------- */
+function notifStack(stack,n){ const out=[]; for(let i=0;i<n;i++){ const d=document.createElement('div'); d.className='ntf';
+  d.innerHTML='<div class="ic">✉</div><div style="flex:1"><div class="t">LENDER <span>now</span></div><div class="b">Your EMI is due. Please pay now.</div></div>';
+  stack.appendChild(d); out.push(d);} return out; }
+const N2T=[3.0,3.45,3.9,4.35,4.8,5.25,5.7,6.15];
+const stacks=['#pC','#pL','#pR'].map(id=>notifStack($(id+' .stack'),8));
+function dashHTML(kind){ return `<div class="top"><div class="k">K</div><b>Kairos</b><span style="color:#5b6577">· Live collections</span><span class="pill">SIMULATED</span>
+  <span style="margin-left:auto;color:#5b6577;font-size:13px">Day <b id="${kind}day">2</b> of 14</span></div>
+  ${kind==='L'?`
+  <div class="cardd" style="left:16px;top:62px;right:16px;height:236px"><div class="lab">₹ RECOVERED OVER THE CAMPAIGN</div>
+    <svg width="896" height="190" viewBox="0 0 896 190" style="margin-top:6px"><line x1="0" y1="170" x2="896" y2="170" stroke="#e3e7ee"/><line x1="448" y1="10" x2="448" y2="170" stroke="#b26a00" stroke-dasharray="4 4"/>
+    <text x="456" y="22" fill="#b26a00" font-size="12" font-weight="600">Day 7: WhatsApp replies drop</text>
+    <path d="M0 170 C120 140, 220 70, 448 52 S 760 22, 896 14" stroke="#0f766e" stroke-width="3" fill="none"/><path d="M0 170 C200 160, 500 150, 896 138" stroke="#94a3b8" stroke-width="2.5" stroke-dasharray="6 5" fill="none"/></svg></div>
+  <div class="cardd bars" style="left:16px;top:312px;right:16px;bottom:16px"><div class="lab">WHAT KAIROS IS LEARNING <span style="float:right;font-weight:600;letter-spacing:0">chance of a reply, per channel</span></div>
+    <div class="b"><span>WhatsApp</span><i id="lbW" style="width:520px"></i></div><div class="b"><span>SMS</span><i id="lbS" style="width:230px"></i></div>
+    <div class="b"><span>Email</span><i style="width:90px;opacity:.6"></i></div><div class="b"><span>Voice call</span><i id="lbV" style="width:380px"></i></div></div>`
+  :kind==='A'?`
+  <div class="cardd" style="left:16px;top:62px;width:440px;height:150px"><div class="lab">KAIROS · RECOVERED</div><img src="assets/real/live_recovered_3.png" alt="" style="width:300px;margin:8px 0 0 -6px"></div>
+  <div class="cardd" style="left:470px;top:62px;width:300px;height:150px;padding:10px"><img src="assets/real/live_breaches.png" alt="" style="width:280px;margin-top:22px"></div>
+  <div class="cardd" style="left:784px;top:62px;right:16px;height:150px"><div class="lab">TODAY</div><div style="font-size:30px;font-weight:700;margin-top:10px">300</div><div style="font-size:12px;color:#5b6577">borrowers · decided</div></div>
+  <div class="cardd" style="left:16px;top:226px;right:16px;bottom:16px"><div class="lab">WHY DID KAIROS DO THAT?</div>
+    <div class="row"><span class="tag">SEND</span>Deepak gets a WhatsApp at 2:30 pm. People like Deepak reply most on WhatsApp in the afternoon.</div>
+    <div class="row"><span class="tag" style="background:#eef0f4;color:#5b6577">RESTING</span>Karan is not contacted today. A message is unlikely to help right now.</div>
+    <div class="row"><span class="tag" style="background:#fdecec;color:#b4232c">STOP</span>Karan said STOP on WhatsApp. All channels stopped for Karan.</div></div>`
+  :`
+  <div class="cardd" style="left:16px;top:62px;right:16px;height:190px"><div class="lab">KAIROS · ₹ RECOVERED, BANK-CONFIRMED</div>
+    <div style="position:relative;height:120px;margin-top:10px">${[1,2,3,4].map(i=>`<img class="rec" src="assets/real/live_recovered_${i}.png" alt="₹ recovered, bank-confirmed (real /demo/live)" style="position:absolute;left:-6px;top:0;width:375px;opacity:${i===1?1:0}">`).join('')}</div></div>
+  <div class="cardd" style="left:16px;top:266px;width:440px;height:150px;padding:10px"><img src="assets/real/live_breaches.png" alt="0 rule breaches, checked by Aladdin twice (real /demo/live)" style="width:300px;margin:22px 0 0 10px"></div>
+  <div class="cardd" style="left:470px;top:266px;right:16px;bottom:16px"><div class="lab">NEEDS A HUMAN</div>
+    <div class="row"><span class="tag" style="background:#fff4e0;color:#b26a00">APPROVE</span>Job loss reported. Gentle call from a senior colleague?</div>
+    <div class="row" style="opacity:.6"><span class="tag" style="background:#eef0f4;color:#5b6577">DONE</span>Dispute routed to the lender's team.</div></div>`}`; }
+$('#dashA').innerHTML=dashHTML('A'); $('#dashL').innerHTML=dashHTML('L'); $('#dashB').innerHTML=dashHTML('B');
+const recImgs=$$('#dashB .rec');
 
 /* ---------------- animators ---------------- */
-SCENES.forEach(s=>{s.el=$('#'+s.id); s.reveals=$$('[data-in]',s.el); s.counts=$$('[data-count]',s.el); s.kbs=$$('[data-kb]',s.el); s.deps=$$('[data-depth]',s.el);});
-$$('.scene').forEach(el=>{if(!SCENES.some(s=>s.el===el)) el.style.display='none';});
+SCENES.forEach(s=>{s.el=$('#'+s.id); s.reveals=$$('[data-in]',s.el); s.kfs=$$('[data-kf]',s.el); s.rig=$('.rig',s.el);});
 function reveal(el,lt){
-  const a=+el.dataset.in, fx=el.dataset.fx;
-  const dur=fx==='slam'?0.26:fx==='pop'?0.32:0.4;
-  const raw=prog(lt,a,dur);
-  let o=fx==='slam'?prog(lt,a,0.07):easeOut(raw);
-  if(el.dataset.out) o*=1-prog(lt,+el.dataset.out,0.12);
+  const a=+el.dataset.in, fx=el.dataset.fx, dur=fx==='mask'?0.6:fx==='pop'?0.35:fx==='cut'?0.06:0.5;
+  const p=launch(prog(lt,a,dur));
+  let o=(fx==='mask')?(lt>=a?1:0):p;
+  if(el.dataset.out) o*=1-prog(lt,+el.dataset.out,fx==='cut'?0.08:0.2);
   el.style.opacity=o; el.style.visibility=o<=0.001?'hidden':'visible';
-  const m=M(); let tr='0 0', sc='1';
-  if(fx==='slam'){ const p=expo(raw); sc=String(1+(1-p)*0.45*m); tr=`0 ${(1-p)*-18*m}px`; }
-  else if(fx==='pop'){ sc=String(m?Math.max(.01,.75+.25*backOut(raw)):1); }
-  else if(fx==='up'){ tr=`0 ${(1-expo(raw))*60*m}px`; }
-  else if(fx==='left'){ tr=`${(1-expo(raw))*-120*m}px 0`; }
-  else if(fx==='right'){ tr=`${(1-expo(raw))*120*m}px 0`; }
-  el.style.translate=tr; el.style.scale=sc;
+  if(fx==='mask'){ const mi=el.querySelector('.mi'); if(mi) mi.style.transform=`translateY(${RM?0:(1-p)*110}%)`; }
+  else if(fx==='up'){ el.style.translate=`0 ${RM?0:(1-p)*28}px`; }
+  else if(fx==='pop'){ el.style.scale=String(RM?1:.88+.12*p); }
+  else if(fx==='cut'&&el.classList.contains('clip')){ el.style.scale=String(RM?1:1.06-.06*launch(prog(lt,a,3))); }   // slow push-in on footage
 }
-function count(el,lt){const v=el._target*expo(prog(lt,+el.dataset.at,+el.dataset.cdur)), d=+(el.dataset.dec||0); el.textContent=d?v.toFixed(d):fmt(v);}
-function kb(el,lt,dur){const k=el.dataset.kb.split(',').map(Number), a=k[6]||0, b=k[7]||dur, p=RM?1:easeIO(prog(lt,a,b-a));
-  el.style.transform=`translate(${lerp(k[0],k[3],p)}px,${lerp(k[1],k[4],p)}px) scale(${lerp(k[2],k[5],p)})`;}
-const B=n=>n*BEAT;
+function keyframes(el,lt){ const ks=el.dataset.kf.split(';').map(r=>r.split(',').map(Number)); let c=ks[0].slice(1);
+  if(!RM) for(let i=1;i<ks.length;i++){ if(lt<=ks[i][0]){ const p=launch(prog(lt,ks[i-1][0],ks[i][0]-ks[i-1][0])); c=ks[i].slice(1).map((v,j)=>lerp(ks[i-1][j+1],v,p)); break; } c=ks[i].slice(1); }
+  else c=ks[ks.length-1].slice(1);
+  el.style.transform=`translate(${c[0]}px,${c[1]}px) scale(${c[2]})`; }
+function camAt(id,L){ const ks=CAM[id]; if(!ks) return [0,0,1,0,0];
+  if(L<=ks[0][0]) return ks[0].slice(1); for(let i=1;i<ks.length;i++){ if(L<=ks[i][0]){ const p=launch((L-ks[i-1][0])/(ks[i][0]-ks[i-1][0])); return ks[i].slice(1).map((v,j)=>lerp(ks[i-1][j+1],v,p)); } }
+  return ks[ks.length-1].slice(1); }
+function applyRig(s,L){ if(!s.rig) return; const c=RM?[0,0,1,0,0]:camAt(s.id,L), c2=RM?c:camAt(s.id,Math.max(0,L-0.035));
+  s.rig.style.transform=`translate(${c[0]}px,${c[1]}px) scale(${c[2]}) rotateY(${c[3]}deg) rotateX(${c[4]}deg)`;
+  const v=Math.abs(c[0]-c2[0])+Math.abs(c[1]-c2[1])+Math.abs(c[2]-c2[2])*900+Math.abs(c[3]-c2[3])*12;
+  const bl=(!RM&&v>4)?Math.min(4,(v-4)*.3):0; s.rig.style.filter=bl>0.1?`blur(${bl.toFixed(2)}px)`:'none'; }
 const FX={
-  k1(lt){
-    k1cards.forEach((c,i)=>{const p=expo(prog(lt,K1T[i],.22)); let y=0; for(let j=i+1;j<K1T.length;j++) y+=expo(prog(lt,K1T[j],.25))*92;
-      c.style.opacity=p; c.style.transform=`translateY(${y-30*(1-p)*M()}px) scale(${1-.06*(1-p)})`;});
-    let a=0; K1T.forEach(t=>{const d=lt-t; if(d>0&&d<.4) a+=Math.sin(d*60)*3*(1-d/.4);}); $('#k1phone').style.transform=`rotate(${a*M()}deg)`;
-    $('#k1n').textContent=K1T.filter(t=>lt>=t).length;
-  },
-  k2(lt){ const step=Math.floor(lt/(BEAT/2)); k2cells.forEach((c,i)=>{const on=hash(i,step)<.18; c.style.background=on?'#2b4a70':'#1b2d45'; c.style.color=on?'#fff':'#40597a';}); },
-  k3(lt){ k3lines.forEach((l,i)=>l.style.strokeDashoffset=String(-(lt*(220+i*15)))); },
-  k4(lt){ const step=Math.floor(lt/(BEAT/2)); k4dots.forEach((d,i)=>d.classList.toggle('on',lt>0.1&&hash(i,step)<.38)); },
-  k5(lt){ const c=$('#k5c'), w=$('#k5w'); let sel=-1; if(lt<B(5)) sel=Math.floor(lt/(BEAT/2))%2; else sel=0;
-    c.classList.toggle('sel',sel===0); w.classList.toggle('sel',sel===1); w.style.opacity=lt>=B(5)?.35:1; },
-  k6(lt){ k6bars.forEach((b,i)=>b.style.height=(lt>B(3)&&!RM?12+50*Math.abs(Math.sin(lt*7+i*.7)*Math.sin(lt*2.1+i*.3)):12)+'px'); },
-  k6b(lt){ const talking=(lt>0.25&&lt<5.2)||(lt>5.6&&lt<9.0);
-    k6bbars.forEach((b,i)=>b.style.height=(talking&&!RM?12+56*Math.abs(Math.sin(lt*8+i*.6)*Math.sin(lt*2.7+i*.4)):10)+'px');
-    $('#k6blang').textContent=lt<5.6?'Hindi · on call':'English · on call'; },
-  k8(lt){ [1.5,2,2.5,3].forEach((b,i)=>{const el=$('#k8c'+(i+1)), off=lt>=B(b); el.classList.toggle('off',off); el.lastElementChild.textContent=off?'OFF':'ON';}); },
-  k11(lt){ const p=prog(lt,B(3),B(2.5)); $('#k11wa').style.strokeDashoffset=1-p; $('#k11sms').style.strokeDashoffset=1-p; },
-  k12(lt){
-    const mon=$('#k12mon');
-    // real /demo/live frames: crossfade day 2 -> day 8 as the campaign runs
-    k12frames.forEach((f,i)=>{const a=B(4+i*4), o=i===0?1:easeIO(prog(lt,a,0.6)); f.style.opacity=o;});
-    const z=RM?1:1+0.06*prog(lt,B(4),B(16))+0.35*Math.pow(prog(lt,B(20),B(4)),2);
-    k12frames.forEach(f=>{f.style.transformOrigin='22% 10%'; f.style.transform=`scale(${z})`;});
-    // decision stream
-    const step=Math.floor(Math.max(0,lt-B(4))/(BEAT/2));
-    k12rows.forEach((r,i)=>{const pos=((i-step)%k12rows.length+k12rows.length)%k12rows.length; r.style.top=(pos*60)+'px'; r.style.opacity=pos<7?1:0;});
-    $('#k12checks').textContent=fmt(lt<B(5)?0:12480+Math.floor((lt-B(5))*1460));
-    // approval card + tap
-    const ap=$('#k12approve'), done=lt>=B(15); ap.classList.toggle('done',done); ap.textContent=done?'Approved ✓ · Aladdin re-checked':'Approve';
-    const cur=$('#cursor'); const bx=520+36+ap.offsetLeft+ap.offsetWidth/2, by=300+30+ap.offsetTop+ap.offsetHeight/2;
-    const cp=RM?1:easeIO(prog(lt,B(13),B(1.8))); cur.style.left=lerp(1700,bx,cp)+'px'; cur.style.top=lerp(1000,by,cp)+'px';
-    cur.style.opacity=(lt>B(12.5)&&lt<B(17))?1:0;
-    $('#k12card').style.opacity=String(+$('#k12card').style.opacity*(1-prog(lt,B(19),0.3)));
-  },
-  k13(lt){ const base=330, N=CONFIG.numbers; $('#k13b1').style.width=(base*expo(prog(lt,B(2),0.5)))+'px';
-    $('#k13b2').style.width=(base*(N.recoveryKairos/N.recoveryBaseline)*expo(prog(lt,B(3),0.6)))+'px';
-    $('#k13b1').style.opacity=prog(lt,B(2),.1); $('#k13b2').style.opacity=prog(lt,B(3),.1); }
+  n02(L){ $('.rig',$('#n02')).style.visibility=L>=2.8?'visible':'hidden';
+    stacks.forEach((st,si)=>st.forEach((c,i)=>{ const t0=N2T[i]+0.05*si, p=launch(prog(L,t0,.35)); let y=0;
+      for(let j=i+1;j<st.length;j++) y+=launch(prog(L,N2T[j]+0.05*si,.35))*88; c.style.top=y+'px'; c.style.opacity=p*(1-.07*Math.min(5,st.length-i-1)); c.style.transform=`translateY(${(1-p)*-20}px)`;})); },
+  n03(L){ const p=launch(prog(L,5.6,1.9)); $('#cost').textContent='₹'+Math.round(240000*p).toLocaleString('en-IN'); },
+  n04(L){ const p=RM?1:launch(prog(L,1.1,0.9)); $('#n04lid').style.transform=`perspective(2000px) rotateX(${-92*(1-p)}deg)`;
+    $('#n04scr').style.filter=`brightness(${0.12+0.88*launch(prog(L,1.5,1.2))})`; $('#n04wm').style.opacity=1-launch(prog(L,4.0,0.6)); $('#Aday').textContent='8'; },
+  n06(L){ const c=$('#oC'), w=$('#oW'); const phase=L<2.4?0:L<3.4?1:L<4.3?2:3;
+    c.classList.toggle('on',phase===1||phase===3); w.classList.toggle('on',phase===2); w.classList.toggle('dim',phase===3);
+    $('.t',c).textContent=phase===3?'✓ Contact today':'Contact today'; },
+  n07(L){ const T=[3.7,4.3,5.1,7.9]; T.forEach((t,i)=>{ const el=$('#c'+(i+1)); const cur=L>=t&&(i===3||L<T[i+1]+0.6);
+      el.classList.toggle('hi',L>=t&&L<10.0); el.classList.toggle('pick',L>=10.0&&i===1); el.style.opacity=L>=10.0?(i===1?1:.35):(L>=t?1:.45); });
+    const h=launch(prog(L,9.3,1.0)); const ang=lerp(-90,-90+(7.5/12)*360,h), mang=lerp(-90,-90+180,h);
+    $('#hh').style.transform=`rotate(${ang}deg)`; $('#mmh').style.transform=`rotate(${mang}deg)`; },
+  n08(L){ [1,2,3,4,5].forEach(i=>{ $('#a'+i).classList.toggle('on',L>=2.4+i*0.45); $('#b'+i).classList.toggle('on',L>=5.8+i*0.22); }); },
+  n09(L){ [[1,1.4],[2,3.0],[3,4.8]].forEach(([i,t])=>{ $('#bl'+i).style.opacity=launch(prog(L,t,.3)); });
+    [1,2,3,4].forEach(i=>{ const off=L>=5.0+i*0.25; const el=$('#s'+i); el.classList.toggle('off',off); el.lastElementChild.textContent=off?'OFF':'ON'; }); },
+  n13(L){ const p=launch(prog(L,3.4,3)); $('#lbW').style.width=lerp(520,170,p)+'px'; $('#lbS').style.width=lerp(230,360,p)+'px'; $('#lbV').style.width=lerp(380,450,p)+'px'; $('#Lday').textContent=L<3.4?'6':'9'; },
+  n14(L){ recImgs.forEach((im,i)=>{ im.style.opacity=i===0?1:launch(prog(L,0.6+i*1.1,0.5)); }); $('#Bday').textContent=String(Math.min(14,2+Math.floor(L/0.6)));
+    const ph=$('#n14ph'), sl=RM?1:launch(prog(L,3.0,1.2)); ph.style.translate=`${(1-sl)*520}px 0`; ph.style.opacity=L<3.0?0:sl;
+    const ap=$('#approve'), done=L>=6.0; ap.classList.toggle('done',done); ap.textContent=done?'Approved ✓':'Approve';
+    const cur=$('#cursor'); const r=ap.getBoundingClientRect(), st=$('#stage').getBoundingClientRect(), sc=st.width/1920;
+    const tap=prog(L,5.7,0.3); cur.style.left=((r.left-st.left+r.width/2)/sc-20)+'px'; cur.style.top=((r.top-st.top+r.height/2)/sc-20)+'px';
+    cur.style.opacity=(L>5.0&&L<6.8)?1:0; cur.style.transform=`scale(${1-0.25*Math.sin(Math.PI*tap)})`; }
 };
+function driveClips(s,L,visible){ clips.forEach(c=>{ if(c.scene!==s.id) return; const v=c.v; const a=+c.el.dataset.in||0, out=c.el.dataset.out?+c.el.dataset.out:1e9;
+    const on=visible&&L>=a-0.2&&L<out; if(!on){ if(!v.paused) v.pause(); return; }
+    const want=c.from+Math.max(0,L-a); if(v.readyState>=1&&Math.abs(v.currentTime-want)>0.3) try{v.currentTime=want;}catch(e){}
+    if(playing&&v.paused) v.play().catch(()=>{}); if(!playing&&!v.paused) v.pause(); }); }
 
-/* ---------------- render: whip transitions, punch-ins on drops, flash + light leak, beat pulse, camera shake ---------------- */
-const TR=0.3, capEl=$('#capText'), chapBtns=[], groupBtns=[]; let lastCue=null;
-const ENERGY={intro:.35,build:.45,drop:1,drive:.8,groove:.5,tight:.75,lift:.6,breakdown:.3};
+/* ---------------- render: calm dissolves ---------------- */
+const TR=0.4, capEl=$('#capText'), chapBtns=[]; let lastCue=null;
 function sceneAt(t){for(const s of SCENES) if(t<s.end) return s; return SCENES[SCENES.length-1];}
-function drawScene(s,t,o,x,sc,blur){
-  const lt=t-s.start, L=Math.max(lt,0), q=clamp(lt/s.dur);
+/* Each scene was designed against a VO window (dvo, ddur); the timeline gives the real one (vo offset, vdur).
+   Warp real time onto design time so every visual stays on its word. */
+function warp(s,L){ const vo0=s.vo[0][1]; if(L<vo0) return vo0>0?L*(s.dvo/vo0):L; return s.dvo+(L-vo0)*(s.ddur/s.vdur); }
+function drawScene(s,t,o,sc,blur){
+  const lt=t-s.start, L=warp(s,Math.max(lt,0));
   s.el.style.display='block'; s.el.style.opacity=o;
-  const drift=RM?1:1+0.035*q;
-  s.el.style.transform=`translateX(${RM?0:x}px) scale(${(RM?1:sc)*drift})`;
+  s.el.style.transform=RM?'none':`scale(${sc})`;
   s.el.style.filter=(!RM&&blur>0.1)?`blur(${blur.toFixed(1)}px)`:'none';
-  s.deps.forEach(e=>{const d=+e.dataset.depth-1; e.style.transform=`translate(${RM?0:-30*d*q}px,${RM?0:-14*d*q}px)`;});
-  s.reveals.forEach(r=>reveal(r,L)); s.counts.forEach(c=>count(c,L)); s.kbs.forEach(k=>kb(k,L,s.dur)); FX[s.id]&&FX[s.id](L);
-  slots.forEach(sl=>{ if(sl.scene!==s.id) return; const v=sl.v; if(!sl.el.classList.contains('ready')) return;
-    if(playing&&v.paused) v.play().catch(()=>{}); if(!playing&&!v.paused) v.pause();
-    if(v.duration&&Math.abs(v.currentTime-(L%v.duration))>0.4) try{v.currentTime=L%v.duration;}catch(e){} });
+  s.reveals.forEach(r=>reveal(r,L)); s.kfs.forEach(k=>keyframes(k,L)); applyRig(s,L);
+  FX[s.id]&&FX[s.id](L); driveClips(s,L,true);
 }
 function render(t){
   const sc=sceneAt(t), i=sc.idx, prev=SCENES[i-1], next=SCENES[i+1], h=TR/2, shown=new Set([sc]);
-  let o=i===0?1:1, x=0, s=1, bl=0;
-  const punch=sc.drop||sc.final;
-  if(prev&&t<sc.start+h){const p=prog(t,sc.start-h,TR), e=easeIO(p); shown.add(prev);
-    drawScene(prev,t,1-e,-160*e,1+.08*e,10*e); o=e; x=punch?0:160*(1-e); s=punch?1+.25*(1-e):.96+.04*e; bl=10*(1-e);}
-  else if(next&&t>sc.end-h){const p=prog(t,next.start-h,TR), e=easeIO(p); shown.add(next);
-    const np=next.drop||next.final; drawScene(next,t,e,np?0:160*(1-e),np?1+.25*(1-e):.96+.04*e,10*(1-e)); o=1-e; x=-160*e; s=1+.08*e; bl=10*e;}
-  drawScene(sc,t,o,x,s,bl);
-  SCENES.forEach(z=>{z.el.style.zIndex=z===sc?2:1; if(!shown.has(z)) z.el.style.display='none';});
-  slots.forEach(sl=>{if(!shown.has(SCENES.find(z=>z.id===sl.scene))&&!sl.v.paused) sl.v.pause();});
-  // flash, light leak, camera shake on drops / final; beat pulse by energy
-  const lt=t-sc.start, mode=sc.mode||(sc.drop?'drop':sc.final?'final':'drive');
-  const big=sc.drop||sc.final||i===0;
-  const fl=$('#flash'), lk=$('#leak'), cam=$('#cam');
-  if(!RM){
-    let f=big&&lt<0.4?0.75*Math.exp(-lt/0.09):0;
-    if(sc.final&&lt>=B(2)&&lt<B(2)+0.4) f=Math.max(f,0.6*Math.exp(-(lt-B(2))/0.1));
-    fl.style.opacity=f;
-    lk.style.opacity=(sc.drop&&lt<1.4)?Math.sin(Math.PI*lt/1.4)*.55:0; lk.style.transform=`translateX(${(lt/1.4)*400-200}px)`;
-    const sh=big&&lt<0.3?(1-lt/0.3)*10:0; cam.style.transform=sh?`translate(${(hash(t,1)-.5)*sh}px,${(hash(t,2)-.5)*sh}px)`:'none';
-    const ph=(lt%BEAT); $('#pulse').style.opacity=(ENERGY[mode]||0)*0.9*Math.exp(-ph/0.13);
-  }
-  if(sc.final&&lt>=B(1)&&lt<B(2)){ sc.el.style.opacity=0; } // the beat of silence is black
-  // captions (optional): the VO line playing now
-  let cue=null; for(const z of SCENES){ for(const [k,off] of (z.vo||[])){ const a=z.start+off; if(t>=a&&t<a+VO_DUR[k]+0.2) cue=k; } }
+  let o=1, s=1, bl=0;
+  if(prev&&t<sc.start+h&&!HARD.has(i)){const p=prog(t,sc.start-h,TR), e=easeIO(p); shown.add(prev); drawScene(prev,t,1-e,1+.02*e,5*e); o=e; s=1.02-.02*e; bl=5*(1-e);}
+  else if(next&&t>sc.end-h&&!HARD.has(i+1)){const p=prog(t,next.start-h,TR), e=easeIO(p); shown.add(next); drawScene(next,t,e,1.02-.02*e,5*(1-e)); o=1-e; s=1+.02*e; bl=5*e;}
+  drawScene(sc,t,o,s,bl);
+  SCENES.forEach(z=>{z.el.style.zIndex=z===sc?2:1; if(!shown.has(z)){ z.el.style.display='none'; driveClips(z,0,false); }});
+  // picture event on every hit: 2-frame exposure bump + camera punch-in 1.00 -> 1.04 (big: 1.06) over 120 ms, then settle
+  let fl=0, pz=1; for(const [ht,ty] of HITS){ const d=t-ht; if(d<0||d>1.2||ty==='soft'||ty==='build') continue;
+    const big=ty==='big'||ty==='boom'; if(d<0.067) fl=Math.max(fl,big?0.45:0.22);
+    const amp=big?0.06:0.04; pz=Math.max(pz,1+amp*(d<0.12?launch(d/0.12):1-easeIO(clamp((d-0.12)/1.0)))); }
+  if(RM){fl=0;pz=1;} $('#flash').style.opacity=fl; $('#cam').style.transform=pz>1.0005?`scale(${pz})`:'none';
+  if(!RM) $('#grain').style.transform=`translate(${(hash(Math.floor(t*24),1)-.5)*120}px,${(hash(Math.floor(t*24),2)-.5)*120}px)`;
+  let cue=null; for(const z of SCENES) for(const [k,off] of (z.vo||[])){ const a=z.start+off; if(t>=a-0.05&&t<a+VO_DUR[k]+0.25) cue=k; }
   if(cue!==lastCue){ capEl.textContent=cue?VO_TEXT[cue]:''; capEl.classList.toggle('show',!!cue); lastCue=cue; }
   $('#time').textContent=`${mmss(t)} / ${mmss(TOTAL)}`;
   if(!dragging) $('#scrub').value=t;
-  chapBtns.forEach((b,k)=>{const z=SCENES[k];b.classList.toggle('cur',z===sc);b.firstChild.style.width=(clamp((t-z.start)/z.dur)*100)+'%';});
-  groupBtns.forEach(([b,g])=>b.classList.toggle('cur',g===sc.group));
+  chapBtns.forEach((b,k)=>{const z=SCENES[k]; b.classList.toggle('cur',z===sc); b.firstChild.style.width=(clamp((t-z.start)/z.dur)*100)+'%';});
 }
 
-/* ---------------- playback: the soundtrack is the master clock ---------------- */
+/* ---------------- audio: Neha's voice track is the master clock; the music is one line (MUSIC_SRC) ----------------
+   The music is ducked under every line in the player itself (-11 dB, 20 ms attack, 300 ms release), driven by the
+   VO timeline, so any score dropped in at MUSIC_SRC sits under the voice. A missing file is simply silent. */
+const MUSIC_SRC = 'music/original/v3_cinematic_trailer.m4a';   // the score (music/original/v1|v2|v3 …); missing file = silent
+const MUSIC_LEVEL = 0.8, DUCK_DB = -11;                 // bed level in the gaps; duck depth under the voice
+const VO_SRC = 'music/vo_hero.m4a';                     // rendered by music/mix.py from audio/vo_neha/timeline.json
 let t=0, playing=false, last=null, seeking=false, dragging=false;
-const AUDIO_FILES={both:`music/soundtrack_${CUT}.m4a`, music:`music/kairos_theme_${CUT}.m4a`, vo:`music/vo_${CUT}.m4a`};
-let musicOn=true, voOn=true, audioOK=true, curSrc=null;
-const audio=new Audio(); audio.preload='auto';
-audio.addEventListener('error',()=>{ if(curSrc){ audioOK=false; curSrc=null; audioButtons(); } });
-audio.addEventListener('loadedmetadata',()=>{ try{audio.currentTime=t;}catch(e){} if(playing&&t<TOTAL) audio.play().catch(()=>{}); });
-function wantSrc(){ return !audioOK?null: musicOn&&voOn?AUDIO_FILES.both: musicOn?AUDIO_FILES.music: voOn?AUDIO_FILES.vo:null; }
-function syncAudio(force){ const src=wantSrc();
-  if(src!==curSrc){ curSrc=src; if(!src){audio.pause();return;} audio.src=src; return; }
-  if(!src) return;
-  if(force||Math.abs(audio.currentTime-t)>0.25){ try{audio.currentTime=t;}catch(e){} }
-  if(playing&&t<TOTAL){ if(audio.paused) audio.play().catch(()=>{}); } else if(!audio.paused) audio.pause(); }
+let musicOn=true, voOn=true;
+const vo=new Audio(VO_SRC), mus=new Audio(MUSIC_SRC); vo.preload=mus.preload='auto';
+let voOK=true, musOK=true;
+vo.addEventListener('error',()=>{voOK=false;}); mus.addEventListener('error',()=>{musOK=false;});
+[vo,mus].forEach(a=>a.addEventListener('loadedmetadata',()=>{ try{a.currentTime=t;}catch(e){} if(playing&&t<TOTAL) a.play().catch(()=>{}); }));
+const VOW=[]; SCENES.forEach(z=>(z.vo||[]).forEach(([k,off])=>VOW.push([z.start+off, z.start+off+VO_DUR[k]])));
+let duckG=1;
+function duckTarget(x){ return VOW.some(([a,b])=>x>=a-0.03&&x<b)?Math.pow(10,DUCK_DB/20):1; }
+function syncOne(a,ok,on){ if(!ok) return; a.muted=!on;
+  if(Math.abs(a.currentTime-t)>0.25){ try{a.currentTime=t;}catch(e){} }
+  if(playing&&t<TOTAL){ if(a.paused) a.play().catch(()=>{}); } else if(!a.paused) a.pause(); }
+function syncAudio(){ syncOne(vo,voOK,voOn); syncOne(mus,musOK,musicOn); }
 function frame(now){
-  if(playing){ if(last!=null) t+=Math.min(0.25,(now-last)/1000); last=now;
-    if(curSrc&&!audio.paused&&audio.readyState>=3){ const d=audio.currentTime-t; if(Math.abs(d)>1){ try{audio.currentTime=t;}catch(e){} } else if(Math.abs(d)>0.06) t=audio.currentTime; }
+  const dt=last!=null?Math.min(0.25,(now-last)/1000):0;
+  if(playing){ t+=dt; last=now;
+    const clk=voOK&&!vo.paused&&vo.readyState>=3?vo:(musOK&&!mus.paused&&mus.readyState>=3?mus:null);
+    if(clk){ const d=clk.currentTime-t; if(Math.abs(d)>1){ try{clk.currentTime=t;}catch(e){} } else if(Math.abs(d)>0.06) t=clk.currentTime; }
+    if(musOK&&!mus.paused&&Math.abs(mus.currentTime-t)>0.15){ try{mus.currentTime=t;}catch(e){} }
     if(t>=TOTAL){t=TOTAL;pause();} } else last=null;
+  const tg=duckTarget(t), rate=tg<duckG?(1-Math.exp(-dt/0.02)):(1-Math.exp(-dt/0.30)); duckG+= (tg-duckG)*(dt?rate:1);
+  mus.volume=clamp(MUSIC_LEVEL*duckG*(t>TOTAL-2.5?clamp((TOTAL-t)/2.5):1));
   render(t); seeking=false; requestAnimationFrame(frame);
 }
-function play(){ if(t>=TOTAL) seek(0); playing=true; last=null; playLabel(); syncAudio(true); poke(); }
-function pause(){ playing=false; playLabel(); syncAudio(); showUI(); }
-function seek(x){ t=clamp(x,0,TOTAL); seeking=true; lastCue='(seek)'; if(curSrc){ try{audio.currentTime=t;}catch(e){} } }
+function play(){ if(t>=TOTAL) seek(0); playing=true; last=null; playLabel(); syncAudio(); }
+function pause(){ playing=false; playLabel(); syncAudio(); }
+function seek(x){ t=clamp(x,0,TOTAL); seeking=true; lastCue='(seek)'; [vo,mus].forEach(a=>{ try{a.currentTime=t;}catch(e){} }); duckG=duckTarget(t); }
 function sceneJump(d){ const sc=sceneAt(t); seek(SCENES[clamp(sc.idx+d,0,SCENES.length-1)].start+0.001); }
 
-/* ---------------- UI ---------------- */
-[...new Set(SCENES.map(s=>s.group))].forEach(g=>{const f=SCENES.find(s=>s.group===g), b=document.createElement('button');
-  b.textContent=GROUP_NAME[g]+' · '+mmss(f.start); b.onclick=()=>seek(f.start+0.001); $('#groups').appendChild(b); groupBtns.push([b,g]);});
-{const sp=document.createElement('span');sp.className='sp';$('#groups').appendChild(sp);
- [['hero','Hero cut'],['teaser','Teaser']].forEach(([k,n])=>{const a=document.createElement('a');a.textContent=n;a.href='?cut='+k;a.className=CUT===k?'cur':'';$('#groups').appendChild(a);});}
-SCENES.forEach(s=>{const b=document.createElement('button');b.style.flex=s.bars;b.innerHTML='<i class="pf"></i><span>'+(s.idx+1)+' · '+s.name+'</span>';
-  b.title=`${mmss(s.start)} ${s.name}`; b.onclick=()=>seek(s.start+0.001); $('#chapters').appendChild(b); chapBtns.push(b);});
+/* ---------------- presentation-mode controls ---------------- */
+SCENES.forEach(s=>{const b=document.createElement('button'); b.innerHTML='<i class="pf"></i><span>'+(s.idx+1)+' · '+s.name+' · '+mmss(s.start)+'</span>';
+  b.onclick=()=>seek(s.start+0.001); $('#chapters').appendChild(b); chapBtns.push(b);});
 $('#bPlay').onclick=()=>playing?pause():play();
 const scrub=$('#scrub'); scrub.max=TOTAL;
 scrub.addEventListener('input',()=>{dragging=true;seek(+scrub.value);}); scrub.addEventListener('change',()=>{dragging=false;});
-function setCC(on){document.body.classList.toggle('nocap',!on);$('#bCC').classList.toggle('on',on);}
+function setCC(on){document.body.classList.toggle('nocap',!on); $('#bCC').classList.toggle('on',on);}
 $('#bCC').onclick=()=>setCC(document.body.classList.contains('nocap'));
-function audioButtons(){ $('#bMusic').classList.toggle('on',musicOn&&audioOK); $('#bVO').classList.toggle('on',voOn&&audioOK);
-  $('#bMusic').textContent=audioOK?'Music':'Music: run compose.py'; }
-function setMusic(on){musicOn=on;audioButtons();syncAudio(true);} function setVO(on){voOn=on;audioButtons();syncAudio(true);}
+function audioButtons(){ $('#bMusic').classList.toggle('on',musicOn); $('#bVO').classList.toggle('on',voOn); }
+function setMusic(on){musicOn=on;audioButtons();syncAudio();} function setVO(on){voOn=on;audioButtons();syncAudio();}
 $('#bMusic').onclick=()=>setMusic(!musicOn); $('#bVO').onclick=()=>setVO(!voOn);
 let recTimer=null;
-function enterRecord(){document.body.classList.add('record');musicOn=voOn=true;audioButtons();pause();seek(0);syncAudio(true);clearTimeout(recTimer);recTimer=setTimeout(play,1500);}
-function exitRecord(){document.body.classList.remove('record');clearTimeout(recTimer);showUI();}
+function enterRecord(){document.body.classList.add('record'); document.body.classList.remove('showui'); musicOn=voOn=true; audioButtons(); pause(); seek(0); syncAudio(); clearTimeout(recTimer); recTimer=setTimeout(play,1500);}
+function exitRecord(){document.body.classList.remove('record'); clearTimeout(recTimer);}
 $('#bRec').onclick=enterRecord;
-addEventListener('keydown',e=>{
-  if(e.target.tagName==='INPUT'&&e.key!==' ') return; const k=e.key.toLowerCase();
-  if(e.key===' '){e.preventDefault();playing?pause():play();}
-  else if(e.key==='ArrowRight') sceneJump(1); else if(e.key==='ArrowLeft') sceneJump(-1);
+addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT'&&e.key!==' ') return; const k=e.key.toLowerCase();
+  if(e.key===' '){e.preventDefault(); playing?pause():play();} else if(e.key==='ArrowRight') sceneJump(1); else if(e.key==='ArrowLeft') sceneJump(-1);
   else if(k==='c') setCC(document.body.classList.contains('nocap')); else if(k==='m') setMusic(!musicOn); else if(k==='v') setVO(!voOn);
-  else if(k==='r') document.body.classList.contains('record')?exitRecord():enterRecord(); else if(e.key==='Escape') exitRecord();
-  poke();
-});
-let idleTimer=null; const ui=$('#ui');
-function showUI(){ui.classList.remove('idle');}
-function poke(){showUI();clearTimeout(idleTimer);idleTimer=setTimeout(()=>{if(playing&&!ui.classList.contains('open'))ui.classList.add('idle');},2000);}
+  else if(k==='r') document.body.classList.contains('record')?exitRecord():enterRecord(); else if(e.key==='Escape') exitRecord(); });
+const ui=$('#ui'), bMenu=$('#bMenu'); let idleTimer=null;
+function poke(){ if(document.body.classList.contains('record')) return; document.body.classList.add('showui'); clearTimeout(idleTimer);
+  idleTimer=setTimeout(()=>{ if(!ui.classList.contains('open')) document.body.classList.remove('showui'); },2000); }
 addEventListener('mousemove',poke); addEventListener('touchstart',poke,{passive:true});
-const moreEl=$('#more'), ctrEl=$('#ui .ctr'), bMenu=$('#bMenu');
-function playLabel(){const c=document.body.classList.contains('compact'); $('#bPlay').textContent=playing?(c?'❚❚':'❚❚ Pause'):(c?'▶':'▶ Play'); $('#bPlay').title=(playing?'Pause':'Play')+' (Space)';}
-function applyCompact(){const c=innerWidth<1100; document.body.classList.toggle('compact',c);
-  if(c&&moreEl.parentElement!==$('#moreSlot')) $('#moreSlot').appendChild(moreEl);
-  if(!c&&moreEl.parentElement!==ctrEl){ ctrEl.insertBefore(moreEl,bMenu); ui.classList.remove('open'); } playLabel();}
+function playLabel(){ $('#bPlay').textContent=playing?'❚❚':'▶'; }
 bMenu.onclick=e=>{e.stopPropagation(); const o=!ui.classList.contains('open'); ui.classList.toggle('open',o); bMenu.setAttribute('aria-expanded',String(o)); poke();};
 document.addEventListener('click',e=>{ if(!ui.contains(e.target)){ ui.classList.remove('open'); bMenu.setAttribute('aria-expanded','false'); } });
+if(QS.get('controls')==='1') document.body.classList.add('forceui');
 function fit(){const s=Math.min(innerWidth/1920,innerHeight/1080), st=$('#stage');
   st.style.transform=`translate(${(innerWidth-1920*s)/2}px,${(innerHeight-1080*s)/2}px) scale(${s})`;}
-addEventListener('resize',()=>{fit();applyCompact();}); fit(); applyCompact();
+addEventListener('resize',fit); fit();
 if(QS.has('t')) seek(+QS.get('t'));
 if(QS.has('scene')){const v=QS.get('scene'); const i=isNaN(+v)?SCENES.findIndex(s=>s.id===v):+v-1; if(i>=0) seek(SCENES[clamp(i,0,SCENES.length-1)].start+0.001);}
-if(QS.get('cc')==='1') setCC(true);
+if(QS.get('cc')==='0') setCC(false);
 if(QS.get('record')==='1') enterRecord(); else if(QS.get('autoplay')==='1') play();
-window.KAIROS_FILM={seek:x=>{seek(x);render(t);},play,pause,get t(){return t;},TOTAL,SCENES,CUT,audio,BEAT};
+window.KAIROS_FILM={seek:x=>{seek(x);render(t);},play,pause,get t(){return t;},TOTAL,SCENES,vo,mus,clips,get duck(){return duckG;}};
 requestAnimationFrame(frame);
 </script>
 </body>

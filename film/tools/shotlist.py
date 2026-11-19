@@ -1,148 +1,127 @@
 #!/usr/bin/env python3
-"""Write film/shot-list.csv (full cut) and film/shot-list-operator.csv from the film's scene table.
+"""Write film/shot-list.csv from the film's scene table, the Neha VO timeline and the trailer hits.
 
-Timings (start/end/duration) and voice-over come from kairos_film.html, so the shot list cannot drift
-from the film. Shot descriptions live below. 30 fps; every boundary is a whole frame.
+Cuts are computed exactly as the player does: scene lengths from kairos_film.html, then any cut within
+0.45 s of a hit (0.85 s for a 'big' hit) snaps onto it. Hits come from music/original/v3_hits.json when present.
 
     python3 film/tools/shotlist.py
-    python3 -I <skill>/scripts/validate_shotlist.py film/shot-list.csv --target 216
+    python3 -I <skill>/scripts/validate_shotlist.py film/shot-list.csv --target 139.635
 """
 from __future__ import annotations
 
 import csv
+import json
 import os
-import sys
+import re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, "..", "music"))
-import compose  # noqa: E402
-
-FPS = 30
+FILM = os.path.join(HERE, "..")
 COLS = ["shot_id", "start_s", "end_s", "duration_s", "purpose", "visual_action", "framing", "camera", "light_palette",
         "feature_proof", "voiceover", "on_screen_text", "sound", "transition", "method", "continuity_notes", "claim_status"]
-CODE = "code-rendered HTML/CSS (kairos_film.html), recorded 1920x1080 @30 fps"
-REAL = "real product screen (headless Chrome capture from origin/main, synthetic data) in CSS device frame"
-NAVY = "navy #06101d stage, teal #2dd4bf accent, soft bokeh, vignette"
-
-# scene id -> list of (local start s, purpose, visual_action, framing, camera, feature_proof, on_screen_text, sound,
-#                      transition_out, method, continuity, claim_status)
-SHOTS = {
-    "s1": [(0.0, "hook", "Phone on a lock screen buzzes; the same overdue SMS lands five times and stacks", "medium, phone left third",
-            "slow push-in + drift", "", "Meet Ravi. · 5 identical reminders · Replies: 0", "phone buzz foley x5, sparse minor pad", "cut on buzz",
-            CODE, "Phone frame P1 (380x760, notch) reused in s4", "ILLUSTRATIVE"),
-           (7.0, "problem", "'Seen, no reply' tag; budget bar drains, a rupee coin falls per message", "medium wide", "drift",
-            "", "Lender's budget, spent on every one", "tense pad, hats tick", "eased cross-dissolve 0.9 s with blur", CODE, "", "ILLUSTRATIVE")],
-    "s2": [(0.0, "problem", "10-day calendar grid; playhead fires the same message on fixed days; almost all turn grey", "wide grid",
-            "slow lateral drift", "", "A fixed calendar. Same message. Everyone. Every channel.", "tense pad", "", CODE, "", "ILLUSTRATIVE"),
-           (6.6, "problem->product", "Chips Costly / Annoying / Mostly ignored; product named", "wide", "drift", "", "Costly · Annoying · Mostly ignored",
-            "riser into s3", "cross-dissolve + soft impact", CODE, "", "N/A")],
-    "s3": [(0.0, "identity", "Dot field: every borrower, every day, teal = contact, grey = wait", "wide", "push-in", "Daily per-borrower decision (CM-02 #1)",
-            "Every borrower. Every day. First question: contact, or wait?", "music lifts to major, impact on downbeat", "", CODE, "", "VERIFIED"),
-           (2.6, "identity", "Ravi's card; Contact/Wait pills flicker and settle on Contact", "medium", "locked + drift", "Contact or wait", "Contact · Wait",
-            "click foley", "", CODE, "Ravi card: avatar R, synthetic chip", "VERIFIED"),
-           (6.4, "proof_setup", "Channel, time, message columns scan and lock", "medium wide", "drift", "Channel + time slot + template choice",
-            "Channel · Time · Message", "three ticks", "", CODE, "", "VERIFIED"),
-           (11.4, "proof_setup", "Decision bar: WhatsApp 7:30 pm check-in, Hindi; checked twice by Aladdin", "medium", "settle", "Supervisor checks twice (K06)",
-            "Checked twice by Aladdin", "pop", "cross-dissolve", CODE, "", "VERIFIED")],
-    "s4": [(0.0, "demo_journey", "Phone: SMS from the lender, read 10:02, NO REPLY", "medium, phone left", "drift", "Delivery/read is not a reply",
-            "1 SMS read, no reply", "message pop, pulse groove", "", CODE, "Generic messaging UI, no WhatsApp trade dress", "VERIFIED"),
-           (3.5, "demo_journey", "Evening chat 7:32 pm; Ravi replies 'need time, salary late hai' (inner voice)", "medium", "drift", "Channel + time switch; intent understood (Hinglish)",
-            "2 WhatsApp, in the evening · 3 Ravi: need time", "pops, Ravi inner voice (Aman)", "", CODE, "", "VERIFIED"),
-           (8.5, "demo_journey", "Voice-bot call screen, waveform; Ritu asks in Hindi, Ravi promises the 27th, Ritu reads it back", "medium", "drift",
-            "Sarvam voice bot, Hindi, date read-back (K17)", "4 Voice bot agrees a date and reads it back", "ring, Ritu (Lekha) + Ravi (Aman)", "", CODE,
-            "Bot name Ritu matches the Sarvam voice", "VERIFIED"),
-           (22.2, "demo_journey", "Queued reminders all marked PAUSED until the 27th", "medium", "drift", "Promise pauses ordinary reminders",
-            "5 Reminders pause", "click", "", CODE, "", "VERIFIED"),
-           (23.6, "demo_journey", "Payment verified by the bank; Loan A reminders struck out, Loan B still scheduled", "medium", "drift",
-            "Only a verified payment clears an EMI, for that EMI only", "6 Payment verified: only that loan's reminders cancel", "chime, swish",
-            "shared-element morph: phone screen grows into the CRM laptop screen", CODE, "", "VERIFIED")],
-    "s4b": [(0.0, "proof_real", "Real CRM borrower page B-1042 in a laptop; slow push into Loan A CLEARED / Loan B PENDING", "medium wide laptop",
-             "Ken Burns push-in to loans", "CRM record with evidence (K05/K14)", "Every step, in the CRM. · REAL SCREEN", "ticks on chips",
-             "cross-dissolve", REAL, "assets/real/crm_borrower.jpg", "VERIFIED")],
-    "s5": [(0.0, "proof_safety", "Title + Aladdin chip", "wide", "drift", "Aladdin = Kairos Supervisor (K06)", "Safe by design. · Aladdin, our supervisor",
-            "calm pad", "", CODE, "", "VERIFIED"),
-           (5.9, "proof_safety", "STOP on SMS; four channel switches turn OFF; 'Blocked by Aladdin: STOP'", "medium card", "drift",
-            "STOP on any channel stops all channels", "STOP means stop. Everywhere.", "four ticks", "", CODE, "", "VERIFIED"),
-           (9.4, "proof_safety", "Real CM-03 console: edited payment screenshot, scan, stamp FRAUD SUSPECT", "medium card", "Ken Burns pan down the console",
-            "Every seeded fake caught (127/127)", "Fake payment proof? Caught. · REAL SCREEN", "thunk on stamp", "", REAL,
-            "assets/real/cm03_fake_caught.jpg", "VERIFIED"),
-           (12.0, "proof_safety", "'Meri naukri chali gayi' hands over to a human officer; bots stop", "medium card", "drift", "Hardship to a human",
-            "Hardship goes to a person.", "chime", "", CODE, "", "VERIFIED"),
-           (14.5, "proof_safety", "Chip: nothing shared until identity is confirmed with a one-time code", "wide", "settle", "0 disclosures before OTP",
-            "Nothing is shared until identity is confirmed", "", "cross-dissolve", CODE, "", "VERIFIED")],
-    "s6": [(0.0, "proof_control", "Approval card; cursor clicks Approve; audit rows appear; blurred real decision log behind", "medium", "drift",
-            "Approve / hold / override, audited (K06 HITL)", "People stay in charge.", "click, ticks", "cross-dissolve", CODE + " + real backdrop",
-            "assets/real/journey_report.jpg (blurred)", "VERIFIED")],
-    "s7": [(0.0, "proof_learning", "Reply-rate lines draw; WhatsApp dips at day 7; 'switched by itself'; send mix shifts", "medium chart", "drift",
-            "In-campaign channel switch after WhatsApp drift", "It learns from every reply.", "music builds", "", CODE, "Chart is illustrative", "ILLUSTRATIVE"),
-           (7.9, "proof_learning", "Dots move between four layers (SMS & email, WhatsApp, voice bot, person); region and borrower chips", "medium", "drift",
-            "Auto-churn layers (K27)", "Borrowers move between layers", "build", "cross-dissolve", CODE, "", "ILLUSTRATIVE")],
-    "oi": [(0.0, "hook", "Title: A day at the desk; Priya, collections head (synthetic)", "wide", "push-in", "", "A day at the desk.", "soft intro pad",
-            "cross-dissolve", CODE, "", "N/A")],
-    "o1": [(0.0, "identity", "9:00 am, coffee steams; laptop shows today's plan already made: 3,412 due, contact / wait / 0 to set up", "medium wide laptop",
-            "drift", "Plan made automatically every day", "9:00 am. Today's plan is already done.", "chime, ticks, morning groove",
-            "shared-element morph: laptop screen grows into the scoreboard", CODE, "Laptop L1 (920x580) reused in o5", "ILLUSTRATIVE")],
-    "o2": [(0.0, "demo_operator", "Broadcast scoreboard: runs = rupees collected tick up; overs = time; run rate vs required", "wide board", "drift",
-            "Live collections view", "The collections scoreboard. · LIVE · illustrative / SIMULATED", "match groove, crowd bed", "", CODE,
-            "/demo/live not on main yet: high-fidelity rebuild", "ILLUSTRATIVE"),
-           (8.0, "demo_operator", "Partnerships bar by channel; WICKETS = rule breaches = 0", "medium board", "drift", "0 rule breaches", "WICKETS 0",
-            "pop", "", CODE, "", "VERIFIED"),
-           (13.7, "demo_operator", "EXTRAS = money saved by not sending", "medium", "drift", "Fewer wasted messages", "EXTRAS", "", "", CODE, "", "ILLUSTRATIVE"),
-           (17.6, "demo_operator", "Commentary feed: FOUR!, smart captaincy, STOP, change of bowling; Priya: 'Zero wickets, again.'", "medium", "drift",
-            "Decisions explained", "LIVE COMMENTARY", "crowd swells, cheer on FOUR", "cross-dissolve", CODE, "", "ILLUSTRATIVE")],
-    "o3": [(0.0, "demo_operator", "One notification: a borrower reported a job loss; suggested gentle call", "medium", "drift", "Only big calls reach a human",
-            "Only the big calls come to her.", "pop", "", CODE, "Score bug top centre keeps ticking", "VERIFIED"),
-           (7.5, "demo_operator", "Priya: 'Approve.' Click; Aladdin re-checks consent, quiet hours, limits, hardship; scheduled", "medium", "drift",
-            "Gate re-check at send time", "Aladdin re-checks before anything goes out", "click, ticks, chime", "cross-dissolve", CODE, "", "VERIFIED")],
-    "o4": [(0.0, "demo_operator", "Five cards: real CRM story, real decision log, report pack (AICI, Data Dump, Trails, FTD, Hourly), segment report, learning",
-            "wide row", "cursor moves card to card", "Everything one click away (K05, K26)", "Everything, one click away.", "clicks", "cross-dissolve",
-            REAL + " + code-rendered cards", "assets/real/crm_borrower.jpg, journey_report.jpg", "VERIFIED")],
-    "o5": [(0.0, "payoff", "Match result: Kairos won on ₹ recovered per ₹1 spent; player of the match; wickets 0", "wide", "drift",
-            "~2x money recovered per rupee", "Match result. Kairos won · about 2x", "cheer, uplift", "", CODE, "", "VERIFIED (SIMULATED)"),
-           (10.3, "payoff", "Laptop lid closes; 6:02 pm, Priya heads home on time", "medium laptop", "locked", "", "6:02 pm. Priya heads home on time.",
-            "laptop close foley", "cross-dissolve", CODE, "Laptop L1", "N/A")],
-    "s8": [(0.0, "payoff_proof", "Proof 1: ~2x money recovered per ₹ spent; bars lender 272 vs Kairos 517", "wide", "drift",
-            "K09 vs CN10, unseen seeds", "How do we know? · ~2x · SIMULATED data", "uplifting groove", "", CODE, "", "VERIFIED (SIMULATED)"),
-           (6.8, "payoff_proof", "Proof 2: 0 rule breaches; 49/49 attacks blocked; 127/127 fakes caught", "medium", "drift", "Red team + CM-03 eval",
-            "SAFE BY DESIGN · 0", "tick", "", CODE, "", "VERIFIED"),
-           (11.0, "payoff_proof", "Proof 3: 73.2% chats resolved without a human; 50,000 decisions in about 2 minutes; 6 bots, 8 languages; footnote",
-            "wide", "drift", "CM-03 eval, bench", "RUNS ITSELF, PEOPLE IN CHARGE", "music dips to silence", "silence beat then dissolve", CODE, "", "VERIFIED")],
-    "s9": [(0.0, "cta", "Lockup: Kairos. Right message. Right time. Or none at all. Team and event", "wide", "settle", "", "Kairos. · Or none at all.",
-            "quiet beat, then resolving cadence F-G-C", "fade out", CODE, "", "N/A")],
-    "oc": [(0.0, "cta", "Lockup: Kairos. Collections on autopilot. You just watch the score.", "wide", "settle", "", "Collections on autopilot.",
-            "quiet beat, resolving cadence", "fade out", CODE, "", "N/A")],
+DEFAULT_HITS = [(0.0, "boom"), (26.28, "big"), (43.28, "hit"), (58.87, "hit"), (66.65, "stop"), (76.87, "hit"), (84.8, "soft"),
+                (91.34, "hit"), (101.23, "build"), (118.09, "big"), (126.7, "hit"), (131.21, "hit"), (139.0, "boom")]
+BROLL = "real footage (Pexels, graded)"
+DEVICE = "original device render (CSS) with a real product screen"
+BUILT = "original device render with a rebuilt product view in the product's design"
+TYPE = "kinetic type on black (HTML/CSS)"
+# id -> purpose, visual, framing, camera, palette, proof, on-screen text, transition, method, continuity, claim
+D = {
+ "n01": ("hook", "Mumbai skyline at night, then a busy street with buses and scooters", "wide", "slow push-in", "night blue then daylight, soft vignette",
+         "", "", "fade in from black on the cold-open boom", BROLL, "Pexels city_aerial_mumbai_night, kolkata_buses", "N/A"),
+ "n02": ("problem", "A phone lights up; three phones stack the same overdue reminder", "close-up then medium", "phone dolly-in, rig settles",
+         "black stage, spotlight", "", "Same message. Same time.", "dissolve", BROLL + " + device render", "phones identical by design", "ILLUSTRATIVE"),
+ "n03": ("problem", "A hand snoozes a phone; a woman reads in bed; a cost counter ticks", "medium", "slow push-in", "warm interiors",
+         "", "Ignored. · Annoying. · ₹ spent on reminders (illustrative)", "dissolve", BROLL, "snoozing_phone, woman_phone_bed", "ILLUSTRATIVE"),
+ "n04": ("identity", "Hands on a laptop in the dark, then our laptop opens and lights up with the Kairos wordmark and the dashboard", "medium wide",
+         "lid opens on the BIG hit, push-in", "black, spotlight, floor reflection", "Kairos exists and runs collections", "Meet Kairos.",
+         "dissolve; lid opens on hit 26.28", BROLL + " + " + BUILT, "laptop L1 reused across the film", "VERIFIED"),
+ "n05": ("demo", "Real CRM borrower page on the laptop; push-in; three facts appear", "medium", "dolly-in to the borrower header",
+         "warm studio", "Per-borrower context (CRM)", "It looks first. · 42 days · Twice, on WhatsApp · Responsive on WhatsApp", "dissolve", DEVICE,
+         "assets/real/crm_borrower.jpg (synthetic B-1042)", "VERIFIED"),
+ "n06": ("demo", "Two option cards; Contact, then Wait, light up; Contact is chosen", "wide", "locked", "warm studio",
+         "Contact-or-wait decision per borrower per day", "Then it decides. · Contact today · Wait", "hard cut on hit 43.28", "HTML/CSS cards", "", "VERIFIED"),
+ "n07": ("demo", "Four channel cards light in turn; a clock sweeps to 7:30 pm; WhatsApp is picked", "wide", "locked", "warm studio",
+         "Channel + time slot choice", "It picks the channel. · SMS · WhatsApp · Voice call · Human agent · 7:30 pm", "dissolve", "HTML/CSS cards", "", "VERIFIED"),
+ "n08": ("demo", "Two checklists tick: when planning, and again just before sending", "wide", "locked", "black, spotlight",
+         "Aladdin (Kairos Supervisor, K06) checks twice", "Checks every message. · Twice.", "hard cut on hit 58.87", TYPE, "", "VERIFIED"),
+ "n09": ("demo", "Three blocked examples; channels switch off; real STOP conversation on the laptop; still frame in the 72-73 s silence",
+         "medium", "push-in, then held still", "warm studio", "Quiet hours, contact limits, STOP everywhere", "BLOCKED · ALL OFF", "hard cut on hit 66.65",
+         DEVICE, "assets/real/cm03_stop.jpg", "VERIFIED"),
+ "n10": ("demo", "A man on his phone at night; then a chat: he asks when his EMI is due; the agent is typing", "medium", "phone slides in",
+         "night footage, then warm studio", "WhatsApp agent answers in seconds", "Answers in seconds. · In Hindi, or in English.", "hard cut on hit 76.87",
+         BROLL + " + device render (generic chat UI)", "man_turban_phone_night", "VERIFIED"),
+ "n11": ("demo", "The agent replies in Hindi; he says yes; a payment-link card arrives", "medium", "slight push", "warm studio",
+         "Hindi/English agent", "हिंदी में बात। · English caption", "dissolve (soft hit, no drums)", "device render (generic chat UI)",
+         "same chat as n10", "VERIFIED"),
+ "n12": ("demo", "Identity verified by one-time code; then the real console flags an edited screenshot: no matching payment",
+         "medium", "push-in to the fraud flag", "warm studio", "0 disclosures before OTP; fake proofs caught", "Identity first. · Fake proof? · FAKE CAUGHT",
+         "hard cut on hit 91.34", DEVICE, "assets/real/cm03_fake_caught.jpg", "VERIFIED"),
+ "n13": ("demo", "The learning panel: WhatsApp bar shrinks after day 7, SMS and voice grow", "medium", "dolly-in", "warm studio",
+         "Learns from every reply", "It learns.", "hard cut on hit 101.23 (build starts)", BUILT, "", "ILLUSTRATIVE (bars)"),
+ "n14": ("demo", "Live view: ₹ recovered climbs; one approval arrives on the phone and is tapped", "wide", "push-in, phone slides in",
+         "black, spotlight", "Humans approve the few decisions that need them", "Watches. Approves. · Approved ✓", "dissolve; riser + silence into the proof",
+         BUILT + " (real /demo/live crops)", "assets/real/live_recovered_*.png, live_breaches.png", "VERIFIED (SIMULATED)"),
+ "n15": ("payoff", "Giant ~2× on the BIGGEST hit; money recovered per ₹ spent; vs a fixed schedule", "wide", "punch-in on hit", "black",
+         "~2× ₹ recovered per ₹ spent", "~2× · money recovered per ₹ spent · SIMULATED", "hard cut on hit 118.09", TYPE, "", "VERIFIED (SIMULATED)"),
+ "n16": ("payoff", "0 rule breaches, then 49/49 attack tests and 148/148 policy checks", "wide", "punch-in on hit", "black",
+         "Safety record", "0 · 49/49 · 148/148 policy checks", "hard cut on hit 126.7", TYPE, "", "VERIFIED"),
+ "n17": ("cta", "A man smiles on a call; then the wordmark, the line, team and credits", "medium then wide", "settle", "black",
+         "", "Kairos · The right message, at the right time. · Or none at all.", "fade out on the final boom", BROLL + " + " + TYPE,
+         "man_good_news_phone", "N/A"),
 }
 
 
-def frame(x):
-    return round(round(x * FPS) / FPS, 4)
+def scenes():
+    src = open(os.path.join(FILM, "kairos_film.html"), encoding="utf-8").read()
+    a = src.index("const ALL_SCENES = [")
+    rows = re.findall(r'\{id:"(\w+)", name:"([^"]*)", secs:([\d.]+), vo:\[\["(\w+)",([\d.]+)\]\]', src[a:src.index("];", a)])
+    return [(i, n, float(s), k, float(o)) for i, n, s, k, o in rows]
 
 
-def build(cut, out):
-    scenes, cuts, _ = compose.parse_film(compose.FILM)
-    tl, total = compose.timeline(scenes, cuts[cut], cut)
-    rows, n = [], 0
-    for s in tl:
-        shots = SHOTS[s["id"]]
-        for i, sh in enumerate(shots):
-            a = s["start"] + sh[0]
-            b = s["start"] + shots[i + 1][0] if i + 1 < len(shots) else s["end"]
-            vo = " / ".join((f"{compose.SPEAKER_NAME.get(c['speaker'])}: " if c["speaker"] else "") + c["caption"]
-                            for c in s["cues"] if sh[0] <= c["t"] < (shots[i + 1][0] if i + 1 < len(shots) else 1e9))
-            n += 1
-            rows.append({"shot_id": f"{n:02d}-{s['id']}", "start_s": frame(a), "end_s": frame(b), "duration_s": frame(b - a),
-                         "purpose": sh[1], "visual_action": sh[2], "framing": sh[3], "camera": sh[4], "light_palette": NAVY,
-                         "feature_proof": sh[5], "voiceover": vo or "NO VO", "on_screen_text": sh[6], "sound": sh[7], "transition": sh[8],
-                         "method": sh[9], "continuity_notes": sh[10], "claim_status": sh[11]})
-    with open(out, "w", newline="", encoding="utf-8") as f:
+def hits():
+    p = os.path.join(FILM, "music", "original", "v3_hits.json")
+    if os.path.exists(p):
+        j = json.load(open(p))
+        arr = j if isinstance(j, list) else j.get("hits", [])
+        out = [(float(x[0]), str(x[1])) if isinstance(x, list) else (float(x.get("t", x.get("time"))), str(x.get("type", x.get("kind", "hit")))) for x in arr]
+        kind = {"cold_open": "boom", "biggest": "big", "riser": "soft", "cut": "soft", "pullback": "soft"}
+        known = {"boom", "big", "stop", "build", "soft"}
+        out = [(t, kind.get(ty, ty if ty in known else "hit")) for t, ty in out]
+        if out:
+            return sorted(out)
+    return DEFAULT_HITS
+
+
+def main():
+    sc, H = scenes(), hits()
+    starts, t = [], 0.0
+    for _, _, s, _, _ in sc:
+        starts.append(t)
+        t += s
+    total = round(t, 3)
+    for i in range(1, len(starts)):
+        for ht, ty in H:
+            if ty != "soft" and abs(ht - starts[i]) <= (0.85 if ty == "big" else 0.45):
+                starts[i] = ht
+                break
+    lines = json.load(open(os.path.join(FILM, "audio", "vo_neha", "lines.json"), encoding="utf-8"))
+    out = []
+    for i, (sid, name, _, key, _) in enumerate(sc):
+        a, b = round(starts[i], 3), round(starts[i + 1] if i + 1 < len(sc) else total, 3)
+        d = D[sid]
+        hit = [f"{ht:g}s {ty}" for ht, ty in H if a <= ht < b]
+        out.append({"shot_id": f"{i + 1:02d}-{sid}", "start_s": a, "end_s": b, "duration_s": round(b - a, 3), "purpose": d[0],
+                    "visual_action": d[1], "framing": d[2], "camera": d[3], "light_palette": d[4], "feature_proof": d[5],
+                    "voiceover": "Neha: " + lines[key]["text"], "on_screen_text": d[6],
+                    "sound": "score " + ("hits " + ", ".join(hit) if hit else "bed") + "; ducked -11 dB under Neha",
+                    "transition": d[7], "method": d[8], "continuity_notes": d[9], "claim_status": d[10]})
+    path = os.path.join(FILM, "shot-list.csv")
+    with open(path, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=COLS)
         w.writeheader()
-        w.writerows(rows)
-    print(f"wrote {out}: {len(rows)} shots, {total:g} s")
-    return total
+        w.writerows(out)
+    print(f"wrote film/shot-list.csv: {len(out)} shots, {total:g} s")
 
 
 if __name__ == "__main__":
-    root = os.path.join(HERE, "..")
-    build("full", os.path.join(root, "shot-list.csv"))
-    build("operator", os.path.join(root, "shot-list-operator.csv"))
+    main()

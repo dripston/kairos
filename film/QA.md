@@ -1,52 +1,49 @@
 # Kairos film: QA (skill pack `references/verification-qa.md`)
 
-Checked 19 Nov 2026 on the full film (216 s) and the operator cut (89 s). The checks were done in the
-browser pane at 1920×1080 and 1280×720: every scene screenshotted, both morph transitions checked
-mid-flight, and soundtrack-to-picture drift logged.
+Checked 20 Nov 2026 on the final film (139.635 s, 17 scenes): headless Chrome at 1280×720 (17 key beats) and
+1920×1080 (spot checks), and the browser pane at 1280×720 (playback, seeking, console). No JS errors. The only
+console error is the 404 for `music/original/v3_cinematic_trailer.m4a`, which isn't delivered yet; the silent
+fallback works and the film plays on Neha alone.
 
 ## Creative QA (0–5)
 
-| # | Criterion | Full | Operator | Notes |
-|---|---|---|---|---|
-| 1 | Hook | 4 | 4 | A phone buzzes at 0:01 with the same reminder; by 0:03 the problem is clear. Operator: "A day at the desk" + Priya by 0:04 |
-| 2 | Product identity | 4 | 5 | KAIROS mark on screen from frame 1; full cut names it in VO at 0:19.8 and shows it deciding at 0:24 (later than the skill's 10 s ideal; the hook needs the "before" world). Operator names Kairos at 0:00.2 |
-| 3 | Explaining features | 5 | 5 | Three benefits each shown as use → close-up → result (decide per person; safe; pays and runs itself), with two real CRM / CM-03 screens |
-| 4 | Emotional promise | 4 | 5 | Relief for Ravi (no nagging, a plan) and for Priya (goes home on time) |
-| 5 | Distinctiveness | 4 | 5 | Cricket scoreboard (rupees as runs, rule breaches as wickets); phone screen morphs into the real CRM |
-| 6 | Craft | 4 | 4 | Eased cross-dissolves with blur/scale, camera drift, parallax, morphs; original score that changes on every cut; synthesised foley; music ducked about 10 dB under every line; a quiet beat before the final line. The macOS draft voices sound synthetic (replace for release) |
-| 7 | Physical accuracy | 4 | 4 | One phone frame and one laptop frame reused throughout; real screens unaltered except crop/zoom; UI states follow the story (pause → verified → only Loan A cancelled) |
-| 8 | Truthfulness | 4 | 4 | Every on-screen number is in `TRUTH_TABLE.md` with source and qualifier; "SIMULATED data" on the proof scene and on the scoreboard; 148/148 cites `POLICY_COVERAGE.md` with the K10 identity-mode caveat; ~2× footnote says Kairos spent less of the same budget |
-| 9 | Accessibility | 4 | 4 | Captions on by default, speaker names on character lines, Hindi lines with English translations. Contrast: captions 18.5:1, body 6–8:1, footnotes raised to ≥ 4.6:1 (was 3.1:1). Footnotes are 18–19 px at 1080p: small, legible on a laptop and not on a phone |
-| 10 | Practicality | 5 | 5 | Everything renders locally from code; recording + `mux.swift` gives a 1080p MP4 with sound |
-| | **Total** | **42 / 50** | **45 / 50** | **Release gate (≥ 42 and #3, #7, #8 ≥ 4): PASS / PASS** |
+| # | Criterion | Score | Notes |
+|---|---|---|---|
+| 1 | Hook | 4 | Real Indian street at 0:00 with the first line at 1.5 s; the problem (same message, same time) is on screen by 0:09 |
+| 2 | Product identity | 4 | Named and shown at 0:26.3 on the big hit (laptop lights up). Later than the skill's 10 s ideal, because the "before" world needs 25 s for laypeople |
+| 3 | Explaining features | 5 | One line, one proof: CRM facts → contact or wait → channel and time → two checklists → BLOCKED / STOP → chat in Hindi → OTP → fake caught → learning → approval |
+| 4 | Emotional promise | 4 | Calm relief: fewer, better messages; ends on a man smiling on a call |
+| 5 | Distinctiveness | 4 | Apple-launch staging of a collections product; still STOP frame in the score's silence; giant ~2× on the biggest hit |
+| 6 | Craft | 4 | One ease for all camera moves, motion blur, masked type, hard cuts on hits with 2-frame flash and 4% punch, dissolves elsewhere, grain, graded b-roll. Score not yet in, so the hit design is unheard |
+| 7 | Physical accuracy | 4 | One laptop and one phone model reused; real screens unaltered except crop and zoom; chat states follow the voice (typing dots → reply → pay link) |
+| 8 | Truthfulness | 5 | Every number in `TRUTH_TABLE.md` with source and qualifier; "In our tests" + SIMULATED badge + seed fine print on ~2×; 148/148 cites `POLICY_COVERAGE.md` with the K10 identity-mode caveat; cost counter and learning bars labelled illustrative |
+| 9 | Accessibility | 4 | Captions on by default, exact VO, two lines max; the Hindi line is captioned in English and repeated on screen. Caption text is white on a soft dark shadow and feathered backdrop (added in QA; was weak over the light studio scenes) |
+| 10 | Practicality | 5 | Renders locally; screen recording + `mux.swift` gives a 1080p MP4 with sound |
+| | **Total** | **43 / 50** | **Release gate (≥ 42 and #3, #7, #8 ≥ 4): PASS** |
 
 ## Final checks
 
 | Check | Result |
 |---|---|
-| Timeline sums to runtime, no gaps/overlaps | PASS: `validate_shotlist.py` full 36 shots / 216 s, operator 12 shots / 89 s; cross-dissolves are 0.9 s centred on each cut |
-| End title and CTA coherent; no unauthorised brand likeness | PASS: Kairos lockup + team/event line; CreditNirvana and Sarvam as plain text only; no logos |
-| Rights: music, voices, brand assets | Music and foley original (`music/LICENSE.md`). Voices are macOS `say` drafts: check Apple's terms or replace before public release |
-| No copied ad structure, copy or soundtrack | PASS: own structure (borrower → operator → proof), own copy, generated score |
-| No WhatsApp / Apple trade dress | PASS: generic chat UI (slate/teal bubbles, "Lender · verified", no green, no logo); device frames have no logos; "WhatsApp" only in text and VO |
-| 16:9 + 9:16 reframing | PARTIAL: 16:9 master done; 9:16 is a plan in `SHOT_LIST.md`, not built |
-| Spoken VO fits with pauses and music | PASS: `compose.py` measures every line; 0 overlaps in both cuts (5 lines under 0.05 s past the 0.12 s safety margin); about 139 wpm (full) / 128 wpm (operator) |
-| Feature-to-proof map matches screen action | PASS (`CREATIVE_BRIEF.md`, `shot-list*.csv` feature_proof column) |
-| Factual caveats present and legible | PASS: proof footnote, "illustrative" tags on chart, scoreboard and segment table; caption tracks the VO |
-| Viewer can recall one benefit | "Right message, right time, or none at all", plus "about twice the money per rupee" said twice (o5, s8) |
-| Central feature never shown? | None missing: decide (s3–s4), safety (s5, o3), human control (s6, o3), learning (s7), proof (s8) |
-| Audio/picture sync | Drift 20–30 ms measured (film 193.40 / audio 193.38 …). Needs a server with Range support (`tools/serve.py`) or file:// to seek |
-| Reduced motion | Camera drift, blur, morphs, Ken Burns, coin fall and cursor travel are all off under `prefers-reduced-motion`; fades only |
+| Timeline sums to runtime, no gaps/overlaps | PASS: `validate_shotlist.py film/shot-list.csv --target 139.635` → "PASS: 17 shots, 139.635s, contiguous timeline" |
+| Timing from `timeline.json` | PASS: VO at 1.5 s, 0.6 s gaps, +1.2 s before 04/15, +0.3 s before 11, 3 s end hold; markers lift 26.08, climax 117.89, final line 131.31. Player scene starts match `shot-list.csv` to the millisecond |
+| Hits | PASS: 13 composer hits loaded from `v3_hits.json`; cuts snapped onto 43.28, 58.87, 66.65, 76.87, 91.34, 101.23, 118.09, 126.7; the pull-back at 84.8 stays a dissolve; riser and groove cut give no flash |
+| Voice | Neha only (Sarvam bulbul:v3, pace 1.2), **AI-generated**, credited on the end card. No male voice; `vo_sarvam/` deleted |
+| Music | `MUSIC_SRC` one line; missing file = silent (verified). Ducking −11 dB under Neha, 20 ms / 300 ms. Pixabay track and `compose.py` not used |
+| Rights | Pexels footage under the Pexels License (`assets/broll/SOURCES.md`), not committed; credit "Stock footage: Pexels" on the end card. Real screens from our repo with synthetic data |
+| Brand likeness | Device renders have no logos. The chat has a WhatsApp-like look (teal header, beige pattern), as asked, but no WhatsApp logo or name in the UI; header reads "Lender ✓ · verified business". "WhatsApp" appears only in VO and type, as a fact |
+| Device screens | PASS: every laptop and phone carries a screen (real crop, rebuilt view or chat); chat phones are 74–77% of frame height |
+| Factual caveats present and legible | PASS: SIMULATED badges on n05, n13, n14, n15, n16; fine print on ~2× (12–15 px at 720p: readable on a laptop, not a phone) |
+| Viewer can recall one benefit | "The right message, at the right time. Or none at all." and "about twice as much money for every rupee" |
+| Secrets | No `sk_` keys in the tree (scan before commit) |
 
 ## Repairs made during QA
-- Re-timed 20+ cues so every voice line fits at natural pace (s4 grew 27 → 29 s; s5, s7, o2, o4, s8 shifted).
-- "148/148 policy cases" was first removed (no source found), then restored with its source, `POLICY_COVERAGE.md` (K01 38, K10 33 in k10 identity mode, K13 25, K21 20, K24 32).
-- Compact control bar under 1100 px wide (play/pause, time, scrubber, "⋯" menu for scenes and toggles); hides after 2 s while playing.
-- Added the budget qualifier to the ~2× claim; raised footnote contrast to AA.
-- Fixed: stale caption after seeking; washed-out real-screen backdrops; stamp text wrapping; audio clock
-  adoption when the server can't seek.
+- Composer hit types (`biggest`, `medium`, `pullback`, `riser`, `cut` …) mapped to picture events, so 118.09 is a BIG hard cut and the pull-back, riser and groove cut don't flash.
+- Caption backdrop added for the light studio scenes.
+- Pixabay music credit replaced by "Music: original score" on the end card.
+- n12 had an empty right half: added "Identity first." Tightened the n09 STOP push-in; fixed descender clipping in masked type.
 
 ## Known risks
-- Draft TTS voices are clearly synthetic; the Hindi read-back by Lekha is good, the English narrator a bit flat.
-- The scoreboard is a rebuild (no `/demo/live` on main yet), so it is labelled illustrative; swap in the real screen when it lands.
-- The React demo UI (Control Room, Learning) was not captured: no Node on this Mac.
+- The score (`v3_cinematic_trailer.m4a`) isn't delivered yet, so hits, ducking and the 72.9 s silence were checked on picture only.
+- n13's learning bars and n14's dashboard are rebuilt product views (n14 uses real `/demo/live` crops); both are labelled.
+- n16 holds 3.5 s: "0" for 1.8 s, then 49/49 and 148/148 from about 128.7 s (≈ 1.4 s before the cut to the end card). Brought in 0.5 s earlier during QA.

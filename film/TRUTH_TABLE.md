@@ -2,57 +2,53 @@
 
 Claim → human benefit → visible proof (scene) → evidence / source → qualification → status.
 Sources are on `origin/main` unless noted. **Every number is SIMULATED** (synthetic borrowers, the DEV
-simulator, scripted conversations). Only `VERIFIED` rows are on screen or spoken; `ILLUSTRATIVE` rows are
-labelled as such in frame; `VERIFY` rows are not used in the film.
+simulator, scripted conversations). Only `VERIFIED` rows are spoken or shown as fact. `ILLUSTRATIVE` rows are
+labelled in frame (or are plainly a picture of the problem, not a product claim). Scene ids are those in
+`shot-list.csv` (n01–n17).
 
-**Primary promise (both cuts):** the right message at the right time, or none at all. Collections run
-themselves, safely, and bring back more money for every rupee.
+**Primary promise:** the right message, at the right time, or none at all.
 
-**Core proof points (max three per cut):**
+**Core proof points (three):**
+1. More back per rupee: about 2× money recovered per ₹ spent, compared with a fixed schedule (n15).
+2. Safe by design: Aladdin checks every message twice; no messages at night; never over the limit; STOP stops
+   every channel; identity before details; fake proofs caught; 0 rule breaches, 49/49, 148/148 (n08, n09, n12, n16).
+3. It runs itself, with people in charge: it decides per borrower, answers in seconds, learns, and the team only
+   approves the few decisions that need a human (n05–n07, n10–n11, n13, n14).
 
-| # | Full film | Operator cut |
-|---|---|---|
-| 1 | More back per rupee: ~2× ₹ recovered per ₹ spent (s8, o5) | Runs itself: the day's plan is ready, the score updates live (o1, o2) |
-| 2 | Safe by design: 0 rule breaches; STOP everywhere; fakes caught; Aladdin checks twice (s5, s8) | Only the big calls reach a person, and Aladdin re-checks (o3) |
-| 3 | Runs itself, people in charge: 73.2% of chats closed without a human; 50,000 decisions in about 2 minutes; approvals (s6, s8) | Result: ~2× ₹ recovered per ₹ spent, 0 wickets (o5) |
-
-## Claims
+## Claims in the film
 
 | Claim (as said / shown) | Human benefit | Visible proof | Evidence / source | Qualification | Status |
 |---|---|---|---|---|---|
-| ~2× money recovered for every rupee spent vs the lender's own schedule | More recovered for the same spend | s8 hero + bars 272 vs 517; o5 "Kairos won" | `backend/README.md` "Final unseen seeds, run once": ₹ recovered per ₹ spent CN10 / Kairos 272 / 517, 229 / 530, 268 / 459 (1.71× to 2.31×) | SIMULATED; 3 seeds never used for tuning; same budget cap and contact caps; Kairos spent less of the budget (≈ 1,650–1,776 vs ≈ 2,836–2,973), which is part of the ratio | VERIFIED (SIMULATED) |
-| +80% to +105% more replies per rupee | Fewer wasted messages | s8 hero sub-line | Same table: replies per ₹1k +104.9%, +96.4%, +80.3% | SIMULATED; same seeds | VERIFIED (SIMULATED) |
-| More verified payments on every fresh test | Real money, not just replies | s8 hero sub-line | Same table: payments 59→63, 45→69, 56→68 | SIMULATED; payments verified by the simulator's bank feed | VERIFIED (SIMULATED) |
-| 0 rule breaches | No consent, quiet-hours, cap or budget violations | s8 card 2; o2 "WICKETS 0"; o5 | Same section: "K01 breaches and K15 violations were 0 / 0 everywhere"; PROBLEM_STATEMENT_CHECKLIST row 11 | SIMULATED replay | VERIFIED (SIMULATED) |
-| 49 / 49 attacks blocked | Guardrails hold under attack | s8 card 2; VO | FILM_BRIEF / INTEGRATION.md "Red team: 49/49 PASS" (PRs #14, #16, #19) | Red-team suite in repo | VERIFIED |
-| Fake payment proof caught (127 / 127) | No one is cleared on a doctored screenshot | s5 real CM-03 console (FRAUD_SUSPECT); s8 | `backend/README.md` CM-03 eval: 127 / 127, 0 false positives on 873 genuine; POLICY_COVERAGE K15-T06 | Scripted eval (1,000 conversations) | VERIFIED (SIMULATED) |
-| 73.2% of WhatsApp chats resolved without a human | Team handles only what needs a person | s8 tile; VO "three in four" | CM-03 eval 732 / 1,000 | Depends on conversation mix; 67.3% counting only bank-confirmed payment claims (caveat in README) | VERIFIED (SIMULATED) |
-| Nothing shared before the one-time code (0 disclosures) | Privacy | s5 chip; s8 footnote; real console shows OTP first | CM-03 eval: 0 replies with account tokens before VERIFIED | Independent scan in eval | VERIFIED (SIMULATED) |
-| 500 conversations at once | Scales on a busy day | s8 footnote | CM-03 eval: 500 concurrent, 0 errors, 0 cross-talk | Engine/in-process HTTP; excludes WhatsApp network time | VERIFIED (SIMULATED) |
-| 95% message understanding; 100% STOP and hardship recall | It never misses "stop" or "I lost my job" | s8 footnote; s4 "need time" understood | PROBLEM_STATEMENT_CHECKLIST: "95% on 160 hand-written messages, 100% STOP/hardship recall (PR #22)" | Small hand-written set | VERIFIED |
-| 50,000 daily decisions in about 2 minutes; same input, same result | Runs every morning without waiting | s8 tile | Checklist row 12: about 2.1 min (402 decisions/s); `--check-determinism` identical hashes | Single laptop run | VERIFIED |
-| 6 voice bots, 8 Indian languages, human handoff | Talks to people in their language | s8 tile; s4 Ritu in Hindi | CLAUDE.md voice-bot table; OPERATING_GUIDE Demo D | Sarvam bots in the CreditNirvana workspace | VERIFIED |
-| STOP on one channel stops every channel | Respect | s5 card 1 (chips), real console STOP reply | Checklist CM-02 #3 (red-team CON-01, CON-02) | From the next cycle | VERIFIED |
-| Hardship goes to a person | Dignity | s5 card 3; o3 approval | K13 exceptions; HARDSHIP_TRIAGE bot is human-approved only; CM-03 handoffs | | VERIFIED |
-| Aladdin checks every message twice; re-checks after approval | Nothing goes out by mistake | s3 decision bar; s5; o3 | CLAUDE.md "Guardrails run twice: at approval (reserve) and at send time"; journey report "Gate re-run said SEND ELIGIBLE" | Aladdin = Kairos Supervisor (K06) | VERIFIED |
-| Only a verified payment clears an EMI, and only that loan's reminders cancel | No wrong reminders after paying | s4 end; s4b real CRM (Loan A CLEARED, Loan B PENDING) | CLAUDE.md rules; CRM replay step 4 | | VERIFIED |
-| WhatsApp gets worse mid-campaign and Kairos switches by itself | Adapts without a person | s7 chart (illustrative) | K09 replay "In-campaign channel switches" | Chart shape illustrative | VERIFIED (concept) / ILLUSTRATIVE (chart) |
-| Borrowers move between layers (SMS → WhatsApp → voice → person) | Cheapest channel that works | s7 lanes | K27 auto-churn (`kairos_backend/churn/`) | Dot movement illustrative | ILLUSTRATIVE |
-| Scoreboard ₹ collected, run rate, required rate, extras, 3,412 due, 1,986 / 1,426 split, partnerships 42 / 25 / 21 / 12 | Operator sees the day at a glance | o1, o2, o3/o4 score bug | None (no live view on main yet; `/demo/live` is on branch `demo/live-collections`, not pushed) | Labelled "illustrative / SIMULATED" in frame | ILLUSTRATIVE |
-| Commentary lines (Asha rests, Kiran STOP, Ritu promise, switch to SMS, Ravi pays ₹4,200) | Every decision explained | o2 | Behaviours exist (K09 wait, STOP, K17 PTP, channel switch, verified payment); the lines are scripted | Synthetic names | ILLUSTRATIVE |
-| "1,240 borrowers" approval, audit times, segment report figures, region chips | Context | s6, o4, s7 | None | Labelled illustrative where numbers appear | ILLUSTRATIVE |
-| 148 / 148 of the lender-policy test cases pass | Kairos follows the lender's written rules | s8 footnote | `POLICY_COVERAGE.md` (Ojas policy pack, PR #25): K01 decision policy 38/38, K10 inbound WhatsApp 33/33, K13 exceptions 25/25, K21 propensity/intensity 20/20, K24 portfolio intake 32/32 | K10 passes only with `identity_mode="k10"`; the CM-03 default stays OTP (open decision K10-1). K21 scorecard is not yet wired into the Supervisor (K21-1). K24 script prints 32 PASS lines while its summary says 31/31 | VERIFIED |
+| "About twice as much money for every rupee spent, compared to a fixed schedule" (~2×) | More recovered for the same spend | n15 hero number + fine print "517 vs 272 · 530 vs 229 · 459 vs 268 (1.7× to 2.3×)" | `backend/README.md` "Final unseen seeds, run once": ₹ recovered per ₹ spent CN10 / Kairos 272 / 517, 229 / 530, 268 / 459 | SIMULATED; 3 seeds never used for tuning; same budget cap and contact caps; Kairos spent less of the budget (≈ 1,650–1,776 vs ≈ 2,836–2,973), which is part of the ratio; "In our tests" on screen and in VO; fine print says it | VERIFIED (SIMULATED) |
+| "With zero rule breaches" (0) | No consent, quiet-hours, cap or budget violations | n16 "0"; n14 rule-breach card from `/demo/live` | Same section: "K01 breaches and K15 violations were 0 / 0 everywhere"; PROBLEM_STATEMENT_CHECKLIST row 11 | SIMULATED replay | VERIFIED (SIMULATED) |
+| "Every safety test passed": 49/49 attack tests passed | Guardrails hold under attack | n16 | INTEGRATION.md "Red team: 49/49 PASS" (PRs #14, #16, #19) | Red-team suite in repo | VERIFIED |
+| 148/148 policy checks | Kairos follows the lender's written rules | n16 | `POLICY_COVERAGE.md` (Ojas policy pack, PR #25): K01 decision policy 38/38, K10 inbound WhatsApp 33/33, K13 exceptions 25/25, K21 propensity/intensity 20/20, K24 portfolio intake 32/32 | **K10 passes only with `identity_mode="k10"`; the CM-03 default stays OTP (open decision K10-1).** K21 scorecard is not yet wired into the Supervisor (K21-1). K24 script prints 32 PASS lines while its summary says 31/31 | VERIFIED (with caveat) |
+| "Aladdin, our safety supervisor, checks it against the lender's rules. Twice." | Nothing goes out by mistake | n08 two checklists (when planning / just before sending) | CLAUDE.md "Guardrails run twice: at approval (reserve) and at send time"; journey report "Gate re-run said SEND ELIGIBLE" | Aladdin = Kairos Supervisor (K06), a display name; code unchanged | VERIFIED |
+| "No messages at night. Never more than allowed." | Respect | n09 blocked cards "10:00 pm reminder", "4th message this week" | K06 quiet-hours and contact-cap checks; red-team suite | Card wording illustrative of the two rules | VERIFIED |
+| "If someone says stop, everything stops. On every channel." | Respect | n09 "ALL OFF", channel rows switch off; real CM-03 console STOP reply (`cm03_stop.jpg`) | Checklist CM-02 #3 (red-team CON-01, CON-02); CM-03 STOP_HONOURED | From the next cycle | VERIFIED |
+| Looks at each borrower: how late, how they replied, when they read (42 days; Twice, on WhatsApp; Responsive on WhatsApp) | It treats people as people | n05 real CRM page B-1042 (`crm_borrower.jpg`) | CRM replay on `origin/main` | Synthetic borrower | VERIFIED (SIMULATED) |
+| "Then it decides. Contact them today, or wait." | No pointless messages | n06 | K09 contact-or-wait decision; replay "WAIT until 21 Nov" in the CRM screen | | VERIFIED |
+| Picks the channel (SMS, WhatsApp, voice call in their own language, human agent) and the best time of day (7:30 pm) | The message lands | n07 | K09 channel and slot choice; 6 Sarvam voice bots, 8 Indian languages (CLAUDE.md); human hand-off | 7:30 pm is an example slot | VERIFIED |
+| "Kairos answers in seconds, in Hindi or in English" | Borrowers get help when they ask | n10–n11 chat (generic UI) | CM-03 WhatsApp agent replies in well under a second (the real console in `cm03_stop.jpg` prints the engine reply time and a 16 ms round trip); Hindi and English replies in the CM-03 eval | Excludes WhatsApp network time; chat is a rebuilt UI, the Hindi line is spoken by Neha | VERIFIED (SIMULATED) |
+| "It confirms who they are before sharing any loan details" | Privacy | n12 chat: one-time code → "✓ Identity verified" → ask for UTR | CM-03 eval: 0 replies with account tokens before VERIFIED | OTP mode (the CM-03 default) | VERIFIED (SIMULATED) |
+| "If someone sends a fake payment screenshot, it checks with the bank, and catches it" | No one is cleared on a doctored screenshot | n12 real CM-03 console (FRAUD_SUSPECT, `cm03_fake_caught.jpg`), "No matching payment", "FAKE CAUGHT" | `backend/README.md` CM-03 eval: 127 / 127 fakes caught, 0 false positives on 873 genuine; POLICY_COVERAGE K15-T06 | Scripted eval (1,000 conversations) | VERIFIED (SIMULATED) |
+| "Every reply, and every payment, teaches Kairos something new" | Gets better without a person | n13 learning panel; "Day 7: WhatsApp replies drop" | K09 replay "In-campaign channel switches"; per-channel reply estimates update daily | Curve and bar lengths illustrative; labelled "PRODUCT VIEW … SIMULATED" | VERIFIED (concept) / ILLUSTRATIVE (chart) |
+| The team watches the money come in and approves the few decisions that need a human | People stay in charge | n14 ₹ recovered (real `/demo/live` crops), approval on the phone | HITL approvals (K13, hardship to a person); `/demo/live` on branch `demo/live-collections` | Rebuilt product view with real crops; labelled "REAL NUMBERS … SIMULATED" | VERIFIED (SIMULATED) |
+| Same message, same time, to everyone; most ignored; some annoy; each costs money (₹ counter) | The problem | n02 three identical lock screens; n03 b-roll; cost chip | General industry picture, not a Kairos claim | Cost counter labelled "illustrative" in frame | ILLUSTRATIVE |
 
-## Real screens used (captured 19 Nov 2026 from `origin/main` 160fb45, synthetic data)
+Claims from earlier cuts that are **not** in this film: +80–105% replies per rupee, more verified payments per
+seed, 73.2% chats without a human, 500 conversations at once, 95% understanding, 50,000 decisions in about
+2 minutes, the cricket scoreboard. Their sources are unchanged in the repo history of this file.
+
+## Real screens used (captured 19 Nov 2026, synthetic data)
 
 | File | What | How |
 |---|---|---|
-| `assets/real/crm_borrower.jpg` | CRM borrower page B-1042 after the 5-step replay | `cd crm && python3 -m kairos.web` + `python3 -m kairos.replay`, headless Chrome 1920×1080 |
-| `assets/real/cm03_fake_caught.jpg` | CM-03 console: OTP, edited payment screenshot, FRAUD_SUSPECT hand-off | `KAIROS_CM03_DEMO_INBOX=1 uvicorn kairos_backend.api:app`, conversation played in the browser, page snapshot rendered headless |
-| `assets/real/cm03_verified_paid.jpg` | CM-03 console: "Kal EMI pay kar di thi" → OTP → balance → UTR → receipt | same |
-| `assets/real/cm03_stop.jpg` | CM-03 console: STOP honoured on every channel | same |
-| `assets/real/journey_report.jpg` | Journey report: every decision with its checks (ALL_PASSED, HITL approve + gate re-run) | `python3 scripts/run_journey.py --quick` |
-| `assets/real/api_docs.jpg` | API docs "Kairos K06 · Supervisor guardrails + executor" | `/docs` |
+| `assets/real/crm_borrower.jpg` | CRM borrower page B-1042 after the 5-step replay (n05) | `cd crm && python3 -m kairos.web` + `python3 -m kairos.replay`, headless Chrome 1920×1080, `origin/main` 160fb45 |
+| `assets/real/cm03_stop.jpg` | CM-03 console: STOP honoured on every channel (n09) | `KAIROS_CM03_DEMO_INBOX=1 uvicorn kairos_backend.api:app`, conversation played in the browser |
+| `assets/real/cm03_fake_caught.jpg` | CM-03 console: OTP, edited payment screenshot, FRAUD_SUSPECT hand-off (n12) | same |
+| `assets/real/live_recovered_1-4.png`, `live_breaches.png` | ₹ recovered card and rule-breach card (n14) | `/demo/live` on branch `demo/live-collections`, headless Chrome at 2×; only credible element crops (the mid-run ratio tiles were left out) |
+| `assets/real/cm03_verified_paid.jpg`, `journey_report.jpg`, `api_docs.jpg` | Kept for reference, not in this cut | as above |
 
-Phone numbers in these screens are masked by the product (`+********2001`). Demo OTP codes are
-one-time test codes from the simulated inbox, not credentials.
+Phone numbers in these screens are masked by the product (`+********2001`). Demo OTP codes are one-time
+test codes from the simulated inbox, not credentials. "Ravi" in the chat is a synthetic name.

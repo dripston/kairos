@@ -1,5 +1,10 @@
-# Large renders: regenerate with `python3 film/music/compose.py` (the .m4a copies are committed)
+# Renders (regenerate with music/mix.py); the .m4a copies the film plays are committed
 music/*.wav
+music/soundtrack_hero.m4a
 music/.cache/
 music/__pycache__/
 tools/__pycache__/
+# Not ours to redistribute, or not used: Pexels clips (assets/broll/.gitignore), the on-hold Pixabay track
+music/licensed/
+# Voice auditions, not in the film
+audio/voice_samples/

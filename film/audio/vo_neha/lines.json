@@ -1,0 +1,138 @@
+{
+ "01_people": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Every month, millions of people in India repay a loan. For a phone, a bike, a small shop.",
+  "ok": true
+ },
+ "02_same": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "And every month, lenders remind them the same way. Same message. Same time. To everyone.",
+  "ok": true
+ },
+ "03_cost": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Most of those messages are ignored. Some annoy people. And every single one costs money.",
+  "ok": true
+ },
+ "04_meet": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Meet Kairos. An AI that runs loan collections, one person at a time.",
+  "ok": true
+ },
+ "05_looks": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Every morning, Kairos looks at each borrower. How late they are, how they replied before, and when they usually read their messages.",
+  "ok": true
+ },
+ "06_decides": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Then it decides. Contact them today, or wait.",
+  "ok": true
+ },
+ "07_channel": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "If it reaches out, it picks the channel. SMS, WhatsApp, a voice call in their own language, or a human agent. And the best time of day.",
+  "ok": true
+ },
+ "08_aladdin": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Before anything is sent, Aladdin, our safety supervisor, checks it against the lender's rules. Twice.",
+  "ok": true
+ },
+ "09_rules": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "No messages at night. Never more than allowed. And if someone says stop, everything stops. On every channel.",
+  "ok": true
+ },
+ "10_reply": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "When a borrower writes back on WhatsApp, Kairos answers in seconds, in Hindi or in English.",
+  "ok": true
+ },
+ "11_agent_hi": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "hi-IN",
+  "text": "नमस्ते! आपकी EMI की तारीख कल है। क्या मैं आपको पेमेंट लिंक भेज दूँ?",
+  "ok": true
+ },
+ "12_verify": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "It confirms who they are before sharing any loan details. And if someone sends a fake payment screenshot, it checks with the bank, and catches it.",
+  "ok": true
+ },
+ "13_learns": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Every reply, and every payment, teaches Kairos something new. So it gets better, every single day.",
+  "ok": true
+ },
+ "14_operator": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "And the collections team? They watch the money come in, and approve the few decisions that need a human.",
+  "ok": true
+ },
+ "15_proof": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "In our tests, Kairos recovered about twice as much money for every rupee spent, compared to a fixed schedule.",
+  "ok": true
+ },
+ "16_safe": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "With zero rule breaches. And every safety test passed.",
+  "ok": true
+ },
+ "17_end": {
+  "speaker": "neha",
+  "model": "bulbul:v3",
+  "pace": 1.2,
+  "lang": "en-IN",
+  "text": "Kairos. The right message, at the right time. Or none at all.",
+  "ok": true
+ }
+}

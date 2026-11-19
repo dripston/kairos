@@ -1,0 +1,96 @@
+{
+ "rule": "VO starts at 1.5 s; 0.6 s gap between lines; +1.2 s before 04_meet and 15_proof; +0.3 s before 11_agent_hi; end card holds 3 s after the last line",
+ "runtime_s": 139.635,
+ "lines": [
+  {
+   "line": "01_people",
+   "start": 1.5,
+   "end": 8.646
+  },
+  {
+   "line": "02_same",
+   "start": 9.246,
+   "end": 16.422
+  },
+  {
+   "line": "03_cost",
+   "start": 17.022,
+   "end": 24.577
+  },
+  {
+   "line": "04_meet",
+   "start": 26.377,
+   "end": 32.302
+  },
+  {
+   "line": "05_looks",
+   "start": 32.902,
+   "end": 42.784
+  },
+  {
+   "line": "06_decides",
+   "start": 43.384,
+   "end": 47.79
+  },
+  {
+   "line": "07_channel",
+   "start": 48.39,
+   "end": 58.371
+  },
+  {
+   "line": "08_aladdin",
+   "start": 58.971,
+   "end": 66.149
+  },
+  {
+   "line": "09_rules",
+   "start": 66.749,
+   "end": 76.371
+  },
+  {
+   "line": "10_reply",
+   "start": 76.971,
+   "end": 83.995
+  },
+  {
+   "line": "11_agent_hi",
+   "start": 84.895,
+   "end": 90.838
+  },
+  {
+   "line": "12_verify",
+   "start": 91.438,
+   "end": 100.729
+  },
+  {
+   "line": "13_learns",
+   "start": 101.329,
+   "end": 109.626
+  },
+  {
+   "line": "14_operator",
+   "start": 110.226,
+   "end": 116.39
+  },
+  {
+   "line": "15_proof",
+   "start": 118.19,
+   "end": 126.2
+  },
+  {
+   "line": "16_safe",
+   "start": 126.8,
+   "end": 130.712
+  },
+  {
+   "line": "17_end",
+   "start": 131.312,
+   "end": 136.035
+  }
+ ],
+ "markers": {
+  "lift_meet_kairos": 26.076999999999998,
+  "climax_proof": 117.89,
+  "final_line": 131.312
+ }
+}
