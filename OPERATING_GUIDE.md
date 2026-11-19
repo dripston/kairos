@@ -61,8 +61,7 @@ order (each one has a green "Merge" button once reviewed). After each merge run 
 | 8 | #6 | CRM borrower page with the 5-step replay, and the voice bot flows |
 | 9 | #15 | Voice engine: picks the bot, voice and language per call; acts on call outcomes using confidence thresholds (merge after #11) |
 
-Later branches (not PRs yet): `k17-k18/voice-engine` (voice bot selection, dispositions, confidence
-thresholds), `k09/optimize` (more learner tuning), `redteam/fix-high` (fixes for the 4 serious findings).
+Later branches (not PRs yet): `k09/optimize` (more learner tuning), `redteam/fix-high` (fixes for the 4 serious findings).
 
 ---
 
