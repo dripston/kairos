@@ -1,0 +1,10 @@
+case_id,requirement,edge_case,description,how_it_is_checked
+K26-T01,Join agent activity with eligible borrowers,,Every touch and payment joins to a borrower and obligation in the portfolio; one activity row per borrower per policy,no orphan borrower_id / obligation_id in send or payment events; activity rows = 2 x borrowers and unique
+K26-T02,Show rate denominators,,Every KPI states numerator and denominator with their source events plus run label / run id / seed / baseline,no empty field in kpis.csv
+K26-T03,Done when: reconcile each KPI to source events,,Every KPI value is rebuilt from raw send / payment events and the portfolio and matches exactly,independent recomputation of all KPIs for both policies; 0 differences
+K26-T04,Show rate denominators,,Each funnel rate uses the previous stage as its denominator and never exceeds 100%,attempt <- eligible; reach <- attempted; response <- reached; payment <- responders; numerator <= denominator
+K26-T05,Unique counting,,Each borrower counted once per stage,stage counts in the activity table equal distinct borrower_id counts in the raw events
+K26-T06,Cost,,Spend reconciles across raw events / daily totals / KPIs / activity table,all four within ₹0.05
+K26-T07,Done when: label live / replay / simulated runs,E18,Every analytics row carries a run label from LIVE / REPLAY / SIMULATED and this run is SIMULATED,labels checked in kpis / kpis_by_segment / borrower_activity; an invalid label is rejected by the builder
+K26-T08,Breakdown,,Per-segment table adds up to the totals,allocated / reached / responders / replies / spend summed over segments equal the totals
+K26-T09,Consistency across tasks,,K26 numbers equal the K15 benchmark,replies per rupee and paid-after-reply equal K15 summary / funnel

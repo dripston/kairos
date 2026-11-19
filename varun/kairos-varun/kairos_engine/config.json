@@ -1,0 +1,84 @@
+{
+  "_readme": "All tunable numbers for the replay harness. Policy rules (caps, windows, holds) are NOT here - they are read from policy/k01_policy.json and policy/k21_scorecard.json (Ojas). Values marked ASSUMPTION need confirmation.",
+  "run_mode": "SIMULATED",
+  "baseline_source": "dev stand-in (config.json baseline.cadence) - official fixed-cadence file pending K02",
+  "run_label": "SIMULATED - dev fallback (PL_Dummy_Collections_Data_500 scaled to 50K; dev simulator, not the official CM-02 simulator)",
+  "public_seed": 42,
+  "n_borrowers": 50000,
+  "campaign_start": "2026-11-23",
+  "campaign_days": 28,
+  "budget_per_case_inr": 8,
+  "collection_target": {
+    "_note": "ASSUMPTION: K01 marks these REQUIRED_INPUT. Ask Ojas for real values. Set high so the dev run covers the full window.",
+    "amount_pct": 0.9,
+    "count_pct": 0.9
+  },
+  "lender_profile": null,
+  "band_mix": {
+    "_note": "The 500-loan file is 100% DPD 1-30. To exercise every K01 band we keep 60% at source DPD and shift the rest. Every row records dpd_source.",
+    "source_file": 0.6,
+    "PRE_DUE": 0.1,
+    "B2": 0.15,
+    "B3": 0.1,
+    "B4": 0.05
+  },
+  "channels": [
+    "sms",
+    "whatsapp",
+    "email",
+    "ivr",
+    "voicebot"
+  ],
+  "channel_cost_inr": {
+    "_note": "sms/whatsapp/email/ivr from K01 test cases (est_cost_inr). voicebot is an ASSUMPTION. Replace with D10 when it arrives.",
+    "sms": 0.2,
+    "whatsapp": 0.4,
+    "email": 0.05,
+    "ivr": 1.5,
+    "voicebot": 3.0
+  },
+  "unconnected_call_charge_share": 0.3,
+  "slots": [
+    "08:00",
+    "10:00",
+    "12:00",
+    "14:00",
+    "16:00",
+    "18:00"
+  ],
+  "kairos": {
+    "forgetting_per_day": 0.85,
+    "pooled_prior_strength": 12,
+    "history_weight": 0.25,
+    "personal_shrinkage": 6,
+    "fatigue_penalty_assumed": 0.85,
+    "min_replies_per_rupee": 0.04,
+    "max_touches_per_day": 2
+  },
+  "baseline": {
+    "_note": "ASSUMPTION: dev stand-in for the official fixed-cadence policy file. Swap in the official file when K02 clears.",
+    "cadence": [
+      {
+        "channel": "email",
+        "slot": "08:00",
+        "every_n_contact_days": 3
+      },
+      {
+        "channel": "sms",
+        "slot": "10:00",
+        "every_n_contact_days": 1
+      },
+      {
+        "channel": "whatsapp",
+        "slot": "12:00",
+        "every_n_contact_days": 2
+      },
+      {
+        "channel": "ivr",
+        "slot": "16:00",
+        "every_n_contact_days": 4
+      }
+    ],
+    "budget_priority": "dpd_desc"
+  }
+}

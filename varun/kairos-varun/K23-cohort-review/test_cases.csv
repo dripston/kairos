@@ -1,0 +1,10 @@
+case_id,requirement,edge_case,description,how_it_is_checked
+K23-T01,Done when: review after the mid-campaign switch,E06,The switch is found from Kairos's own channel mix and the review splits the cohort there,change-point re-detected from the raw touch log equals cohort_review.json; >= 4 contact days on each side
+K23-T02,Review which channels improved,,Per channel: touches / unique reach / meaningful replies / reply rate / spend - before vs after - for both policies,every row recomputed from raw logs equals cohort_review.json
+K23-T03,Review which times improved,,Per send time: replies and replies per rupee before vs after - for both policies,every row recomputed from raw logs equals cohort_review.json; all 6 slots reviewed
+K23-T04,Review reach / replies / verified payments,,Policy comparison of unique reach / meaningful replies / verified payments reconciles with K15,policy_comparison equals the K15 funnel; channel-attributed payments add up to the policy total
+K23-T05,Record proposed changes,,Every proposal carries evidence from this run,each proposal has evidence; learning proposals match the recomputed channel table with >= 300 touches each side
+K23-T06,Done when: caps / consent / hardship need policy-owner approval,,Governed changes are PENDING Ojas's approval and nothing is applied,classifier flags caps / consent / contact window / hardship / PTP targets; each proposal's flag and status follow it; applied = false everywhere
+K23-T07,Record rollback,,Rollback restores the exact pre-cohort beliefs,a freshly initialised Kairos equals priors_pre_cohort.json; snapshot hashes match the files
+K23-T08,Governance,,The review never edits policy files,K01 and K21 file hashes now equal the hashes recorded at run time
+K23-T09,Outcome of the switch,,After the switch Kairos keeps a higher replies per rupee than fixed cadence,post-switch replies / spend from raw logs for both policies

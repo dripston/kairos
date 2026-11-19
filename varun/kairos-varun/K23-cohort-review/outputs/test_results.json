@@ -1,0 +1,47 @@
+[
+  {
+    "case_id": "K23-T01",
+    "passed": true,
+    "detail": "switch re-detected on 2026-12-08 (Salaried: sms 31% -> 53%) = review's 2026-12-08; 13 contact days before, 11 after"
+  },
+  {
+    "case_id": "K23-T02",
+    "passed": true,
+    "detail": "34 channel rows recomputed from raw logs, 0 differences from cohort_review.json"
+  },
+  {
+    "case_id": "K23-T03",
+    "passed": true,
+    "detail": "38 send-time rows recomputed, 0 differences; Kairos slots reviewed after the switch: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00']"
+  },
+  {
+    "case_id": "K23-T04",
+    "passed": true,
+    "detail": "kairos: reach 49,069, replies 21,168, paid after reply 8,653 (K15 funnel 8,653, sum over channels 8,653) | fixed_cadence: reach 49,096, replies 14,908, paid after reply 6,190 (K15 funnel 6,190, sum over channels 6,190)"
+  },
+  {
+    "case_id": "K23-T05",
+    "passed": true,
+    "detail": "8 proposals all carry evidence; 3 learning proposals match recomputed reply rates with >= 300 touches each side"
+  },
+  {
+    "case_id": "K23-T06",
+    "passed": true,
+    "detail": "classifier correct on 6 governed + 3 free targets; pending Ojas: ['PROP-06 channels_allowed_by_band', 'PROP-07 caps.cross_channel_daily_ceiling']; applied: none"
+  },
+  {
+    "case_id": "K23-T07",
+    "passed": true,
+    "detail": "fresh start == pre-cohort snapshot: True; snapshot hashes match: True; post-cohort beliefs differ from pre (learning happened): True"
+  },
+  {
+    "case_id": "K23-T08",
+    "passed": true,
+    "detail": "K01 ca4a5da8dd68 / K21 c9f06e936b1a unchanged since the run (bundled copy (policy_bundled/k01_policy.json))"
+  },
+  {
+    "case_id": "K23-T09",
+    "passed": true,
+    "detail": "after the switch: Kairos 0.0849 vs fixed cadence 0.0364 replies per \u20b9 (+133.2%)"
+  }
+]

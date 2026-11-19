@@ -1,0 +1,13 @@
+policy,stage,definition,unique_borrowers,pct_of_previous,pct_of_eligible
+fixed_cadence,allocated,Allocated borrowers,50000,,101.6
+fixed_cadence,eligible,Passed K01 gates at least once,49226,98.5,100.0
+fixed_cadence,attempted,Attempted (>=1 touch sent),49154,99.9,99.9
+fixed_cadence,reached,Delivered or connected,49096,99.9,99.7
+fixed_cadence,responders,Meaningful reply (K01 definition),13059,26.6,26.5
+fixed_cadence,paid_after_reply,Verified payment after replying,6190,47.4,12.6
+kairos,allocated,Allocated borrowers,50000,,101.6
+kairos,eligible,Passed K01 gates at least once,49226,98.5,100.0
+kairos,attempted,Attempted (>=1 touch sent),49127,99.8,99.8
+kairos,reached,Delivered or connected,49069,99.9,99.7
+kairos,responders,Meaningful reply (K01 definition),16943,34.5,34.4
+kairos,paid_after_reply,Verified payment after replying,8653,51.1,17.6

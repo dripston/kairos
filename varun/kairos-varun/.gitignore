@@ -1,0 +1,5 @@
+runs/
+kairos_engine/data/generated/
+kairos_engine/data/raw/*.csv
+__pycache__/
+.DS_Store
