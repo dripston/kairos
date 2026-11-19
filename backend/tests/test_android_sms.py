@@ -112,7 +112,7 @@ def test_refuses_without_config_from_env(drop, err):
 def test_refuses_bad_mode_url_and_sim():
     gw = FakeGateway()
     for bad, err in [({"SMSGATE_MODE": "lan"}, "BAD_SMSGATE_MODE"), ({"SMSGATE_URL": "ftp://x"}, "BAD_SMSGATE_URL"),
-                     ({"SMSGATE_URL": "http://u:p@192.0.2.10:8080"}, "BAD_SMSGATE_URL"),
+                     ({"SMSGATE_URL": "http://" + TEST_USER + ":" + TEST_PASSWORD + "@192.0.2.10:8080"}, "BAD_SMSGATE_URL"),
                      ({"SMSGATE_MODE": "cloud", "SMSGATE_URL": "http://example.test"}, "BAD_SMSGATE_URL"),
                      ({"SMSGATE_SIM": "4"}, "BAD_SMSGATE_SIM")]:
         assert AndroidSmsGatewayProvider(env=env(**bad), transport=gw, dry_run=False).send(touch()).error.startswith(err)
