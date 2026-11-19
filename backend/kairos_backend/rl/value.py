@@ -71,8 +71,9 @@ class ValueModel:
     def __init__(self, arm_decay: float = 0.7, pop_decay: float = 0.85, ind_decay: Optional[float] = None,
                  prior_strength: float = 20.0, pay_prior: tuple = (0.25, 20.0), stop_prior: tuple = (0.06, 30.0),
                  warm: Optional[dict] = None, segments: bool = True, individual: bool = True,
-                 sequencing: bool = True):
+                 sequencing: bool = True, backfit_passes: int = 2):
         self.arm_decay, self.pop_decay, self.ind_decay = arm_decay, pop_decay, ind_decay
+        self.backfit_passes = max(1, int(backfit_passes))
         self.prior = {k: (m * s, (1 - m) * s) for k, (m, s) in SIMULATOR_PRIORS.items()}
         self.pay_prior = (pay_prior[0] * pay_prior[1], pay_prior[1])
         self.stop_prior = (stop_prior[0] * stop_prior[1], stop_prior[1])
@@ -165,16 +166,28 @@ class ValueModel:
             a0, b0 = self.prior.get(key, (0.1, 1.9))
             s, n = acc.get(key, (0.0, 0.0))
             self.p_global[key] = (a0 + s) / (a0 + b0 + n)
+        ws = [self._w(self.arm_decay, a) for a in ages]
         self.band.fit(self._pseudo(self.band) + [
-            (self.band.keyfn(r), self._w(self.arm_decay, a) * r.reply,
-             self._w(self.arm_decay, a) * self.p_global.get((r.ch, r.slot), 0.05)) for r, a in zip(recs, ages)])
+            (self.band.keyfn(r), w * r.reply, w * self.p_global.get((r.ch, r.slot), 0.05),
+             w * w * self.p_global.get((r.ch, r.slot), 0.05)) for r, w in zip(recs, ws)])
         # reply levels, fitted in order on what the levels above already predict (p_arm when it arrived)
+        # backfitting: pass 1 fits each level on what the levels above predict; later passes refit each
+        # level on what ALL other levels predict (so e.g. fatigue is not confounded with the borrower
+        # level: repeat touches go to borrowers who did not reply)
+        keys = {lv.name: [lv.keyfn(r) for r in recs] for lv in self.reply_levels}
+        wts = {lv.name: [self._w(lv.decay, a) for a in ages] for lv in self.reply_levels}
         cum = [r.p_arm for r in recs]
         for lv in self.reply_levels:
-            ws = [self._w(lv.decay, a) for a in ages]
-            keys = [lv.keyfn(r) for r in recs]
-            lv.fit(self._pseudo(lv) + [(k, w * r.reply, w * c) for k, w, r, c in zip(keys, ws, recs, cum)])
-            cum = [c * lv.get(k) for c, k in zip(cum, keys)]
+            ks, ws = keys[lv.name], wts[lv.name]
+            lv.fit(self._pseudo(lv) + [(k, w * r.reply, w * c, w * w * c) for k, w, r, c in zip(ks, ws, recs, cum)])
+            cum = [c * lv.get(k) for c, k in zip(cum, ks)]
+        for _ in range(self.backfit_passes - 1):
+            for lv in self.reply_levels:
+                ks, ws = keys[lv.name], wts[lv.name]
+                other = [c / lv.get(k) for c, k in zip(cum, ks)]
+                lv.fit(self._pseudo(lv) + [(k, w * r.reply, w * c, w * w * c)
+                                           for k, w, r, c in zip(ks, ws, recs, other)])
+                cum = [c * lv.get(k) for c, k in zip(other, ks)]
         # P(pay | reply)
         replied = [(r, a) for r, a in zip(recs, ages) if r.reply]
         a0, n0 = self.pay_prior
@@ -185,7 +198,7 @@ class ValueModel:
         for lv in self.pay_levels:
             keys = [lv.keyfn(r) for r, _ in replied]
             ws = [self._w(lv.decay, a) for _, a in replied]
-            lv.fit(self._pseudo(lv) + [(k, w * r.paid, w * c) for k, w, (r, _), c in zip(keys, ws, replied, cum)])
+            lv.fit(self._pseudo(lv) + [(k, w * r.paid, w * c, w * w * c) for k, w, (r, _), c in zip(keys, ws, replied, cum)])
             cum = [c * lv.get(k) for c, k in zip(cum, keys)]
         # P(STOP | touch) = p_reply x sigma x effects
         s0, n0 = self.stop_prior
@@ -196,7 +209,7 @@ class ValueModel:
         for lv in self.stop_levels:
             keys = [lv.keyfn(r) for r in recs]
             ws = [self._w(lv.decay, a) for a in ages]
-            lv.fit(self._pseudo(lv) + [(k, w * r.stop, w * c) for k, w, r, c in zip(keys, ws, recs, cum)])
+            lv.fit(self._pseudo(lv) + [(k, w * r.stop, w * c, w * w * c) for k, w, r, c in zip(keys, ws, recs, cum)])
             cum = [c * lv.get(k) for c, k in zip(cum, keys)]
 
     # ---------- prediction ----------

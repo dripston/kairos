@@ -61,7 +61,8 @@ def kairos(seed, n, days, drift, config) -> dict:
     csv, pf, loans = setup(seed, n, days, wd)
     warm = None
     if config.get("warm_from") is not None:   # cohort A (another seed) first, export, then this cohort
-        a_seed = config["warm_from"]
+        wf = config["warm_from"]
+        a_seed = wf[str(seed)] if isinstance(wf, dict) else wf
         a_base = cn10(a_seed, n, days, drift)
         a_csv, a_pf, a_loans = setup(a_seed, n, days, wd)
         a = k09.StackRun("kairos", a_csv, a_seed, days, os.path.join(wd, "a.db"), a_base["per_case"], drift,
