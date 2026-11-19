@@ -445,7 +445,7 @@ class ManualIn(HumanIn):
     channel: str
     template_id: str
     at: datetime
-    est_cost_paise: int = Field(ge=0)
+    est_cost_paise: int = Field(ge=0, le=MAX_PAISE)
     campaign_id: Optional[str] = None
     obligation_id: Optional[str] = None
     purpose: Optional[str] = None
@@ -457,7 +457,7 @@ class ManualPreviewIn(BaseModel):
     channel: str
     template_id: str
     at: datetime
-    est_cost_paise: int = Field(0, ge=0)
+    est_cost_paise: int = Field(0, ge=0, le=MAX_PAISE)
     campaign_id: Optional[str] = None
     obligation_id: Optional[str] = None
     purpose: Optional[str] = None

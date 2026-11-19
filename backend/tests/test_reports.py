@@ -336,7 +336,12 @@ def api_client(tmp_path, monkeypatch):
     monkeypatch.setenv("KAIROS_DB", str(tmp_path / "api.db"))
     import kairos_backend.api as api
     api = importlib.reload(api)
+    # The API ledger carries the K06 HITL approval hook (IVR/voicebot -> PENDING_APPROVAL). This fixture
+    # seeds already-executed history for the report sheets, so it is built without the hook, then the
+    # hook goes back on for every request the test makes.
+    hook, api.ledger.reserve_hook = api.ledger.reserve_hook, None
     build(api.ledger)
+    api.ledger.reserve_hook = hook
     return TestClient(api.app)
 
 
