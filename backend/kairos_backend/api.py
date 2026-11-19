@@ -1,8 +1,10 @@
-"""HTTP API for K06. Run:  uvicorn kairos_backend.api:app --reload  (from backend/)
+"""HTTP API for K06 on the K03 spine. Run:  uvicorn kairos_backend.api:app --reload  (from backend/)
 
 Environment:
   KAIROS_POLICY_DIR  policy folder (default: <repo>/policy)
-  KAIROS_DB          SQLite file   (default: backend/kairos.db)
+  KAIROS_DB          SQLite file shared by the K03 spine and K06 (default: backend/kairos.db)
+
+Money is integer paise (100 paise = ₹1), as in the K03 spine.
 """
 from __future__ import annotations
 
@@ -18,7 +20,7 @@ from pydantic import BaseModel, Field
 from .exceptions import ExceptionEvent
 from .executor import Executor, FakeProvider, Supervisor
 from .gate import Facts, evaluate
-from .ledger import Instruction, Ledger
+from .ledger import Instruction, Ledger, PaymentError
 from .policy import load_policy
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
@@ -29,45 +31,40 @@ supervisor = Supervisor(ledger)
 # Real adapters (K07 WhatsApp, K08 SMS, K17 IVR) replace these; until then every send is SIMULATED.
 executor = Executor(ledger, {ch: FakeProvider(ch) for ch in policy.raw["channels"]})
 
-app = FastAPI(title="Kairos K06 · Supervisor guardrails + executor", version="0.1.0")
+app = FastAPI(title="Kairos K06 · Supervisor guardrails + executor", version="0.2.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 
-def _404(fn, *a, **k):
+def _call(fn, *a, **k):
     try:
         return fn(*a, **k)
     except KeyError as e:
         raise HTTPException(404, f"not found: {e}")
+    except PaymentError as e:
+        raise HTTPException(409, str(e))
+    except ValueError as e:
+        raise HTTPException(422, str(e))
 
 
 # ---------- models ----------
 class CampaignIn(BaseModel):
     id: str
     name: str = ""
-    budget_per_case_inr: float = Field(gt=0)
-    allocated_cases: int = Field(gt=0)
+    budget_per_case_paise: int = Field(gt=0)
     start_date: date
     end_date: date
-    overdue_at_start_inr: float = 0
     target_amount_pct: Optional[float] = None
     target_count_pct: Optional[float] = None
 
 
-class BorrowerIn(BaseModel):
-    id: str
-    dpd: Optional[int]
-    dpd_updated_at: datetime
-    consent: dict[str, bool]
-    consent_version: dict[str, str] = {}
-    lender_id: Optional[str] = None
-    verified_overdue: bool = True
+class EnrollIn(BaseModel):
+    loan_ids: list[str]
+    as_of: Optional[date] = None
 
 
-class ObligationIn(BaseModel):
-    id: str
-    borrower_id: str
-    campaign_id: str
-    overdue_inr: float = 0
+class DatasetIn(BaseModel):
+    csv_path: str
+    as_of: Optional[date] = None
 
 
 class TemplateIn(BaseModel):
@@ -84,7 +81,7 @@ class InstructionIn(BaseModel):
     channel: str
     template_id: Optional[str]
     at: datetime
-    est_cost_inr: float = Field(ge=0)
+    est_cost_paise: int = Field(ge=0)
     purpose: Optional[str] = None
     instruction_id: Optional[str] = None
     version: int = 1
@@ -103,17 +100,29 @@ class BorrowerEventIn(BaseModel):
     borrower_id: str
     at: datetime
     channel: Optional[str] = None
+    details: str = ""
 
 
-class CallIn(BorrowerEventIn):
+class CallIn(BaseModel):
+    borrower_id: str
+    at: datetime
     answered_seconds: float
+    channel: str = "ivr"
 
 
 class PaymentIn(BaseModel):
-    borrower_id: str
     obligation_id: str
-    amount_inr: float
+    amount_paise: int = Field(gt=0)
     at: datetime
+    payment_id: str
+    reference: str
+    mode: str = "upi"
+
+
+class ReversalIn(BaseModel):
+    payment_id: str
+    at: datetime
+    reason: str
 
 
 class OptInIn(BaseModel):
@@ -152,6 +161,10 @@ class CampaignStatusIn(BaseModel):
     actor: str = "human:operator"
 
 
+class LenderIn(BaseModel):
+    lender_id: Optional[str]
+
+
 # ---------- read ----------
 @app.get("/health")
 def health():
@@ -164,13 +177,13 @@ def get_policy():
 
 
 @app.get("/borrowers/{borrower_id}")
-def get_borrower(borrower_id: str):
-    return _404(ledger.borrower_state, borrower_id)
+def get_borrower(borrower_id: str, as_of: Optional[date] = None):
+    return _call(ledger.borrower_state, borrower_id, as_of)
 
 
 @app.get("/campaigns/{campaign_id}")
 def get_campaign(campaign_id: str):
-    return _404(ledger.campaign_state, campaign_id)
+    return _call(ledger.campaign_state, campaign_id)
 
 
 @app.get("/audit")
@@ -185,28 +198,41 @@ def cap_breaches():
 
 
 # ---------- setup ----------
+@app.post("/spine/import")
+def spine_import(body: DatasetIn):
+    """Load a PL_Dummy-format CSV into the K03 spine (K03 validation report returned)."""
+    if not Path(body.csv_path).exists():
+        raise HTTPException(404, f"file not found: {body.csv_path}")
+    return ledger.import_dataset(body.csv_path, body.as_of)
+
+
+@app.post("/spine/synced")
+def spine_synced(at: datetime):
+    ledger.mark_spine_synced(at)
+    return {"ok": True}
+
+
 @app.put("/campaigns")
 def put_campaign(c: CampaignIn):
     ledger.upsert_campaign(**c.model_dump())
     return ledger.campaign_state(c.id)
 
 
+@app.post("/campaigns/{campaign_id}/enroll")
+def enroll(campaign_id: str, body: EnrollIn):
+    return {"enrolled": _call(ledger.enroll, campaign_id, body.loan_ids, body.as_of)}
+
+
 @app.post("/campaigns/{campaign_id}/status")
 def campaign_status(campaign_id: str, body: CampaignStatusIn):
     if body.status not in ("RUNNING", "PAUSED", "STOPPED"):
         raise HTTPException(422, "status must be RUNNING, PAUSED or STOPPED")
-    return {"canceled": _404(ledger.set_campaign_status, campaign_id, body.status, body.actor)}
+    return {"canceled": _call(ledger.set_campaign_status, campaign_id, body.status, body.actor)}
 
 
-@app.put("/borrowers")
-def put_borrower(b: BorrowerIn):
-    ledger.upsert_borrower(**b.model_dump())
-    return ledger.borrower_state(b.id)
-
-
-@app.put("/obligations")
-def put_obligation(o: ObligationIn):
-    ledger.upsert_obligation(**o.model_dump())
+@app.put("/borrowers/{borrower_id}/lender")
+def set_lender(borrower_id: str, body: LenderIn):
+    ledger.set_lender(borrower_id, body.lender_id)
     return {"ok": True}
 
 
@@ -229,18 +255,18 @@ def gate_evaluate(f: dict):
 
 @app.post("/preview")
 def preview(i: InstructionIn):
-    return _404(ledger.preview, i.to()).as_dict()
+    return _call(ledger.preview, i.to()).as_dict()
 
 
 @app.post("/decide")
 def decide(i: InstructionIn):
     """Supervisor: approve-and-reserve. Returns SEND (reserved) / WAIT / CANCEL / HANDOFF with reason."""
-    return _404(supervisor.decide, i.to()).__dict__
+    return _call(supervisor.decide, i.to()).__dict__
 
 
 @app.post("/dispatch/{instruction_id}")
 def dispatch(instruction_id: str, at: Optional[datetime] = None):
-    return _404(executor.dispatch, instruction_id, at).__dict__
+    return _call(executor.dispatch, instruction_id, at).__dict__
 
 
 @app.post("/dispatch-due")
@@ -255,50 +281,53 @@ def resolve_uncertain(instruction_id: str):
 
 @app.post("/provider-status/{instruction_id}")
 def provider_status(instruction_id: str, body: ProviderStatusIn):
-    return {"status": _404(ledger.record_provider_status, instruction_id, body.status, body.provider_ref, body.reason)}
+    return {"status": _call(ledger.record_provider_status, instruction_id, body.status, body.provider_ref, body.reason)}
 
 
 @app.post("/reconcile/{instruction_id}")
-def reconcile(instruction_id: str, actual_cost_inr: float):
-    return {"reconciled": _404(ledger.reconcile, instruction_id, actual_cost_inr)}
+def reconcile(instruction_id: str, actual_cost_paise: int):
+    return {"reconciled": _call(ledger.reconcile, instruction_id, actual_cost_paise)}
 
 
 # ---------- borrower events ----------
 @app.post("/events/response")
 def ev_response(e: BorrowerEventIn):
-    return {"canceled": ledger.record_response(e.borrower_id, e.at, e.channel)}
+    return {"canceled": _call(ledger.record_response, e.borrower_id, e.at, e.channel, "reply", e.details)}
 
 
 @app.post("/events/call")
 def ev_call(e: CallIn):
-    return {"canceled": ledger.record_call(e.borrower_id, e.at, e.answered_seconds, e.channel or "ivr")}
+    return {"canceled": ledger.record_call(e.borrower_id, e.at, e.answered_seconds, e.channel)}
 
 
 @app.post("/events/stop")
 def ev_stop(e: BorrowerEventIn):
-    return {"canceled": ledger.record_stop(e.borrower_id, e.at, e.channel)}
+    return {"canceled": _call(ledger.record_stop, e.borrower_id, e.at, e.channel)}
 
 
 @app.post("/events/opt-in")
 def ev_opt_in(e: OptInIn):
-    ledger.opt_in(e.borrower_id, e.channel, e.consent_version, e.at)
+    _call(ledger.opt_in, e.borrower_id, e.channel, e.consent_version, e.at)
     return {"ok": True}
 
 
 @app.post("/events/payment-verified")
 def ev_payment(e: PaymentIn):
-    return {"canceled": _404(ledger.record_payment_verified, e.borrower_id, e.obligation_id, e.amount_inr, e.at)}
+    """409 when K03 rejects the claim (e.g. bank reference already used — likely an edited screenshot)."""
+    return _call(ledger.record_payment_verified, e.obligation_id, e.amount_paise, e.at, e.payment_id, e.reference, e.mode)
+
+
+@app.post("/events/payment-reversed")
+def ev_reversed(e: ReversalIn):
+    return {"reversed": _call(ledger.record_payment_reversed, e.payment_id, e.at, e.reason)}
 
 
 @app.post("/events/exception")
 def ev_exception(e: ExceptionIn):
     ev = ExceptionEvent(e.event, e.band, e.in_window, e.rebuttals_used, e.date_offset_days, e.broken_ptp_count,
                         e.paid_now, e.callback_attempts, e.callback_answered)
-    try:
-        return ledger.apply_exception(e.borrower_id, ev, e.at, e.obligation_id,
-                                      (e.summary_line_1, e.summary_line_2), e.evidence_ids)
-    except ValueError as err:
-        raise HTTPException(422, str(err))
+    return _call(ledger.apply_exception, e.borrower_id, ev, e.at, e.obligation_id,
+                 (e.summary_line_1, e.summary_line_2), e.evidence_ids)
 
 
 @app.post("/days/{day}/start")

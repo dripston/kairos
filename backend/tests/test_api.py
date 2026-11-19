@@ -1,8 +1,13 @@
-"""Smoke test of the HTTP layer: set up, decide, dispatch, STOP — end to end."""
+"""Smoke test of the HTTP layer on the K03 spine: load data, enroll, decide, dispatch, pay, STOP."""
 import importlib
+import os
+import tempfile
 
 import pytest
 from fastapi.testclient import TestClient
+
+from spine.config import DATASET_AS_OF_DATE as AS_OF  # 2026-08-07, a Friday
+from spine.synthetic_dataset import write_dataset
 
 
 @pytest.fixture
@@ -10,35 +15,46 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv("KAIROS_DB", str(tmp_path / "api.db"))
     import kairos_backend.api as api
     api = importlib.reload(api)
-    return TestClient(api.app)
+    return TestClient(api.app), api
 
 
 def test_end_to_end(client):
-    assert client.get("/health").json()["policy_version"] == "1.1.0"
-    client.put("/campaigns", json={"id": "C1", "budget_per_case_inr": 100, "allocated_cases": 10,
-                                   "start_date": "2026-11-20", "end_date": "2026-11-30"})
-    client.put("/templates", json={"id": "SMS_EN", "channel": "sms", "lang": "en"})
-    client.put("/borrowers", json={"id": "B1", "dpd": 42, "dpd_updated_at": "2026-11-20T07:00:00",
-                                   "consent": {"sms": True, "whatsapp": True}})
-    client.put("/obligations", json={"id": "B1-A", "borrower_id": "B1", "campaign_id": "C1"})
+    c, api = client
+    assert c.get("/health").json()["policy_version"] == "1.1.0"
 
-    body = {"borrower_id": "B1", "obligation_id": "B1-A", "campaign_id": "C1", "channel": "sms",
-            "template_id": "SMS_EN", "at": "2026-11-20T10:00:00", "est_cost_inr": 0.2}
-    d = client.post("/decide", json=body).json()
-    assert d["action"] == "SEND" and d["reserved"]
+    csv_path = os.path.join(tempfile.mkdtemp(), "syn.csv")
+    write_dataset(csv_path, 20, seed=42)
+    assert c.post("/spine/import", json={"csv_path": csv_path}).json()["loaded"] == 20
 
-    sent = client.post(f"/dispatch/{d['instruction_id']}").json()
-    assert sent["outcome"] == "SENT"
+    c.put("/campaigns", json={"id": "C1", "budget_per_case_paise": 5_000, "start_date": str(AS_OF),
+                              "end_date": "2026-08-20"})
+    c.put("/templates", json={"id": "SMS_EN", "channel": "sms", "lang": "en"})
+    # first synthetic row: SL100001, consent on SMS, DPD 1 on the as-of date
+    assert c.post("/campaigns/C1/enroll", json={"loan_ids": ["SL100001"]}).json()["enrolled"] == 1
 
-    blocked = client.post("/decide", json={**body, "at": "2026-11-20T11:00:00"}).json()
+    body = {"borrower_id": "BRW-SL100001", "obligation_id": "SL100001-OD1", "campaign_id": "C1", "channel": "sms",
+            "template_id": "SMS_EN", "at": f"{AS_OF}T10:00:00", "est_cost_paise": 20}
+    d = c.post("/decide", json=body).json()
+    assert d["action"] == "SEND" and d["reserved"], d
+
+    assert c.post(f"/dispatch/{d['instruction_id']}").json()["outcome"] == "SENT"
+    blocked = c.post("/decide", json={**body, "at": f"{AS_OF}T11:00:00"}).json()
     assert (blocked["action"], blocked["reason"]) == ("WAIT", "SAME_CHANNEL_GAP")
 
-    client.post("/events/stop", json={"borrower_id": "B1", "at": "2026-11-20T12:00:00", "channel": "sms"})
-    after = client.post("/decide", json={**body, "at": "2026-11-20T15:00:00"}).json()
+    pay = {"obligation_id": "SL100001-OD1", "amount_paise": 100, "at": f"{AS_OF}T12:00:00",
+           "payment_id": "PAY-API-1", "reference": "UTR-API-1"}
+    assert c.post("/events/payment-verified", json=pay).json()["applied"]
+    dup_ref = c.post("/events/payment-verified", json={**pay, "payment_id": "PAY-API-2"})
+    assert dup_ref.status_code == 409  # same bank reference again → rejected by K03
+
+    c.post("/events/stop", json={"borrower_id": "BRW-SL100001", "at": f"{AS_OF}T13:00:00", "channel": "sms"})
+    after = c.post("/decide", json={**body, "at": f"{AS_OF}T15:00:00"}).json()
     assert (after["action"], after["reason"]) == ("CANCEL", "STOP_OPT_OUT")
-    assert client.get("/cap-breaches").json()["count"] == 0
+    assert c.get("/cap-breaches").json()["count"] == 0
+    b = c.get("/borrowers/BRW-SL100001").json()
+    assert {e["event_type"] for e in b["events"]} >= {"touch_sent", "payment_received", "consent_changed"}
 
 
 def test_unknown_borrower_is_404(client):
-    r = client.get("/borrowers/NOPE")
-    assert r.status_code == 404
+    c, _ = client
+    assert c.get("/borrowers/NOPE").status_code == 404

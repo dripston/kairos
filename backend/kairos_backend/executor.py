@@ -25,7 +25,7 @@ from .ledger import Instruction, Ledger, ReserveResult
 class ProviderResult:
     status: str               # ACCEPTED | REJECTED | UNKNOWN (timeout / no answer)
     provider_ref: Optional[str] = None
-    cost_inr: Optional[float] = None
+    cost_paise: Optional[int] = None
     error: Optional[str] = None
 
 
@@ -42,10 +42,10 @@ class Provider(Protocol):
 class FakeProvider:
     """Deterministic stand-in. `script` lets tests force REJECTED/UNKNOWN on chosen sends."""
 
-    def __init__(self, name: str = "fake", cost_inr: Optional[float] = None,
+    def __init__(self, name: str = "fake", cost_paise: Optional[int] = None,
                  script: Optional[Callable[[dict], str]] = None):
         self.name = name
-        self.cost_inr = cost_inr
+        self.cost_paise = cost_paise
         self.script = script
         self.sent: list[str] = []
         self.known: dict[str, str] = {}  # instruction_id -> provider status, as the provider sees it
@@ -65,7 +65,7 @@ class FakeProvider:
             self.sent.pop()
             return ProviderResult("UNKNOWN")
         self.known[iid] = "ACCEPTED"
-        return ProviderResult("ACCEPTED", provider_ref=ref, cost_inr=self.cost_inr)
+        return ProviderResult("ACCEPTED", provider_ref=ref, cost_paise=self.cost_paise)
 
     def status(self, instruction_id: str, provider_ref: Optional[str]) -> str:
         return self.known.get(instruction_id, "NOT_FOUND")
@@ -136,8 +136,8 @@ class Executor:
             r = ProviderResult("UNKNOWN", error=str(exc))
         if r.status == "ACCEPTED":
             self.ledger.record_provider_status(instruction_id, "SENT", r.provider_ref)
-            if r.cost_inr is not None:
-                self.ledger.reconcile(instruction_id, r.cost_inr)
+            if r.cost_paise is not None:
+                self.ledger.reconcile(instruction_id, r.cost_paise)
             return DispatchResult(instruction_id, "SENT", "ACCEPTED", r.provider_ref)
         if r.status == "REJECTED":
             self.ledger.record_provider_status(instruction_id, "FAILED", reason=r.error or "PROVIDER_REJECTED")
