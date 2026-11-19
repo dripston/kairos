@@ -10,6 +10,9 @@ import pytest
 from kairos_backend.exceptions import ExceptionEvent
 from kairos_backend.executor import Executor, FakeProvider, Supervisor
 from kairos_backend.ledger import Instruction, Ledger, PaymentError
+from spine.policy import policy_version as _k01_version
+
+K01_VERSION = _k01_version()  # read from policy/K01-decision-policy/policy.json, never pinned
 
 D = date(2026, 11, 20)  # a Friday — a contact day
 CH_TPL = {"sms": "SMS_EN", "whatsapp": "WA_HI", "email": "EM_EN", "ivr": "IVR_HI"}
@@ -328,7 +331,7 @@ def test_reconcile_exactly_once(ledger):
 
 def test_supervisor_instruction_carries_reason_version_and_expiry(ledger):
     si = Supervisor(ledger).decide(ins(t=at(10)))
-    assert si.action == "SEND" and si.reserved and si.policy_version == "1.1.0"
+    assert si.action == "SEND" and si.reserved and si.policy_version == K01_VERSION
     assert si.expires_at.startswith("2026-11-20T19:00")
     blocked = Supervisor(ledger).decide(ins(t=at(19, 30)))
     assert (blocked.action, blocked.reason) == ("WAIT", "CONTACT_WINDOW")
@@ -420,7 +423,7 @@ def test_audit_records_every_decision_with_policy_version(ledger):
     ledger.reserve(ins(t=at(19, 30)))
     log = ledger.audit_log()
     assert {e["reason"] for e in log if e["type"] == "DECISION"} == {"ELIGIBLE", "CONTACT_WINDOW"}
-    assert all(e["policy_version"] == "1.1.0" for e in log)
+    assert all(e["policy_version"] == K01_VERSION for e in log)
 
 
 # ---------- end to end on K03's own synthetic dataset ----------

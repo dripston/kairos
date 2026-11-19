@@ -1,0 +1,182 @@
+{
+  "policy_id": "kairos-portfolio-intake",
+  "policy_version": "1.1.0",
+  "status": "draft-for-signoff",
+  "owner": "Ojas (Product) - rules; Rehan - build",
+  "approved_on": null,
+  "depends_on": {
+    "kairos-outreach-policy": "1.1.0"
+  },
+  "file": {
+    "formats": [
+      "csv",
+      "xlsx"
+    ],
+    "encoding": "utf-8",
+    "header_row": 1,
+    "column_matching": "case-insensitive; spaces, hyphens, dots and underscores ignored (so 'EMI Due Date' = 'emi_due_date'); accepts aliases",
+    "column_aliases": {
+      "loan_id": [
+        "loan_id",
+        "loan no",
+        "loan_number",
+        "lan",
+        "account_no"
+      ],
+      "customer_id": [
+        "customer_id",
+        "cust_id",
+        "cif",
+        "borrower_id"
+      ],
+      "borrower_name": [
+        "borrower_name",
+        "name",
+        "customer_name"
+      ],
+      "registered_mobile": [
+        "registered_mobile",
+        "mobile",
+        "mobile_no",
+        "phone"
+      ],
+      "emi_amount": [
+        "emi_amount",
+        "emi"
+      ],
+      "overdue_amount": [
+        "overdue_amount",
+        "overdue",
+        "total_overdue",
+        "pos_overdue"
+      ],
+      "due_date": [
+        "due_date",
+        "emi_due_date"
+      ],
+      "dpd": [
+        "dpd",
+        "days_past_due"
+      ]
+    }
+  },
+  "mandatory_fields": [
+    "loan_id",
+    "customer_id",
+    "borrower_name",
+    "registered_mobile",
+    "emi_amount",
+    "overdue_amount",
+    "due_date",
+    "dpd"
+  ],
+  "optional_fields": [
+    "email",
+    "preferred_language",
+    "consent_sms",
+    "consent_whatsapp",
+    "consent_email",
+    "consent_ivr",
+    "consent_voicebot",
+    "ontime_emis_last_6m",
+    "broken_ptp_count",
+    "last_payment_date",
+    "nach_bounce_reason",
+    "aa_consent_status",
+    "location",
+    "product"
+  ],
+  "row_validation": {
+    "loan_id": "non-empty; unique within the file",
+    "customer_id": "non-empty",
+    "borrower_name": "non-empty, at least 2 letters",
+    "registered_mobile": "normalise: strip spaces, '+91', leading '0'; result must be 10 digits starting 6-9",
+    "emi_amount": "number > 0",
+    "overdue_amount": "number >= 0",
+    "due_date": "valid date (YYYY-MM-DD or DD-MM-YYYY or DD/MM/YYYY)",
+    "dpd": "integer"
+  },
+  "quarantine_reasons": {
+    "MISSING_FIELD": "a mandatory field is empty (names the field)",
+    "INVALID_MOBILE": "mobile not 10 digits starting 6-9 after normalising",
+    "INVALID_AMOUNT": "EMI not > 0, or overdue negative / non-numeric",
+    "INVALID_DATE": "due date not parseable",
+    "INVALID_DPD": "DPD not an integer",
+    "DUPLICATE_LOAN_ID": "loan_id appears more than once in the file - ALL copies quarantined (cannot tell which is right)"
+  },
+  "warnings_not_quarantine": {
+    "DPD_DUE_DATE_MISMATCH": "file DPD differs from (upload date - due date) by more than 1 day; file DPD is used",
+    "CONSENT_NOT_PROVIDED": "no consent column for a channel; channel treated as not consented until supplied",
+    "OUT_OF_SCOPE_DPD": "DPD < -6; row loads but K01 will not contact it"
+  },
+  "exclusions_decided": "Only invalid data is rejected at upload (decided 19 Nov). Out-of-scope DPD, STOP/DNC and duplicate enrollment across campaigns are enforced at send time by K01 / the Supervisor reservation.",
+  "grouping": {
+    "contact_unit": "customer_id",
+    "rule": "one contact plan per customer_id: K01 caps, holds, STOP and stop-for-day apply across all of the customer's loans",
+    "per_loan": "payments, receipts, DPD, overdue and obligation clearing stay per loan_id; clearing one loan leaves the others open",
+    "mobiles": "every registered_mobile on any of the customer's loans is valid for K10 identity"
+  },
+  "reupload": {
+    "mode": "merge_and_update",
+    "match_key": "loan_id",
+    "existing_loan": "update amounts, DPD, due date, status and optional fields; KEEP journey state, holds, history, PTPs, consents captured in conversation",
+    "new_loan": "add and enrol",
+    "missing_from_new_file": "status REMOVED_BY_LENDER; no new sends; history kept",
+    "versioning": "every upload gets upload_id + version number + row counts; every loan records the upload version that last changed it",
+    "idempotent": "re-uploading the same file changes nothing and enqueues nothing"
+  },
+  "campaign": {
+    "inputs": [
+      "allocation_start_date",
+      "allocation_end_date",
+      "budget_per_case_inr",
+      "collection_target_amount_pct",
+      "collection_target_count_pct",
+      "lender_caps (optional, K01 format)"
+    ],
+    "timezone": "Asia/Kolkata",
+    "loan_dates_vs_campaign_dates": "kept separate: due_date belongs to the loan; allocation dates belong to the campaign",
+    "arm": "allowed only when >= 1 loan is budgeted (explicitly confirmed) and all mandatory campaign inputs are set",
+    "preview_before_arm": [
+      "rows received",
+      "accepted",
+      "quarantined by reason",
+      "warnings by type",
+      "customers (contact units)",
+      "loans per customer > 1",
+      "campaign pool = budget_per_case x budgeted loans (see budget_scope)",
+      "first contact day and time",
+      "last contact day and time"
+    ],
+    "start": "automatically at 08:00 on the first contact day on/after allocation_start_date (skips Sundays and national holidays per K01)",
+    "end": "no new outbound sends after 19:00 on allocation_end_date (end date inclusive); inbound servicing continues",
+    "early_stop": "K01 stop conditions (pool exhausted or collection target met)"
+  },
+  "budget_scope": {
+    "case_definition": "one loan account (loan_id), always linked to its customer_id; a customer with 2 loans = 2 cases",
+    "budgeted_loans": "ONLY the loans explicitly selected for budgeting. A loan is eligible for selection if it was ACCEPTED at upload and is IN SCOPE (DPD >= -6).",
+    "selection_methods": {
+      "explicit_list": "ops user supplies the loan_ids to budget (file column budget_flag=Y, or a separate list)",
+      "filter": "ops user defines a filter (e.g. DPD band, product, location) - resolved to a fixed loan list at arm time"
+    },
+    "default_if_not_specified": "ARMING BLOCKED - the budgeted set must be specified; the preview proposes 'all eligible loans' and the user must confirm it",
+    "never_budgeted": [
+      "QUARANTINED rows",
+      "OUT_OF_SCOPE_DPD (DPD < -6)",
+      "REMOVED_BY_LENDER",
+      "loans not in the selected set"
+    ],
+    "pool": "budget_per_case_inr x count(budgeted_loans)",
+    "contact_rule": "only budgeted loans are contacted for collection; a customer is contacted if at least one of their loans is budgeted",
+    "cost_attribution": "a touch to a customer is charged across that customer's budgeted loans in equal shares",
+    "preview_must_show": [
+      "budgeted loans count and list (downloadable)",
+      "customers covered",
+      "eligible-but-not-selected count",
+      "excluded count by reason",
+      "pool = per-case budget x budgeted loans"
+    ],
+    "reupload": "budgeted set does not change silently. Explicit list: new loans are NOT added until the user selects them. Filter: new matching loans are proposed and need confirmation. REMOVED_BY_LENDER loans leave the set; pool recomputes on the current set; spend already incurred stays counted.",
+    "decided": "Ojas, 19 Nov"
+  }
+}
