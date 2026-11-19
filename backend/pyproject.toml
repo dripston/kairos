@@ -24,6 +24,9 @@ include = ["kairos_backend*", "spine*", "replay*", "redteam*"]
 [tool.setuptools.package-data]
 "kairos_backend.cm03" = ["static/*.html"]
 
+[tool.setuptools.package-data]
+kairos_backend = ["data/*.json"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"

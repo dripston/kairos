@@ -90,7 +90,7 @@ K13_EVENT: Dict[str, Optional[str]] = {
 # safest reading wins: opt-out, then situations that pause/route, then commitments.
 PRECEDENCE: Tuple[str, ...] = (STOP, WRONG_PERSON, HARDSHIP, DISPUTE, CLAIMS_PAID, CALLBACK, PTP, NEEDS_TIME)
 
-SOURCES = ("rules", "llm", "fallback")
+SOURCES = ("rules", "model", "llm", "fallback")   # "model" only with use_stack=True (intent_stack tier 2)
 SUMMARY_MAX = 160
 LLM_MAX_INPUT_CHARS = 500
 
@@ -115,6 +115,7 @@ class IntentResult:
     ambiguous: bool
     agreed_date: Optional[str] = None    # YYYY-MM-DD (PTP date, hardship / callback date)
     llm_usage: Optional[dict] = None     # token usage when the LLM was called
+    stack: Optional[dict] = None         # use_stack=True: the full intent_stack.StackResult (17 labels)
 
     @property
     def k13_event(self) -> Optional[str]:
@@ -586,11 +587,22 @@ def _summary(intent: str, channel: str, agreed: Optional[date], detail: str = ""
 
 
 class IntentClassifier:
-    """Rules first; at most one LLM call per message, only for unmatched or conflicting free text."""
+    """Rules first; at most one LLM call per message, only for unmatched or conflicting free text.
 
-    def __init__(self, llm: Optional[LunaClient] = None, dtmf_map: Optional[Dict[str, str]] = None):
+    use_stack=True (or env KAIROS_INTENT_STACK=1 when use_stack is None) sends free text through the
+    tiered intent_stack (rules -> small model -> local LLM -> this classifier's `llm` as the cloud
+    tier -> abstain) and maps its 17 labels back onto INTENTS; DTMF, buttons and STOP keywords are
+    handled here exactly as before. The full stack result is on IntentResult.stack. Off by default
+    so CM-03 opts in explicitly."""
+
+    def __init__(self, llm: Optional[LunaClient] = None, dtmf_map: Optional[Dict[str, str]] = None,
+                 use_stack: Optional[bool] = None, stack: Any = None):
         self.llm = llm
         self.dtmf_map = dict(DEFAULT_DTMF_MAP if dtmf_map is None else dtmf_map)
+        if use_stack is None:
+            use_stack = os.environ.get("KAIROS_INTENT_STACK", "").strip().lower() in ("1", "true", "on", "yes")
+        self.use_stack = bool(use_stack)
+        self._stack = stack
 
     # -- public -------------------------------------------------------------------------------
     def classify(self, msg: InboundMessage, known_names: Sequence[str] = ()) -> IntentResult:
@@ -604,7 +616,40 @@ class IntentClassifier:
             return self._rules(OTHER, msg, 0.5, ambiguous=True)
         if is_stop(text):
             return self._rules(STOP, msg, 1.0)
+        if self.use_stack:
+            return self._from_stack(msg, text, today, known_names)
         return self._free_text(msg, text, today, known_names)
+
+    # -- tiered stack (opt-in) ----------------------------------------------------------------
+    def stack(self):
+        if self._stack is None:
+            from .intent_stack import IntentStack, OllamaClient  # lazy: intent_stack imports this module
+            local = OllamaClient() if os.environ.get("KAIROS_LOCAL_LLM_MODEL") else None
+            self._stack = IntentStack(local_llm=local, cloud_llm=self.llm)
+        return self._stack
+
+    def _from_stack(self, msg: InboundMessage, text: str, today: date, known: Sequence[str]) -> IntentResult:
+        from .intent_stack import TO_LEGACY, hardship_kind
+        r = self.stack().classify(text, today, msg.channel, [msg.borrower_id, *known])
+        intent = TO_LEGACY[r.label]
+        agreed_s = r.entities.get("date") if intent in (PTP, HARDSHIP, CALLBACK) else None
+        agreed = date.fromisoformat(agreed_s) if agreed_s else None
+        if intent == PTP and agreed is None:
+            intent = NEEDS_TIME
+        ambiguous = r.needs_human and r.label != HARDSHIP or r.confidence < 0.7
+        source = {"rules": "rules", "small_model": "model", "local_llm": "llm", "cloud_llm": "llm"}.get(r.tier_used, "fallback")
+        cloud = r.evidence.get("cloud_llm") or {}
+        usage = cloud.get("usage")
+        if source == "fallback":
+            summary = f"[{msg.channel}] Borrower reply not classified (all tiers unsure); needs review."[:SUMMARY_MAX]
+            return IntentResult(OTHER, 0.0, "fallback", summary, True, None, usage, r.to_dict())
+        if r.tier_used == "cloud_llm" and (cloud.get("output") or {}).get("summary"):
+            summary = " ".join(cloud["output"]["summary"].split())[:SUMMARY_MAX]
+        else:
+            detail = hardship_kind(text) if intent == HARDSHIP else ""
+            summary = _summary(intent, msg.channel, agreed, detail, ambiguous)
+        return IntentResult(intent, r.confidence, source, summary, ambiguous, agreed.isoformat() if agreed else None,
+                            usage, r.to_dict())
 
     # -- structured ---------------------------------------------------------------------------
     def _rules(self, intent: str, msg: InboundMessage, conf: float, ambiguous: bool = False,
