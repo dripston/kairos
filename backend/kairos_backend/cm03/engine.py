@@ -278,7 +278,7 @@ class ConversationEngine:
         if signals:
             self._fraud(conv, turn, signals)
             return
-        if k09.is_stop(text):
+        if k09.is_stop(text) or k09.is_stop(N.fix_typos(text)):
             self._stop(conv, turn)
             return
         if not conv.verified:

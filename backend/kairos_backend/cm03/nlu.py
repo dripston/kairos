@@ -49,12 +49,15 @@ _SERVICING = {
                      r"\bkitni (emi|kisht) (baki|bachi)\b", r"\bloan ki (details?|jankari|jaankari)\b"),
     WAIVER: _R(r"\bwaive\w*\b", r"\bwaiver\b", r"\b(penalty|late fee|charges?)\b.{0,20}\b(maaf|hata|remove|reverse|cancel)\w*",
                r"\bmaaf (kar|kr)"),
+    "DISPUTE": _R(r"\b(amount|emi|charges?|bill|penalty|interest|balance)\b.{0,12}\b(is|are|hai|h)?\s*(wrong|incorrect|galat|not correct|sahi nahi)\b",
+                  r"\b(wrong|incorrect|galat|extra)\b.{0,8}\b(amount|charges?|emi|bill|penalty|interest)\b", r"\bdispute\w*\b",
+                  r"\boverchar\w*\b", r"\bcharged (me )?(twice|extra|double)\b"),
     COMPLAINT: _R(r"\bcomplain\w*\b", r"\bshikayat\b", r"\bharass\w*\b", r"\bombudsman\b"),
 }
 _ORDER = (PAY_LINK, NOC, STATEMENT, LOAN_DETAILS, BALANCE, WAIVER, COMPLAINT)
 
 _GREETING = re.compile(r"^\W*(hi+|hello+|hey+|hii+|namaste|namaskar|namaskaar|good (morning|afternoon|evening)|"
-                       r"नमस्ते|हेलो|hlo|helo|start)\W*$", re.I)
+                       r"नमस्ते|हेलो|hlo|helo|start)(\s+(ji|sir|madam|mam|maam|there|team|kaira))?\W*$", re.I)
 _THANKS = re.compile(r"^\W*(thanks?( you)?|thank u|thx|ty|ok(ay)?( thanks?)?|dhanyavad|dhanyawad|shukriya|"
                      r"धन्यवाद|no( thanks?)?|nahi|nothing( else)?|bas|done|that'?s all|theek hai|thik hai)\W*$", re.I)
 _RESEND = re.compile(r"\b(resend|send again|new (otp|code)|otp (nahi|nhi|not) (aaya|aya|mila|received|came)|"
@@ -73,11 +76,43 @@ RX_OTP = re.compile(r"(?<![\d.])(\d{6})(?![\d.])")
 RX_OTP_SPACED = re.compile(r"(?<!\d)(\d(?:[\s-]?\d){5})(?!\d)")
 # bank references: after a cue word, or a bare UPI RRN (12 digits) / NEFT-RTGS UTR (4 letters + 12-18)
 RX_REF_CUE = re.compile(r"\b(?:utr|rrn|ref(?:erence)?|txn|transaction(?:\s*id)?|upi\s*ref)\s*(?:no\.?|number|id|#)?\s*[:#-]?\s*"
-                        r"([A-Za-z0-9０-９Ａ-Ｚａ-ｚ​-‍-]{3,30})", re.I)
+                        r"(?=\S*[0-9\uFF10-\uFF19])([A-Za-z0-9\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A\u200b-\u200d-]{3,30})", re.I)
 RX_REF_BARE = re.compile(r"(?<![\w])(\d{12}|[A-Z]{4}[A-Z0-9]{12,18})(?![\w])")
 VALID_REF = re.compile(r"^(\d{12}|[A-Z]{4}[A-Z0-9]{12,18})$")
 RX_AMOUNT = re.compile(r"(?:rs\.?|inr|₹|rupees?)\s*([\d,]{2,9}(?:\.\d{1,2})?)|([\d,]{3,9}(?:\.\d{1,2})?)\s*(?:rs\b|rupees?|/-|₹)", re.I)
 RX_LOAN_ID = re.compile(r"\b([A-Z]{1,4}-\d{3,8}(?:-[A-Z0-9]{1,4})?)\b", re.I)
+
+
+# Typo tolerance: a word that is not in the vocabulary but is ONE edit (insert / delete / substitute /
+# swap) away from exactly one keyword is read as that keyword ("ballance", "statemnt", "gaat").
+VOCAB = frozenset("""balance outstanding statement details detail payment reference number galat chahiye more time
+link owe paid done loan please yesterday unsubscribe pay much emi bakaya baki kitna noc callback hospital accident dispute wrong amount
+already transfer diya dunga karunga tarikh naukri salary agent person waive penalty""".split())
+
+
+def _one_edit(a: str, b: str) -> bool:
+    if a == b or abs(len(a) - len(b)) > 1:
+        return False
+    if len(a) == len(b):
+        diff = [i for i in range(len(a)) if a[i] != b[i]]
+        return len(diff) == 1 or (len(diff) == 2 and diff[1] == diff[0] + 1 and a[diff[0]] == b[diff[1]] and a[diff[1]] == b[diff[0]])
+    if len(a) > len(b):
+        a, b = b, a
+    i = 0
+    while i < len(a) and a[i] == b[i]:
+        i += 1
+    return a[i:] == b[i + 1:]
+
+
+def fix_typos(text: str) -> str:
+    def fix(m: re.Match) -> str:
+        w = m.group(0)
+        lw = w.lower()
+        if len(lw) < 3 or lw in VOCAB:
+            return w
+        hits = [v for v in VOCAB if max(len(v), len(lw)) >= 4 and _one_edit(lw, v)]
+        return hits[0] if len(hits) == 1 else w
+    return re.sub(r"[A-Za-z]+", fix, text)
 
 
 @dataclass
@@ -170,10 +205,16 @@ def claimed_payment_date(text: str, today: date) -> Optional[date]:
         return today - timedelta(days=int(m.group(1)))
     got, _ = k09.extract_date(text, today)
     if got and got > today:          # extract_date looks forward; a paid-claim date is in the past
-        try:
-            got = got.replace(month=got.month - 1) if got.month > 1 else got.replace(year=got.year - 1, month=12)
-        except ValueError:
-            got = None
+        y, m = got.year, got.month
+        for _ in range(12):          # same day-of-month, stepping back a month at a time
+            y, m = (y, m - 1) if m > 1 else (y - 1, 12)
+            try:
+                cand = got.replace(year=y, month=m)
+            except ValueError:
+                continue
+            if cand <= today:
+                return cand
+        return None
     return got
 
 
@@ -182,7 +223,7 @@ class Nlu:
         self.classifier = classifier or k09.IntentClassifier(llm=None)
 
     def understand(self, text: str, at: datetime, verified: bool, known_names: Sequence[str] = ()) -> Understanding:
-        t = " ".join((text or "").split())
+        t = fix_typos(" ".join((text or "").split()))
         if not t:
             return Understanding(k09.OTHER, None)
         if k09.is_stop(t):
@@ -201,7 +242,9 @@ class Nlu:
         for safe in (k09.WRONG_PERSON, k09.HARDSHIP, k09.DISPUTE):
             if safe in rules:
                 return Understanding(safe, None)
-        if extract_reference(t) and re.search(r"\b(utr|rrn|ref|txn|transaction|paid|pay kar|bhar|jama|payment)\b", t, re.I):
+        if any(rx.search(t) for rx in _SERVICING["DISPUTE"]):
+            return Understanding(k09.DISPUTE, None)
+        if extract_reference(t) and re.search(r"\b(utr|rrn|ref|reference|txn|transaction|paid|pay kar|bhar|jama|payment)\b", t, re.I):
             return Understanding(k09.CLAIMS_PAID, None)
         if k09.CLAIMS_PAID in rules and not _BROKEN_LINK.search(t):
             return Understanding(k09.CLAIMS_PAID, None)
