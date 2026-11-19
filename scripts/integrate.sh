@@ -6,6 +6,8 @@
 #   scripts/integrate.sh --no-glue     # merges only, do not replay the integration commits
 #   scripts/integrate.sh --branch NAME # build into another local branch (default integration/all)
 #   scripts/integrate.sh --dry-run     # list what would be merged, change nothing
+#   scripts/integrate.sh --branch integration/verify --glue-from integration/all
+#                                      # rebuild into a scratch branch, glue from the real one, then diff them
 #
 # What it does
 #   1. Fetches origin and remembers the current tip of the integration branch (local, else origin).
@@ -62,6 +64,7 @@ TARGET="integration/all"
 RESUME=0
 GLUE=1
 DRY=0
+GLUE_FROM=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --resume) RESUME=1 ;;
@@ -69,7 +72,8 @@ while [ $# -gt 0 ]; do
     --dry-run) DRY=1 ;;
     --branch) TARGET="$2"; shift ;;
     --base) BASE="$2"; shift ;;
-    -h|--help) sed -n '2,26p' "$0"; exit 0 ;;
+    --glue-from) GLUE_FROM="$2"; shift ;;
+    -h|--help) sed -n '2,28p' "$0"; exit 0 ;;
     *) echo "unknown option: $1" >&2; exit 64 ;;
   esac
   shift
@@ -96,6 +100,9 @@ elif git rev-parse --verify --quiet "refs/remotes/origin/$TARGET" >/dev/null; th
   OLD_TIP="$(git rev-parse "refs/remotes/origin/$TARGET")"
 fi
 # Keep the old tip reachable so its glue commits can be replayed even after the reset.
+if [ -n "$GLUE_FROM" ]; then
+  OLD_TIP="$(git rev-parse --verify "$GLUE_FROM")"
+fi
 if [ -n "$OLD_TIP" ] && [ "$RESUME" = 0 ] && [ "$DRY" = 0 ]; then
   git update-ref "refs/integrate/previous" "$OLD_TIP"
 fi
