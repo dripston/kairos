@@ -78,8 +78,9 @@ kbd { font: 600 .75rem var(--mono); border: 1px solid var(--line-2); border-bott
 .loop .lab span { display: block; font-size: .75rem; font-weight: 500; color: var(--ink-3); }
 .stg { flex: 1; display: flex; align-items: center; gap: .55rem; height: 2.6rem; padding: 0 .8rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); min-width: 0; position: relative;
   transition: border-color .3s var(--out), background-color .3s var(--out); }
+.stg .tx { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
 .stg b { font-size: 1rem; font-weight: 650; white-space: nowrap; }
-.stg i { font-style: normal; font-size: .8125rem; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stg i { font-style: normal; font-size: .8125rem; color: var(--ink-3); white-space: nowrap; }
 .stg .n { margin-left: auto; font-size: .9375rem; font-weight: 600; color: var(--ink-2); }
 .stg .dot { width: .6rem; height: .6rem; border-radius: 50%; background: var(--ink-4); flex: none; transition: background-color .3s var(--out); }
 .stg.on { border-color: var(--accent-line); background: var(--accent-soft); }
@@ -96,16 +97,19 @@ kbd { font: 600 .75rem var(--mono); border: 1px solid var(--line-2); border-bott
 .ch h2 { margin: 0; font-size: 1.25rem; font-weight: 650; letter-spacing: -.01em; white-space: nowrap; }
 .ch .note { font-size: .875rem; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .ch .right { margin-left: auto; font-size: .8125rem; color: var(--ink-3); white-space: nowrap; }
-.sec { font-size: .8125rem; font-weight: 650; color: var(--ink-3); letter-spacing: .05em; text-transform: uppercase; margin: 0 0 .3rem; display: flex; gap: .5rem; align-items: baseline; }
+.sec { font-size: .8125rem; font-weight: 650; color: var(--ink-3); letter-spacing: .05em; text-transform: uppercase; margin: 0 0 .3rem; display: flex; gap: .5rem; align-items: baseline; white-space: nowrap; overflow: hidden; }
+.sec span { overflow: hidden; text-overflow: ellipsis; }
 .sec span { text-transform: none; letter-spacing: 0; font-weight: 500; }
 
 /* churn flow */
 .flow { position: relative; display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: .9rem; }
 .col { min-width: 0; display: flex; flex-direction: column; gap: .7rem; }
-.bk { display: grid; grid-template-columns: minmax(0, 1fr) 2.6rem; align-items: center; column-gap: .45rem; height: 1.62rem; padding: 0 .35rem; border-radius: 6px; position: relative; transition: background-color .5s var(--out); }
-.bk .nm { font-size: .9375rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; z-index: 1; }
-.bk .nm em { font-style: normal; color: var(--ink-3); font-size: .8125rem; }
-.bk .ct { text-align: right; font-size: .9375rem; font-weight: 650; position: relative; z-index: 1; }
+.bk { display: grid; grid-template-columns: minmax(0, 1fr) 2.8rem; align-items: center; column-gap: .45rem; height: 1.66rem; padding: 0 .35rem; border-radius: 6px; position: relative; transition: background-color .5s var(--out); }
+.bk .nm { font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; z-index: 1; }
+.bk .nm em { font-style: normal; color: var(--ink-3); font-size: .875rem; }
+.bk .ct { justify-self: end; text-align: right; font-size: 1rem; font-weight: 650; position: relative; z-index: 1; padding: 0 .2rem; border-radius: 4px; transition: color .2s ease-out, background-color .2s ease-out; }
+.bk .ct.up { color: var(--accent) !important; background: var(--accent-soft); }
+.bk .ct.down { color: var(--wait) !important; background: var(--wait-soft); }
 .bk .bar { position: absolute; left: .35rem; bottom: 1px; height: 3px; border-radius: 2px; background: var(--accent-line); width: 0; transition: width .45s var(--out); }
 .bk.zero .nm, .bk.zero .ct { color: var(--ink-4); }
 .bk.good .bar { background: var(--good-line); } .bk.good .ct { color: var(--good); }
@@ -120,16 +124,19 @@ svg.fx circle { fill: var(--accent); }
 /* move ticker */
 .tick { flex: 1; min-height: 0; display: flex; flex-direction: column; border-top: 1px solid var(--line); padding-top: .55rem; }
 .rows { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: .3rem; }
-.mv { display: grid; grid-template-columns: 7.2rem minmax(0, 1fr) auto; column-gap: .7rem; align-items: baseline; padding: .32rem .55rem; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); cursor: pointer; text-align: left; width: 100%;
+.mv { display: grid; grid-template-columns: 7.6rem minmax(0, 1fr) auto; column-gap: .7rem; align-items: baseline; padding: .34rem .6rem; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); cursor: pointer; text-align: left; width: 100%;
   transition: background-color .15s var(--out), border-color .15s var(--out); }
 .mv:hover { background: var(--hover); border-color: var(--line-2); }
-.mv.new { animation: slide .45s var(--out); }
+.mv.new { animation: slide .18s var(--out); }
+.mv.hl { background: var(--accent-soft); border-color: var(--accent-line); }
+.mv.hl.fade { animation: hlfade .5s ease-out forwards; }
+@keyframes hlfade { to { background: var(--surface); border-color: var(--line); } }
 @keyframes slide { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
-.mv .who { font-weight: 650; font-size: .9375rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mv .what { font-size: .9375rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
+.mv .who { font-weight: 650; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mv .what { font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
 .mv .what .sep { color: var(--ink-4); margin: 0 .35rem; }
 .mv .what .rule { color: var(--ink-2); }
-.mv .when { font-size: .8125rem; color: var(--ink-3); white-space: nowrap; }
+.mv .when { font-size: .9375rem; color: var(--ink-3); white-space: nowrap; }
 .mv.good .what .to { color: var(--good); font-weight: 600; } .mv.bad .what .to { color: var(--bad); font-weight: 600; } .mv.wait .what .to { color: var(--wait); font-weight: 600; }
 .empty { color: var(--ink-3); font-size: .9375rem; padding: .5rem .2rem; }
 .check { font-size: .8125rem; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -158,7 +165,12 @@ svg.fx circle { fill: var(--accent); }
 .callout.flash { animation: glow 1.2s var(--out); }
 @keyframes glow { 0% { box-shadow: 0 0 0 6px rgba(15,118,110,.28); } 100% { box-shadow: 0 0 0 1px var(--accent); } }
 .segs { display: flex; flex-direction: column; gap: .5rem; flex: 1; min-height: 0; }
-.sg { display: grid; grid-template-columns: 9.6rem minmax(0, 1fr) 13.5rem; column-gap: .9rem; padding: .5rem .7rem; border: 1px solid var(--line); border-radius: var(--r-sm); align-items: center; transition: border-color .4s var(--out), background-color .4s var(--out); }
+.segs .sg { flex: 1 1 0; min-height: 0; }
+.sg { display: grid; grid-template-columns: 9.6rem minmax(0, 1fr) 17rem; column-gap: .9rem; padding: .5rem .7rem; border: 1px solid var(--line); border-radius: var(--r-sm); align-items: center; transition: border-color .4s var(--out), background-color .4s var(--out); }
+.sg.once { animation: once 1.6s var(--out) 1; }
+@keyframes once { 0% { box-shadow: 0 0 0 0 rgba(15,118,110,.45); } 60% { box-shadow: 0 0 0 10px rgba(15,118,110,0); } 100% { box-shadow: none; } }
+.sg .hd .best.changed { animation: chip .9s var(--out) 1; background: var(--accent); color: #fff; border-color: var(--accent); }
+@keyframes chip { 0% { transform: scale(1); } 30% { transform: scale(1.12); } 100% { transform: scale(1); } }
 .sg.switched { border-color: var(--accent); background: linear-gradient(90deg, var(--accent-soft), var(--surface) 60%); }
 .sg .hd b { display: block; font-size: 1.05rem; font-weight: 650; }
 .sg .hd .best { display: inline-flex; align-items: center; gap: .3rem; margin-top: .2rem; height: 1.45rem; padding: 0 .45rem; border-radius: 6px; background: var(--accent-soft); border: 1px solid var(--accent-line); color: var(--accent); font-size: .8125rem; font-weight: 650; white-space: nowrap; }
@@ -176,9 +188,9 @@ svg.fx circle { fill: var(--accent); }
 .trk .mean { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; border-radius: 2px; transition: left .7s var(--out); }
 .er.hot .trk { box-shadow: 0 0 0 2px var(--accent-line); }
 .ert { grid-column: 1 / -1; font: .75rem/1.3 var(--mono); color: var(--ink-3); padding-left: 6.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.spark { width: 100%; height: 5.4rem; display: block; }
+.spark { width: 100%; height: 100%; min-height: 5rem; max-height: 9rem; display: block; }
 .spark .ax { stroke: var(--line); stroke-width: 1; }
-.spark .lbl { font-size: 9px; fill: var(--ink-3); font-family: var(--sans); }
+.spark .lbl { font-size: 11px; fill: var(--ink-3); font-family: var(--sans); }
 .spark .drift { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 3 2; }
 .spark .now { stroke: var(--ink-4); stroke-width: 1; }
 .dec { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .9rem; border-top: 1px solid var(--line); padding-top: .55rem; }
@@ -204,7 +216,10 @@ svg.fx circle { fill: var(--accent); }
 .cues li { font-size: 1.05rem; line-height: 1.4; color: #d6d3d1; }
 .cues li.now { color: #fff; font-weight: 600; }
 .cues li.now::marker { color: #5eead4; }
+.cues .links { margin: .7rem 0 0; font-size: .875rem; color: #a8a29e; line-height: 1.5; }
+.cues .links code { font: .8125rem var(--mono); color: #e7e5e4; background: rgba(255,255,255,.08); padding: 0 .3rem; border-radius: 4px; }
 
+body.instant *, body.instant *::before, body.instant *::after { transition: none !important; animation: none !important; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .bar-ind i { width: 100%; }
@@ -242,12 +257,12 @@ svg.fx circle { fill: var(--accent); }
 
   <section class="loop" aria-label="The loop">
     <div class="lab">The loop<span>lights up on each real event</span></div>
-    <div class="stg" id="L-decide"><span class="dot"></span><b>Decide</b><i class="plain-only">contact or wait</i><i class="tech-only">learner</i><span class="n">0</span></div><span class="arr">→</span>
-    <div class="stg" id="L-check"><span class="dot"></span><b>Check</b><i class="plain-only">Aladdin's rules</i><i class="tech-only">K06 Gate</i><span class="n">0</span></div><span class="arr">→</span>
-    <div class="stg" id="L-send"><span class="dot"></span><b>Send</b><i class="plain-only">dry-run</i><i class="tech-only">executor</i><span class="n">0</span></div><span class="arr">→</span>
-    <div class="stg" id="L-receipt"><span class="dot"></span><b>Receipt</b><i class="plain-only">delivered / read</i><i class="tech-only">channel</i><span class="n">0</span></div><span class="arr">→</span>
-    <div class="stg" id="L-reply"><span class="dot"></span><b>Reply</b><i class="plain-only">borrower answers</i><i class="tech-only">borrower + intent</i><span class="n">0</span></div><span class="arr">→</span>
-    <div class="stg" id="L-learn"><span class="dot"></span><b>Learn</b><i class="plain-only">estimates update</i><i class="tech-only">finalizer → posterior</i><span class="n">0</span></div>
+    <div class="stg" id="L-decide"><span class="dot"></span><span class="tx"><b>Decide</b><i class="plain-only">contact or wait</i><i class="tech-only">learner</i></span><span class="n">0</span></div><span class="arr">→</span>
+    <div class="stg" id="L-check"><span class="dot"></span><span class="tx"><b>Check</b><i class="plain-only">Aladdin</i><i class="tech-only">K06 Gate</i></span><span class="n">0</span></div><span class="arr">→</span>
+    <div class="stg" id="L-send"><span class="dot"></span><span class="tx"><b>Send</b><i class="plain-only">dry-run</i><i class="tech-only">executor</i></span><span class="n">0</span></div><span class="arr">→</span>
+    <div class="stg" id="L-receipt"><span class="dot"></span><span class="tx"><b>Receipt</b><i class="plain-only">delivered, read</i><i class="tech-only">channel</i></span><span class="n">0</span></div><span class="arr">→</span>
+    <div class="stg" id="L-reply"><span class="dot"></span><span class="tx"><b>Reply</b><i class="plain-only">borrower answers</i><i class="tech-only">intent</i></span><span class="n">0</span></div><span class="arr">→</span>
+    <div class="stg" id="L-learn"><span class="dot"></span><span class="tx"><b>Learn</b><i class="plain-only">estimates update</i><i class="tech-only">posterior</i></span><span class="n">0</span></div>
     <span class="back">↺ next day</span>
   </section>
 
@@ -262,7 +277,7 @@ svg.fx circle { fill: var(--accent); }
         <div class="col"><div><div class="sec">Cohort <span class="plain-only">which journey</span></div><div id="B-cohort"></div></div></div>
         <div class="col">
           <div><div class="sec">Risk tier</div><div id="B-risk"></div></div>
-          <div><div class="sec">Contact layer <span class="plain-only">how we reach them</span></div><div id="B-layer"></div></div>
+          <div><div class="sec">Contact layer <span class="plain-only">how we reach</span></div><div id="B-layer"></div></div>
         </div>
         <div class="col"><div><div class="sec">Status <span class="plain-only">exits and pauses</span></div><div id="B-lifecycle"></div></div></div>
         <svg class="fx" id="fx" aria-hidden="true"></svg>
@@ -313,6 +328,7 @@ svg.fx circle { fill: var(--accent); }
     <li data-d="7">Day 7: we change the world. WhatsApp replies drop to about a third. Kairos is not told — watch the WhatsApp estimates fall from day 8.</li>
     <li data-d="13">The learner shifts 1–30 days late towards SMS as soon as SMS brings more replies per rupee. Aladdin checks every send; cap breaches stay at 0.</li>
   </ol>
+  <p class="links">Jump to a moment (opens paused): <code>?at=6.05</code> the drift, day 7 morning · <code>?at=7.5</code> day 8 midday, the first sends after the drift · <code>?at=11.98</code> WhatsApp estimates down, end of day 12 · <code>?at=13.98</code> the switch, end of day 14 · <code>?at=14</code> the end. <code>at</code> = days elapsed; <code>?day=8.6</code> = day 8, 60% through it.</p>
 </div>
 
 <script>
@@ -367,7 +383,7 @@ svg.fx circle { fill: var(--accent); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function inr(p) { var r = (p || 0) / 100; return "₹" + (r >= 1000 ? Math.round(r).toLocaleString("en-IN") : r.toLocaleString("en-IN", { minimumFractionDigits: r % 1 ? 2 : 0, maximumFractionDigits: 2 })); }
   function nfmt(n) { return (n || 0).toLocaleString("en-IN"); }
-  function pct(x) { return (x * 100).toFixed(x < 0.1 ? 1 : 0); }
+  function pct(x) { return (x * 100).toFixed(1); }
   function clock12(t) { if (!t) return ""; var h = +t.slice(0, 2), m = t.slice(3, 5); return (h % 12 || 12) + ":" + m + " " + (h < 12 ? "am" : "pm"); }
   function dateOf(d) { var s = new Date(FEED.start + "T00:00:00"); s.setDate(s.getDate() + d - 1); return s.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }).replace(",", ""); }
 
@@ -379,7 +395,7 @@ svg.fx circle { fill: var(--accent); }
     return { idx: 0, clock: 0, playing: false, started: false, day: 1, t: "06:00", b: {}, counts: { cohort: {}, risk: {}, layer: {}, lifecycle: {} },
       contacted: 0, held: 0, paid: 0, recovered: 0, breaches: 0, waitT: 0, contactT: 0, waitRules: {}, spentT: 0, spent: 0, sentT: {},
       loop: { decide: 0, check: 0, send: 0, receipt: 0, reply: 0, learn: 0 }, moves: [], moveN: 0, seg: null, hist: [], drift: false, sw: null,
-      checks: { ok: 0, bad: 0, last: null }, hot: {} };
+      checks: { ok: 0, bad: 0, last: null }, hot: {}, pref: {} };
   }
 
   // ---------- bucket rows ----------
@@ -413,7 +429,7 @@ svg.fx circle { fill: var(--accent); }
           '<span class="val">–</span></div><div class="ert tech-only" id="ET-' + b + '-' + ch + '">&nbsp;</div>';
       }).join("");
       el.innerHTML = '<div class="hd"><b>' + BANDW[b] + '</b><span class="best" id="BEST-' + b + '">best: –</span><span class="sent" id="SENT-' + b + '">sent today: –</span></div>' +
-        '<div class="est">' + rows + '</div><svg class="spark" id="SP-' + b + '" viewBox="0 0 240 92" preserveAspectRatio="none" aria-hidden="true"></svg>';
+        '<div class="est">' + rows + '</div><svg class="spark" id="SP-' + b + '" aria-hidden="true"></svg>';
       host.appendChild(el);
     });
   }
@@ -424,7 +440,10 @@ svg.fx circle { fill: var(--accent); }
       var sg = x ? (x.segments || []).filter(function (s) { return s.band === b; })[0] : null;
       var sent = S.sentT[b] || {}, parts = CHS.filter(function (c) { return sent[c]; }).map(function (c) { return sent[c] + " " + (c === "whatsapp" ? "WhatsApp" : c === "sms" ? "SMS" : "call"); });
       $("SENT-" + b).textContent = "sent today: " + (parts.join(" · ") || "none");
-      $("BEST-" + b).innerHTML = sg && sg.preferred ? "best value: " + esc(CHN[sg.preferred] || sg.preferred) + '<span class="tech-only">&nbsp;' + esc(sg.preferred_slot || "") + "</span>" : "best value: –";
+      var chip = $("BEST-" + b), pref = sg ? sg.preferred : null;
+      if (pref && S.pref[b] && S.pref[b] !== pref && S.playing && !RM) { chip.classList.remove("changed"); void chip.offsetWidth; chip.classList.add("changed"); clearTimeout(chip._t); chip._t = setTimeout(function () { chip.classList.remove("changed"); }, 2600); }
+      if (pref) S.pref[b] = pref;
+      chip.innerHTML = sg && sg.preferred ? "best value: " + esc(CHN[sg.preferred] || sg.preferred) + '<span class="tech-only">&nbsp;' + esc(sg.preferred_slot || "") + "</span>" : "best value: –";
       CHS.forEach(function (ch) {
         var row = $("ER-" + b + "-" + ch), c = sg ? (sg.channels || []).filter(function (r) { return r.channel === ch; })[0] : null;
         var band = row.querySelector(".band"), mean = row.querySelector(".mean"), val = row.querySelector(".val");
@@ -448,14 +467,15 @@ svg.fx circle { fill: var(--accent); }
     }
   }
   function renderSpark(b) {
-    var svg = $("SP-" + b), W = 240, H = 92, L = 22, R = 6, T = 6, B = 16, days = FEED.days, ymax = 0.25;
+    var svg = $("SP-" + b), W = Math.max(160, svg.clientWidth || 240), H = Math.max(60, svg.clientHeight || 92), L = 20, R = 8, T = 16, B = 16, days = FEED.days, ymax = 0.25;
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
     var X = function (d) { return L + (d - 1) / (days - 1) * (W - L - R); }, Y = function (v) { return T + (1 - Math.min(v, ymax) / ymax) * (H - T - B); };
     var h = '<line class="ax" x1="' + L + '" y1="' + Y(0) + '" x2="' + (W - R) + '" y2="' + Y(0) + '"/>' +
       '<line class="ax" x1="' + L + '" y1="' + Y(0.1) + '" x2="' + (W - R) + '" y2="' + Y(0.1) + '" stroke-dasharray="2 3"/>' +
       '<line class="ax" x1="' + L + '" y1="' + Y(0.2) + '" x2="' + (W - R) + '" y2="' + Y(0.2) + '" stroke-dasharray="2 3"/>' +
       '<text class="lbl" x="2" y="' + (Y(0.2) + 3) + '">20</text><text class="lbl" x="2" y="' + (Y(0.1) + 3) + '">10</text><text class="lbl" x="2" y="' + (Y(0) + 3) + '">0</text>' +
       '<text class="lbl" x="' + L + '" y="' + (H - 3) + '">day 1</text><text class="lbl" x="' + (W - R) + '" y="' + (H - 3) + '" text-anchor="end">' + days + '</text>';
-    var dd = FEED.drift_day; h += '<line class="drift" x1="' + X(dd) + '" y1="' + T + '" x2="' + X(dd) + '" y2="' + Y(0) + '"/><text class="lbl" x="' + (X(dd) + 3) + '" y="' + (T + 8) + '">WhatsApp drops</text>';
+    var dd = FEED.drift_day; h += '<line class="drift" x1="' + X(dd) + '" y1="' + T + '" x2="' + X(dd) + '" y2="' + Y(0) + '"/><text class="lbl" x="' + (X(dd) - 4) + '" y="' + (T - 5) + '" text-anchor="end">' + (X(dd) > 150 ? "day " + dd + ": " : "") + 'WhatsApp drops</text>';
     CHS.forEach(function (ch) {
       var pts = [], band = [];
       S.hist.forEach(function (x, i) { if (!x) return; var sg = x.segments.filter(function (s) { return s.band === b; })[0]; var c = sg && sg.channels.filter(function (r) { return r.channel === ch; })[0]; if (c) { pts.push([X(i + 1), Y(c.mean)]); band.push([X(i + 1), Y(c.lo90), Y(c.hi90)]); } });
@@ -467,7 +487,7 @@ svg.fx circle { fill: var(--accent); }
       h += '<polyline points="' + pts.map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ") + '" fill="none" stroke="' + CHX[ch] + '" stroke-width="' + (ch === "ivr" ? 1.2 : 2) + '"' + (ch === "ivr" ? ' stroke-dasharray="3 2"' : "") + ' stroke-linejoin="round"/>';
       var lp = pts[pts.length - 1]; h += '<circle cx="' + lp[0].toFixed(1) + '" cy="' + lp[1].toFixed(1) + '" r="2.6" fill="' + CHX[ch] + '"/>';
     });
-    if (S.sw && S.sw.x.band === b) { var sx = X(S.sw.d); h += '<line x1="' + sx + '" y1="' + T + '" x2="' + sx + '" y2="' + Y(0) + '" stroke="#0f766e" stroke-width="1.5"/><text class="lbl" x="' + (sx - 3) + '" y="' + (T + 18) + '" text-anchor="end" fill="#0f766e" style="fill:#0f766e;font-weight:700">switch → SMS</text>'; }
+    if (S.sw && S.sw.x.band === b) { var sx = X(S.sw.d); h += '<line x1="' + sx + '" y1="' + T + '" x2="' + sx + '" y2="' + Y(0) + '" stroke="#0f766e" stroke-width="1.5"/><text class="lbl" x="' + (sx - 4) + '" y="' + (Y(0) - 4) + '" text-anchor="end" style="fill:#0f766e;font-weight:700">switch → ' + esc(CHN[S.sw.x.to_channel] || "") + '</text>'; }
     svg.innerHTML = h;
   }
 
@@ -484,7 +504,7 @@ svg.fx circle { fill: var(--accent); }
         if (e.k === "contact") { pulse("decide", live); S.contactT++; if (x.lane === "k09" && BANDW[x.band]) { var s = S.sentT[x.band] = S.sentT[x.band] || {}; s[x.channel] = (s[x.channel] || 0) + 1; } S.dirtyD = true; S.dirtyS = true; }
         else if (e.k === "wait") { pulse("decide", live); S.waitT++; S.waitRules[x.rule] = (S.waitRules[x.rule] || 0) + 1; S.dirtyD = true; }
         else if (e.k === "posterior") { pulse("learn", live); if (live && BANDW[x.band] && CHS.indexOf(x.channel) >= 0) hot(x.band, x.channel); }
-        else if (e.k === "segments") { pulse("learn", live); S.seg = x; S.hist[e.d - 1] = x; S.dirtyS = true; }
+        else if (e.k === "segments") { pulse("learn", live); S.seg = x; S.hist[e.d - 1] = x; S.dirtyS = true; if (S.drift && !S.sw && e.d > FEED.drift_day) driftFollow(e.d); }
         else if (e.k === "switch" && x.basis === "posterior") { pulse("learn", live); onSwitch(e, live); }
         break;
       case "aladdin": pulse("check", live); if (e.k === "blocked") S.held++; break;
@@ -513,7 +533,7 @@ svg.fx circle { fill: var(--accent); }
     S.moveN++;
     var key = e.b + "|" + e.d + "|" + e.t + "|" + x.trigger, g = S.moves[0];
     if (g && g.key === key) { g.mv.push(x); g.after = nxt; }
-    else { S.moves.unshift({ key: key, b: e.b, n: e.n, d: e.d, t: e.t, trig: x.trigger, mv: [x], before: prev, after: nxt, fresh: live }); if (S.moves.length > 60) S.moves.length = 60; }
+    else { S.moves.unshift({ key: key, b: e.b, n: e.n, d: e.d, t: e.t, trig: x.trigger, mv: [x], before: prev, after: nxt, born: live ? performance.now() : 0 }); if (S.moves.length > 60) S.moves.length = 60; }
     S.dirtyM = true;
   }
   function selfCheck(day) {
@@ -567,6 +587,13 @@ svg.fx circle { fill: var(--accent); }
     c.querySelector(".ic").textContent = "!";
     $("calloutText").innerHTML = "<b>Day " + e.d + ": the simulated world changes.</b> WhatsApp replies drop to about a third (×" + (e.x.factor || 0.35) + "). Kairos is not told: it has to notice from the replies it gets.";
   }
+  function driftFollow(day) {
+    var base = S.hist[FEED.drift_day - 1], parts = [], moved = false;
+    BANDS.forEach(function (b) { var a = waMean(base, b, "whatsapp"), z = waMean(S.seg, b, "whatsapp"); if (a && z) { moved = moved || a.mean !== z.mean; parts.push("<b>" + pct(a.mean) + " → " + pct(z.mean) + "</b> " + esc(BANDW[b])); } });
+    if (!moved) { $("calloutText").innerHTML = "<b>Day " + FEED.drift_day + ": WhatsApp replies dropped</b> (Kairos was not told). Today's messages are still inside their 24-hour reply window: the estimates move once those windows close tomorrow evening."; return; }
+    $("calloutText").innerHTML = "<b>Since day " + FEED.drift_day + ", WhatsApp replies are down</b> (Kairos was not told). Its estimated WhatsApp reply chance, per 100: " + parts.join(" · ") +
+      ". When another channel brings more replies per ₹, the learner moves that segment.";
+  }
   function waMean(x, band, ch) { if (!x) return null; var sg = x.segments.filter(function (s) { return s.band === band; })[0]; var c = sg && sg.channels.filter(function (r) { return r.channel === ch; })[0]; return c || null; }
   function onSwitch(e, live) {
     var x = e.x; S.sw = e;
@@ -577,6 +604,7 @@ svg.fx circle { fill: var(--accent); }
       (before && now ? esc(CHN[x.from_channel]) + "'s reply chance fell from " + pct(before.mean) + " to " + pct(now.mean) + " in 100 after day " + FEED.drift_day + "; " : "") +
       (to && now ? esc(CHN[x.to_channel]) + " now brings more replies per ₹ (" + to.replies_per_inr.toFixed(2) + " vs " + now.replies_per_inr.toFixed(2) + "). Nobody told it — it learned this from replies." : "");
     S.dirtyS = true;
+    if (live && !RM) { var card = $("SG-" + x.band); if (card) { card.classList.remove("once"); void card.offsetWidth; card.classList.add("once"); setTimeout(function () { card.classList.remove("once"); }, 1700); } }
   }
 
   // ---------- render (once per frame) ----------
@@ -585,7 +613,9 @@ svg.fx circle { fill: var(--accent); }
       S.dirtyB = false;
       var tot = FEED.borrowers || 1;
       Object.keys(BK).forEach(function (k) { Object.keys(BK[k]).forEach(function (id) {
-        var r = BK[k][id], n = S.counts[k][id] || 0; if (r.shown === n) return; r.shown = n;
+        var r = BK[k][id], n = S.counts[k][id] || 0; if (r.shown === n) return;
+        if (r.shown >= 0 && !RM && S.playing) { var cls = n > r.shown ? "up" : "down"; r.ct.classList.remove("up", "down"); r.ct.classList.add(cls); clearTimeout(r._t); r._t = setTimeout(function () { r.ct.classList.remove("up", "down"); }, 650); }
+        r.shown = n;
         r.ct.textContent = n; r.el.classList.toggle("zero", n === 0); r.bar.style.width = n ? "calc(" + Math.max(1.2, n / tot * 100) + "% - .7rem)" : "0";
       }); });
       $("moveCount").textContent = nfmt(S.moveN) + " moves";
@@ -610,7 +640,7 @@ svg.fx circle { fill: var(--accent); }
       var why = Object.keys(S.waitRules).sort(function (a, b) { return S.waitRules[b] - S.waitRules[a]; }).map(function (r) { return S.waitRules[r] + " " + (tech ? r : (WAITW[r] || r)); });
       $("dWhy").textContent = why.length ? "wait: " + why.join(" · ") : " ";
       var pace = (segByDay[S.day] || {}).pacing;
-      $("dSpend").innerHTML = inr(S.spentT) + " <span>spent today" + (pace ? " of " + inr(pace.day_allowance_paise) + " allowed" : "") + "</span>";
+      $("dSpend").innerHTML = S.quiet ? "Quiet day <span>· no sends, budget carries forward</span>" : inr(S.spentT) + " <span>spent today" + (pace ? " of " + inr(pace.day_allowance_paise) + " allowed" : "") + "</span>";
       $("bA").style.width = pace && pace.day_allowance_paise ? Math.min(100, S.spentT / pace.day_allowance_paise * 100) + "%" : "0";
       var pool = (FEED.budget || {}).pool_paise || 0;
       $("dPool").textContent = "campaign: " + inr(S.spent) + " of " + inr(pool) + " pool" + (tech && pace ? " · ledger committed today " + inr(pace.day_committed_paise) : " · unspent budget carries forward");
@@ -640,13 +670,19 @@ svg.fx circle { fill: var(--accent); }
     var host = $("rows"), max = Math.max(3, Math.floor(host.clientHeight / (host.firstChild && host.firstChild.offsetHeight ? host.firstChild.offsetHeight + 4.5 : 34)));
     if (!S.moves.length) { host.innerHTML = '<div class="empty">Press Start: each line is one borrower moved by a K27 rule.</div>'; return; }
     host.innerHTML = "";
+    var now = performance.now(), soon = 1e9;
     S.moves.slice(0, max).forEach(function (g, i) {
       var t = moveText(g), el = document.createElement("button");
-      el.className = "mv " + t.tone + (g.fresh && i === 0 && !RM ? " new" : ""); g.fresh = false;
+      var age = g.born ? now - g.born : 1e9;
+      el.className = "mv " + t.tone + (age < 120 && !RM ? " new" : "") + (age < 1500 ? " hl" : age < 2000 ? " hl fade" : "");
+      if (age >= 1500 && age < 2000) el.style.animationDelay = "-" + Math.round(age - 1500) + "ms";
+      if (age < 2000) soon = Math.min(soon, age < 1500 ? 1500 - age : 2000 - age);
       el.innerHTML = '<span class="who">' + esc(masked(g.n, g.b)) + '</span><span class="what">' + t.html + '</span><span class="when">day ' + g.d + " · " + clock12(g.t) + "</span>";
       el.addEventListener("click", function () { inspect(g); });
       host.appendChild(el);
     });
+    clearTimeout(renderMoves._t);
+    if (soon < 1e9) renderMoves._t = setTimeout(renderMoves, soon + 20);
   }
   function inspect(g) {
     var rules = (FEED.catalogue || {}).rules || {};
@@ -690,7 +726,7 @@ svg.fx circle { fill: var(--accent); }
   function stepDay() {
     if (!FEED) return; pause(); S.started = true;
     var target = Math.min(FEED.days, Math.floor(S.clock + 1e-6) + 1);
-    advanceTo(target, false); S.dirtyB = S.dirtyM = S.dirtyS = S.dirtyD = S.dirtyL = true; render(); syncButtons();
+    advanceTo(target, false); S.dirtyB = S.dirtyM = S.dirtyS = S.dirtyD = S.dirtyL = true; instant(); syncButtons();
   }
   function reset() {
     pause(); S = fresh(); buildBuckets(); buildSegs(); $("insp").hidden = true;
@@ -698,8 +734,10 @@ svg.fx circle { fill: var(--accent); }
     $("calloutText").innerHTML = "Each evening the day's reply windows close and the estimates update. On <b>day " + FEED.drift_day + "</b> the simulator quietly makes WhatsApp replies drop. Kairos is not told.";
     $("selfcheck").textContent = "Counts are folded from the run's churn events; at each day end they are compared with the K27 engine's own state.";
     // the starting portfolio (day-0 assignments) is shown before Start
-    advanceTo(0.03, false); S.dirtyB = S.dirtyM = S.dirtyS = S.dirtyD = S.dirtyL = true; render(); syncButtons();
+    advanceTo(0.03, false); S.dirtyB = S.dirtyM = S.dirtyS = S.dirtyD = S.dirtyL = true; instant(); syncButtons();
   }
+  // jumps (reset, step day, deep links) land at once: no transitions, so the frame is exact immediately
+  function instant() { document.body.classList.add("instant"); render(); void document.body.offsetWidth; requestAnimationFrame(function () { requestAnimationFrame(function () { document.body.classList.remove("instant"); }); }); }
   function syncButtons() {
     var ready = !!FEED, done = ready && S.idx >= FEED.events.length;
     var b = $("bPlay"); b.disabled = !ready || (done && !S.playing);
@@ -739,11 +777,17 @@ svg.fx circle { fill: var(--accent); }
       // ?at=8.6 opens paused at that campaign moment (day 8, 60% through it); ?tech=1; ?speed=2; ?autoplay=1
       if (qs.get("tech") === "1") setTech(true);
       if (qs.get("speed")) setSpeed(+qs.get("speed") || 1);
-      var at = parseFloat(qs.get("at") || "");
-      if (at > 0) { S.started = true; advanceTo(Math.min(FEED.days, at), false); S.dirtyB = S.dirtyM = S.dirtyS = S.dirtyD = S.dirtyL = true; render(); syncButtons(); }
+      var at = qs.get("day") ? parseFloat(qs.get("day")) - 1 : parseFloat(qs.get("at") || "");
+      if (at > 0) { S.started = true; advanceTo(Math.min(FEED.days, at), false); S.dirtyB = S.dirtyM = S.dirtyS = S.dirtyD = S.dirtyL = true; instant(); syncButtons(); }
       if (qs.get("autoplay") === "1") play();
     }).catch(function (err) { $("veilT").textContent = "Cannot reach the Kairos API"; $("veilS").textContent = String(err); setTimeout(load, 2000); });
   }
+  // for QA and recording from the console: engineRoom.seek(7.5) jumps (at = days elapsed); seek(t, true) plays the
+  // events up to t with live motion; engineRoom.state() is a read-only summary
+  window.engineRoom = {
+    seek: function (t, live) { if (!FEED) return null; pause(); S.started = true; if (t < S.clock) { reset(); S.started = true; } advanceTo(Math.min(FEED.days, t), !!live); S.dirtyB = S.dirtyM = S.dirtyS = S.dirtyD = S.dirtyL = true; if (live) render(); else instant(); syncButtons(); return this.state(); },
+    state: function () { return S && { day: S.day, t: S.t, clock: S.clock, contacted: S.contacted, held: S.held, paid: S.paid, breaches: S.breaches, moves: S.moveN, switched: S.sw ? S.sw.x : null, checks: S.checks }; }
+  };
   S = fresh();
   load();
 })();
