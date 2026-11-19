@@ -178,12 +178,24 @@ class ContextualLearner:
     to the borrower's own overall rate: a(b, c) = [(r_bc + k*rho) / (n_bc + k)] / [(R_b + k*rho) / (N_b + k)]
     from the borrower's finalized outcomes (r replies of n touches on channel c; R of N on any channel;
     rho = pooled reply rate). It only moves channels relative to each other, since the engagement
-    bucket already carries the borrower-level level; with no history it is exactly 1.0."""
+    bucket already carries the borrower-level level; with no history it is exactly 1.0.
+
+    value_floor_rel=phi (optional) is a marginal-value spending rule: once `value_floor_warmup` touches
+    are finalized, a candidate whose borrower-adjusted replies per rupee is below phi x the campaign's
+    realized replies per rupee so far (finalized replies / their touches' cost, from the ledger) WAITs,
+    and its money stays in the pool (K01 pacing carries it forward). Scale-free: no absolute
+    threshold to tune per portfolio."""
 
     def __init__(self, base: BetaBernoulliLearner, context: BorrowerContextModel,
-                 affinity_strength: Optional[float] = None):
+                 affinity_strength: Optional[float] = None, value_floor_rel: Optional[float] = None,
+                 value_floor_warmup: int = 200):
         if affinity_strength is not None and affinity_strength <= 0:
             raise ValueError("affinity_strength must be > 0")
+        if value_floor_rel is not None and value_floor_rel < 0:
+            raise ValueError("value_floor_rel must be >= 0")
+        self.value_floor_rel = value_floor_rel
+        self.value_floor_warmup = int(value_floor_warmup)
+        self._realized_cache: dict = {}
         self.base = base
         self.context = context
         self.affinity_strength = affinity_strength
@@ -217,6 +229,29 @@ class ContextualLearner:
         overall = (big_r + k * rho) / (big_n + k)
         return {ch: ((r + k * rho) / (n + k)) / overall for ch, (r, n) in hist.items()}
 
+    def realized_replies_per_inr(self, at: datetime) -> tuple[Optional[float], int]:
+        """(finalized replies / INR spent on those touches, n finalized) before `at`, from the ledger."""
+        at_iso = self.ledger._iso(at)
+        hit = self._realized_cache.get(at_iso)
+        if hit is not None:
+            return hit
+        row = self.ledger._conn().execute(
+            "SELECT COUNT(*) n, SUM(CASE WHEN o.status='REPLY' THEN 1 ELSE 0 END) r, SUM(t.est_cost_paise) cost"
+            " FROM touch_outcomes o JOIN touches t ON t.instruction_id = o.instruction_id"
+            " WHERE o.status IN ('REPLY', 'NO_REPLY') AND o.finalized_at <= ?", (at_iso,)).fetchone()
+        n, r, cost = row["n"] or 0, row["r"] or 0, row["cost"] or 0
+        out = ((r / (cost / 100)) if cost > 0 else None, n)
+        self._realized_cache = {at_iso: out}
+        return out
+
+    def value_floor(self, at: datetime) -> float:
+        floor = getattr(self.base, "min_replies_per_inr", 0.0)
+        if self.value_floor_rel is not None:
+            realized, n = self.realized_replies_per_inr(at)
+            if realized is not None and n >= self.value_floor_warmup:
+                floor = max(floor, self.value_floor_rel * realized)
+        return floor
+
     def rank(self, band: str, candidates: Sequence[Candidate], mode: Mode, rng: Optional[random.Random] = None,
              borrower_id: Optional[str] = None, persist: bool = True, at: Optional[datetime] = None) -> Ranking:
         base = self.base.rank(band, candidates, mode, rng=rng, borrower_id=borrower_id, persist=False, at=at)
@@ -224,7 +259,7 @@ class ContextualLearner:
         bucket = self.context.bucket_for(borrower_id, when) if borrower_id else "new|r0"
         m0 = self.context.multiplier(bucket)
         aff = self.channel_affinity(borrower_id, when)
-        floor_rpi = getattr(self.base, "min_replies_per_inr", 0.0)
+        floor_rpi = self.value_floor(when)
         scores = []
         for s in base.scores:
             a = aff.get(s.channel, 1.0)

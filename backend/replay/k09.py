@@ -134,6 +134,7 @@ class KairosOptions:
     min_reply_prob: float = DEFAULT_MIN_REPLY_PROB
     min_replies_per_inr: float = 0.0           # value floor on borrower-adjusted replies per rupee
     payment_lambda: float = 0.0                # fund order by (p_reply + λ·p_pay) per rupee (demo rule)
+    value_floor_rel: Optional[float] = None    # WAIT below φ × campaign-to-date realized replies per rupee
 
     @classmethod
     def from_dict(cls, d: Optional[dict]) -> "KairosOptions":
@@ -230,7 +231,8 @@ class StackRun:
             base = BetaBernoulliLearner(self.ledger, min_reply_prob=o.min_reply_prob, decay=o.decay,
                                         hier_strength=o.hier_strength, min_replies_per_inr=o.min_replies_per_inr)
             self.ranker = (ContextualLearner(base, BorrowerContextModel(self.ledger, recency=o.recency),
-                                             affinity_strength=o.affinity_strength) if context else base)
+                                             affinity_strength=o.affinity_strength,
+                                             value_floor_rel=o.value_floor_rel) if context else base)
         else:
             self.ranker = CadenceRanker("cn10/creditnirvana-10day" if arm == "cn10" else "fixed-cadence/k15-placeholder")
         self.fsm = SupervisorFSM(self.ledger, self.executor, self.ranker, self.sink, mode=Mode.SIMULATOR)

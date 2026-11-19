@@ -180,3 +180,25 @@ def test_kairos_options_validate_and_report_changes():
     assert KairosOptions.from_dict({"decay": 0.9}).changed() == {"decay": 0.9}
     with pytest.raises(ValueError):
         KairosOptions.from_dict({"peek_at_simulator": True})
+
+
+def test_relative_value_floor_uses_realized_replies_per_rupee_after_warmup(ledger):
+    lr = BetaBernoulliLearner(ledger, priors=PRIORS)
+    ctx = BorrowerContextModel(ledger)
+    cl = ContextualLearner(lr, ctx, value_floor_rel=1.0, value_floor_warmup=2)
+    fin = OutcomeFinalizer(ledger, cl)
+    for bid in ("P1", "P2"):
+        ob = add_loan(ledger, bid, D, campaign="C1")
+        _touch(ledger, fin, bid, "whatsapp", "WA_HI", at(10), ob)
+    fin.record_reply("P1", at(11), meaningful=True, channel="whatsapp")
+    when = at(9, 0, D + timedelta(days=1))
+    assert cl.value_floor(when) == 0.0                         # windows still open: below warm-up
+    fin.finalize_due(at(12, 0, D + timedelta(days=1)))
+    when = at(9, 0, D + timedelta(days=2))
+    realized, n = cl.realized_replies_per_inr(when)
+    assert n == 2 and realized == pytest.approx(1 / 0.80)      # 1 reply for two INR 0.40 touches
+    assert cl.value_floor(when) == pytest.approx(1.25)
+    r = cl.rank("B1", [cand("whatsapp", when)], Mode.PRODUCTION, borrower_id="P9", persist=False, at=when)
+    assert r.action == "WAIT"                                   # ~0.25 replies per INR < 1.25
+    with pytest.raises(ValueError):
+        ContextualLearner(lr, ctx, value_floor_rel=-1)
