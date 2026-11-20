@@ -569,10 +569,11 @@ call-end webhook → `voice/ingest.py` → CM-03 WhatsApp agent (OTP) → D7/LMS
 | spine | `day_start` | `date`, `weekday`, `quiet_day` |
 | borrower | `world_change` | `channel`, `factor` (the day-7 WhatsApp drift) |
 | churn | `assigned` | day 0, per borrower: `cohort`, `risk_tier`, `layer`, `journey`, `lifecycle` |
-| churn | `moved` | `engine` (cohort / layer / risk / journey / lifecycle), `from`, `to`, `rule`, `cohort`, `layer`, `risk_tier`, `trigger` |
+| churn | `moved` | `engine` (cohort / layer / risk / journey / lifecycle), `from`, `to`, `rule`, `cohort`, `layer`, `risk_tier`, `lifecycle`, `trigger`, `why` (the rule's own evidence lines, at most 4). Daily-tick moves are the K27 engine's own transition rows for that tick (real rule ids, lifecycle and journey moves included), so the buckets folded from these events equal the engine's state every day |
 | learner | `contact` | per borrower per day: `channel`, `slot`, `send_time`, `template_id`, `band`, `reply_chance`, `replies_per_inr`, `reason`, `lane` (`k09` or `voice_first`) |
 | learner | `wait` | `reason`, `rule` (`REST`, `LEARNER`, `JOURNEY`) |
 | learner | `posterior` | `channel`, `band`, `slot`, `before`, `after`, `direction` (day end, biggest moves) |
+| learner | `segments` | day end, after the reply windows closed (read-only on the ranker; caches restored, decisions unchanged): `segments` [B1, B2, B3] × channel (WhatsApp, SMS, voice call) at its best slot: `mean`, `lo90`/`hi90` (Beta, normal approx.), `alpha`, `beta`, `n_obs`, `source` (segment / pooled / prior), `replies_per_inr`, tomorrow's decayed decision-time `decision_mean` / `decision_n` / `decision_source`, `p_stop` and `stop_points` (25 × P(STOP), borrower contacted once before), `preferred` (same rule as `switch`), `cells` (every slot's α, β, n, source); `rule` (decay, value floor, STOP penalty, realized replies per ₹); `pacing` (today's allowance and commitment, pool left, from the ledger) |
 | learner | `switch` | `from_channel`, `to_channel`, `basis` (`posterior`: the band's preferred channel by replies per ₹; `send_mix`: the day's top channel), `band`, `after_drift` |
 | aladdin | `allowed` | `stage` `plan`, `channel`, `rules_checked`, `policy_version` |
 | aladdin | `blocked` | `stage` (`plan` / `send` / `approval`), `rule`, `reason`, `label` (e.g. "quiet day", "weekly limit", "said STOP", "no consent", "budget used", "promised to pay", "hardship hold", "held by a person"), `channel` |
@@ -610,10 +611,10 @@ promises_kept, promises_broken}`, `outcomes {finalized, by_status}`, `reports {d
 Plus `counters.kairos` (sent, spent, replies, verified payments, ₹ recovered, STOPs, cap breaches) for the
 scoreboard, and `pending_approvals: [{approval_id, borrower_id, first_name, channel, rules, send_time}]`.
 
-**Seed 42, 300 × 14 (`day_seconds=0`, ~9 s compute; ~3 min at 1×, ~55 s at 4×), 11,443 events:**
-spine 300 loans, ₹1,500 pool · churn 439 moves (cohort 165, risk 117, journey 66, layer 50, lifecycle 41), 2 in
-BROKEN_PTP · learner 3,738 decisions (1,368 contact, 2,370 wait), 57 voice-first, 36 posterior moves, 1 switch
-(B1: WhatsApp → SMS after the drift) · Aladdin 3,029 checks, 202 blocked (quiet day 175, already paid 12, weekly
+**Seed 42, 300 × 14 (`day_seconds=0`, ~9 s compute; ~3 min at 1×, ~55 s at 4×), 11,565 events:**
+spine 300 loans, ₹1,500 pool · churn 547 moves (cohort 165, journey 165, risk 117, layer 50, lifecycle 50), 2 in
+BROKEN_PTP · learner 3,738 decisions (1,368 contact, 2,370 wait), 57 voice-first, 36 posterior moves, 14 segment
+snapshots, 1 switch (B1: WhatsApp → SMS at the end of day 14, after the day-7 drift) · Aladdin 3,029 checks, 202 blocked (quiet day 175, already paid 12, weekly
 limit 10, budget 4, STOP 1), **cap breaches 0** · executor 1,343 sent, ₹1,123.30 · channel 1,152 delivered, 425
 read, 69 duplicate receipts ignored · borrower 47 replies, 2 STOPs · intent 45 classified (rules 35, small model 1,
 abstain 9) · voice 50 calls (Advait 31, Ritu 19), 21 connected, 3 low-confidence → review, 12 duplicate webhooks
@@ -641,6 +642,43 @@ verified, 17 resolved without a human (85%) · HITL 128 approvals (VOICE_CHANNEL
 |---|---|
 | `GET /demo/live/borrower/{borrower_id}` | One borrower's released events across components, oldest first, plus a card (`first_name`, `cohort`, `layer`, `risk_tier`, `holds`, `paid`) |
 | `POST /demo/live/approvals/{approval_id}/approve` / `reject` `{reason?}` | With `interactive_approvals=true`: the real `HITL.approve` / `HITL.reject` with role `supervisor` (approve re-runs the Gate). 404 unknown, 409 not pending. Without the flag a simulated supervisor decides |
+
+## Engine room (`/demo/engines`, SIMULATED)
+
+A projector page that shows the churn engine and the learning loop working, on ONE full-mode campaign (seed 42,
+300 × 14 by default) run through the real modules. `kairos_backend/engine_room.py` runs `FullCampaign` once
+(`day_seconds=0`, ~10 s, cached per seed / size), watches it (the K27 engine's own bucket counts at each day end, each
+event's position in its day) and serves a compact feed; the page (`static/engine_room.html`, no external assets)
+plays it back client-side. Playback is display pacing only (15 s a day at 1×); the results never change.
+
+| Endpoint | What |
+|---|---|
+| `GET /demo/engines` | The page. `?at=7.5` opens paused 7.5 days in (day 8 midday); `?day=8.6` = day 8, 60% through it; `&tech=1`; `&speed=2&autoplay=1` |
+| `GET /demo/engines/api/run?seed=&borrowers=&days=` | `{"status": "computing"}` until ready, then the feed: `events` (compact full-mode events), `truth` (engine bucket counts per day), `catalogue` (bucket labels and the K27 rule texts), `final`, `counters` |
+
+What each panel shows, and the events behind it:
+- **Churn engine:** cohort / risk tier / contact layer / status buckets folded from `churn.assigned` + `churn.moved`
+  (the page checks them against `truth` at every day end; Technical shows the result). A move flies from its old
+  bucket to its new one; the ticker groups one borrower's moves at one moment, in plain words ("C3 → C4 · risk
+  medium → high · 61+ days late, so risk is at least high"); a click shows each engine's move, the rule id, the
+  policy text and the rule's inputs (`why`).
+- **Learning loop:** per segment (1–30 / 31–60 / 61–90 days late) and channel, the posterior mean and 90% band from
+  `learner.segments`, a 14-day sparkline, sends today by channel (`learner.contact`, k09 lane), the drift
+  (`borrower.world_change`) and the switch (`learner.switch`, basis posterior) as callouts. Decisions today =
+  `learner.contact` / `learner.wait`; spend = `executor.dispatched` costs against the ledger's daily allowance.
+  Technical adds α / β / n / source, tomorrow's decayed estimate, the STOP penalty in points and the value floor.
+- **Campaign strip:** contacted (`executor.dispatched`), waiting today, held by Aladdin (`aladdin.blocked`), paid
+  (`payments.verified`), cap breaches (`reports.day_end`). **The loop** pulses decide (learner) → check (aladdin) →
+  send (executor) → receipt (channel) → reply (borrower, intent, voice, cm03) → learn (outcomes, learner).
+- Keys: Space play / pause, → step day, R reset, 1 / 2 / 4 speed, T technical, P presenter cues. `engineRoom.seek(t)`
+  and `engineRoom.state()` in the console for QA. `prefers-reduced-motion` turns motion off.
+
+**Seed 42, honestly:** WhatsApp replies drop on day 7 (a Sunday, a quiet day). The first post-drift replies close
+their 24 h window on day 9, WhatsApp's estimate falls in every segment from then on (1–30 days late: 13.5 → 9.7 in
+100), the learner's sends for 1–30 days late turn SMS-majority on day 13, and its preferred channel by replies per ₹
+switches WhatsApp → SMS at the end of day 14. 31–60 and 61–90 days late stay on WhatsApp (SMS's estimate there is
+still lower per ₹). With decay 0.7 the decision-time segment evidence stays below 30 outcomes, so tomorrow's
+decisions use the pooled estimate (Technical shows it). Tests: `tests/test_engine_room.py`.
 
 ## Voice engine (K17/K18)
 

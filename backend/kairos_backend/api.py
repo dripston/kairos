@@ -1113,6 +1113,8 @@ def demo_live_reject(approval_id: str, body: Optional[LiveApprovalIn] = None):
 
 from .journey_outbound import router as _journey_outbound_router  # noqa: E402  Journey 1: /demo/journey/outbound
 app.include_router(_journey_outbound_router)
+from .engine_room import router as _engine_room_router  # noqa: E402  Engine room: /demo/engines
+app.include_router(_engine_room_router)
 
 
 # ---------- live event feed (for the demo UI's streaming panel) ----------

@@ -688,7 +688,7 @@ html.presenter .demo { display: none; }
     }
     return null;
   }
-  var QUIET = /^(allowed|rechecked|delivered|read|duplicate_ignored|assigned|moved|day_start|finalized|posterior|bot_selected|message|portfolio_loaded|budget_scope|day_end)$/;
+  var QUIET = /^(allowed|rechecked|delivered|read|duplicate_ignored|assigned|moved|day_start|finalized|posterior|segments|bot_selected|message|portfolio_loaded|budget_scope|day_end)$/;
   function rowFull(e, base, r) {
     if (QUIET.test(e.kind)) return null;
     var s = String(e.summary || "");

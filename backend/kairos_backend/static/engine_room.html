@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kairos Engine Room</title>
+<style>
+/* Engine room — the churn engine and the learning loop, live, on one SIMULATED campaign (real modules).
+   Same cream system as /demo/journey/outbound: #FBF8F1 page, white cards, 1px #E7E5E4 lines, ink #1C1917 / #57534E,
+   one accent (teal #0F766E). Green = paid, amber = paused / with a person, red = STOP. Nothing else is coloured.
+   1rem ≈ 16.5px at 1920×1080, 13px at 1440×900; the page never scrolls. Technical (T) shows ids, α/β and rules. */
+:root {
+  --bg: #fbf8f1; --surface: #ffffff; --sunk: #f7f4ed; --hover: #f5f2ea;
+  --line: #e7e5e4; --line-2: #d6d3d1;
+  --ink: #1c1917; --ink-2: #57534e; --ink-3: #78716c; --ink-4: #a8a29e;
+  --accent: #0f766e; --accent-2: #115e59; --accent-soft: #eef8f6; --accent-line: #99d5cd;
+  --good: #15803d; --good-soft: #f0fdf4; --good-line: #bbf7d0;
+  --wait: #b45309; --wait-soft: #fffbeb; --wait-line: #fde68a;
+  --bad: #b91c1c; --bad-soft: #fef2f2; --bad-line: #fecaca;
+  --shadow: 0 1px 2px rgba(28,25,23,.04), 0 2px 8px rgba(28,25,23,.04);
+  --shadow-lg: 0 18px 40px -18px rgba(28,25,23,.28);
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --r: 12px; --r-sm: 8px;
+  --out: cubic-bezier(.23, 1, .32, 1);
+  --c-wa: #0f766e; --c-sms: #1c1917; --c-ivr: #a8a29e;
+  color-scheme: light;
+}
+html { font-size: clamp(13px, min(.86vw, 1.53vh), 18px); }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body { background: var(--bg); color: var(--ink); font: 400 1rem/1.4 var(--sans); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+[hidden] { display: none !important; }
+body:not(.tech) .tech-only { display: none !important; }
+body.tech .plain-only { display: none !important; }
+.app { display: flex; flex-direction: column; height: 100%; padding: .7rem 1rem .8rem; gap: .6rem; }
+
+/* ---------- header ---------- */
+.top { display: flex; align-items: center; gap: .9rem; min-height: 2.6rem; }
+.brand { display: flex; align-items: center; gap: .5rem; white-space: nowrap; }
+.brand .mk { width: 2rem; height: 2rem; border-radius: var(--r-sm); background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; }
+.brand h1 { margin: 0; font-size: 1.25rem; font-weight: 650; letter-spacing: -.01em; }
+.brand h1 span { color: var(--ink-2); font-weight: 500; }
+.tag { display: inline-flex; align-items: center; height: 1.5rem; padding: 0 .5rem; border-radius: 6px; background: var(--wait-soft); border: 1px solid var(--wait-line); color: var(--wait); font-size: .75rem; font-weight: 700; letter-spacing: .06em; white-space: nowrap; }
+.sub { color: var(--ink-3); font-size: .875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.sp { flex: 1; }
+.ctl { display: flex; align-items: center; gap: .45rem; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; height: 2.4rem; padding: 0 .9rem; border-radius: var(--r-sm); border: 1px solid var(--line-2); background: var(--surface); font-size: .9375rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+  transition: background-color .15s var(--out), border-color .15s var(--out), transform .1s var(--out); }
+.btn:hover:not(:disabled) { background: var(--hover); }
+.btn:active:not(:disabled) { transform: scale(.98); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); min-width: 6.2rem; }
+.btn.primary:hover:not(:disabled) { background: var(--accent-2); }
+.seg { display: inline-flex; padding: 3px; gap: 2px; border: 1px solid var(--line); border-radius: 10px; background: var(--sunk); }
+.seg button { height: 2rem; padding: 0 .7rem; border: 0; border-radius: 7px; background: transparent; font-size: .9375rem; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+kbd { font: 600 .75rem var(--mono); border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 4px; padding: 0 .3rem; color: var(--ink-2); background: var(--surface); }
+.hint { font-size: .8125rem; color: var(--ink-3); white-space: nowrap; }
+
+/* ---------- campaign strip ---------- */
+.strip { position: relative; display: grid; grid-template-columns: 1.7fr repeat(5, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden; }
+.strip > div { padding: .45rem 1rem .55rem; min-width: 0; }
+.strip > div + div { border-left: 1px solid var(--line); }
+.strip .l { font-size: .875rem; color: var(--ink-2); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.strip .v { font-size: 1.6rem; font-weight: 650; letter-spacing: -.02em; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.strip .v small { font-size: .9375rem; color: var(--ink-2); font-weight: 500; letter-spacing: 0; margin-left: .3rem; }
+.strip .day .v { font-size: 1.35rem; line-height: 1.75rem; }
+.strip .day .v span { color: var(--ink-2); font-weight: 500; font-size: 1.05rem; margin-left: .45rem; }
+.v.good { color: var(--good); } .v.bad { color: var(--bad); }
+.prog { position: absolute; left: 0; bottom: 0; height: 3px; width: 0; background: var(--accent); transition: width .2s linear; }
+
+/* ---------- the loop ---------- */
+.loop { display: flex; align-items: center; gap: .55rem; min-height: 2.6rem; }
+.loop .lab { font-size: .9375rem; font-weight: 650; white-space: nowrap; margin-right: .15rem; }
+.loop .lab span { display: block; font-size: .75rem; font-weight: 500; color: var(--ink-3); }
+.stg { flex: 1; display: flex; align-items: center; gap: .55rem; height: 2.6rem; padding: 0 .8rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); min-width: 0; position: relative;
+  transition: border-color .3s var(--out), background-color .3s var(--out); }
+.stg .tx { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
+.stg b { font-size: 1rem; font-weight: 650; white-space: nowrap; }
+.stg i { font-style: normal; font-size: .8125rem; color: var(--ink-3); white-space: nowrap; }
+.stg .n { margin-left: auto; font-size: .9375rem; font-weight: 600; color: var(--ink-2); }
+.stg .dot { width: .6rem; height: .6rem; border-radius: 50%; background: var(--ink-4); flex: none; transition: background-color .3s var(--out); }
+.stg.on { border-color: var(--accent-line); background: var(--accent-soft); }
+.stg.on .dot { background: var(--accent); }
+.stg.pulse::after { content: ""; position: absolute; inset: -1px; border-radius: 999px; border: 2px solid var(--accent); animation: ring .7s var(--out) forwards; pointer-events: none; }
+@keyframes ring { from { opacity: .9; transform: scale(1); } to { opacity: 0; transform: scale(1.06); } }
+.arr { color: var(--ink-4); font-size: 1rem; flex: none; }
+.back { font-size: .8125rem; color: var(--ink-3); white-space: nowrap; }
+
+/* ---------- main ---------- */
+.main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.04fr); gap: .75rem; }
+.card { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: .85rem 1rem .9rem; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: .6rem; overflow: hidden; }
+.ch { display: flex; align-items: baseline; gap: .6rem; }
+.ch h2 { margin: 0; font-size: 1.25rem; font-weight: 650; letter-spacing: -.01em; white-space: nowrap; }
+.ch .note { font-size: .875rem; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.ch .right { margin-left: auto; font-size: .8125rem; color: var(--ink-3); white-space: nowrap; }
+.sec { font-size: .8125rem; font-weight: 650; color: var(--ink-3); letter-spacing: .05em; text-transform: uppercase; margin: 0 0 .3rem; display: flex; gap: .5rem; align-items: baseline; white-space: nowrap; overflow: hidden; }
+.sec span { overflow: hidden; text-overflow: ellipsis; }
+.sec span { text-transform: none; letter-spacing: 0; font-weight: 500; }
+
+/* churn flow */
+.flow { position: relative; display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: .9rem; }
+.col { min-width: 0; display: flex; flex-direction: column; gap: .7rem; }
+.bk { display: grid; grid-template-columns: minmax(0, 1fr) 2.8rem; align-items: center; column-gap: .45rem; height: 1.66rem; padding: 0 .35rem; border-radius: 6px; position: relative; transition: background-color .5s var(--out); }
+.bk .nm { font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; z-index: 1; }
+.bk .nm em { font-style: normal; color: var(--ink-3); font-size: .875rem; }
+.bk .ct { justify-self: end; text-align: right; font-size: 1rem; font-weight: 650; position: relative; z-index: 1; padding: 0 .2rem; border-radius: 4px; transition: color .2s ease-out, background-color .2s ease-out; }
+.bk .ct.up { color: var(--accent) !important; background: var(--accent-soft); }
+.bk .ct.down { color: var(--wait) !important; background: var(--wait-soft); }
+.bk .bar { position: absolute; left: .35rem; bottom: 1px; height: 3px; border-radius: 2px; background: var(--accent-line); width: 0; transition: width .45s var(--out); }
+.bk.zero .nm, .bk.zero .ct { color: var(--ink-4); }
+.bk.good .bar { background: var(--good-line); } .bk.good .ct { color: var(--good); }
+.bk.bad .bar { background: var(--bad-line); } .bk.bad .ct { color: var(--bad); }
+.bk.wait .bar { background: var(--wait-line); } .bk.wait .ct { color: var(--wait); }
+.bk.in { background: var(--accent-soft); }
+.bk.out { background: var(--sunk); }
+svg.fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 2; }
+svg.fx path { fill: none; stroke: var(--accent); stroke-width: 1.4; stroke-dasharray: 3 3; opacity: .55; }
+svg.fx circle { fill: var(--accent); }
+
+/* move ticker */
+.tick { flex: 1; min-height: 0; display: flex; flex-direction: column; border-top: 1px solid var(--line); padding-top: .55rem; }
+.rows { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: .3rem; }
+.mv { display: grid; grid-template-columns: 7.6rem minmax(0, 1fr) auto; column-gap: .7rem; align-items: baseline; padding: .34rem .6rem; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); cursor: pointer; text-align: left; width: 100%;
+  transition: background-color .15s var(--out), border-color .15s var(--out); }
+.mv:hover { background: var(--hover); border-color: var(--line-2); }
+.mv.new { animation: slide .18s var(--out); }
+.mv.hl { background: var(--accent-soft); border-color: var(--accent-line); }
+.mv.hl.fade { animation: hlfade .5s ease-out forwards; }
+@keyframes hlfade { to { background: var(--surface); border-color: var(--line); } }
+@keyframes slide { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.mv .who { font-weight: 650; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mv .what { font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
+.mv .what .sep { color: var(--ink-4); margin: 0 .35rem; }
+.mv .what .rule { color: var(--ink-2); }
+.mv .when { font-size: .9375rem; color: var(--ink-3); white-space: nowrap; }
+.mv.good .what .to { color: var(--good); font-weight: 600; } .mv.bad .what .to { color: var(--bad); font-weight: 600; } .mv.wait .what .to { color: var(--wait); font-weight: 600; }
+.empty { color: var(--ink-3); font-size: .9375rem; padding: .5rem .2rem; }
+.check { font-size: .8125rem; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.check b { color: var(--good); font-weight: 650; }
+.check b.bad { color: var(--bad); }
+
+/* inspector */
+.insp { position: absolute; left: 1rem; right: 1rem; bottom: .9rem; max-height: 62%; overflow: auto; background: var(--surface); border: 1px solid var(--line-2); border-radius: var(--r); box-shadow: var(--shadow-lg); padding: .9rem 1rem; z-index: 5; }
+.insp h3 { margin: 0 0 .15rem; font-size: 1.125rem; font-weight: 650; }
+.insp .meta { font-size: .875rem; color: var(--ink-3); margin-bottom: .55rem; }
+.insp .x { position: absolute; top: .6rem; right: .6rem; }
+.insp table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+.insp td, .insp th { text-align: left; padding: .3rem .4rem; border-top: 1px solid var(--line); vertical-align: top; }
+.insp th { color: var(--ink-3); font-weight: 600; font-size: .8125rem; border-top: 0; }
+.insp code { font: .8125rem var(--mono); color: var(--ink-2); word-break: break-word; }
+.insp .why { font: .8125rem/1.35 var(--mono); color: var(--ink-2); }
+
+/* learning loop */
+.callout { display: flex; gap: .75rem; align-items: flex-start; padding: .55rem .8rem; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--sunk); font-size: .9875rem; line-height: 1.4; min-height: 3.1rem; transition: background-color .4s var(--out), border-color .4s var(--out); }
+.callout b { font-weight: 650; }
+.callout .ic { flex: none; width: 1.6rem; height: 1.6rem; border-radius: 50%; display: grid; place-items: center; background: var(--surface); border: 1px solid var(--line-2); font-weight: 700; font-size: .875rem; color: var(--ink-2); margin-top: .05rem; }
+.callout.drift { background: var(--surface); border-color: var(--ink-3); }
+.callout.drift .ic { background: var(--ink); color: #fff; border-color: var(--ink); }
+.callout.sw { background: var(--accent-soft); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.callout.sw .ic { background: var(--accent); color: #fff; border-color: var(--accent); }
+.callout.flash { animation: glow 1.2s var(--out); }
+@keyframes glow { 0% { box-shadow: 0 0 0 6px rgba(15,118,110,.28); } 100% { box-shadow: 0 0 0 1px var(--accent); } }
+.segs { display: flex; flex-direction: column; gap: .5rem; flex: 1; min-height: 0; }
+.segs .sg { flex: 1 1 0; min-height: 0; }
+.sg { display: grid; grid-template-columns: 9.6rem minmax(0, 1fr) 17rem; column-gap: .9rem; padding: .5rem .7rem; border: 1px solid var(--line); border-radius: var(--r-sm); align-items: center; transition: border-color .4s var(--out), background-color .4s var(--out); }
+.sg.once { animation: once 1.6s var(--out) 1; }
+@keyframes once { 0% { box-shadow: 0 0 0 0 rgba(15,118,110,.45); } 60% { box-shadow: 0 0 0 10px rgba(15,118,110,0); } 100% { box-shadow: none; } }
+.sg .hd .best.changed { animation: chip .9s var(--out) 1; background: var(--accent); color: #fff; border-color: var(--accent); }
+@keyframes chip { 0% { transform: scale(1); } 30% { transform: scale(1.12); } 100% { transform: scale(1); } }
+.sg.switched { border-color: var(--accent); background: linear-gradient(90deg, var(--accent-soft), var(--surface) 60%); }
+.sg .hd b { display: block; font-size: 1.05rem; font-weight: 650; }
+.sg .hd { min-width: 0; }
+.sg .hd .best { max-width: 100%; overflow: hidden; display: inline-flex; align-items: center; gap: .3rem; margin-top: .2rem; height: 1.45rem; padding: 0 .45rem; border-radius: 6px; background: var(--accent-soft); border: 1px solid var(--accent-line); color: var(--accent); font-size: .8125rem; font-weight: 650; white-space: nowrap; }
+.sg .hd .sent { display: block; margin-top: .25rem; font-size: .8125rem; color: var(--ink-3); line-height: 1.3; }
+.est { display: flex; flex-direction: column; gap: .2rem; min-width: 0; }
+.er { display: grid; grid-template-columns: 5.6rem minmax(0, 1fr) 6.4rem; column-gap: .5rem; align-items: center; height: 1.55rem; }
+.er .cn { font-size: .9375rem; font-weight: 550; white-space: nowrap; }
+.er .cn i { display: inline-block; width: .55rem; height: .55rem; border-radius: 2px; margin-right: .35rem; vertical-align: .05rem; }
+.er .val { font-size: .9375rem; text-align: right; white-space: nowrap; }
+.er .val small { color: var(--ink-3); font-size: .8125rem; }
+.er.top .cn, .er.top .val { font-weight: 700; }
+.trk { position: relative; height: 1.05rem; border-radius: 4px; background: var(--sunk); overflow: hidden; }
+.trk .grid { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--line); }
+.trk .band { position: absolute; top: 3px; bottom: 3px; border-radius: 3px; opacity: .22; transition: left .7s var(--out), width .7s var(--out); }
+.trk .mean { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; border-radius: 2px; transition: left .7s var(--out); }
+.er.hot .trk { box-shadow: 0 0 0 2px var(--accent-line); }
+.ert { grid-column: 1 / -1; font: .75rem/1.3 var(--mono); color: var(--ink-3); padding-left: 6.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spark { width: 100%; height: 100%; min-height: 5rem; max-height: 9rem; display: block; }
+.spark .ax { stroke: var(--line); stroke-width: 1; }
+.spark .lbl { font-size: 11px; fill: var(--ink-3); font-family: var(--sans); }
+.spark .drift { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 3 2; }
+.spark .now { stroke: var(--ink-4); stroke-width: 1; }
+.dec { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .9rem; border-top: 1px solid var(--line); padding-top: .55rem; }
+.meter { position: relative; height: .7rem; border-radius: 4px; background: var(--sunk); overflow: hidden; margin: .3rem 0 .25rem; display: flex; }
+.meter > span { height: 100%; transition: width .4s var(--out); }
+.meter .a { background: var(--accent); } .meter .w { background: var(--line-2); } .meter .p { background: var(--accent-line); }
+.dec .big { font-size: 1.05rem; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dec .big span { color: var(--ink-2); font-weight: 500; font-size: .9375rem; }
+.dec .sm { font-size: .8125rem; color: var(--ink-3); line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rulebar { font: .75rem/1.35 var(--mono); color: var(--ink-3); border-top: 1px dashed var(--line); padding-top: .4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* loading + cue cards */
+.veil { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(251,248,241,.86); z-index: 20; }
+.veil .box { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow-lg); padding: 1.2rem 1.5rem; max-width: 34rem; text-align: center; }
+.veil .box b { display: block; font-size: 1.2rem; margin-bottom: .3rem; }
+.veil .box span { color: var(--ink-2); }
+.bar-ind { height: 4px; border-radius: 2px; background: var(--sunk); overflow: hidden; margin-top: .8rem; }
+.bar-ind i { display: block; height: 100%; width: 35%; background: var(--accent); animation: ind 1.4s ease-in-out infinite; }
+@keyframes ind { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+.cues { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); width: min(64rem, 94vw); background: var(--ink); color: #fafaf9; border-radius: var(--r); box-shadow: var(--shadow-lg); padding: 1rem 1.2rem; z-index: 30; }
+.cues h4 { margin: 0 0 .5rem; font-size: .8125rem; letter-spacing: .06em; text-transform: uppercase; color: #a8a29e; display: flex; gap: .6rem; }
+.cues ol { margin: 0; padding-left: 1.3rem; display: grid; gap: .35rem; }
+.cues li { font-size: 1.05rem; line-height: 1.4; color: #d6d3d1; }
+.cues li.now { color: #fff; font-weight: 600; }
+.cues li.now::marker { color: #5eead4; }
+.cues .links { margin: .7rem 0 0; font-size: .875rem; color: #a8a29e; line-height: 1.5; }
+.cues .links code { font: .8125rem var(--mono); color: #e7e5e4; background: rgba(255,255,255,.08); padding: 0 .3rem; border-radius: 4px; }
+
+body.instant *, body.instant *::before, body.instant *::after { transition: none !important; animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .bar-ind i { width: 100%; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><div class="mk">K</div><h1>Kairos <span>· Engine room</span></h1></div>
+    <span class="tag" title="Synthetic borrowers, DEV simulator, mock channel adapters (dry-run)">SIMULATED</span>
+    <span class="sub" id="sub">One campaign on the real engines · loading…</span>
+    <span class="sp"></span>
+    <div class="seg" role="group" aria-label="Wording">
+      <button id="mPlain" aria-pressed="true">Plain words</button><button id="mTech" aria-pressed="false">Technical</button>
+    </div>
+    <div class="ctl">
+      <button class="btn primary" id="bPlay" disabled>Start</button>
+      <div class="seg" role="group" aria-label="Speed"><button data-sp="1" aria-pressed="true">1×</button><button data-sp="2" aria-pressed="false">2×</button><button data-sp="4" aria-pressed="false">4×</button></div>
+      <button class="btn" id="bStep" disabled>Step day</button>
+      <button class="btn" id="bReset" disabled>Reset</button>
+      <span class="hint"><kbd>P</kbd> cues</span>
+    </div>
+  </header>
+
+  <section class="strip" aria-label="Campaign">
+    <div class="day"><div class="l">Campaign day</div><div class="v" id="sDay">Day 1 of 14<span>Mon 23 Nov · 6:00 am</span></div></div>
+    <div><div class="l">Contacted</div><div class="v" id="sSent">0</div></div>
+    <div><div class="l">Waiting today</div><div class="v" id="sWait">0</div></div>
+    <div><div class="l">Held by Aladdin</div><div class="v" id="sHeld">0</div></div>
+    <div><div class="l">Paid</div><div class="v good" id="sPaid">0</div></div>
+    <div><div class="l">Cap breaches</div><div class="v good" id="sBreach">0</div></div>
+    <i class="prog" id="prog"></i>
+  </section>
+
+  <section class="loop" aria-label="The loop">
+    <div class="lab">The loop<span>lights up on each real event</span></div>
+    <div class="stg" id="L-decide"><span class="dot"></span><span class="tx"><b>Decide</b><i class="plain-only">contact or wait</i><i class="tech-only">learner</i></span><span class="n">0</span></div><span class="arr">→</span>
+    <div class="stg" id="L-check"><span class="dot"></span><span class="tx"><b>Check</b><i class="plain-only">Aladdin</i><i class="tech-only">K06 Gate</i></span><span class="n">0</span></div><span class="arr">→</span>
+    <div class="stg" id="L-send"><span class="dot"></span><span class="tx"><b>Send</b><i class="plain-only">dry-run</i><i class="tech-only">executor</i></span><span class="n">0</span></div><span class="arr">→</span>
+    <div class="stg" id="L-receipt"><span class="dot"></span><span class="tx"><b>Receipt</b><i class="plain-only">delivered, read</i><i class="tech-only">channel</i></span><span class="n">0</span></div><span class="arr">→</span>
+    <div class="stg" id="L-reply"><span class="dot"></span><span class="tx"><b>Reply</b><i class="plain-only">borrower answers</i><i class="tech-only">intent</i></span><span class="n">0</span></div><span class="arr">→</span>
+    <div class="stg" id="L-learn"><span class="dot"></span><span class="tx"><b>Learn</b><i class="plain-only">estimates update</i><i class="tech-only">posterior</i></span><span class="n">0</span></div>
+    <span class="back">↺ next day</span>
+  </section>
+
+  <main class="main">
+    <!-- churn engine -->
+    <section class="card" id="churnCard" aria-label="Churn engine">
+      <div class="ch"><h2>Churn engine, live</h2>
+        <span class="note plain-only">every reply, payment, missed call and daily check re-sorts the portfolio</span>
+        <span class="note tech-only">K27 auto-churn: cohort · risk · layer · lifecycle engines (policy DRAFT)</span>
+        <span class="right" id="moveCount">0 moves</span></div>
+      <div class="flow" id="flow">
+        <div class="col"><div><div class="sec">Cohort <span class="plain-only">which journey</span></div><div id="B-cohort"></div></div></div>
+        <div class="col">
+          <div><div class="sec">Risk tier</div><div id="B-risk"></div></div>
+          <div><div class="sec">Contact layer <span class="plain-only">how we reach</span></div><div id="B-layer"></div></div>
+        </div>
+        <div class="col"><div><div class="sec">Status <span class="plain-only">exits and pauses</span></div><div id="B-lifecycle"></div></div></div>
+        <svg class="fx" id="fx" aria-hidden="true"></svg>
+      </div>
+      <div class="tick">
+        <div class="sec">Moves, live <span>click one to see the rule and its inputs</span></div>
+        <div class="rows" id="rows"><div class="empty">Press Start: each line is one borrower moved by a K27 rule.</div></div>
+        <div class="check tech-only" id="selfcheck">Counts are folded from the run's churn events; at each day end they are compared with the K27 engine's own state.</div>
+      </div>
+      <div class="insp" id="insp" hidden></div>
+    </section>
+
+    <!-- learning loop -->
+    <section class="card" id="learnCard" aria-label="Learning loop">
+      <div class="ch"><h2>Learning loop, live</h2>
+        <span class="note">a Bayesian learner that updates from every reply</span>
+        <span class="right plain-only">bar = reply chance · shade = how sure</span>
+        <span class="right tech-only">Beta posterior mean · 90% band · best slot per channel</span></div>
+      <div class="callout" id="callout"><span class="ic">i</span><div id="calloutText">Each evening the day's reply windows close and the estimates update. On <b>day 7</b> the simulator quietly makes WhatsApp replies drop. Kairos is not told.</div></div>
+      <div class="segs" id="segs"></div>
+      <div class="dec">
+        <div>
+          <div class="sec">Decisions today</div>
+          <div class="big" id="dDec">–</div>
+          <div class="meter"><span class="a" id="dA" style="width:0"></span><span class="w" id="dW" style="width:0"></span></div>
+          <div class="sm" id="dWhy">&nbsp;</div>
+        </div>
+        <div>
+          <div class="sec">Spend vs budget</div>
+          <div class="big" id="dSpend">–</div>
+          <div class="meter"><span class="a" id="bA" style="width:0"></span></div>
+          <div class="sm" id="dPool">&nbsp;</div>
+        </div>
+      </div>
+      <div class="rulebar tech-only" id="ruleBar">decay · value floor · STOP penalty appear after day 1</div>
+    </section>
+  </main>
+</div>
+
+<div class="veil" id="veil"><div class="box"><b id="veilT">Running the campaign on the real engines…</b><span id="veilS">300 synthetic borrowers × 14 days through K27, K09, Aladdin, mock adapters and the DEV simulator. About 10 seconds.</span><div class="bar-ind"><i></i></div></div></div>
+
+<div class="cues" id="cues" hidden>
+  <h4>Presenter cues <span>P to close · Space play/pause · → step day · R reset · T technical</span></h4>
+  <ol id="cueList">
+    <li data-d="1">One simulated campaign: 300 synthetic borrowers, 14 days, on the real Kairos engines. Nothing is sent: mock adapters, dry-run.</li>
+    <li data-d="1">Left, the churn engine: every reply, payment, missed call and the daily check re-sorts borrowers into a cohort, a risk tier and a contact layer. Every move names its rule — click one.</li>
+    <li data-d="2">Right, the learning loop: a Bayesian learner that updates from every reply. Bar = how likely each channel gets a reply; the shade is how sure it is. It narrows as evidence comes in.</li>
+    <li data-d="7">Day 7: we change the world. WhatsApp replies drop to about a third. Kairos is not told. Day 8's messages close their 24-hour reply window on day 9: from then on, watch the WhatsApp estimates fall.</li>
+    <li data-d="13">The learner shifts 1–30 days late towards SMS as soon as SMS brings more replies per rupee. Aladdin checks every send; cap breaches stay at 0.</li>
+  </ol>
+  <p class="links">Jump to a moment (opens paused): <code>?at=6.05</code> the drift, day 7 morning · <code>?at=7.5</code> day 8 midday, the first sends after the drift · <code>?at=11.98</code> WhatsApp estimates down, end of day 12 · <code>?at=13.98</code> the switch, end of day 14 · <code>?at=14</code> the end. <code>at</code> = days elapsed; <code>?day=8.6</code> = day 8, 60% through it.</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var RM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var qs = new URLSearchParams(location.search);
+  var P = { seed: +(qs.get("seed") || 42), borrowers: +(qs.get("borrowers") || 300), days: +(qs.get("days") || 14) };
+  var BANDS = ["B1", "B2", "B3"], CHS = ["whatsapp", "sms", "ivr"];
+  var CHN = { whatsapp: "WhatsApp", sms: "SMS", ivr: "Voice call", voicebot: "Voice bot", email: "Email" };
+  var CHC = { whatsapp: "var(--c-wa)", sms: "var(--c-sms)", ivr: "var(--c-ivr)" };
+  var CHX = { whatsapp: "#0f766e", sms: "#1c1917", ivr: "#a8a29e" };
+  var BANDW = { B1: "1–30 days late", B2: "31–60 days late", B3: "61–90 days late" };
+  var COHORT_ORDER = ["C1", "C2", "C3", "C4", "C5", "WA_RESPONSIVE", "ENGAGED", "PROMISED", "BROKEN_PTP", "CLAIMED_PAID", "VOICE_UNREACHABLE", "DISPUTED", "ON_HOLD", "HARDSHIP", "OPTED_OUT", "PAID_EXITED", "UNASSIGNED"];
+  var LABEL = {
+    cohort: { C1: "C1 · no bounce yet", C2: "C2 · low risk", C3: "C3 · medium risk", C4: "C4 · high risk", C5: "C5 · high ticket", WA_RESPONSIVE: "Replies on WhatsApp", ENGAGED: "Engaged, replied", PROMISED: "Promised to pay",
+      BROKEN_PTP: "Broke a promise", CLAIMED_PAID: "Says paid, checking", VOICE_UNREACHABLE: "Unreachable by voice", DISPUTED: "Disputed", ON_HOLD: "On hold", HARDSHIP: "Hardship", OPTED_OUT: "Said STOP", PAID_EXITED: "Paid, exited", UNASSIGNED: "Unassigned" },
+    risk: { LOW: "Low", MEDIUM: "Medium", HIGH: "High", CRITICAL: "Critical" },
+    layer: { L1: "L1 · SMS / email", L2: "L2 · WhatsApp", L3: "L3 · voice", L4: "L4 · a person" },
+    lifecycle: { ACTIVE: "Active", PAUSED_PTP: "Paused: promised", PAUSED_CLAIM: "Paused: says paid", PAUSED_HOLD: "Paused: on hold", HARDSHIP_HUMAN: "Hardship → a person", EXHAUSTED_CAMPAIGN: "Contact budget used", STOPPED_OPT_OUT: "Said STOP · exit", PAID_EXIT: "Paid · exit" }
+  };
+  var SHORT = { WA_RESPONSIVE: "WhatsApp-responsive", ENGAGED: "engaged", PROMISED: "promised", BROKEN_PTP: "broke a promise", CLAIMED_PAID: "says paid", VOICE_UNREACHABLE: "voice-unreachable", DISPUTED: "disputed", ON_HOLD: "on hold",
+    HARDSHIP: "hardship", OPTED_OUT: "said STOP", PAID_EXITED: "paid", ACTIVE: "active", PAUSED_PTP: "paused (promise)", PAUSED_CLAIM: "paused (says paid)", PAUSED_HOLD: "paused (hold)", HARDSHIP_HUMAN: "with a person",
+    EXHAUSTED_CAMPAIGN: "budget used", STOPPED_OPT_OUT: "stopped", PAID_EXIT: "paid · exit" };
+  var TONE = { PAID_EXITED: "good", PAID_EXIT: "good", OPTED_OUT: "bad", STOPPED_OPT_OUT: "bad", PAUSED_PTP: "wait", PAUSED_CLAIM: "wait", PAUSED_HOLD: "wait", HARDSHIP_HUMAN: "wait", HARDSHIP: "wait", CLAIMED_PAID: "wait", BROKEN_PTP: "bad" };
+  var RULEW = {
+    "RA.RECOMPUTE": "re-sorted on its latest signals", "RISK.DPD_B3_FLOOR": "61+ days late, so risk is at least high", "PREC.PAID": "a bank-confirmed payment always wins",
+    "PREC.STOP": "said STOP, so every channel stops", "PREC.HARDSHIP": "hardship always wins: a person takes over", "PREC.K13_HOLD": "a hold always wins",
+    "JOURNEY.RESTART": "new journey, starts at day 1", "JOURNEY.CONTINUE": "journey continues", "RA.WA_REPLY_PIN": "replied on WhatsApp: WhatsApp-first for 7 days",
+    "RA.CM03_NEEDS_TIME_PIN": "needs time: ask for a date", "STOP.PAID": "paid: no more reminders", "STOP.NONE": "hold is over: back to active",
+    "STOP.CLAIM": "says paid: pause until the bank confirms", "STOP.PTP": "promised to pay: pause until the date", "STOP.HARDSHIP": "hardship: pause, a person handles it",
+    "STOP.OPT_OUT": "said STOP", "STOP.K13_HOLD": "on hold", "STOP.EXHAUSTED": "contact budget used up", "RISK.PAYMENT_VERIFIED_DOWN": "payment confirmed: risk down one",
+    "RISK.REFUSED_TO_PAY_UP": "refused to pay on the call: risk up one", "RISK.BROKEN_PTP_UP": "broke a promise: risk up one", "RISK.PTP_KEPT_DOWN": "kept a promise: risk down one",
+    "RISK.REPEAT_BROKEN_PTP_CRITICAL": "two broken promises: critical", "RISK.NO_CONTACT_MULTICHANNEL_UP": "unreachable on 2 channels: risk up one",
+    "RISK.SUSTAINED_ENGAGEMENT_DOWN": "keeps replying: risk down one", "RISK.HARDSHIP_FREEZE": "hardship: risk frozen", "LAYER.REPLY_HOMES_DOWN": "replied on a cheaper channel: stay there",
+    "LAYER.L3_NO_ANSWER_X2_TO_L2": "2 unanswered calls: back to WhatsApp", "LAYER.L1_DELIVERED_NO_REPLY_X3_TO_L2": "3 SMS, no reply: up to WhatsApp",
+    "LAYER.L2_NOT_ON_WHATSAPP_TO_L1": "not on WhatsApp: down to SMS", "LAYER.L2_READ_NO_REPLY_X2_TO_L3": "read twice, no reply: up to voice", "LAYER.HARDSHIP_TO_L4": "hardship: a person (L4)",
+    "LAYER.HUMAN_REQUEST_TO_L4": "asked for a person (L4)", "LAYER.L4_RELEASE": "hold cleared: back to the journey"
+  };
+  var RULE_RANK = function (r) { r = r || ""; return /^PREC\./.test(r) ? 0 : /^STOP\./.test(r) && r !== "STOP.NONE" ? 1 : /^RISK\./.test(r) ? 2 : r === "RA.WA_REPLY_PIN" ? 3 : /^LAYER\./.test(r) ? 4 : r === "STOP.NONE" ? 5 : r === "RA.RECOMPUTE" ? 6 : 7; };
+  var TRIG = function (t) {
+    t = t || ""; if (t === "daily tick") return "daily check"; if (t === "verified payment") return "payment confirmed by the bank"; if (t === "WhatsApp") return "wrote in on WhatsApp";
+    if (t === "payment claim") return "says they paid"; if (t === "attempt") return "contact attempt"; if (t === "delivery") return "delivery receipt";
+    return t.replace(/^reply: /, "replied: ").replace(/^call: /, "on the call: ");
+  };
+  var WAITW = { REST: "resting after a recent message", JOURNEY: "no journey step today", LEARNER: "not worth a message now" };
+
+  function hash(s) { s = String(s); var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return h >>> 0; }
+  var INIT = "ABDGJKMNPRSTVY";
+  function masked(name, bid) { if (!name) return "A borrower"; return name + " " + INIT[hash(bid || name) % INIT.length] + "."; }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function inr(p) { var r = (p || 0) / 100; return "₹" + (r >= 1000 ? Math.round(r).toLocaleString("en-IN") : r.toLocaleString("en-IN", { minimumFractionDigits: r % 1 ? 2 : 0, maximumFractionDigits: 2 })); }
+  function nfmt(n) { return (n || 0).toLocaleString("en-IN"); }
+  function pct(x) { return (x * 100).toFixed(1); }
+  function clock12(t) { if (!t) return ""; var h = +t.slice(0, 2), m = t.slice(3, 5); return (h % 12 || 12) + ":" + m + " " + (h < 12 ? "am" : "pm"); }
+  function dateOf(d) { var s = new Date(FEED.start + "T00:00:00"); s.setDate(s.getDate() + d - 1); return s.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }).replace(",", ""); }
+
+  var FEED = null, S = null, BK = {}, segByDay = {}, dayStartIdx = {};
+  var tech = false, speed = 1, raf = 0, lastTs = 0;
+
+  // ---------- state ----------
+  function fresh() {
+    return { idx: 0, clock: 0, playing: false, started: false, day: 1, t: "06:00", b: {}, counts: { cohort: {}, risk: {}, layer: {}, lifecycle: {} },
+      contacted: 0, held: 0, paid: 0, recovered: 0, breaches: 0, waitT: 0, contactT: 0, waitRules: {}, spentT: 0, spent: 0, sentT: {},
+      loop: { decide: 0, check: 0, send: 0, receipt: 0, reply: 0, learn: 0 }, moves: [], moveN: 0, seg: null, hist: [], drift: false, sw: null,
+      checks: { ok: 0, bad: 0, last: null }, hot: {}, pref: {} };
+  }
+
+  // ---------- bucket rows ----------
+  function buildBuckets() {
+    var seen = { cohort: {}, risk: { LOW: 1, MEDIUM: 1, HIGH: 1, CRITICAL: 1 }, layer: { L1: 1, L2: 1, L3: 1, L4: 1 }, lifecycle: { ACTIVE: 1, PAID_EXIT: 1, STOPPED_OPT_OUT: 1 } };
+    FEED.events.forEach(function (e) { if (e.c !== "churn") return; var x = e.x || {}; seen.cohort[x.cohort] = 1; seen.risk[x.risk_tier] = 1; seen.layer[x.layer] = 1; seen.lifecycle[x.lifecycle] = 1; });
+    var order = { cohort: COHORT_ORDER, risk: ["LOW", "MEDIUM", "HIGH", "CRITICAL"], layer: ["L1", "L2", "L3", "L4"],
+      lifecycle: ["ACTIVE", "PAUSED_PTP", "PAUSED_CLAIM", "PAUSED_HOLD", "HARDSHIP_HUMAN", "EXHAUSTED_CAMPAIGN", "STOPPED_OPT_OUT", "PAID_EXIT"] };
+    Object.keys(order).forEach(function (k) {
+      var ids = order[k].filter(function (id) { return seen[k][id]; });
+      Object.keys(seen[k]).forEach(function (id) { if (id && id !== "undefined" && ids.indexOf(id) < 0) ids.push(id); });
+      var host = $("B-" + k); host.innerHTML = ""; BK[k] = {};
+      ids.forEach(function (id) {
+        var el = document.createElement("div"); el.className = "bk zero " + (TONE[id] || "");
+        el.innerHTML = '<span class="nm"><span class="plain-only">' + esc(LABEL[k][id] || id) + '</span><span class="tech-only">' + esc(id) + ' <em>' + esc(k === "cohort" ? "" : (LABEL[k][id] || "")) + '</em></span></span><span class="ct">0</span><i class="bar"></i>';
+        host.appendChild(el); BK[k][id] = { el: el, ct: el.querySelector(".ct"), bar: el.querySelector(".bar"), shown: -1 };
+      });
+    });
+  }
+  function bump(key, id, d) { var c = S.counts[key]; c[id] = (c[id] || 0) + d; S.dirtyB = true; }
+
+  // ---------- segments ----------
+  function buildSegs() {
+    var host = $("segs"); host.innerHTML = "";
+    BANDS.forEach(function (b) {
+      var el = document.createElement("div"); el.className = "sg"; el.id = "SG-" + b;
+      var rows = CHS.map(function (ch) {
+        return '<div class="er" id="ER-' + b + '-' + ch + '"><span class="cn"><i style="background:' + CHC[ch] + '"></i>' + CHN[ch] + '</span>' +
+          '<span class="trk"><span class="grid" style="left:25%"></span><span class="grid" style="left:50%"></span><span class="grid" style="left:75%"></span>' +
+          '<span class="band" style="background:' + CHC[ch] + ';left:0;width:0"></span><span class="mean" style="background:' + CHC[ch] + ';left:0"></span></span>' +
+          '<span class="val">–</span></div><div class="ert tech-only" id="ET-' + b + '-' + ch + '">&nbsp;</div>';
+      }).join("");
+      el.innerHTML = '<div class="hd"><b>' + BANDW[b] + '</b><span class="best" id="BEST-' + b + '">best: –</span><span class="sent" id="SENT-' + b + '">sent today: –</span></div>' +
+        '<div class="est">' + rows + '</div><svg class="spark" id="SP-' + b + '" aria-hidden="true"></svg>';
+      host.appendChild(el);
+    });
+  }
+  var SCALE = 0.40;   // track = 0–40 in 100
+  function renderSegs() {
+    var x = S.seg;
+    BANDS.forEach(function (b) {
+      var sg = x ? (x.segments || []).filter(function (s) { return s.band === b; })[0] : null;
+      var sent = S.sentT[b] || {}, parts = CHS.filter(function (c) { return sent[c]; }).map(function (c) { return sent[c] + " " + (c === "whatsapp" ? "WhatsApp" : c === "sms" ? "SMS" : "call"); });
+      $("SENT-" + b).textContent = "sent today: " + (parts.join(" · ") || "none");
+      var chip = $("BEST-" + b), pref = sg ? sg.preferred : null;
+      if (pref && S.pref[b] && S.pref[b] !== pref && S.playing && !RM) { chip.classList.remove("changed"); void chip.offsetWidth; chip.classList.add("changed"); clearTimeout(chip._t); chip._t = setTimeout(function () { chip.classList.remove("changed"); }, 2600); }
+      if (pref) S.pref[b] = pref;
+      chip.textContent = sg && sg.preferred ? "best value: " + (CHN[sg.preferred] || sg.preferred) : "best value: –";
+      CHS.forEach(function (ch) {
+        var row = $("ER-" + b + "-" + ch), c = sg ? (sg.channels || []).filter(function (r) { return r.channel === ch; })[0] : null;
+        var band = row.querySelector(".band"), mean = row.querySelector(".mean"), val = row.querySelector(".val");
+        row.classList.toggle("top", !!(sg && sg.preferred === ch));
+        if (!c) { val.textContent = "–"; band.style.width = "0"; return; }
+        var lo = Math.min(c.lo90, SCALE), hi = Math.min(c.hi90, SCALE), m = Math.min(c.mean, SCALE);
+        band.style.left = (lo / SCALE * 100) + "%"; band.style.width = Math.max(0.5, (hi - lo) / SCALE * 100) + "%";
+        mean.style.left = (m / SCALE * 100) + "%";
+        var half = Math.max(c.hi90 - c.mean, c.mean - c.lo90);
+        val.innerHTML = '<span class="plain-only">' + pct(c.mean) + ' in 100 <small>±' + Math.round(half * 100) + '</small></span><span class="tech-only">' + pct(c.mean) + '% <small>' + c.replies_per_inr.toFixed(2) + '/₹</small></span>';
+        $("ET-" + b + "-" + ch).textContent = "α " + c.alpha.toFixed(1) + " β " + c.beta.toFixed(1) + " · n " + c.n_obs + " " + c.source + " · " + c.slot +
+          " · tomorrow " + pct(c.decision_mean) + "% (decayed n " + c.decision_n.toFixed(0) + ", " + c.decision_source + ")" + (c.stop_points != null ? " · STOP −" + (c.stop_points * 100).toFixed(1) + " pts" : "");
+      });
+      $("SG-" + b).classList.toggle("switched", !!(S.sw && S.sw.x.band === b));
+      renderSpark(b);
+    });
+    if (x && x.rule) {
+      var r = x.rule;
+      $("ruleBar").textContent = "decision rule · evidence decay " + r.decay + "/day · value floor " + r.value_floor_rel + " × realized " + (r.realized_replies_per_inr != null ? r.realized_replies_per_inr.toFixed(3) : "–") +
+        " = " + r.value_floor_replies_per_inr.toFixed(3) + " replies/₹ · STOP penalty " + r.stop_penalty + " × P(STOP) · reply floor " + Math.round((r.min_reply_prob || 0) * 100) + " in 100 · " + r.finalized_outcomes + " outcomes learned";
+    }
+  }
+  function renderSpark(b) {
+    var svg = $("SP-" + b), W = Math.max(160, svg.clientWidth || 240), H = Math.max(60, svg.clientHeight || 92), L = 20, R = 8, T = 16, B = 16, days = FEED.days, ymax = 0.25;
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    var X = function (d) { return L + (d - 1) / (days - 1) * (W - L - R); }, Y = function (v) { return T + (1 - Math.min(v, ymax) / ymax) * (H - T - B); };
+    var h = '<line class="ax" x1="' + L + '" y1="' + Y(0) + '" x2="' + (W - R) + '" y2="' + Y(0) + '"/>' +
+      '<line class="ax" x1="' + L + '" y1="' + Y(0.1) + '" x2="' + (W - R) + '" y2="' + Y(0.1) + '" stroke-dasharray="2 3"/>' +
+      '<line class="ax" x1="' + L + '" y1="' + Y(0.2) + '" x2="' + (W - R) + '" y2="' + Y(0.2) + '" stroke-dasharray="2 3"/>' +
+      '<text class="lbl" x="2" y="' + (Y(0.2) + 3) + '">20</text><text class="lbl" x="2" y="' + (Y(0.1) + 3) + '">10</text><text class="lbl" x="2" y="' + (Y(0) + 3) + '">0</text>' +
+      '<text class="lbl" x="' + L + '" y="' + (H - 3) + '">day 1</text><text class="lbl" x="' + (W - R) + '" y="' + (H - 3) + '" text-anchor="end">' + days + '</text>';
+    var dd = FEED.drift_day; h += '<line class="drift" x1="' + X(dd) + '" y1="' + T + '" x2="' + X(dd) + '" y2="' + Y(0) + '"/><text class="lbl" x="' + (X(dd) - 4) + '" y="' + (T - 5) + '" text-anchor="end">' + (X(dd) > 150 ? "day " + dd + ": " : "") + 'WhatsApp drops</text>';
+    CHS.forEach(function (ch) {
+      var pts = [], band = [];
+      S.hist.forEach(function (x, i) { if (!x) return; var sg = x.segments.filter(function (s) { return s.band === b; })[0]; var c = sg && sg.channels.filter(function (r) { return r.channel === ch; })[0]; if (c) { pts.push([X(i + 1), Y(c.mean)]); band.push([X(i + 1), Y(c.lo90), Y(c.hi90)]); } });
+      if (!pts.length) return;
+      if (ch !== "ivr" && band.length > 1) {
+        var up = band.map(function (p) { return p[0].toFixed(1) + "," + p[2].toFixed(1); }), dn = band.slice().reverse().map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); });
+        h += '<polygon points="' + up.concat(dn).join(" ") + '" fill="' + CHX[ch] + '" opacity=".09"/>';
+      }
+      h += '<polyline points="' + pts.map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ") + '" fill="none" stroke="' + CHX[ch] + '" stroke-width="' + (ch === "ivr" ? 1.2 : 2) + '"' + (ch === "ivr" ? ' stroke-dasharray="3 2"' : "") + ' stroke-linejoin="round"/>';
+      var lp = pts[pts.length - 1]; h += '<circle cx="' + lp[0].toFixed(1) + '" cy="' + lp[1].toFixed(1) + '" r="2.6" fill="' + CHX[ch] + '"/>';
+    });
+    if (S.sw && S.sw.x.band === b) { var sx = X(S.sw.d); h += '<line x1="' + sx + '" y1="' + T + '" x2="' + sx + '" y2="' + Y(0) + '" stroke="#0f766e" stroke-width="1.5"/><text class="lbl" x="' + (sx - 4) + '" y="' + (Y(0) - 4) + '" text-anchor="end" style="fill:#0f766e;font-weight:700">switch → ' + esc(CHN[S.sw.x.to_channel] || "") + '</text>'; }
+    svg.innerHTML = h;
+  }
+
+  // ---------- apply one event ----------
+  function apply(e, live) {
+    var x = e.x || {};
+    S.t = e.t; S.day = e.d;
+    switch (e.c) {
+      case "spine":
+        if (e.k === "day_start") { S.waitT = 0; S.contactT = 0; S.waitRules = {}; S.spentT = 0; S.sentT = {}; S.quiet = !!x.quiet_day; S.dirtyD = true; }
+        break;
+      case "churn": churn(e, x, live); break;
+      case "learner":
+        if (e.k === "contact") { pulse("decide", live); S.contactT++; if (x.lane === "k09" && BANDW[x.band]) { var s = S.sentT[x.band] = S.sentT[x.band] || {}; s[x.channel] = (s[x.channel] || 0) + 1; } S.dirtyD = true; S.dirtyS = true; }
+        else if (e.k === "wait") { pulse("decide", live); S.waitT++; S.waitRules[x.rule] = (S.waitRules[x.rule] || 0) + 1; S.dirtyD = true; }
+        else if (e.k === "posterior") { pulse("learn", live); if (live && BANDW[x.band] && CHS.indexOf(x.channel) >= 0) hot(x.band, x.channel); }
+        else if (e.k === "segments") { pulse("learn", live); S.seg = x; S.hist[e.d - 1] = x; S.dirtyS = true; if (S.drift && !S.sw && e.d > FEED.drift_day) driftFollow(e.d); }
+        else if (e.k === "switch" && x.basis === "posterior") { pulse("learn", live); onSwitch(e, live); }
+        break;
+      case "aladdin": pulse("check", live); if (e.k === "blocked") S.held++; break;
+      case "executor": pulse("send", live); S.contacted++; S.spentT += x.cost_paise || 0; S.spent += x.cost_paise || 0; S.dirtyD = true; break;
+      case "channel": pulse("receipt", live); break;
+      case "borrower":
+        if (e.k === "world_change") onDrift(e, live);
+        else pulse("reply", live);
+        break;
+      case "intent": case "voice": case "cm03": if (e.k === "classified" || e.k === "call_ended" || e.k === "message") pulse("reply", live); break;
+      case "outcomes": pulse("learn", live); break;
+      case "payments": if (e.k === "verified") { S.paid++; S.recovered += x.amount_paise || 0; } break;
+      case "reports": if (e.k === "day_end") { S.breaches = Math.max(S.breaches, x.cap_breaches || 0); selfCheck(e.d); } break;
+    }
+  }
+  function churn(e, x, live) {
+    var nxt = [x.cohort, x.risk_tier, x.layer, x.lifecycle], keys = ["cohort", "risk", "layer", "lifecycle"], prev = S.b[e.b];
+    for (var i = 0; i < 4; i++) {
+      if (prev && prev[i] === nxt[i]) continue;
+      if (prev) bump(keys[i], prev[i], -1);
+      bump(keys[i], nxt[i], +1);
+      if (prev && live) flowAnim(keys[i], prev[i], nxt[i]);
+    }
+    S.b[e.b] = nxt;
+    if (e.k !== "moved") return;
+    S.moveN++;
+    var key = e.b + "|" + e.d + "|" + e.t + "|" + x.trigger, g = S.moves[0];
+    if (g && g.key === key) { g.mv.push(x); g.after = nxt; }
+    else { S.moves.unshift({ key: key, b: e.b, n: e.n, d: e.d, t: e.t, trig: x.trigger, mv: [x], before: prev, after: nxt, born: live ? performance.now() : 0 }); if (S.moves.length > 60) S.moves.length = 60; }
+    S.dirtyM = true;
+  }
+  function selfCheck(day) {
+    var t = (FEED.truth || [])[day - 1]; if (!t) return;
+    var ok = ["cohort", "risk", "layer", "lifecycle"].every(function (k) {
+      var a = S.counts[k], bb = t[k] || {}, ids = Object.keys(a).concat(Object.keys(bb));
+      return ids.every(function (id) { return (a[id] || 0) === (bb[id] || 0); });
+    });
+    if (ok) S.checks.ok++; else S.checks.bad++;
+    S.checks.last = day;
+    $("selfcheck").innerHTML = ok ? "Day " + day + ": counts folded from " + nfmt(S.churnEv) + " churn events <b>= the K27 engine's own state</b> (" + S.checks.ok + " of " + S.checks.last + " days checked)."
+      : "Day " + day + ": <b class='bad'>counts differ from the K27 engine's own state</b>.";
+  }
+
+  // ---------- motion (purposeful only) ----------
+  var lastPulse = {};
+  function pulse(stage, live) {
+    S.loop[stage]++; S.dirtyL = true;
+    if (!live || RM) return;
+    var now = performance.now(); if (lastPulse[stage] && now - lastPulse[stage] < 320) return; lastPulse[stage] = now;
+    var el = $("L-" + stage); el.classList.add("on"); el.classList.remove("pulse"); void el.offsetWidth; el.classList.add("pulse");
+    clearTimeout(el._t); el._t = setTimeout(function () { el.classList.remove("on"); }, 1100);
+  }
+  var flying = 0;
+  function flowAnim(key, from, to) {
+    var a = BK[key] && BK[key][from], b = BK[key] && BK[key][to]; if (!a || !b) return;
+    [a, b].forEach(function (k, i) { var el = k.el; el.classList.remove("in", "out"); void el.offsetWidth; el.classList.add(i ? "in" : "out"); clearTimeout(el._t); el._t = setTimeout(function () { el.classList.remove("in", "out"); }, 900); });
+    if (RM || flying > 10) return;
+    var fx = $("fx"), box = $("flow").getBoundingClientRect(), ra = a.el.getBoundingClientRect(), rb = b.el.getBoundingClientRect();
+    var x1 = ra.right - box.left - 8, y1 = ra.top + ra.height / 2 - box.top, x2 = rb.right - box.left - 8, y2 = rb.top + rb.height / 2 - box.top;
+    var bend = Math.min(60, 14 + Math.abs(y2 - y1) * 0.35), d = "M" + x1 + "," + y1 + " C" + (x1 + bend) + "," + y1 + " " + (x2 + bend) + "," + y2 + " " + x2 + "," + y2;
+    var ns = "http://www.w3.org/2000/svg", p = document.createElementNS(ns, "path"), c = document.createElementNS(ns, "circle");
+    p.setAttribute("d", d); c.setAttribute("r", "3.5"); fx.appendChild(p); fx.appendChild(c); flying++;
+    var len = p.getTotalLength(), t0 = performance.now(), dur = 650;
+    (function step(now) {
+      var k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3), pt = p.getPointAtLength(e * len);
+      c.setAttribute("cx", pt.x); c.setAttribute("cy", pt.y);
+      if (k < 1) requestAnimationFrame(step); else { p.remove(); c.remove(); flying--; }
+    })(t0);
+  }
+  function hot(band, ch) {
+    var el = $("ER-" + band + "-" + ch); if (!el || RM) return;
+    el.classList.add("hot"); clearTimeout(el._t); el._t = setTimeout(function () { el.classList.remove("hot"); }, 1400);
+  }
+
+  // ---------- callouts ----------
+  function onDrift(e, live) {
+    S.drift = true;
+    if (S.sw) return;
+    var c = $("callout"); c.className = "callout drift" + (live && !RM ? " flash" : "");
+    c.querySelector(".ic").textContent = "!";
+    $("calloutText").innerHTML = "<b>Day " + e.d + ": the simulated world changes.</b> WhatsApp replies drop to about a third (×" + (e.x.factor || 0.35) + "). Kairos is not told: it has to notice from the replies it gets.";
+  }
+  function driftFollow(day) {
+    var base = S.hist[FEED.drift_day - 1], parts = [], moved = false;
+    BANDS.forEach(function (b) { var a = waMean(base, b, "whatsapp"), z = waMean(S.seg, b, "whatsapp"); if (a && z) { moved = moved || a.mean !== z.mean; parts.push("<b>" + pct(a.mean) + " → " + pct(z.mean) + "</b> " + esc(BANDW[b])); } });
+    if (!moved) { $("calloutText").innerHTML = "<b>Day " + FEED.drift_day + ": WhatsApp replies dropped</b> (Kairos was not told). The first messages sent after it are still inside their 24-hour reply window: the estimates move once those windows close."; return; }
+    $("calloutText").innerHTML = "<b>Since day " + FEED.drift_day + ", WhatsApp replies are down</b> (Kairos was not told). Its estimated WhatsApp reply chance, per 100: " + parts.join(" · ") +
+      ". When another channel brings more replies per ₹, the learner moves that segment.";
+  }
+  function waMean(x, band, ch) { if (!x) return null; var sg = x.segments.filter(function (s) { return s.band === band; })[0]; var c = sg && sg.channels.filter(function (r) { return r.channel === ch; })[0]; return c || null; }
+  function onSwitch(e, live) {
+    var x = e.x; S.sw = e;
+    var before = waMean(S.hist[FEED.drift_day - 1], x.band, x.from_channel), now = waMean(S.seg, x.band, x.from_channel), to = waMean(S.seg, x.band, x.to_channel);
+    var c = $("callout"); c.className = "callout sw" + (live && !RM ? " flash" : "");
+    c.querySelector(".ic").textContent = "✓";
+    $("calloutText").innerHTML = "<b>Day " + e.d + " · " + esc(BANDW[x.band] || x.band) + ": Kairos switched " + esc(CHN[x.from_channel]) + " → " + esc(CHN[x.to_channel]) + ".</b> " +
+      (before && now ? esc(CHN[x.from_channel]) + "'s reply chance fell from " + pct(before.mean) + " to " + pct(now.mean) + " in 100 after day " + FEED.drift_day + "; " : "") +
+      (to && now ? esc(CHN[x.to_channel]) + " now brings more replies per ₹ (" + to.replies_per_inr.toFixed(2) + " vs " + now.replies_per_inr.toFixed(2) + "). Nobody told it — it learned this from replies." : "");
+    S.dirtyS = true;
+    if (live && !RM) { var card = $("SG-" + x.band); if (card) { card.classList.remove("once"); void card.offsetWidth; card.classList.add("once"); setTimeout(function () { card.classList.remove("once"); }, 1700); } }
+  }
+
+  // ---------- render (once per frame) ----------
+  function render() {
+    if (S.dirtyB) {
+      S.dirtyB = false;
+      var tot = FEED.borrowers || 1;
+      Object.keys(BK).forEach(function (k) { Object.keys(BK[k]).forEach(function (id) {
+        var r = BK[k][id], n = S.counts[k][id] || 0; if (r.shown === n) return;
+        if (r.shown >= 0 && !RM && S.playing) { var cls = n > r.shown ? "up" : "down"; r.ct.classList.remove("up", "down"); r.ct.classList.add(cls); clearTimeout(r._t); r._t = setTimeout(function () { r.ct.classList.remove("up", "down"); }, 650); }
+        r.shown = n;
+        r.ct.textContent = n; r.el.classList.toggle("zero", n === 0); r.bar.style.width = n ? "calc(" + Math.max(1.2, n / tot * 100) + "% - .7rem)" : "0";
+      }); });
+      $("moveCount").textContent = nfmt(S.moveN) + " moves";
+    }
+    if (S.dirtyM) { S.dirtyM = false; renderMoves(); }
+    if (S.dirtyS) { S.dirtyS = false; renderSegs(); }
+    if (S.dirtyL) { S.dirtyL = false; Object.keys(S.loop).forEach(function (k) { $("L-" + k).querySelector(".n").textContent = nfmt(S.loop[k]); }); }
+    // strip + decisions
+    var hhmm = S.t || "06:00";
+    $("sDay").innerHTML = "Day " + S.day + " of " + FEED.days + "<span>" + esc(dateOf(S.day)) + " · " + clock12(hhmm) + (S.quiet ? " · quiet day" : "") + "</span>";
+    $("sSent").textContent = nfmt(S.contacted);
+    $("sWait").textContent = nfmt(S.waitT);
+    $("sHeld").textContent = nfmt(S.held);
+    $("sPaid").innerHTML = nfmt(S.paid) + "<small>" + inr(S.recovered) + "</small>";
+    var bv = $("sBreach"); bv.textContent = S.breaches; bv.className = "v " + (S.breaches ? "bad" : "good");
+    $("prog").style.width = Math.min(100, S.clock / FEED.days * 100) + "%";
+    if (S.dirtyD) {
+      S.dirtyD = false;
+      var tot2 = S.contactT + S.waitT;
+      $("dDec").innerHTML = tot2 ? nfmt(S.contactT) + " contact <span>· " + nfmt(S.waitT) + " wait</span>" : (S.quiet ? "Quiet day <span>· nobody is contacted</span>" : "– <span>planning at 8:00 am</span>");
+      $("dA").style.width = tot2 ? (S.contactT / tot2 * 100) + "%" : "0"; $("dW").style.width = tot2 ? (S.waitT / tot2 * 100) + "%" : "0";
+      var why = Object.keys(S.waitRules).sort(function (a, b) { return S.waitRules[b] - S.waitRules[a]; }).map(function (r) { return S.waitRules[r] + " " + (tech ? r : (WAITW[r] || r)); });
+      $("dWhy").textContent = why.length ? "wait: " + why.join(" · ") : " ";
+      var pace = (segByDay[S.day] || {}).pacing;
+      $("dSpend").innerHTML = S.quiet ? "Quiet day <span>· no sends, budget carries forward</span>" : inr(S.spentT) + " <span>spent today" + (pace ? " of " + inr(pace.day_allowance_paise) + " allowed" : "") + "</span>";
+      $("bA").style.width = pace && pace.day_allowance_paise ? Math.min(100, S.spentT / pace.day_allowance_paise * 100) + "%" : "0";
+      var pool = (FEED.budget || {}).pool_paise || 0;
+      $("dPool").textContent = "campaign: " + inr(S.spent) + " of " + inr(pool) + " pool" + (tech && pace ? " · ledger committed today " + inr(pace.day_committed_paise) : " · unspent budget carries forward");
+    }
+    // cue highlight
+    var li = $("cueList").children, cur = -1;
+    for (var i = 0; i < li.length; i++) if (S.day >= +li[i].getAttribute("data-d")) cur = i;
+    if (S.sw) cur = li.length - 1;
+    for (var j = 0; j < li.length; j++) li[j].classList.toggle("now", j === cur);
+  }
+  function moveText(g) {
+    var parts = [], tone = "", eng = {};
+    g.mv.forEach(function (m) { eng[m.engine] = m; });
+    var b = g.before || [], a = g.after;
+    if (b[0] !== a[0] || eng.cohort) parts.push('<span class="to-wrap">' + esc(cname(b[0])) + " → <span class=\"to\">" + esc(cname(a[0])) + "</span></span>");
+    if (b[1] !== a[1] || eng.risk) parts.push("risk " + esc(String(b[1] || "").toLowerCase()) + " → " + esc(String(a[1] || "").toLowerCase()));
+    if (b[2] !== a[2] || eng.layer) parts.push("layer " + esc(b[2]) + " → " + esc(a[2]));
+    if (b[3] !== a[3] || eng.lifecycle) parts.push("status → <span class=\"to\">" + esc(SHORT[a[3]] || a[3]) + "</span>");
+    if (!parts.length && eng.journey) parts.push("journey " + esc(eng.journey.from) + " → " + esc(eng.journey.to));
+    tone = TONE[a[3]] || TONE[a[0]] || "";
+    var main = g.mv.slice().sort(function (p, q) { return RULE_RANK(p.rule) - RULE_RANK(q.rule); })[0];
+    var rule = tech ? main.rule : (RULEW[main.rule] || TRIG(g.trig));
+    return { html: parts.join('<span class="sep">·</span>') + '<span class="sep">·</span><span class="rule">' + (tech ? "rule " : "") + esc(rule) + (tech ? "" : " (" + esc(TRIG(g.trig)) + ")") + "</span>", tone: tone };
+  }
+  function cname(id) { return /^C\d$/.test(id || "") ? id : (SHORT[id] || id || "–"); }
+  function renderMoves() {
+    var host = $("rows"), max = Math.max(3, Math.floor(host.clientHeight / (host.firstChild && host.firstChild.offsetHeight ? host.firstChild.offsetHeight + 4.5 : 34)));
+    if (!S.moves.length) { host.innerHTML = '<div class="empty">Press Start: each line is one borrower moved by a K27 rule.</div>'; return; }
+    host.innerHTML = "";
+    var now = performance.now(), soon = 1e9;
+    S.moves.slice(0, max).forEach(function (g, i) {
+      var t = moveText(g), el = document.createElement("button");
+      var age = g.born ? now - g.born : 1e9;
+      el.className = "mv " + t.tone + (age < 120 && !RM ? " new" : "") + (age < 1500 ? " hl" : age < 2000 ? " hl fade" : "");
+      if (age >= 1500 && age < 2000) el.style.animationDelay = "-" + Math.round(age - 1500) + "ms";
+      if (age < 2000) soon = Math.min(soon, age < 1500 ? 1500 - age : 2000 - age);
+      el.innerHTML = '<span class="who">' + esc(masked(g.n, g.b)) + '</span><span class="what">' + t.html + '</span><span class="when">day ' + g.d + " · " + clock12(g.t) + "</span>";
+      el.addEventListener("click", function () { inspect(g); });
+      host.appendChild(el);
+    });
+    clearTimeout(renderMoves._t);
+    if (soon < 1e9) renderMoves._t = setTimeout(renderMoves, soon + 20);
+  }
+  function inspect(g) {
+    var rules = (FEED.catalogue || {}).rules || {};
+    var rows = g.mv.map(function (m) {
+      var rt = rules[m.rule] || {};
+      return "<tr><td><b>" + esc(m.engine) + "</b></td><td>" + esc(m.from == null ? "–" : m.from) + " → " + esc(m.to) + "</td><td><code>" + esc(m.rule) + "</code><div>" + esc(RULEW[m.rule] || "") + "</div>" +
+        (rt.text ? '<div class="meta" style="margin:.2rem 0 0">policy: ' + esc(rt.text) + "</div>" : "") + "</td><td class=\"why\">" + ((m.why || []).map(esc).join("<br>") || "–") + "</td></tr>";
+    }).join("");
+    var a = g.after || [];
+    $("insp").innerHTML = '<button class="btn x" id="inspX">Close</button><h3>' + esc(masked(g.n, g.b)) + " · " + esc(TRIG(g.trig)) + "</h3>" +
+      '<div class="meta">Day ' + g.d + " · " + clock12(g.t) + ' · trigger <code>' + esc(g.trig) + "</code> · now cohort " + esc(a[0]) + ", risk " + esc(a[1]) + ", layer " + esc(a[2]) + ", status " + esc(a[3]) +
+      '<span class="tech-only"> · ' + esc(g.b) + "</span> · SIMULATED</div>" +
+      "<table><tr><th>Engine</th><th>Move</th><th>Rule</th><th>Inputs the rule read</th></tr>" + rows + "</table>";
+    $("insp").hidden = false;
+    $("inspX").addEventListener("click", function () { $("insp").hidden = true; });
+  }
+
+  // ---------- playback ----------
+  function pos(e) { return e.d - 1 + e.p; }
+  function advanceTo(clock, live) {
+    var ev = FEED.events, n = 0;
+    while (S.idx < ev.length && pos(ev[S.idx]) <= clock + 1e-9) {
+      var e = ev[S.idx++]; if (e.c === "churn") S.churnEv = (S.churnEv || 0) + 1;
+      apply(e, live && n < 400); n++;
+    }
+    S.clock = clock;
+    return n;
+  }
+  function frame(ts) {
+    raf = 0;
+    if (!S.playing) return;
+    var dt = lastTs ? Math.min(0.25, (ts - lastTs) / 1000) : 0; lastTs = ts;
+    var c = Math.min(FEED.days, S.clock + dt * speed / FEED.day_seconds);
+    advanceTo(c, true);
+    render();
+    if (S.idx >= FEED.events.length && c >= FEED.days) { S.playing = false; syncButtons(); return; }
+    raf = requestAnimationFrame(frame);
+  }
+  function play() { if (!FEED) return; S.started = true; S.playing = true; lastTs = 0; syncButtons(); if (!raf) raf = requestAnimationFrame(frame); }
+  function pause() { S.playing = false; syncButtons(); }
+  function stepDay() {
+    if (!FEED) return; pause(); S.started = true;
+    var target = Math.min(FEED.days, Math.floor(S.clock + 1e-6) + 1);
+    advanceTo(target, false); S.dirtyB = S.dirtyM = S.dirtyS = S.dirtyD = S.dirtyL = true; instant(); syncButtons();
+  }
+  function reset() {
+    pause(); S = fresh(); buildBuckets(); buildSegs(); $("insp").hidden = true;
+    var c = $("callout"); c.className = "callout"; c.querySelector(".ic").textContent = "i";
+    $("calloutText").innerHTML = "Each evening the day's reply windows close and the estimates update. On <b>day " + FEED.drift_day + "</b> the simulator quietly makes WhatsApp replies drop. Kairos is not told.";
+    $("selfcheck").textContent = "Counts are folded from the run's churn events; at each day end they are compared with the K27 engine's own state.";
+    // the starting portfolio (day-0 assignments) is shown before Start
+    advanceTo(0.03, false); S.dirtyB = S.dirtyM = S.dirtyS = S.dirtyD = S.dirtyL = true; instant(); syncButtons();
+  }
+  // jumps (reset, step day, deep links) land at once: no transitions, so the frame is exact immediately
+  function instant() { document.body.classList.add("instant"); render(); void document.body.offsetWidth; requestAnimationFrame(function () { requestAnimationFrame(function () { document.body.classList.remove("instant"); }); }); }
+  function syncButtons() {
+    var ready = !!FEED, done = ready && S.idx >= FEED.events.length;
+    var b = $("bPlay"); b.disabled = !ready || (done && !S.playing);
+    b.textContent = !S.started ? "Start" : S.playing ? "Pause" : done ? "Finished" : "Play";
+    $("bStep").disabled = !ready || done; $("bReset").disabled = !ready;
+  }
+
+  // ---------- wiring ----------
+  function setTech(on) { tech = on; document.body.classList.toggle("tech", on); $("mPlain").setAttribute("aria-pressed", String(!on)); $("mTech").setAttribute("aria-pressed", String(on)); if (S) { S.dirtyM = S.dirtyD = S.dirtyS = true; render(); } }
+  function setSpeed(v) { speed = v; document.querySelectorAll("[data-sp]").forEach(function (b) { b.setAttribute("aria-pressed", String(+b.getAttribute("data-sp") === v)); }); }
+  $("mPlain").onclick = function () { setTech(false); }; $("mTech").onclick = function () { setTech(true); };
+  document.querySelectorAll("[data-sp]").forEach(function (b) { b.onclick = function () { setSpeed(+b.getAttribute("data-sp")); }; });
+  $("bPlay").onclick = function () { if (S.playing) pause(); else play(); };
+  $("bStep").onclick = stepDay; $("bReset").onclick = reset;
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key.toLowerCase();
+    if (k === "p") $("cues").hidden = !$("cues").hidden;
+    else if (k === "t") setTech(!tech);
+    else if (k === "escape") { $("insp").hidden = true; $("cues").hidden = true; }
+    else if (!FEED) return;
+    else if (k === " ") { e.preventDefault(); if (S.playing) pause(); else play(); }
+    else if (k === "arrowright") stepDay();
+    else if (k === "r") reset();
+    else if (k === "1" || k === "2" || k === "4") setSpeed(+k);
+  });
+
+  function load() {
+    fetch("/demo/engines/api/run?seed=" + P.seed + "&borrowers=" + P.borrowers + "&days=" + P.days).then(function (r) { return r.json(); }).then(function (j) {
+      if (j.status === "computing") { setTimeout(load, 900); return; }
+      if (j.status !== "ready") { $("veilT").textContent = "The run did not finish"; $("veilS").textContent = j.error || j.detail || "unknown error"; return; }
+      FEED = j;
+      FEED.events.forEach(function (e) { if (e.c === "learner" && e.k === "segments") segByDay[e.d] = e.x; });
+      $("sub").textContent = "seed " + j.seed + " · " + j.borrowers + " synthetic borrowers · " + j.days + " days · real K27 + K09 + Aladdin · " + nfmt(j.events.length) + " events";
+      $("veil").hidden = true;
+      reset();
+      // ?at=8.6 opens paused at that campaign moment (day 8, 60% through it); ?tech=1; ?speed=2; ?autoplay=1
+      if (qs.get("tech") === "1") setTech(true);
+      if (qs.get("speed")) setSpeed(+qs.get("speed") || 1);
+      var at = qs.get("day") ? parseFloat(qs.get("day")) - 1 : parseFloat(qs.get("at") || "");
+      if (at > 0) { S.started = true; advanceTo(Math.min(FEED.days, at), false); S.dirtyB = S.dirtyM = S.dirtyS = S.dirtyD = S.dirtyL = true; instant(); syncButtons(); }
+      if (qs.get("cues") === "1") $("cues").hidden = false;
+      if (qs.get("inspect") === "1" && S.moves.length) inspect(S.moves[0]);
+      if (qs.get("autoplay") === "1") play();
+    }).catch(function (err) { $("veilT").textContent = "Cannot reach the Kairos API"; $("veilS").textContent = String(err); setTimeout(load, 2000); });
+  }
+  // for QA and recording from the console: engineRoom.seek(7.5) jumps (at = days elapsed); seek(t, true) plays the
+  // events up to t with live motion; engineRoom.state() is a read-only summary
+  window.engineRoom = {
+    seek: function (t, live) { if (!FEED) return null; pause(); S.started = true; if (t < S.clock) { reset(); S.started = true; } advanceTo(Math.min(FEED.days, t), !!live); S.dirtyB = S.dirtyM = S.dirtyS = S.dirtyD = S.dirtyL = true; if (live) render(); else instant(); syncButtons(); return this.state(); },
+    state: function () { return S && { day: S.day, t: S.t, clock: S.clock, contacted: S.contacted, held: S.held, paid: S.paid, breaches: S.breaches, moves: S.moveN, switched: S.sw ? S.sw.x : null, checks: S.checks }; }
+  };
+  S = fresh();
+  load();
+})();
+</script>
+</body>
+</html>
