@@ -45,8 +45,8 @@ class DryRunWhatsAppAdapter:
     """WhatsApp Cloud API stand-in. dry_run is always on here: send() builds the message, keeps it in
     a bounded in-memory outbox per recipient (the SIMULATED phone that eval/demo borrowers read their
     OTP from) and returns DRY_RUN. Logs and envelopes only ever see the masked number.
-    The K07 phone-demo adapter (branch k07-k08/channel-adapters) sends approved templates only; free
-    text session replies are not wired to it, so CM-03 stays dry-run."""
+    The K07 phone-demo adapter sends approved templates only. CM-03's free-text session replies go out for
+    real only through live.LiveWhatsAppAdapter (live WhatsApp mode, off by default), which wraps this one."""
 
     provenance = PROVENANCE
 
@@ -112,6 +112,8 @@ class ToolBox:
         self.adapter = adapter or DryRunWhatsAppAdapter()
         self.otp = OtpService(ledger, clock, otp_code_source)
         self.calls = collections.Counter()
+        # live.py: in live WhatsApp mode the allow-listed number -> the SYNTHETIC demo borrower's id (else None)
+        self.phone_alias: Optional[Callable[[str], Optional[str]]] = None
 
     # ---- plumbing ----
     def _iso(self) -> str:
@@ -137,6 +139,11 @@ class ToolBox:
     def lookup_account(self, turn: Turn, phone: Optional[str] = None, loan_id: Optional[str] = None) -> Optional[dict]:
         def run():
             c = self.ledger._conn()
+            alias = self.phone_alias(phone) if phone and self.phone_alias else None
+            if alias:   # live demo: this real number is the registered number of a synthetic borrower
+                r = c.execute("SELECT borrower_id, language FROM borrowers WHERE borrower_id=?", (alias,)).fetchone()
+                return {"borrower_id": r["borrower_id"], "phone": phone, "language": r["language"],
+                        "live_alias": True} if r else None
             if phone:
                 r = c.execute("SELECT borrower_id, phone, language FROM borrowers WHERE phone=? ORDER BY borrower_id LIMIT 1",
                               (phone,)).fetchone()
@@ -145,7 +152,9 @@ class ToolBox:
                               " b.borrower_id=l.borrower_id WHERE upper(l.loan_id)=upper(?)", (loan_id,)).fetchone()
             return dict(r) if r else None
         return self._call(turn, "lookup_account", {"by": "phone" if phone else "loan_id"}, run,
-                          lambda r: {"found": r is not None})
+                          lambda r: {"found": r is not None,
+                                     **({"identity": "live number = SIMULATED demo borrower"} if r and r.get("live_alias")
+                                        else {})})
 
     def account_summary(self, turn: Turn, borrower_id: str) -> List[dict]:
         today = self.clock().date()
@@ -156,15 +165,17 @@ class ToolBox:
     def send_otp(self, turn: Turn, conversation_id: str, borrower_id: str, sender: str, registered_phone: str,
                  lang: str) -> bool:
         from .copy import render
+        delivery: dict = {}
 
         def run():
             code = self.otp.issue(conversation_id, borrower_id, sender)
             if code is None:
                 return False
-            self.adapter.send(registered_phone, render("OTP_MESSAGE", lang, code=code), kind="otp")
+            delivery.update(self._send(registered_phone, render("OTP_MESSAGE", lang, code=code), "otp",
+                                       conversation_id) or {})
             return True
         return self._call(turn, "send_otp", {"to": mask_phone(registered_phone), "code": "******"}, run,
-                          lambda r: {"sent": bool(r), "provenance": PROVENANCE})
+                          lambda r: {"sent": bool(r), "provenance": PROVENANCE, **_live_fields(delivery)})
 
     def verify_otp(self, turn: Turn, conversation_id: str, borrower_id: str, sender: str, code: str) -> VerifyResult:
         return self._call(turn, "verify_otp", {"code": "******"},
@@ -260,9 +271,24 @@ class ToolBox:
             return tid
         return self._call(turn, "create_ticket", {"type": type_}, run, lambda r: {"ticket_id": r})
 
-    def send_whatsapp_reply(self, turn: Turn, to: str, text: str) -> dict:
-        return self._call(turn, "send_whatsapp_reply", {"to": mask_phone(to)}, lambda: self.adapter.send(to, text),
-                          lambda r: {"status": r["status"]})
+    def _send(self, to: str, text: str, kind: str, conversation_id: Optional[str]) -> dict:
+        """kind: "reply" (engine copy), "otp" or "agent" (a person who took over). The live adapter (live.py) needs
+        the kind and the conversation; a plain dry-run adapter is called exactly as before."""
+        if getattr(self.adapter, "live_capable", False):
+            return self.adapter.send(to, text, kind=kind, conversation_id=conversation_id)
+        return self.adapter.send(to, text, kind="otp") if kind == "otp" else self.adapter.send(to, text)
+
+    def send_whatsapp_reply(self, turn: Turn, to: str, text: str, kind: str = "reply") -> dict:
+        return self._call(turn, "send_whatsapp_reply", {"to": mask_phone(to)},
+                          lambda: self._send(to, text, kind, turn.conversation_id),
+                          lambda r: {"status": r["status"], **_live_fields(r)})
+
+
+def _live_fields(res: dict) -> dict:
+    """What a live send adds to the TOOL_CALL envelope (nothing for a dry-run send)."""
+    if not res or res.get("mode") != "live":
+        return {}
+    return {k: res[k] for k in ("mode", "status", "provider_ref", "reason", "error") if res.get(k)}
 
 
 __all__ = ["ToolBox", "Turn", "DryRunWhatsAppAdapter", "sign_token", "verify_token", "PaymentError"]

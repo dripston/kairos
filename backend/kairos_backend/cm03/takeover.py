@@ -168,14 +168,16 @@ class Takeover:
                 raise TakeoverError("BORROWER_OPTED_OUT", "the borrower sent STOP; no further messages")
             from .tools import Turn
             turn = Turn(conv.conversation_id, conv.verified)
-            res = self.engine.tools.send_whatsapp_reply(turn, conv.sender, body)
+            res = self.engine.tools.send_whatsapp_reply(turn, conv.sender, body, kind="agent")
             conv.data["agent_messages"] = conv.data.get("agent_messages", 0) + 1
             turn.add("AGENT_REPLY", agent, {"text": scrub(body), "to": mask_phone(conv.sender), "chars": len(body)},
                      self._iso())
             self._commit(conv, turn)
         self._audit("CM03_AGENT_MESSAGE", agent, conv.borrower_id, conversation_id=conversation_id, chars=len(body),
                     channel="whatsapp", delivery=res.get("status"))
-        return {"conversation_id": conversation_id, "sent": True, "status": res.get("status"), "text": body}
+        out = {"conversation_id": conversation_id, "sent": res.get("status") not in ("NOT_SENT", "LIVE_FAILED"),
+               "status": res.get("status"), "text": body}
+        return {**out, "reason": res["reason"]} if res.get("reason") else out   # live mode: why not sent
 
     def _opted_out(self, borrower_id: Optional[str]) -> bool:
         if not borrower_id:

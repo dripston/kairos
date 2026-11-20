@@ -60,6 +60,9 @@ Where the key goes:
   after the event.
 
 Leave every "real send" variable (`KAIROS_DEMO_*`, `WA_TOKEN`, `KAIROS_SMTP_*`) unset on any shared deployment.
+The one exception is **CM-03 live WhatsApp** for a demo: `KAIROS_CM03_LIVE_WHATSAPP=1`, `WA_TOKEN`, `WA_PHONE_NUMBER_ID`,
+`WA_APP_SECRET`, `WA_VERIFY_TOKEN` and a one-number `KAIROS_DEMO_ALLOWLIST`. The owner of that phone sets these
+themselves, following [docs/LIVE_WHATSAPP.md](docs/LIVE_WHATSAPP.md). Unset them after the demo.
 
 ## Connecting the demo site (GitHub Pages) to the backend
 

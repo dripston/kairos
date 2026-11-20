@@ -10,7 +10,9 @@
     api.router                 /cm03/whatsapp/inbound, /cm03/conversations/{id}, /cm03/metrics, /cm03/console
 
 Everything here is SIMULATED: synthetic borrowers, a synthetic bank feed, and a WhatsApp adapter
-that runs in dry-run mode (nothing leaves the machine).
+that runs in dry-run mode (nothing leaves the machine). The one exception is live.py (live WhatsApp mode,
+off unless every flag is set): real Cloud API text replies to ONE allow-listed phone, mapped to a synthetic
+demo borrower (docs/LIVE_WHATSAPP.md).
 """
 from __future__ import annotations
 

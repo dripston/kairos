@@ -2,7 +2,8 @@
 
 A guide to the deployed app for presenters, teammates and judges. Everything runs on synthetic
 borrowers, and every number is **SIMULATED** unless a screen says LIVE SANDBOX or REPLAY. No real
-SMS, WhatsApp or call is ever sent from the hosted app: every channel is a mock.
+SMS, WhatsApp or call is ever sent from the hosted app: every channel is a mock, unless **live WhatsApp
+mode** is switched on for one allow-listed phone (section 7).
 
 - [1. Open it](#1-open-it)
 - [2. Before you present (2 minutes)](#2-before-you-present-2-minutes)
@@ -195,6 +196,22 @@ play the borrower:
 4. Try **salary late aayi hai, agle hafte pakka bhar dunga**: the bot starts a promise-to-pay and asks
    for a date within 7 days.
 5. Try a fake payment claim or a doctored screenshot: it is caught and handed to a person.
+
+### Live WhatsApp (a real phone)
+
+With live mode on, a real phone talks to CM-03 on WhatsApp. Setup is in
+[docs/LIVE_WHATSAPP.md](docs/LIVE_WHATSAPP.md). It is off unless `KAIROS_CM03_LIVE_WHATSAPP=1`, `WA_TOKEN`,
+`WA_PHONE_NUMBER_ID`, `WA_APP_SECRET` and a one-number `KAIROS_DEMO_ALLOWLIST` are all set on Render.
+
+- The console header shows a green **LIVE WhatsApp · +********XXXX** badge, and a live panel shows the
+  phone's chat as it happens, with ✓ / ✓✓ / read ticks.
+- Send **Hi** from the allow-listed phone. The code arrives on WhatsApp; type it back. The account
+  behind the phone is synthetic Borrower A (`B-2001`, SIMULATED).
+- **Next screenshot = edited (SIMULATED OCR)** before the phone sends an image; **Take over (Asha)** and
+  **Send as agent**; **STOP** from the phone; **Reset live chat** to run it again (audited).
+- Only that one number is ever messaged. Replies go out only within 24 h of the phone's last message
+  (`WINDOW_CLOSED` otherwise), at most 1 per second and 60 per hour. **Kill switch: pause outbound** stops
+  sends at once.
 
 ## 8. A 7-minute demo script
 
