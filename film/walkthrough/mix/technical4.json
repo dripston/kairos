@@ -1,6 +1,6 @@
 {
  "out": "audio/technical4_mix.wav",
- "duration": 276.02,
+ "duration": 204.02,
  "lufs": -14,
  "ceiling": -1.0,
  "music": {
@@ -21,30 +21,16 @@
     "fadeOut": 0.03
    },
    {
-    "src": 72.02,
-    "len": 48.0,
+    "src": 96.02,
+    "len": 24.0,
     "at": 168.02,
-    "fadeIn": 0.02,
-    "fadeOut": 0.03
-   },
-   {
-    "src": 96.02,
-    "len": 24.0,
-    "at": 216.02,
-    "fadeIn": 0.02,
-    "fadeOut": 0.03
-   },
-   {
-    "src": 96.02,
-    "len": 24.0,
-    "at": 240.02,
     "fadeIn": 0.02,
     "fadeOut": 0.03
    },
    {
     "src": 120.02,
     "len": 12.0,
-    "at": 264.02,
+    "at": 192.02,
     "fadeIn": 0.02,
     "fadeOut": 1.5
    }
@@ -61,77 +47,70 @@
  "vo": [
   {
    "file": "audio/v4/c00.wav",
-   "at": 2.8,
-   "text": "Kairos is a decision engine for loan collections. Every morning it decides, for each borrower, whether to make contact today, on which channel, and at what hour. Let's open up each part and watch it run.",
+   "at": 2.1,
+   "text": "Kairos is a decision engine for loan collections. Every morning it decides, for each borrower, whether to make contact today, on which channel, and at what hour.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/c01.wav",
-   "at": 17.633,
+   "at": 14.581,
    "text": "Everything starts from one record per borrower: their loans, each EMI, every payment, their consent for each channel, and a log of every event. Money is stored in paise, the smallest unit, so totals never drift.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/c02.wav",
-   "at": 35.433,
+   "at": 30.796,
    "text": "Each morning, the churn engine sorts every borrower into groups: by cohort, risk, contact layer and status, using written rules. Every move records the rule that fired and the value it checked. Here, a borrower moves from medium to high risk because he is now more than 60 days late.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/c03.wav",
-   "at": 57.353,
-   "text": "The learner is a Bayesian model. For each group of borrowers, every channel and hour keeps a reply chance estimate, with its uncertainty. Each message earns exactly one result, reply or no reply, when its 24-hour window closes. Older evidence slowly counts for less. On day 7 we cut WhatsApp replies to a third and told it nothing. Its WhatsApp estimate fell from 13.5 to 9.7 in 100. By the end of day 14, that group had moved to SMS.",
+   "at": 51.666,
+   "text": "The learner is a Bayesian model. For each group of borrowers, every channel and hour keeps a reply chance estimate with its uncertainty, updated when each message's 24-hour window closes. When we cut WhatsApp replies on day 7, its estimate fell from 13.5 to 9.7 in 100, and that group moved to SMS.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/c04.wav",
-   "at": 93.528,
-   "text": "Aladdin is the gate every message must pass. When a message is planned, it checks consent, stop requests, contact hours, weekly limits, budget and holds. It reserves the budget in one atomic step, so two decisions can never spend the same rupee. At send time it checks every rule again. If anything has changed, nothing is sent. In a load test, 50,000 decisions went through in 11.1 seconds, with zero limit breaches.",
+   "at": 77.851,
+   "text": "Aladdin is the gate every message must pass. It checks consent, stop requests, contact hours, weekly limits, budget and holds, and reserves the budget in one atomic step, so two decisions can never spend the same rupee; then it checks again at send time. In a load test, 50,000 decisions went through in 11.1 seconds, with zero limit breaches.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/c05.wav",
-   "at": 125.429,
-   "text": "Adapters send each message on its channel. The channel then calls us back with what happened. That callback is a webhook: delivered, read, or a reply. A repeated callback is ignored, and a delivery is never counted as a reply.",
+   "at": 103.994,
+   "text": "Adapters send each message, and each channel calls us back with what happened: a webhook. Repeats are ignored, a delivery never counts as a reply, and voice calls come back from AI voice agents with an outcome and a confidence. Kairos, not the agent, acts on it, and anything below a hand-set threshold waits for a person.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/c06.wav",
-   "at": 144.131,
-   "text": "Inbound chats run on a state machine. That means a chat can only move through a few allowed steps. Nothing about the account is shared until the borrower enters a one-time code. Payment proofs are checked for edits, hidden instructions and reused references, so a fake never marks anything paid. In 1,000 seeded test conversations, 73% were resolved without a person, and all 127 fakes were caught.",
-   "who": "",
-   "gain": 0
-  },
-  {
-   "file": "audio/v4/c07.wav",
-   "at": 175.623,
-   "text": "Voice calls are made by six AI voice agents, one for each use case. After each call, the agent reports an outcome, such as a promise to pay or a stop request, with a confidence score. Kairos, not the agent, decides what that outcome does. Anything below a hand-set threshold waits for a person.",
+   "at": 128.415,
+   "text": "Inbound chats run on a state machine, which means a chat can only move through a few allowed steps. Nothing about the account is shared until the borrower enters a one-time code, and edited or reused payment proofs go to a person. In 1,000 seeded test conversations, 73% were resolved without a person, and all 127 fakes were caught.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/c08.wav",
-   "at": 198.268,
-   "text": "People stay in charge. Calls wait in a morning approval window, any borrower can be paused or resumed, and any chat can be taken over. Each action passes Aladdin, and lands in the audit log. When an operator tries to send an SMS at 8 in the evening, Aladdin blocks it. No role can override that.",
+   "at": 154.525,
+   "text": "People stay in charge: they can approve calls, pause borrowers and take over chats. Each action passes Aladdin and lands in the audit log. When an operator tries to send an SMS at 8 in the evening, Aladdin blocks it, and no role can override that.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/c09.wav",
-   "at": 221.247,
+   "at": 172.31,
    "text": "Same data and seed, same decisions. The replay matched exactly, 49 out of 49 attacks were stopped, and 3030 tests passed. From the logs alone, off policy evaluation estimated 18.2 replies per 1,000 messages against a true 18.4.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/c10.wav",
-   "at": 243.697,
+   "at": 193.86,
    "text": "None of this is magic. Each part stands on published research.",
    "who": "",
    "gain": 0

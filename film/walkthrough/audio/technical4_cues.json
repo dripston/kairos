@@ -1,7 +1,7 @@
 [
  {
-  "t0": 2.8,
-  "t1": 5.74,
+  "t0": 2.1,
+  "t1": 5.372,
   "who": "",
   "lines": [
    "Kairos is a decision engine",
@@ -9,16 +9,16 @@
   ]
  },
  {
-  "t0": 5.76,
-  "t1": 8.399,
+  "t0": 5.392,
+  "t1": 8.327,
   "who": "",
   "lines": [
    "Every morning it decides, for each borrower,"
   ]
  },
  {
-  "t0": 8.419,
-  "t1": 12.386,
+  "t0": 8.347,
+  "t1": 13.031,
   "who": "",
   "lines": [
    "whether to make contact today,",
@@ -26,16 +26,8 @@
   ]
  },
  {
-  "t0": 12.406,
-  "t1": 15.133,
-  "who": "",
-  "lines": [
-   "Let's open up each part and watch it run."
-  ]
- },
- {
-  "t0": 17.633,
-  "t1": 22.438,
+  "t0": 14.581,
+  "t1": 19.386,
   "who": "",
   "lines": [
    "Everything starts from one record",
@@ -43,8 +35,8 @@
   ]
  },
  {
-  "t0": 22.458,
-  "t1": 27.4,
+  "t0": 19.406,
+  "t1": 24.348,
   "who": "",
   "lines": [
    "every payment, their consent",
@@ -52,8 +44,8 @@
   ]
  },
  {
-  "t0": 27.42,
-  "t1": 32.288,
+  "t0": 24.368,
+  "t1": 29.236,
   "who": "",
   "lines": [
    "Money is stored in paise,",
@@ -61,8 +53,8 @@
   ]
  },
  {
-  "t0": 35.433,
-  "t1": 39.795,
+  "t0": 30.796,
+  "t1": 35.158,
   "who": "",
   "lines": [
    "Each morning, the churn engine",
@@ -70,8 +62,8 @@
   ]
  },
  {
-  "t0": 39.815,
-  "t1": 44.108,
+  "t0": 35.178,
+  "t1": 39.471,
   "who": "",
   "lines": [
    "by cohort, risk, contact layer",
@@ -79,8 +71,8 @@
   ]
  },
  {
-  "t0": 44.128,
-  "t1": 48.9,
+  "t0": 39.491,
+  "t1": 44.263,
   "who": "",
   "lines": [
    "Every move records the rule that fired",
@@ -88,8 +80,8 @@
   ]
  },
  {
-  "t0": 48.92,
-  "t1": 54.852,
+  "t0": 44.283,
+  "t1": 50.215,
   "who": "",
   "lines": [
    "a borrower moves from medium to high risk",
@@ -97,8 +89,8 @@
   ]
  },
  {
-  "t0": 57.353,
-  "t1": 62.097,
+  "t0": 51.666,
+  "t1": 56.697,
   "who": "",
   "lines": [
    "The learner is a Bayesian model.",
@@ -106,113 +98,78 @@
   ]
  },
  {
-  "t0": 62.117,
-  "t1": 67.954,
+  "t0": 56.717,
+  "t1": 62.825,
   "who": "",
   "lines": [
    "every channel and hour keeps a reply",
-   "chance estimate, with its uncertainty."
+   "chance estimate with its uncertainty,"
   ]
  },
  {
-  "t0": 67.974,
-  "t1": 74.905,
+  "t0": 62.845,
+  "t1": 66.965,
   "who": "",
   "lines": [
-   "Each message earns exactly one result, reply",
-   "or no reply, when its 24-hour window closes."
+   "updated",
+   "when each message's 24-hour window closes."
   ]
  },
  {
-  "t0": 74.925,
-  "t1": 77.873,
+  "t0": 66.985,
+  "t1": 70.112,
   "who": "",
   "lines": [
-   "Older evidence slowly counts for less."
+   "When we cut WhatsApp replies on day 7,"
   ]
  },
  {
-  "t0": 77.893,
-  "t1": 82.871,
+  "t0": 70.132,
+  "t1": 76.261,
   "who": "",
   "lines": [
-   "On day 7 we cut WhatsApp replies",
-   "to a third and told it nothing."
+   "its estimate fell from 13.5 to 9.7",
+   "in 100, and that group moved to SMS."
   ]
  },
  {
-  "t0": 82.891,
-  "t1": 86.854,
-  "who": "",
-  "lines": [
-   "Its WhatsApp estimate fell",
-   "from 13.5 to 9.7 in 100."
-  ]
- },
- {
-  "t0": 86.874,
-  "t1": 91.029,
-  "who": "",
-  "lines": [
-   "By the end of day 14,",
-   "that group had moved to SMS."
-  ]
- },
- {
-  "t0": 93.528,
-  "t1": 96.636,
+  "t0": 77.851,
+  "t1": 81.008,
   "who": "",
   "lines": [
    "Aladdin is the gate every message must pass."
   ]
  },
  {
-  "t0": 96.656,
-  "t1": 100.902,
+  "t0": 81.028,
+  "t1": 85.556,
   "who": "",
   "lines": [
-   "When a message is planned,",
-   "it checks consent, stop requests,"
+   "It checks consent, stop requests,",
+   "contact hours, weekly limits,"
   ]
  },
  {
-  "t0": 100.922,
-  "t1": 104.244,
+  "t0": 85.576,
+  "t1": 89.961,
   "who": "",
   "lines": [
-   "contact hours, weekly limits,",
-   "budget and holds."
+   "budget and holds,",
+   "and reserves the budget in one atomic step,"
   ]
  },
  {
-  "t0": 104.264,
-  "t1": 107.23,
+  "t0": 89.981,
+  "t1": 95.953,
   "who": "",
   "lines": [
-   "It reserves the budget in one atomic step,"
+   "so two decisions can never spend the same",
+   "rupee; then it checks again at send time."
   ]
  },
  {
-  "t0": 107.25,
-  "t1": 110.643,
-  "who": "",
-  "lines": [
-   "so two decisions can never",
-   "spend the same rupee."
-  ]
- },
- {
-  "t0": 110.663,
-  "t1": 116.474,
-  "who": "",
-  "lines": [
-   "At send time it checks every rule again.",
-   "If anything has changed, nothing is sent."
-  ]
- },
- {
-  "t0": 116.494,
-  "t1": 120.882,
+  "t0": 95.973,
+  "t1": 100.429,
   "who": "",
   "lines": [
    "In a load test, 50,000 decisions",
@@ -220,102 +177,103 @@
   ]
  },
  {
-  "t0": 120.902,
-  "t1": 122.929,
+  "t0": 100.449,
+  "t1": 102.504,
   "who": "",
   "lines": [
    "with zero limit breaches."
   ]
  },
  {
-  "t0": 125.429,
-  "t1": 128.406,
+  "t0": 103.994,
+  "t1": 110.325,
   "who": "",
   "lines": [
-   "Adapters send each message on its channel."
+   "Adapters send each message, and each channel",
+   "calls us back with what happened: a webhook."
   ]
  },
  {
-  "t0": 128.426,
-  "t1": 131.973,
+  "t0": 110.345,
+  "t1": 114.321,
   "who": "",
   "lines": [
-   "The channel then calls us back",
-   "with what happened."
+   "Repeats are ignored,",
+   "a delivery never counts as a reply,"
   ]
  },
  {
-  "t0": 131.993,
-  "t1": 135.969,
+  "t0": 114.341,
+  "t1": 120.029,
   "who": "",
   "lines": [
-   "That callback is a webhook:",
-   "delivered, read, or a reply."
+   "and voice calls come back from AI voice",
+   "agents with an outcome and a confidence."
   ]
  },
  {
-  "t0": 135.989,
-  "t1": 141.59,
+  "t0": 120.049,
+  "t1": 122.455,
   "who": "",
   "lines": [
-   "A repeated callback is ignored,",
-   "and a delivery is never counted as a reply."
+   "Kairos, not the agent, acts on it,"
   ]
  },
  {
-  "t0": 144.131,
-  "t1": 146.82,
+  "t0": 122.475,
+  "t1": 126.935,
   "who": "",
   "lines": [
-   "Inbound chats run on a state machine."
+   "and anything below a hand-set",
+   "threshold waits for a person."
   ]
  },
  {
-  "t0": 146.84,
-  "t1": 151.213,
+  "t0": 128.415,
+  "t1": 131.145,
   "who": "",
   "lines": [
-   "That means a chat can only move",
+   "Inbound chats run on a state machine,"
+  ]
+ },
+ {
+  "t0": 131.165,
+  "t1": 135.679,
+  "who": "",
+  "lines": [
+   "which means a chat can only move",
    "through a few allowed steps."
   ]
  },
  {
-  "t0": 151.233,
-  "t1": 156.924,
+  "t0": 135.699,
+  "t1": 141.477,
   "who": "",
   "lines": [
    "Nothing about the account is shared",
-   "until the borrower enters a one-time code."
+   "until the borrower enters a one-time code,"
   ]
  },
  {
-  "t0": 156.944,
-  "t1": 159.634,
+  "t0": 141.497,
+  "t1": 145.267,
   "who": "",
   "lines": [
-   "Payment proofs are checked for edits,"
+   "and edited or reused payment proofs go",
+   "to a person."
   ]
  },
  {
-  "t0": 159.654,
-  "t1": 165.418,
-  "who": "",
-  "lines": [
-   "hidden instructions and reused references,",
-   "so a fake never marks anything paid."
-  ]
- },
- {
-  "t0": 165.438,
-  "t1": 167.981,
+  "t0": 145.287,
+  "t1": 147.869,
   "who": "",
   "lines": [
    "In 1,000 seeded test conversations,"
   ]
  },
  {
-  "t0": 168.001,
-  "t1": 173.083,
+  "t0": 147.889,
+  "t1": 153.044,
   "who": "",
   "lines": [
    "73% were resolved without a person,",
@@ -323,105 +281,52 @@
   ]
  },
  {
-  "t0": 175.623,
-  "t1": 180.183,
+  "t0": 154.525,
+  "t1": 159.939,
   "who": "",
   "lines": [
-   "Voice calls are made by six AI voice agents,",
-   "one for each use case."
+   "People stay in charge: they can approve",
+   "calls, pause borrowers and take over chats."
   ]
  },
  {
-  "t0": 180.203,
-  "t1": 183.328,
+  "t0": 159.959,
+  "t1": 163.475,
   "who": "",
   "lines": [
-   "After each call,",
-   "the agent reports an outcome,"
-  ]
- },
- {
-  "t0": 183.348,
-  "t1": 187.976,
-  "who": "",
-  "lines": [
-   "such as a promise to pay or a stop request,",
-   "with a confidence score."
-  ]
- },
- {
-  "t0": 187.996,
-  "t1": 191.668,
-  "who": "",
-  "lines": [
-   "Kairos, not the agent,",
-   "decides what that outcome does."
-  ]
- },
- {
-  "t0": 191.688,
-  "t1": 195.698,
-  "who": "",
-  "lines": [
-   "Anything below a hand-set threshold waits",
-   "for a person."
-  ]
- },
- {
-  "t0": 198.268,
-  "t1": 202.584,
-  "who": "",
-  "lines": [
-   "People stay in charge.",
-   "Calls wait in a morning approval window,"
-  ]
- },
- {
-  "t0": 202.604,
-  "t1": 207.402,
-  "who": "",
-  "lines": [
-   "any borrower can be paused or resumed,",
-   "and any chat can be taken over."
-  ]
- },
- {
-  "t0": 207.422,
-  "t1": 211.188,
-  "who": "",
-  "lines": [
-   "Each action passes Aladdin,",
+   "Each action passes Aladdin",
    "and lands in the audit log."
   ]
  },
  {
-  "t0": 211.208,
-  "t1": 216.488,
+  "t0": 163.495,
+  "t1": 167.272,
   "who": "",
   "lines": [
-   "When an operator tries to send an SMS",
-   "at 8 in the evening, Aladdin blocks it."
+   "When an operator tries",
+   "to send an SMS at 8 in the evening,"
   ]
  },
  {
-  "t0": 216.508,
-  "t1": 218.547,
+  "t0": 167.292,
+  "t1": 170.75,
   "who": "",
   "lines": [
-   "No role can override that."
+   "Aladdin blocks it,",
+   "and no role can override that."
   ]
  },
  {
-  "t0": 221.247,
-  "t1": 224.272,
+  "t0": 172.31,
+  "t1": 175.335,
   "who": "",
   "lines": [
    "Same data and seed, same decisions."
   ]
  },
  {
-  "t0": 224.292,
-  "t1": 231.668,
+  "t0": 175.355,
+  "t1": 182.731,
   "who": "",
   "lines": [
    "The replay matched exactly, 49 out of 49",
@@ -429,16 +334,16 @@
   ]
  },
  {
-  "t0": 231.688,
-  "t1": 233.408,
+  "t0": 182.751,
+  "t1": 184.471,
   "who": "",
   "lines": [
    "From the logs alone,"
   ]
  },
  {
-  "t0": 233.428,
-  "t1": 240.987,
+  "t0": 184.491,
+  "t1": 192.05,
   "who": "",
   "lines": [
    "off policy evaluation estimated 18.2 replies",
@@ -446,8 +351,8 @@
   ]
  },
  {
-  "t0": 243.697,
-  "t1": 247.994,
+  "t0": 193.86,
+  "t1": 198.157,
   "who": "",
   "lines": [
    "None of this is magic.",

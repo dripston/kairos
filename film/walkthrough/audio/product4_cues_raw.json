@@ -1,158 +1,158 @@
 [
   {
-    "who" : "",
+    "t0" : 8.5,
     "text" : "Every month, millions of people in India pay back a loan. And every month, their lender sends them the same reminder, at the same time, as everyone else.",
-    "t0" : 13.6,
-    "t1" : 24.133106575963719
-  },
-  {
-    "t1" : 33.38312925170068,
-    "text" : "In one simulated campaign, that fixed schedule sent 1,262 messages. Only 23 replies came back.",
     "who" : "",
-    "t0" : 24.899999999999999
+    "t1" : 19.033106575963721
   },
   {
-    "t0" : 33.743000000000002,
-    "text" : "Every one of those messages cost money. Almost all of them went unanswered.",
-    "t1" : 38.875358276643993,
+    "who" : "",
+    "t1" : 30.518328798185941,
+    "text" : "In one simulated campaign, that fixed schedule sent 1,262 messages, and paid for every one. Only 23 replies came back.",
+    "t0" : 19.643000000000001
+  },
+  {
+    "t1" : 43.020267573696145,
+    "text" : "Kairos works differently. Every morning, it looks at each borrower: how late they are, how they replied before, and when they usually read messages.",
+    "t0" : 33.148000000000003,
     "who" : ""
   },
   {
-    "text" : "Kairos works differently. Every morning, it looks at each borrower on their own: how late they are, how they replied before, and when they usually read their messages.",
-    "t0" : 42.534999999999997,
     "who" : "",
-    "t1" : 52.549739229024937
+    "t1" : 50.662269841269847,
+    "t0" : 43.511000000000003,
+    "text" : "Then it decides: reach out today, or wait. And if it reaches out, which channel, and at what hour."
   },
   {
-    "text" : "Then it makes one choice for each person: reach out today, or wait. If it reaches out, it picks the channel, SMS, WhatsApp, email or a voice call, and the hour that person is most likely to answer.",
-    "t0" : 54.734999999999999,
-    "t1" : 68.631961451247165,
-    "who" : ""
+    "who" : "",
+    "t0" : 51.161999999999999,
+    "t1" : 55.744789115646256,
+    "text" : "All within a fixed daily budget, with a report every evening on what worked."
   },
   {
-    "t0" : 72.412000000000006,
-    "t1" : 77.959891156462589,
     "text" : "Before any message goes out, it has to get past Aladdin, our safety supervisor.",
+    "t0" : 58.715000000000003,
+    "t1" : 64.262891156462587,
     "who" : ""
   },
   {
-    "t0" : 78.290000000000006,
-    "text" : "Aladdin asks the lender's questions. Has this person agreed to be contacted on this channel? Have they asked us to stop? Is it between 8 in the morning and 7 in the evening? Have we already contacted them enough this week? Is there budget left? Is their account on hold?",
-    "t1" : 93.714625850340141,
+    "t0" : 64.543000000000006,
+    "t1" : 76.210460317460331,
+    "text" : "Has this person agreed to this channel? Asked us to stop? Is it between 8 in the morning and 7 in the evening? Have we contacted them enough this week? Is there budget left? Is the account on hold?",
     "who" : ""
   },
   {
+    "text" : "Aladdin checks when the message is planned, and again right before it is sent. If any answer is no, the message does not go.",
+    "t0" : 76.489999999999995,
     "who" : "",
-    "t0" : 94.025000000000006,
-    "t1" : 103.82799319727891,
-    "text" : "It asks when the message is planned, and again right before it is sent, in case anything has changed. If any answer is no, the message does not go."
+    "t1" : 85.217188208616776
   },
   {
-    "text" : "This is Vikram. His EMI of ₹7,409 is 10 days late. Kairos sends him one SMS at 9:30 in the morning. Aladdin clears it. Vikram doesn't reply.",
-    "t1" : 117.70149206349207,
     "who" : "",
-    "t0" : 105.468
+    "t0" : 86.427000000000007,
+    "t1" : 96.925752834467133,
+    "text" : "This is Vikram. His EMI of ₹7,409 is 10 days late. Kairos sends one SMS at 9:30 in the morning. No reply."
   },
   {
-    "text" : "So the next day, Kairos waits instead of sending another reminder. On day 3, it tries WhatsApp. This time, Vikram replies: he will pay by the 29th.",
-    "t1" : 129.11242857142858,
+    "t0" : 97.555999999999997,
+    "t1" : 104.75275736961451,
     "who" : "",
-    "t0" : 118.401
+    "text" : "So the next day, it waits. On day 3, it tries WhatsApp, and Vikram replies: he'll pay by the 29th."
   },
   {
-    "t1" : 144.88331292517006,
-    "t0" : 132.001,
-    "text" : "Kairos recognises a promise to pay, and goes quiet. No more reminders. On day 7, the bank confirms ₹7,409. Reaching Vikram cost 65 paise.",
-    "who" : ""
-  },
-  {
-    "t0" : 145.90100000000001,
-    "t1" : 156.36920861678004,
+    "t0" : 105.456,
+    "t1" : 113.38953741496599,
     "who" : "",
-    "text" : "Kairos learns from every reply. When we quietly made WhatsApp worse for one group, nobody told it. Within a week, it had moved them to SMS on its own."
+    "text" : "Kairos sees a promise to pay and goes quiet. On day 7, the bank confirms the payment. Reaching him cost 65 paise."
   },
   {
-    "t1" : 166.73553514739228,
+    "text" : "Kairos learns from every reply. Midway through, we made WhatsApp work worse for one group and told Kairos nothing. Its estimate fell, and it moved that group to SMS on its own.",
+    "t1" : 127.79585034013606,
     "who" : "",
-    "t0" : 160.20099999999999,
-    "text" : "Borrowers also write in on WhatsApp, at any hour. Kairos replies in seconds."
+    "t0" : 114.05
   },
   {
-    "t1" : 168.7579954648526,
-    "text" : "When is my EMI due?",
+    "text" : "Borrowers also write in on WhatsApp, at any hour. Kairos replies in seconds.",
+    "t0" : 129.98500000000001,
+    "who" : "",
+    "t1" : 136.5195351473923
+  },
+  {
     "who" : "Sunita",
-    "t0" : 167.17599999999999
+    "t0" : 136.91,
+    "text" : "When is my EMI due?",
+    "t1" : 138.49199546485261
   },
   {
-    "t0" : 169.41800000000001,
-    "t1" : 173.99128798185941,
+    "t1" : 143.57528798185942,
     "who" : "Kairos",
-    "text" : "To protect your account, I have sent a 6-digit code to your registered WhatsApp number."
+    "text" : "To protect your account, I have sent a 6-digit code to your registered WhatsApp number.",
+    "t0" : 139.00200000000001
   },
   {
-    "t0" : 174.59100000000001,
-    "t1" : 176.24780272108845,
     "text" : "Thank you, you are verified.",
+    "t0" : 144.02500000000001,
+    "t1" : 145.68180272108845,
     "who" : "Kairos"
   },
   {
-    "t0" : 177.00800000000001,
-    "t1" : 179.83641269841272,
-    "who" : "",
-    "text" : "First, it made sure it was really her."
+    "t1" : 151.77088888888889,
+    "t0" : 146.292,
+    "text" : "Notice: nothing about her loan is shared until she proves who she is.",
+    "who" : ""
   },
   {
+    "t0" : 152.21100000000001,
+    "t1" : 154.8116575963719,
     "text" : "I already paid, here is the screenshot.",
-    "who" : "Sunita",
-    "t0" : 181.208,
-    "t1" : 183.80865759637189
-  },
-  {
-    "t1" : 189.93419274376419,
-    "text" : "For your security, I can't help with this request in chat. A specialist from our team will review it.",
-    "who" : "Kairos",
-    "t0" : 184.38900000000001
-  },
-  {
-    "t1" : 201.30279818594104,
-    "text" : "That screenshot had been edited. Kairos checks every payment proof against the bank's records, so a fake one can never mark a loan as paid. It goes to a person instead.",
-    "who" : "",
-    "t0" : 190.59399999999999
-  },
-  {
-    "t1" : 209.41948526077098,
-    "text" : "When another borrower says she has lost her job, Kairos pauses her reminders and hands her to a person.",
-    "who" : "",
-    "t0" : 202.01300000000001
-  },
-  {
-    "t0" : 210.089,
-    "text" : "Stop.",
-    "t1" : 210.74500907029477,
     "who" : "Sunita"
   },
   {
-    "text" : "You will not receive further automated reminders from us on any channel.",
     "who" : "Kairos",
-    "t0" : 212.125,
-    "t1" : 215.71794784580499
+    "text" : "For your security, I can't help with this request in chat. A specialist from our team will review it.",
+    "t0" : 155.24199999999999,
+    "t1" : 160.78719274376417
   },
   {
-    "text" : "And when someone says stop, everything stops. SMS, WhatsApp, email and calls, all at once.",
-    "t0" : 216.46799999999999,
-    "t1" : 223.52863492063491,
-    "who" : ""
-  },
-  {
-    "text" : "The team stays in charge, and Aladdin checks their actions too. Even a supervisor can't send a message at 8 at night.",
-    "t1" : 232.35670975056689,
-    "t0" : 224.21899999999999,
-    "who" : ""
-  },
-  {
-    "text" : "In our simulated tests, Kairos recovered more for every rupee spent than a fixed schedule, without breaking a single rule.",
-    "t1" : 243.59237868480724,
     "who" : "",
-    "t0" : 235.71899999999999
+    "t1" : 170.4354126984127,
+    "text" : "That screenshot was edited. Kairos checks every proof against the bank's records, so a fake one goes to a person, never marks the loan paid.",
+    "t0" : 161.34700000000001
+  },
+  {
+    "t1" : 178.50148526077098,
+    "text" : "When another borrower says she has lost her job, Kairos pauses her reminders and hands her to a person.",
+    "who" : "",
+    "t0" : 171.095
+  },
+  {
+    "t1" : 179.57800907029477,
+    "who" : "Sunita",
+    "t0" : 178.922,
+    "text" : "Stop."
+  },
+  {
+    "t0" : 180.80799999999999,
+    "t1" : 184.40094784580498,
+    "text" : "You will not receive further automated reminders from us on any channel.",
+    "who" : "Kairos"
+  },
+  {
+    "t0" : 185.05099999999999,
+    "text" : "And when someone says stop, everything stops. SMS, WhatsApp, email and calls, all at once.",
+    "who" : "",
+    "t1" : 192.11163492063491
+  },
+  {
+    "t1" : 203.96031972789115,
+    "who" : "",
+    "t0" : 192.70099999999999,
+    "text" : "The team stays in charge: approve a call, pause a borrower, take over a chat. And Aladdin checks them too. Not even a supervisor can send a message at 8 at night."
+  },
+  {
+    "t0" : 204.55099999999999,
+    "who" : "",
+    "t1" : 212.42437868480724,
+    "text" : "In our simulated tests, Kairos recovered more for every rupee spent than a fixed schedule, without breaking a single rule."
   }
 ]

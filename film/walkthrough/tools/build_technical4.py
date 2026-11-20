@@ -26,7 +26,7 @@ def beat(shots, voice=(), at=0.3, tail=0.35, gap=0.3, name=""):
 def clip(name, dur, **kw): return ("clip", dur, dict(src="comp/%s.mov" % name, **kw))
 def glass(cap, label, dur, **kw): return ("glass", dur, dict(cap=cap, label=label, **kw))
 def other(kind, dur, **kw): return (kind, dur, kw)
-def chapter(num, title, sub): return other("title", 2.2, lines=[{"text": num, "size": 40, "cls": "kicker"}, {"text": title, "size": 104, "mt": 8}, {"text": sub, "size": 40, "cls": "soft", "mt": 14}], neb=("comp/NEB2.mov", float(num) * 1.7 if num.isdigit() else 0.0))
+def chapter(num, title, sub): return other("title", 1.3, lines=[{"text": num, "size": 40, "cls": "kicker"}, {"text": title, "size": 104, "mt": 8}, {"text": sub, "size": 40, "cls": "soft", "mt": 14}], neb=("comp/NEB2.mov", float(num) * 1.7 if num.isdigit() else 0.0))
 def num(lines, dur=3.0, **kw): return other("title", dur, lines=[dict(l) for l in lines], neb=("comp/NEB1.mov", kw.pop("nf", 3.0)), **kw)
 F02, F03 = "rec/F02_approvals_supervisor_clean.mp4", "rec/F03_crm_explain_manual_preview_clean.mp4"
 
@@ -99,50 +99,49 @@ def seq_layer(key, t0, t1, msgs_at):
         out.append(m)
     return {"kind": "seq", "t0": round(t0, 3), "t1": round(t1, 3), "actors": actors, "msgs": out, "top": 120, "bottom": 860, "row": 104, "enter": {"dur": 0.35}, "exit": {"dur": 0.3}}
 
-# ---------------------------------------------------------------- chapters
-beat([clip("T01_engineer", 2.6), other("title", 2.6, lines=[{"text": "How Kairos works", "size": 120}, {"text": "an engineering tour, part by part", "size": 44, "cls": "soft", "mt": 16}], neb=("comp/NEB2.mov", 1.0)),
-      other("flow", 9.0, key="arch", neb=("comp/NEB2.mov", 3.0))], voice=["c00"], at=2.8, name="00")
-beat([chapter("01", "Data spine", "K03 · one record per borrower"), other("flow", 7.0, key="spine", neb=("comp/NEB1.mov", 2.0)),
-      glass("ov", "v01", 6.0, title="Kairos · Live journey · borrower record", cam=[(1.2, [20, 220, 320, 400], 1.6)], neb=("comp/NEB1.mov", 6.0)),
-      num([{"text": "₹7,409 = 740,900 paise", "size": 96}, {"text": "every amount is stored in paise · SIMULATED data", "size": 36, "cls": "soft", "mt": 18}], 2.6)],
-     voice=["c01"], at=2.4, name="01")
-beat([chapter("02", "Churn engine", "K27 · re-sorts every borrower daily"), other("flow", 7.0, key="churn", neb=("comp/NEB2.mov", 3.0)),
-      glass("er", "d7", 5.0, title="Kairos · Engine Room · churn · SIMULATED", cam=[(1.0, [20, 190, 600, 330], 1.6)], neb=("comp/NEB2.mov", 6.0)),
-      glass("er", "d7", 5.0, title="Kairos · Engine Room · one move and its rule", cam=[(0.0, [20, 670, 600, 215], 0.01)], neb=("comp/NEB2.mov", 9.0), enter={"type": "fade", "dur": 0.3})],
-     voice=["c02"], at=2.4, name="02")
-beat([chapter("03", "Learning loop", "K09 · a Bayesian learner"), other("flow", 11.0, key="learn", neb=("comp/NEB1.mov", 4.0)),
-      glass("er", "d7", 8.0, title="Kairos · Engine Room · day 7 · SIMULATED", cam=[(1.2, [640, 190, 620, 260], 1.6)], neb=("comp/NEB1.mov", 8.0)),
-      glass("er", "d14", 9.0, title="Kairos · Engine Room · end of day 14 · SIMULATED", cam=[(0.0, [640, 190, 620, 260], 0.01)], neb=("comp/NEB1.mov", 12.0), enter={"type": "fade", "dur": 0.4})],
-     voice=["c03"], at=2.4, name="03")
-beat([chapter("04", "Aladdin gate", "K06 · reserve, then re-check"), other("seq", 12.0, key="ald", neb=("comp/NEB2.mov", 2.0)),
-      glass("ov", "d1_aladdin_tech", 7.0, title="Kairos · Live journey · Technical · Aladdin", cam=[(1.4, [340, 300, 690, 420], 1.6)], neb=("comp/NEB2.mov", 7.0)),
-      num([{"text": "50,000 decisions · 11.1 s", "size": 100}, {"text": "limit breaches: 0 · ledger benchmark (real run)", "size": 38, "cls": "soft", "mt": 18}], 3.4)],
-     voice=["c04"], at=2.4, name="04")
-beat([chapter("05", "Channels and webhooks", "send · call back · finalise"), other("seq", 9.0, key="hook", neb=("comp/NEB1.mov", 3.0)),
-      glass("ov", "d1_dup_tech", 6.0, title="Kairos · Live journey · Technical · webhooks", cam=[(1.2, [340, 300, 690, 300], 1.6)], neb=("comp/NEB1.mov", 7.0))],
-     voice=["c05"], at=2.4, name="05")
-beat([chapter("06", "Inbound WhatsApp", "CM-03 · a small state machine"), other("flow", 10.0, key="cm03", neb=("comp/NEB2.mov", 2.0)),
-      glass("in", "fake_tech", 7.0, title="Kairos · Inbound WhatsApp · Technical", cam=[(1.2, [380, 60, 560, 600], 1.6)], neb=("comp/NEB2.mov", 6.0)),
-      other("panel", 7.0, heading="1,000 seeded test conversations", items=[
+# ---------------------------------------------------------------- chapters (card ≈ 1.3 s, then the voice; what · how · proof)
+AT = 1.35
+beat([clip("T01_engineer", 2.0), other("title", 2.0, lines=[{"text": "How Kairos works", "size": 120}, {"text": "an engineering tour, part by part", "size": 44, "cls": "soft", "mt": 16}], neb=("comp/NEB2.mov", 1.0)),
+      other("flow", 7.0, key="arch", neb=("comp/NEB2.mov", 3.0))], voice=["c00"], at=2.1, name="00")
+beat([chapter("01", "Data spine", "K03 · one record per borrower"), other("flow", 5.0, key="spine", neb=("comp/NEB1.mov", 2.0)),
+      glass("ov", "v01", 4.5, title="Kairos · Live journey · borrower record", cam=[(1.0, [20, 220, 320, 400], 1.4)], neb=("comp/NEB1.mov", 6.0)),
+      num([{"text": "₹7,409 = 740,900 paise", "size": 96}, {"text": "every amount is stored in paise · SIMULATED data", "size": 36, "cls": "soft", "mt": 18}], 2.2)],
+     voice=["c01"], at=AT, name="01")
+beat([chapter("02", "Churn engine", "K27 · re-sorts every borrower daily"), other("flow", 5.0, key="churn", neb=("comp/NEB2.mov", 3.0)),
+      glass("er", "d7", 4.0, title="Kairos · Engine Room · churn · SIMULATED", cam=[(0.8, [20, 190, 600, 330], 1.4)], neb=("comp/NEB2.mov", 6.0)),
+      glass("er", "d7", 4.0, title="Kairos · Engine Room · one move and its rule", cam=[(0.0, [20, 670, 600, 215], 0.01)], neb=("comp/NEB2.mov", 9.0), enter={"type": "fade", "dur": 0.3})],
+     voice=["c02"], at=AT, name="02")
+beat([chapter("03", "Learning loop", "K09 · a Bayesian learner"), other("flow", 7.0, key="learn", neb=("comp/NEB1.mov", 4.0)),
+      glass("er", "d7", 5.0, title="Kairos · Engine Room · day 7 · SIMULATED", cam=[(1.0, [640, 190, 620, 260], 1.4)], neb=("comp/NEB1.mov", 8.0)),
+      glass("er", "d14", 5.0, title="Kairos · Engine Room · end of day 14 · SIMULATED", cam=[(0.0, [640, 190, 620, 260], 0.01)], neb=("comp/NEB1.mov", 12.0), enter={"type": "fade", "dur": 0.4})],
+     voice=["c03"], at=AT, name="03")
+beat([chapter("04", "Aladdin gate", "K06 · reserve, then re-check"), other("seq", 9.0, key="ald", neb=("comp/NEB2.mov", 2.0)),
+      glass("ov", "d1_aladdin_tech", 5.0, title="Kairos · Live journey · Technical · Aladdin", cam=[(1.0, [340, 300, 690, 420], 1.4)], neb=("comp/NEB2.mov", 7.0)),
+      num([{"text": "50,000 decisions · 11.1 s", "size": 100}, {"text": "limit breaches: 0 · ledger benchmark (real run)", "size": 38, "cls": "soft", "mt": 18}], 2.6)],
+     voice=["c04"], at=AT, name="04")
+beat([chapter("05", "Channels, webhooks and voice", "send · call back · act"), other("seq", 7.0, key="hook", neb=("comp/NEB1.mov", 3.0)),
+      glass("ov", "d1_dup_tech", 4.0, title="Kairos · Live journey · Technical · webhooks", cam=[(1.0, [340, 300, 690, 300], 1.4)], neb=("comp/NEB1.mov", 7.0)),
+      other("flow", 5.0, key="voice", neb=("comp/NEB2.mov", 3.0)),
+      glass("dv", "voice", 5.0, title="Kairos · Voice bots · calls", page=[280, 640, 1135, 305], cam=[(1.2, [700, 715, 720, 210], 1.4)], neb=("comp/NEB1.mov", 8.0))],
+     voice=["c05"], at=AT, name="05")
+beat([chapter("06", "Inbound WhatsApp", "CM-03 · a small state machine"), other("flow", 7.0, key="cm03", neb=("comp/NEB2.mov", 2.0)),
+      glass("in", "fake_tech", 5.0, title="Kairos · Inbound WhatsApp · Technical", cam=[(1.0, [380, 60, 560, 600], 1.4)], neb=("comp/NEB2.mov", 6.0)),
+      other("panel", 5.0, heading="1,000 seeded test conversations", items=[
           {"html": "<em>73.2%</em> resolved without a person"}, {"html": "<em>127 / 127</em> fakes caught · 0 false flags"},
           {"html": "<em>0</em> disclosures before the code"}, {"html": "first reply p95 <em>1.6 ms</em> · engine time"}],
           fine="SIMULATED · 1,000 seeded conversations · 500 at once: 0 errors", neb=("comp/NEB2.mov", 10.0))],
-     voice=["c06"], at=2.4, name="06")
+     voice=["c06"], at=AT, name="06")
 if os.environ.get("REAL_WA"):
     beat([("glass", 12.0, dict(video=os.environ["REAL_WA"], vw=1920, vh=1080, title="Real WhatsApp · Meta Cloud API test number", neb=("comp/NEB2.mov", 1.0)))], name="realwa")
-beat([chapter("07", "Voice", "AI voice agents · outcomes · thresholds"), other("flow", 10.0, key="voice", neb=("comp/NEB1.mov", 3.0)),
-      glass("dv", "voice", 8.0, title="Kairos · Voice bots · calls", page=[280, 640, 1135, 305], cam=[(1.4, [700, 715, 720, 210], 1.6)], neb=("comp/NEB1.mov", 8.0))],
-     voice=["c07"], at=2.4, name="07")
-beat([chapter("08", "Human in the loop", "people decide; Aladdin still checks"), other("flow", 6.0, key="hitl", neb=("comp/NEB2.mov", 4.0)),
-      clip("P16a_asha_close", 2.0),
-      ("glass", 5.0, dict(video=F02, frm=36.0, rate=1.6, vw=1920, vh=1080, title="Kairos · Control Room · approvals", cam=[(0.6, [380, 90, 1100, 230], 1.4)], neb=("comp/NEB2.mov", 9.0))),
-      ("glass", 6.0, dict(video=F03, frm=50.0, rate=1.0, vw=1920, vh=1080, title="Kairos · Smart CRM · manual send at 20:00", cam=[(0.6, [1540, 560, 380, 490], 1.4)], neb=("comp/NEB2.mov", 14.0)))],
-     voice=["c08"], at=2.4, name="08")
-beat([chapter("09", "Determinism and testing", "same seed, same decisions"), other("terminal", 16.0, neb=("comp/NEB1.mov", 2.0)), clip("T11_engineer_face", 1.6)],
-     voice=["c09"], at=2.6, name="09")
-beat([chapter("10", "Research lineage", "built on published work"), other("research", 5.6, neb=("comp/NEB2.mov", 2.0)), clip("T12_team_claps", 1.8),
-      other("flow", 4.0, key="arch", pulse=True, neb=("comp/NEB2.mov", 6.0))], voice=["c10"], at=2.6, name="10")
-beat([other("brand", 6.0, end=True, neb=("comp/NEB1.mov", 10.0), lines=["Built to be trusted with every rupee."],
+beat([chapter("07", "Human in the loop", "people decide; Aladdin still checks"), other("flow", 4.0, key="hitl", neb=("comp/NEB2.mov", 4.0)),
+      clip("P16a_asha_close", 1.6),
+      ("glass", 4.4, dict(video=F02, frm=36.0, rate=1.6, vw=1920, vh=1080, title="Kairos · Control Room · approvals", cam=[(0.6, [380, 90, 1100, 230], 1.4)], neb=("comp/NEB2.mov", 9.0))),
+      ("glass", 5.6, dict(video=F03, frm=50.0, rate=1.0, vw=1920, vh=1080, title="Kairos · Smart CRM · manual send at 20:00", cam=[(0.6, [1540, 560, 380, 490], 1.4)], neb=("comp/NEB2.mov", 14.0)))],
+     voice=["c08"], at=AT, name="07")
+beat([chapter("08", "Determinism and testing", "same seed, same decisions"), other("terminal", 20.0, neb=("comp/NEB1.mov", 2.0))],
+     voice=["c09"], at=AT, name="08")
+beat([other("research", 8.0, neb=("comp/NEB2.mov", 2.0)), other("flow", 3.0, key="arch", pulse=True, neb=("comp/NEB2.mov", 6.0))], voice=["c10"], at=1.6, name="research")
+beat([other("brand", 4.0, end=True, neb=("comp/NEB1.mov", 10.0), lines=["Built to be trusted with every rupee."],
             credits="Music: “Inspiring Technology”, The_Mountain (Pixabay licence) · Voices: AI-generated · Footage: Pexels<br>Every screen and terminal run is the real Kairos software · All data SIMULATED")], name="end")
 
 # ---------------------------------------------------------------- lay out
@@ -154,9 +153,16 @@ for b in beats:
     need = (max(vends) - t + b["tail"]) if vends else 0
     shots = [list(s) for s in b["shots"]]
     have = sum(s[1] for s in shots)
-    if need > have:   # stretch the real-system shots (glass) first, evenly
-        g = [s for s in shots if s[0] in ("glass", "flow", "seq")] or shots[-1:]
+    if need > have:   # the voice is longer: stretch the real-system shots (glass, diagrams) evenly
+        g = [s for s in shots if s[0] in ("glass", "flow", "seq", "loop", "panel")] or shots[-1:]
         for s in g: s[1] += (need - have) / len(g)
+    elif vends and have > need + 0.3:   # the voice is shorter: the voice is the clock, shots shrink (never below their floor)
+        floor = lambda s: 1.3 if s[0] == "clip" else (1.0 if s[0] == "title" else 2.2)
+        for _ in range(4):
+            have = sum(s[1] for s in shots); flex = [s for s in shots if s[1] > floor(s) + 1e-3]
+            if have <= need + 0.05 or not flex: break
+            cut = (have - need) / len(flex)
+            for s in flex: s[1] = max(floor(s), s[1] - cut)
     for s in shots:
         seq.append((s[0], round(s[1], 3), s[2], round(t, 3), b["name"])); t += s[1]
 END = t
@@ -190,24 +196,25 @@ for kind, dur, p, t0, bname in seq:
         cites = ["Thompson · <i>Biometrika</i> 1933", "Chapelle &amp; Li · NeurIPS 2011", "Li et al. · WWW 2010", "Badanidiyuru, Kleinberg &amp; Slivkins · FOCS 2013",
                  "Clayton &amp; Kaldor · <i>Biometrics</i> 1987", "Abe et al. · KDD 2010", "Yancey &amp; Settles · KDD 2020", "Alshiekh et al. · AAAI 2018",
                  "Angelopoulos et al. · Learn then Test", "Dudík, Langford &amp; Li · ICML 2011"]
-        grid = "<div style='display:grid;grid-template-columns:auto auto;gap:16px 90px;text-align:left;font-size:40px;font-weight:500;color:rgba(226,232,240,.9)'>" + "".join("<div>%s</div>" % c for c in cites) + "</div>"
-        layers.append({"kind": "title", "t0": t0, "t1": t1, "y": 440, "lines": [{"text": "Built on research", "size": 88}, {"html": grid, "size": 40, "mt": 40}], "enter": {"dur": 0}, "exit": {"dur": 0.3}})
+        grid = "<div style='display:grid;grid-template-columns:auto auto;gap:14px 70px;text-align:left;font-size:34px;font-weight:500;color:rgba(226,232,240,.92);letter-spacing:0'>" + "".join("<div>%s</div>" % c for c in cites) + "</div>"
+        layers.append({"kind": "panel", "t0": t0, "t1": t1, "w": 1420, "y": 120, "heading": "Built on research", "items": [{"html": grid, "t": round(t0 + 0.4, 3)}],
+                       "fine": "Lineage: Aladdin ≈ a safety shield (Alshiekh 2018) · the intent ladder ≈ a reject option (Chow 1970)", "enter": {"dur": 0.5}, "exit": {"dur": 0.3}})
     elif kind == "brand":
         layers.append({"kind": "brand", "t0": t0, "t1": t1, "y": 450, "lines": p.get("lines", []), "credits": p.get("credits"), "from": 0.97, "enter": {"dur": 0}, "exit": {"dur": 0.35}})
     elif kind == "terminal":
-        a = t0
+        a = t0; ks = dur / 16.0
         layers.append({"kind": "term", "t0": a, "t1": t1, "title": "kairos/backend — zsh", "prompt": "%", "rows": 15, "maxCols": 80, "home": [160, 0, 1600],
                        "enter": {"type": "fade", "dur": 0.3}, "exit": {"type": "fade", "dur": 0.2}, "cam": [{"t": 0, "full": True}],
                        "runs": [
-            {"rec": "determinism", "at": a + 0.3, "cadence": 0.004, "fit": 1.0, "keep": "^Matched|Verified payment \\(unique\\)|K01 cap breaches|K15 safety|Deterministic replay", "hi": "IDENTICAL", "badge": "638 s run · shown 600× faster"},
-            {"rec": "redteam", "at": a + 3.6, "cadence": 0.012, "fit": 1.0, "clear": True, "keep": "PASS|FAIL|attacks:", "hi": "49 PASS", "badge": "3.7 s run"},
-            {"rec": "bench", "at": a + 6.9, "cadence": 0.012, "fit": 0.5, "clear": True, "hi": "atomic decisions|cap breaches: 0", "badge": "ledger benchmark · 15 s run, 30× faster"},
-            {"rec": "pytest", "at": a + 9.9, "cadence": 0.05, "fit": 0.7, "clear": True, "hi": "passed", "badge": "74 s run · shown 90× faster"},
-            {"rec": "ope", "at": a + 12.6, "cadence": 0.012, "fit": 0.4, "clear": True, "keep": "^OPE|^replies per 1,000 decisions|^CN10.*18\\.4 +18\\.2", "hi": "^CN10", "badge": "SIMULATED · 20 s run, 50× faster", "prompt": "kairos/backend (research) %"}]})
+            {"rec": "determinism", "at": a + 0.3 * ks, "cadence": 0.004, "fit": 1.0, "keep": "^Matched|Verified payment \\(unique\\)|K01 cap breaches|K15 safety|Deterministic replay", "hi": "IDENTICAL", "badge": "638 s run · shown 600× faster"},
+            {"rec": "redteam", "at": a + 3.6 * ks, "cadence": 0.012, "fit": 1.0, "clear": True, "keep": "PASS|FAIL|attacks:", "hi": "49 PASS", "badge": "3.7 s run"},
+            {"rec": "bench", "at": a + 6.9 * ks, "cadence": 0.012, "fit": 0.5, "clear": True, "hi": "atomic decisions|cap breaches: 0", "badge": "ledger benchmark · 15 s run, 30× faster"},
+            {"rec": "pytest", "at": a + 9.9 * ks, "cadence": 0.05, "fit": 0.7, "clear": True, "hi": "passed", "badge": "74 s run · shown 90× faster"},
+            {"rec": "ope", "at": a + 12.6 * ks, "cadence": 0.012, "fit": 0.4, "clear": True, "keep": "^OPE|^replies per 1,000 decisions|^CN10.*18\\.4 +18\\.2", "hi": "^CN10", "badge": "SIMULATED · 20 s run, 50× faster", "prompt": "kairos/backend (research) %"}]})
         for o, dd, k, h in [(1.5, 2.0, "Same seed, run twice", "Deterministic replay: <em>IDENTICAL</em>"), (4.8, 1.9, "Our own red-team suite", "49 attacks: <em>49 PASS</em>, 0 FAIL"),
                             (7.8, 1.9, "Ledger benchmark", "<em>50,000</em> atomic decisions in 11.1 s<br>cap breaches: <em>0</em>"), (10.9, 1.6, "Full test suite", "<em>3030 passed</em> in 74 s"),
                             (13.5, 2.3, "Off-policy evaluation · CN10 fixed schedule · SIMULATED", "From logs: <em>18.2</em>. Truth: <em>18.4</em>.")]:
-            layers.append({"kind": "callout", "t0": a + o, "t1": a + o + dd, "dark": True, "x": 260, "y": 560, "maxw": 1500, "kicker": k, "mono": True, "html": h, "stagger": 0, "enterDur": 0.2})
+            layers.append({"kind": "callout", "t0": a + o * ks, "t1": a + o * ks + dd * ks, "dark": True, "x": 260, "y": 560, "maxw": 1500, "kicker": k, "mono": True, "html": h, "stagger": 0, "enterDur": 0.2})
 for t0, t1, src, frm in neb_spans:
     layers.insert(0, {"kind": "nebula", "t0": t0, "t1": t1, "src": src, "from": frm, "rate": 0.35, "dim": 0.45, "enter": {"dur": 0}, "exit": {"dur": 0}})
 film = {"duration": round(END, 3), "ccStyle": "v4", "cues": "audio/technical4_cues.json", "bg": "#02040a", "captures": CAPS,
@@ -218,15 +225,16 @@ for L in layers:
 # ---------------------------------------------------------------- music: The_Mountain, 80 BPM, bars of 3.0 s from 0.02 s; phrase-aligned repeats, then the ending
 def B(n): return 0.02 + 3.0 * n
 ib = len(seq) - 1
-target = seq[ib][3] + 4.0                                   # the ending bar lands at least 4 s into the lockup
+target = seq[ib][3] + 3.4                                   # the ending bar lands at least 4 s into the lockup
 best = None
 for n32 in range(0, 4):
     for n16 in range(0, 3):
         for n8 in range(0, 3):
-            tot = B(40) + n32 * (B(40) - B(8)) + n16 * (B(40) - B(24)) + n8 * (B(40) - B(32)) + (B(44) - B(40))
-            if tot >= target and (best is None or tot < best[0]): best = (tot, n32, n16, n8)
-total, n32, n16, n8 = best
-segs = [{"src": 0.0, "len": round(B(40), 3)}] + [{"src": round(B(8), 3), "len": 96.0}] * n32 + [{"src": round(B(24), 3), "len": 48.0}] * n16 + [{"src": round(B(32), 3), "len": 24.0}] * n8 + [{"src": round(B(40), 3), "len": 12.0}]
+            for n4 in range(0, 2):
+                tot = B(40) + n32 * (B(40) - B(8)) + n16 * (B(40) - B(24)) + n8 * (B(40) - B(32)) + n4 * (B(40) - B(36)) + (B(44) - B(40))
+                if tot >= target and (best is None or tot < best[0]): best = (tot, n32, n16, n8, n4)
+total, n32, n16, n8, n4 = best
+segs = [{"src": 0.0, "len": round(B(40), 3)}] + [{"src": round(B(8), 3), "len": 96.0}] * n32 + [{"src": round(B(24), 3), "len": 48.0}] * n16 + [{"src": round(B(32), 3), "len": 24.0}] * n8 + [{"src": round(B(36), 3), "len": 12.0}] * n4 + [{"src": round(B(40), 3), "len": 12.0}]
 segs = [dict(x) for x in segs]; at = 0.0
 for i, sg in enumerate(segs): sg["at"] = round(at, 3); sg["fadeIn"] = 0.02 if i else 0; sg["fadeOut"] = 0.03 if i < len(segs) - 1 else 1.5; at += sg["len"]
 grow = total - (seq[ib][3] + seq[ib][1])
