@@ -119,6 +119,11 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 
 # CM-03 inbound WhatsApp servicing agent (SIMULATED, adapter dry-run): /cm03/*
 cm03_engine = ConversationEngine(ledger, phraser="auto")  # phrasing only with a Sarvam key
+# Live WhatsApp (cm03/live.py): real Cloud API sends to ONE allow-listed number, only when every flag is set
+# (KAIROS_CM03_LIVE_WHATSAPP=1, WA_TOKEN, WA_PHONE_NUMBER_ID, WA_APP_SECRET, KAIROS_DEMO_ALLOWLIST). Otherwise dry-run.
+from .cm03.live import install as install_cm03_live  # noqa: E402
+
+install_cm03_live(cm03_engine)
 app.include_router(cm03_router(cm03_engine))
 from .journey_inbound import router as journey_inbound_router  # noqa: E402  Journey 2: /demo/journey/inbound
 app.include_router(journey_inbound_router)
