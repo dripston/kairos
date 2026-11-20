@@ -8,6 +8,10 @@ import { Button, Card, CardHead, Chip, Empty, cx } from './ui'
 
 const fmtUptime = (s) => (s >= 3600 ? `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m` : s >= 60 ? `${Math.floor(s / 60)}m` : `${s}s`)
 
+// Display names for the hosted models (the vendor's model ids stay in the API and the logs).
+const modelLabel = (id) => (/prism/i.test(id) ? 'Decision model' : /conversations/i.test(id) ? 'Conversation model'
+  : /deepseek/i.test(id) ? 'Explanation model' : id)
+
 function Row({ icon: I, label, ok, children }) {
   return (
     <div className="flex items-start gap-3 border-t border-line py-3 first:border-t-0">
@@ -50,7 +54,7 @@ export default function SystemHealth() {
                 <Button size="sm" icon={Activity} onClick={runProbe} disabled={probe?.loading}>{probe?.loading ? 'Testing…' : 'Test models live'}</Button>
                 {live && Object.entries(live).map(([name, r]) => (
                   <div key={name} className="flex items-center justify-between font-mono text-[12px]">
-                    <span>{name}</span><span className={r.ok ? 'text-ok' : 'text-bad'}>{r.ok ? `✓ ${r.latency_ms} ms` : `✗ ${r.error}`}</span>
+                    <span>{modelLabel(name)}</span><span className={r.ok ? 'text-ok' : 'text-bad'}>{r.ok ? `✓ ${r.latency_ms} ms` : `✗ ${r.error}`}</span>
                   </div>
                 ))}
                 {probe?.error && <div className="text-[12px] text-bad">{probe.error}</div>}

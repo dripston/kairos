@@ -58,7 +58,7 @@ spine, policy learning, replay, metrics).
 
 ```bash
 cd backend && python -m venv .venv && . .venv/bin/activate && pip install -e ".[dev]"
-pytest                              # must stay green
+python -m pytest                    # must stay green (pyproject adds -q; don't add another)
 python scripts/run_replay.py        # K15 baseline vs reference policy
 cd ../frontend && npm install && npm run dev
 ```

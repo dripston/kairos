@@ -29,10 +29,11 @@ git clone https://github.com/dripston/kairos.git
 cd kairos/backend && python3 -m venv .venv && source .venv/bin/activate && pip install -e ".[dev]"
 ```
 
-Check it works (should end with "passed"):
+Check it works (should end with "passed"; `pyproject.toml` already adds `-q`, so do not add another `-q` or the
+summary line is hidden):
 
 ```bash
-pytest -q
+python -m pytest
 ```
 
 Frontend (the demo app):
@@ -46,7 +47,7 @@ cd ../frontend && npm install
 ## 3. Getting the newest work
 
 Most features are in open pull requests (PRs) that are not merged yet. Merge them on GitHub in this
-order (each one has a green "Merge" button once reviewed). After each merge run `pytest -q` in
+order (each one has a green "Merge" button once reviewed). After each merge run `python -m pytest` in
 `backend/`; if a PR says "conflicts", ask Claude to resolve it ("resolve conflicts on PR #N").
 
 | Order | PR | What it adds |
@@ -168,7 +169,8 @@ borrowers, the same budget and the same rules. Everything on it is **SIMULATED**
 cd kairos/backend && source .venv/bin/activate && uvicorn kairos_backend.api:app --port 8000
 ```
 
-Then open <http://localhost:8000/demo/live>. It looks like the lender's own operations console: a
+Then open <http://localhost:8000/demo/live>. On the hosted backend (Render free plan) a run spends about 38 s on
+"Preparing" before day 1: open the page and press Start a minute before you need it. It looks like the lender's own operations console: a
 sidebar (Overview, Live activity, Approvals, Borrowers, Rules (Aladdin), System) and a small
 **Demo controls** group at the top right. Leave the run type on "vs fixed schedule", pick seed 42 and
 press **Start** (4× is the default). **P** toggles Presenter mode (hides the demo controls, larger
@@ -232,8 +234,9 @@ from the next plan (an override is queued and checked by Aladdin right after it)
    mock SMS goes out, the receipt comes back, a duplicate receipt is ignored.
 3. *▶ to Day 3.* "No reply in 24 hours: the learner's SMS estimate drops. Day 3 it picks WhatsApp. He
    replies 'I'll pay by the 29th'; the intent stack's rules catch a promise and Kairos goes quiet."
-4. *At a pause: WhatsApp · 20:00 → Apply.* "I'm the supervisor. 8 pm: Aladdin blocks it, outside contact
-   hours, and no role can override that." Approve or reject a waiting call; show the audit log.
+4. *At a pause: SMS · 20:00 → Apply.* "I'm the supervisor. 8 pm: Aladdin blocks it, outside contact
+   hours, and no role can override that." (Use SMS: for Aarav, WhatsApp is blocked first for no consent; for
+   Vikram either channel shows the contact-hours block.) Approve or reject a waiting call; show the audit log.
 5. *▶ to Day 7, click Payment.* "The bank confirms ₹7,409; the journey exits. 65 paise spent on Vikram."
 6. *PAUSE ALL OUTBOUND, then resume; or pick Diya and Mark STOP.* "One click cancels everything queued on
    every channel. A STOP turns every channel off at once, and nobody can undo it."

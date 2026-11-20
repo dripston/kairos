@@ -321,6 +321,30 @@ pre.raw { margin: .75rem 0 0; padding: .75rem; background: var(--sunk); border: 
 </style>
 </head>
 <body>
+<script>
+/* Display names only: the demo never shows a model vendor's name. Raw payloads (CRM envelopes, technical view)
+   carry model ids such as the conversation and decision models' ids; every text node is rewritten as it renders.
+   The ids stay unchanged in the API, the logs and the code. */
+(function () {
+  var V = "\u0073arvam", has = new RegExp(V, "i");
+  var R = [[new RegExp(V + "-105b-conversations", "gi"), "conversation model"], [new RegExp(V + "-prism", "gi"), "decision model"],
+           [new RegExp("kairos-" + V + "-\\d+", "gi"), "kairos-models"], [new RegExp(V + "[ _-]?(api[ _-]?)?key", "gi"), "model key"],
+           [new RegExp(V + "[ _-]?(voice )?(bot|agent)s?", "gi"), "AI voice agent"], [new RegExp(V, "gi"), "AI"]];
+  function fix(s) { for (var i = 0; i < R.length; i++) s = s.replace(R[i][0], R[i][1]); return s; }
+  function text(n) { if (n.nodeValue && has.test(n.nodeValue)) n.nodeValue = fix(n.nodeValue); }
+  function scrub(root) {
+    if (root.nodeType === 3) return text(root);
+    if (root.nodeType !== 1) return;
+    var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), n;
+    while ((n = w.nextNode())) text(n);
+  }
+  new MutationObserver(function (ms) {
+    ms.forEach(function (m) { if (m.type === "characterData") text(m.target); else m.addedNodes.forEach(scrub); });
+  }).observe(document.documentElement, {subtree: true, childList: true, characterData: true});
+  document.addEventListener("DOMContentLoaded", function () { scrub(document.body); });
+})();
+</script>
+
 <div class="app" id="app">
   <header class="top">
     <div class="brand"><div class="mk">K</div><h1>Kairos <span>· Outbound collections</span></h1></div>
@@ -437,6 +461,7 @@ pre.raw { margin: .75rem 0 0; padding: .75rem; background: var(--sunk); border: 
   <div class="pick">
     <h2>Follow one borrower through a live campaign</h2>
     <p>A SIMULATED 200-borrower collections campaign runs on Kairos's real engines. Pick whose journey to follow: the engines, not a script, decide what happens.</p>
+    <p id="vnote" role="alert" hidden style="margin:.25rem 0 1rem;padding:.6rem .8rem;border-radius:8px;border:1px solid #f0c27a;background:#fff7e6;color:#7a4b00;font-weight:600"></p>
     <div class="pcs" id="pcs"><div class="empty">Loading…</div></div>
   </div>
 </div>
@@ -481,12 +506,31 @@ const S = {
 };
 
 // ---------------- network ----------------
+// ?presenter=<token> on this page: an opt-in lock, so only this page may restart or close the shared session.
+const PRESENTER = new URLSearchParams(location.search).get("presenter") || "";
 async function call(path, body, method) {
-  const r = await fetch(API + path, {method: method || (body === undefined ? "GET" : "POST"), headers: {"Content-Type": "application/json"}, body: body === undefined ? undefined : JSON.stringify(body)});
+  const headers = {"Content-Type": "application/json"};
+  if (S.session) headers["X-Journey-Session"] = S.session;   // a session another client replaced is a 409, never a hang
+  if (PRESENTER) headers["X-Journey-Presenter"] = PRESENTER;
+  const r = await fetch(API + path, {method: method || (body === undefined ? "GET" : "POST"), headers, body: body === undefined ? undefined : JSON.stringify(body)});
   let j = null;
   try { j = await r.json(); } catch (e) { j = null; }
-  if (!r.ok && !(j && j.ok === false)) throw new Error((j && (j.detail && (j.detail.message || j.detail))) || ("HTTP " + r.status));
+  if (!r.ok && !(j && j.ok === false)) {
+    const d = j && j.detail;
+    const err = new Error((d && (d.message || d)) || ("HTTP " + r.status));
+    err.code = d && d.code;
+    if (err.code === "SESSION_REPLACED") sessionLost(err.message);
+    throw err;
+  }
   return j;
+}
+
+function sessionLost(msg) {
+  setPlaying(false);
+  S.session = null; S.started = false;
+  const n = $("vnote"); n.textContent = msg || "Another presenter started a new session. Restart?"; n.hidden = false;
+  $("veil").hidden = false;
+  $("pcs").querySelectorAll(".pc").forEach((b) => b.disabled = false);
 }
 
 // ---------------- start ----------------
@@ -500,7 +544,15 @@ async function loadPresets() {
 
 async function start(bid) {
   $("pcs").querySelectorAll(".pc").forEach((b) => b.disabled = true);
-  const j = await call("/start", bid ? {spotlight: bid} : {});
+  let j;
+  try { j = await call("/start", bid ? {spotlight: bid} : {}); }
+  catch (e) {   // e.g. PRESENTER_LOCK: someone is presenting; say so on the picker instead of failing silently
+    const n = $("vnote"); n.textContent = e.message; n.hidden = false;
+    $("veil").hidden = false; $("pcs").querySelectorAll(".pc").forEach((b) => b.disabled = false);
+    return;
+  }
+  $("vnote").hidden = true;
+  S.session = j.session_id || null;
   Object.assign(S, {started: true, busy: false, paused: false, step: false, queue: [], shown: 0, cursor: j.cursor, day: 1, clock: 360,
     phase: j.snapshot.phase, snap: j.snapshot, pendingSnap: null, spot: j.spotlight, presets: j.presets, days: j.days, borrowers: j.borrowers,
     stage: {}, sel: null, follow: true, spotEvents: [], tl: [], today: {sent: 0, wait: 0, held: 0, paid: 0}, rec: 0, blocks: 0, cap: 0,
@@ -878,7 +930,7 @@ function intentView(d, plain) {
   const t = d.tier || "";
   const unsure = (x) => ["small_model", "prism", "local_llm", "cloud_llm", "abstain"].indexOf(t) > ["rules", "small_model", "prism"].indexOf(x);
   const tier = (key, name, sub) => { const on = t === key; const u = !on && unsure(key); return `<div class="${on ? "on" : ""}"><b>${name}</b>${on ? "decided" : u ? "unsure → next" : sub}</div>`; };
-  return `<div class="tiers">${tier("rules", "Rules", "not needed")}<div class="ar">→</div>${tier("small_model", "Small model", "not needed")}<div class="ar">→</div><div class="${t === "prism" ? "on" : ""}"><b>Prism (Sarvam)</b>${t === "prism" ? "decided" : "skipped: no key in this demo"}</div><div class="ar">→</div><div class="${d.needs_human || t === "abstain" ? "hu" : ""}"><b>Human</b>${d.needs_human || t === "abstain" ? "a person reads it" : "not needed"}</div></div>` +
+  return `<div class="tiers">${tier("rules", "Rules", "not needed")}<div class="ar">→</div>${tier("small_model", "Small model", "not needed")}<div class="ar">→</div><div class="${t === "prism" ? "on" : ""}"><b>Decision model</b>${t === "prism" ? "decided" : "off in this demo"}</div><div class="ar">→</div><div class="${d.needs_human || t === "abstain" ? "hu" : ""}"><b>Human</b>${d.needs_human || t === "abstain" ? "a person reads it" : "not needed"}</div></div>` +
     `<div style="height:.75rem"></div>` + (plain ? facts([["Understood", ruleName(d.label)], ["Next step", ruleName(d.action)]]) :
     facts([["Label", ruleName(d.label)], ["Confidence", d.confidence], ["Tier", String(t).replace("_", " ")], ["Action", ruleName(d.action)], ["Safety flags", (d.safety_flags || []).join(", ") || "none"], ["Source", CH[d.source] || d.source]]));
 }
@@ -1056,7 +1108,7 @@ const CUES = [
   {h: "One borrower, every engine", d: "Click <b>Story 1 (Vikram)</b>. Point at the strip, then the eight boxes.", s: "A simulated 200-borrower campaign runs on Kairos's real engines. We follow one borrower, Vikram: 10 days late on a ₹7,409 EMI. Each box is a real engine; it lights up when it acts for him."},
   {h: "Day 1 · the engines decide", d: "It pauses at 8:00 am. Click <b>Learner</b>, then <b>Aladdin</b>; flip <b>Technical</b> once.", s: "Auto-churn placed him: cohort C4, high risk. The learner scores every channel × time against its cost — SMS in the morning wins. Aladdin, our supervisor, runs all the policy rules and reserves the budget. Press ▶: the mock SMS goes out, the receipt comes back, and a duplicate receipt is ignored."},
   {h: "No reply → the learner switches", d: "Press <b>▶</b>; it pauses again on Day 3.", s: "24 hours, no reply: that outcome updates the learner — SMS in the morning drops. Day 3 it picks WhatsApp instead. He replies in Hindi, ‘I'll pay by the 29th’. The intent stack's rules catch a promise, and Kairos goes quiet until that date."},
-  {h: "Take control — Aladdin still rules", d: "At a pause: set <b>WhatsApp · 20:00 → Apply</b> (blocked). Then <b>14:30 → Apply</b>, or <b>Approve / Reject</b> a waiting call.", s: "I'm the supervisor. I try a message at 8 pm — Aladdin blocks it: outside contact hours, and no role can override that. A legal override still needs a second person: maker-checker. Every click lands in the audit log with the rule it was checked against."},
+  {h: "Take control — Aladdin still rules", d: "At a pause: set <b>SMS · 20:00 → Apply</b> (blocked: outside contact hours; for Aarav WhatsApp is blocked earlier, by consent). Then <b>14:30 → Apply</b>, or <b>Approve / Reject</b> a waiting call.", s: "I'm the supervisor. I try a message at 8 pm — Aladdin blocks it: outside contact hours, and no role can override that. A legal override still needs a second person: maker-checker. Every click lands in the audit log with the rule it was checked against."},
   {h: "The payment closes the loop", d: "Press <b>▶</b> (or <b>2×</b>) to Day 7. Click <b>Payment</b>.", s: "The bank confirms ₹7,409 — only bank-verified money counts. The journey exits; queued touches for that EMI are cancelled. Total spent on Vikram: 65 paise."},
   {h: "Kill switch & STOP", d: "Press <b>PAUSE ALL OUTBOUND</b>, then resume. Or pick <b>Aarav</b> / <b>Diya</b> and <b>Mark STOP</b>.", s: "One click cancels everything queued on every channel, and Aladdin refuses every send until a person resumes. A STOP recorded for a borrower turns every channel off at once — and nobody can undo it."},
 ];

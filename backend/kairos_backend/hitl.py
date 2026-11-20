@@ -33,6 +33,7 @@ from typing import Iterable, Optional, Union
 
 from spine.ledger import record_event
 
+from . import template_compliance as tc
 from .exceptions import ROUTED_STOP
 from .gate import WAIT, Decision, evaluate
 from .ledger import LIVE, QUEUED, Instruction, Ledger
@@ -177,6 +178,9 @@ def _default_masking() -> dict:
 class _Template(dict):
     def __missing__(self, key):
         return "{" + key + "}"
+
+
+_DOUBLE_SLOT = re.compile(r"\{\{\s*(\w+)\s*\}\}")
 
 
 # ---------- the control plane ----------
@@ -690,15 +694,23 @@ class HITL:
         values = self.mask({"full_name": b["full_name"],
                             "amount_paise": (ob["amount_due_paise"] - ob["amount_paid_paise"]) if ob else None}, role)
         amount = values["amount_paise"]
+        from .cm03.copy import LENDER as lender  # the lender's display name, one place (no import cycle)
         fill = _Template(name=values["full_name"], first_name=str(values["full_name"]).split()[0],
                          amount=(f"₹{amount / 100:,.2f}" if isinstance(amount, (int, float)) else amount),
                          due_date=ob["due_date"] if ob else "", loan_id=ob["loan_id"] if ob else "",
-                         pay_link=(ob["payment_link"] if ob and ob["payment_link"] else "https://pay.example/SIMULATED"))
+                         pay_link=(ob["payment_link"] if ob and ob["payment_link"] else "https://pay.example/SIMULATED"),
+                         lender=lender, lender_name=lender)
         body = meta["body"] if meta and meta["body"] else None
+        text = unfilled = None
+        if body:
+            # K22 / T01 bodies use {{slot}}; str.format would print "{slot}". Unknown slots are reported, not sent.
+            text = _DOUBLE_SLOT.sub(r"{\1}", body).format_map(fill)
+            unfilled = tc.unfilled_placeholders(text)
         return {"template_id": template_id, "registered": t is not None, "approved": bool(t and t["approved"]),
                 "channel": t["channel"] if t else None, "lang": t["lang"] if t else None,
                 "intensity": meta["intensity"] if meta else self.ap["approval_rules"]["unknown_template_intensity"],
-                "rendered": ("[SIMULATED] " + body.format_map(fill)) if body else None}
+                "rendered": ("[SIMULATED] " + text) if text is not None else None,
+                "unfilled_placeholders": unfilled or []}
 
     def schedule_manual(self, borrower_ids: Union[str, Iterable[str]], channel: str, template_id: str, at: datetime,
                         actor: str, role: str, reason: str, est_cost_paise: int, campaign_id: Optional[str] = None,

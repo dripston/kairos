@@ -55,7 +55,7 @@ function nextAction(b, decisions) {
 
 const ACTION_BTNS = [
   { a: 'pause', label: 'Pause contact', icon: Pause, effect: 'All pending sends for this borrower are held until a person resumes.' },
-  { a: 'resume', label: 'Resume contact', icon: Play, effect: 'Kairos may contact this borrower again within policy.' },
+  { a: 'resume', label: 'Resume contact', icon: Play, effect: 'Lifts a "Pause contact": Kairos may contact this borrower again within policy. A dated hold, STOP or pending callback still applies.' },
   { a: 'hold', label: 'Hold for 2 days', icon: CalendarClock, effect: 'Hold for 2 days. Queued touches are canceled and payment is re-checked before outreach resumes.', extra: { days: 2 } },
   { a: 'cancel_next', label: 'Cancel next touch', icon: CircleSlash, effect: 'The next queued send is canceled and its budget released.' },
   { a: 'handoff', label: 'Hand off to a person', icon: Hand, effect: 'Ordinary outreach pauses and a HUMAN_HANDOFF case goes to the supervisor queue.' },
@@ -87,7 +87,9 @@ export default function CrmLive({ b, res }) {
     const extra = typeof btn.extra === 'function' ? btn.extra(actor) : btn.extra || {}
     try {
       const out = await borrowerAction(id, { action: btn.a, actor, reason, ...extra }, role)
-      dispatch({ type: 'TOAST', text: `${btn.label} · ${id}${out?.canceled != null ? ` · ${out.canceled} queued canceled` : ''} (as ${label})`, tone: btn.danger ? 'warn' : 'ok' })
+      // resume lifts a "Pause contact" only; a dated hold, STOP or callback still blocks — say so instead of "done"
+      const blocked = out?.still_blocked_by?.length ? ` · still blocked by ${out.still_blocked_by.join(', ')}` : ''
+      dispatch({ type: 'TOAST', text: `${btn.label} · ${id}${out?.canceled != null ? ` · ${out.canceled} queued canceled` : ''}${blocked} (as ${label})`, tone: btn.danger || blocked ? 'warn' : 'ok' })
     } catch (e) { toastErr(btn.label, e) }
     reloadAll()
   }
@@ -299,7 +301,7 @@ export default function CrmLive({ b, res }) {
 
           <Card className="p-5">
             <div className="mb-2 flex items-center gap-1.5 text-[13.5px] font-semibold"><Bot size={14} /> Voice bot</div>
-            <div className="mb-2 text-[12px] text-muted">Which Sarvam bot, voice and language Kairos would use now. Selection only — the K01 Gate still decides whether a call may happen.</div>
+            <div className="mb-2 text-[12px] text-muted">Which AI voice agent, voice and language Kairos would use now. Selection only — the K01 Gate still decides whether a call may happen.</div>
             <Button icon={AudioLines} onClick={pickBot} disabled={bot?.loading}>Pick bot for borrower</Button>
             {bot?.error && <div className="mt-2 text-[12px] text-bad">{bot.error}</div>}
             {bot?.data && <BotResult r={bot.data} />}

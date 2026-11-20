@@ -16,7 +16,7 @@ const tplFor = (channel, lang, intensity = 'LOW') =>
 
 const BLOCK_REASONS = [
   'Cap reached (3 of 3 this week)',
-  'Quiet hours (20:00–08:00)',
+  'Quiet hours (19:00–08:00)',
   'No consent for this channel',
   'Duplicate — already reserved by another campaign',
   'No approved template for language',

@@ -26,7 +26,7 @@ function genericAgents(b, day) {
       `Last touch Day ${b.lastTouchDay} on ${CHANNEL_META[b.lastTouchChannel].label}${b.lastTouchChannel === 'sms' ? ' (read unknown)' : ''}.`,
       b.flags.paid ? 'Payment verified in D7 — no further contact needed.' : b.flags.hold ? 'Promised to pay — hold active.' : b.flags.hardship ? 'Reported hardship — routed to a person.' : 'No reply yet; no stated intent.',
     ],
-    channel: { best: ch, window: ch === 'whatsapp' ? '18:00–20:00' : ch === 'ivr' ? '11:00–13:00' : '10:00–12:00', alts: CHANNELS.filter((c) => c !== ch && b.consent[c] && c !== 'voicebot').slice(0, 2).map((c) => `${CHANNEL_META[c].label} · 10:00`), evidence: day > 3 ? 'Moderate' : 'Weak (pooled segment prior)' },
+    channel: { best: ch, window: ch === 'whatsapp' ? '17:00–19:00' : ch === 'ivr' ? '11:00–13:00' : '10:00–12:00', alts: CHANNELS.filter((c) => c !== ch && b.consent[c] && c !== 'voicebot').slice(0, 2).map((c) => `${CHANNEL_META[c].label} · 10:00`), evidence: day > 3 ? 'Moderate' : 'Weak (pooled segment prior)' },
     propensity: { p, horizon: '7 days', intensity },
     template: tpl ? { id: tpl.id, lang: tpl.lang } : { id: null, lang: b.language },
   }
@@ -45,7 +45,7 @@ function genericDecision(b, day) {
     STOP: { action: 'CANCEL', reason: 'Opted out (STOP / do-not-contact). Consent cannot be overridden.' },
     DONE: { action: 'WAIT', reason: 'All obligations paid. Nothing to send.' },
   }
-  return { ...map[b.nextAction], checks: base, version: 2, expires: `Day ${day} · 20:00` }
+  return { ...map[b.nextAction], checks: base, version: 2, expires: `Day ${day} · 19:00` }
 }
 
 // Live spine record when the API has this borrower; otherwise the mock record (labelled SIMULATED).

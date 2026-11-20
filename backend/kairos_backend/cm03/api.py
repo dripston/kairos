@@ -161,6 +161,18 @@ def build_router(engine: ConversationEngine) -> APIRouter:
     # ---- human takeover (takeover.py): owner flag + bot-silence guard + agent messages, all audited ----
     takeover = Takeover(engine)
 
+    @r.post("/demo/new-chat")
+    def demo_new_chat(body: dict):
+        """Console "New chat": an explicit, audited operator action that closes this synthetic number's open
+        conversation server-side (a bot hand-off included), so the next message starts fresh. Demo only."""
+        if os.environ.get("KAIROS_CM03_DEMO_INBOX") != "1":
+            raise HTTPException(403, "demo console actions are off (KAIROS_CM03_DEMO_INBOX=1)")
+        phone = "+" + str(body.get("phone") or "").strip().lstrip("+")
+        if not SYNTHETIC_NUMBER.match(phone):
+            raise HTTPException(403, "only synthetic +910 numbers can be reset from the demo console")
+        return _human(takeover.close_for_sender, phone, str(body.get("agent") or "console.operator"),
+                      str(body.get("reason") or "new chat from the demo console"))
+
     def _human(fn, *a, **k):
         try:
             return {"provenance": PROVENANCE, **fn(*a, **k)}

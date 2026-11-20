@@ -37,6 +37,30 @@
 </style>
 </head>
 <body>
+<script>
+/* Display names only: the demo never shows a model vendor's name. Raw payloads (CRM envelopes, technical view)
+   carry model ids such as the conversation and decision models' ids; every text node is rewritten as it renders.
+   The ids stay unchanged in the API, the logs and the code. */
+(function () {
+  var V = "\u0073arvam", has = new RegExp(V, "i");
+  var R = [[new RegExp(V + "-105b-conversations", "gi"), "conversation model"], [new RegExp(V + "-prism", "gi"), "decision model"],
+           [new RegExp("kairos-" + V + "-\\d+", "gi"), "kairos-models"], [new RegExp(V + "[ _-]?(api[ _-]?)?key", "gi"), "model key"],
+           [new RegExp(V + "[ _-]?(voice )?(bot|agent)s?", "gi"), "AI voice agent"], [new RegExp(V, "gi"), "AI"]];
+  function fix(s) { for (var i = 0; i < R.length; i++) s = s.replace(R[i][0], R[i][1]); return s; }
+  function text(n) { if (n.nodeValue && has.test(n.nodeValue)) n.nodeValue = fix(n.nodeValue); }
+  function scrub(root) {
+    if (root.nodeType === 3) return text(root);
+    if (root.nodeType !== 1) return;
+    var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), n;
+    while ((n = w.nextNode())) text(n);
+  }
+  new MutationObserver(function (ms) {
+    ms.forEach(function (m) { if (m.type === "characterData") text(m.target); else m.addedNodes.forEach(scrub); });
+  }).observe(document.documentElement, {subtree: true, childList: true, characterData: true});
+  document.addEventListener("DOMContentLoaded", function () { scrub(document.body); });
+})();
+</script>
+
 <header>
   <h1>Kairos CM-03 · WhatsApp servicing console</h1>
   <span class="tag">SIMULATED · synthetic borrowers · adapter dry-run</span>
@@ -116,7 +140,20 @@ async function refresh() {
 }
 $("send").onclick = () => { const t = $("text").value.trim(); $("text").value = ""; send(t); };
 $("text").addEventListener("keydown", (e) => { if (e.key === "Enter") $("send").click(); });
-$("newchat").onclick = () => { convId = null; $("chat").innerHTML = ""; $("tl").innerHTML = ""; $("state").innerHTML = ""; bubble("New chat (send STOP/thanks to close a server-side session, or wait 30 min)", "sys"); };
+// New chat = an audited operator action: the server closes this number's open chat (a bot hand-off too), so the
+// next message really starts fresh. A chat a person owns is refused (hand it back first).
+$("newchat").onclick = async () => {
+  let msg;
+  try {
+    const r = await fetch("/cm03/demo/new-chat", {method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({phone: $("phone").value, agent: "console.operator"})});
+    const j = await r.json();
+    if (!r.ok) msg = "Could not start a new chat: " + ((j.detail && (j.detail.message || j.detail)) || ("HTTP " + r.status));
+    else msg = "New chat. " + (j.closed.length ? "Closed the previous chat on the server (" + j.states_before.join(", ") + "), audited." : "No open chat on the server.");
+  } catch (e) { msg = "Could not reach the server: " + e.message; }
+  convId = null; $("chat").innerHTML = ""; $("tl").innerHTML = ""; $("state").innerHTML = "";
+  bubble(msg, "sys");
+};
 document.querySelectorAll("[data-say]").forEach((b) => b.onclick = () => send(b.dataset.say));
 document.querySelectorAll("[data-att]").forEach((b) => b.onclick = () => send("payment screenshot", {type:"image", kind:"payment_screenshot",
   meta:{software:"Adobe Photoshop 25.0", created_at:"2026-11-18T10:00:00", modified_at:"2026-11-19T21:14:00", edited:true},

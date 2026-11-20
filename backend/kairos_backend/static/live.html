@@ -301,6 +301,9 @@ html.presenter .demo { display: none; }
   .ap { padding: .6rem .75rem; gap: .25rem; } .chartbox { min-height: 8rem; }
 }
 @media (max-width: 1640px) { .avatar .who, .demo .dl { display: none; } .topbar { gap: .75rem; } }
+/* desktop: one header row; the status text gives way (ellipsis) instead of pushing the demo controls to a 2nd row */
+@media (min-width: 1101px) { .topbar, .demo { flex-wrap: nowrap; } .when { min-width: 0; overflow: hidden; text-overflow: ellipsis; } }
+@media (max-width: 1640px) and (min-width: 1101px) { .avatar { display: none; } }
 @media (max-width: 1300px) { #seed { display: none; } }
 @media (max-width: 1600px) { .mcols { gap: 1.1rem; } .node .ni { display: none; } }
 @media (max-width: 1100px) {
@@ -330,6 +333,30 @@ html.presenter .demo { display: none; }
 </style>
 </head>
 <body>
+<script>
+/* Display names only: the demo never shows a model vendor's name. Raw payloads (CRM envelopes, technical view)
+   carry model ids such as the conversation and decision models' ids; every text node is rewritten as it renders.
+   The ids stay unchanged in the API, the logs and the code. */
+(function () {
+  var V = "\u0073arvam", has = new RegExp(V, "i");
+  var R = [[new RegExp(V + "-105b-conversations", "gi"), "conversation model"], [new RegExp(V + "-prism", "gi"), "decision model"],
+           [new RegExp("kairos-" + V + "-\\d+", "gi"), "kairos-models"], [new RegExp(V + "[ _-]?(api[ _-]?)?key", "gi"), "model key"],
+           [new RegExp(V + "[ _-]?(voice )?(bot|agent)s?", "gi"), "AI voice agent"], [new RegExp(V, "gi"), "AI"]];
+  function fix(s) { for (var i = 0; i < R.length; i++) s = s.replace(R[i][0], R[i][1]); return s; }
+  function text(n) { if (n.nodeValue && has.test(n.nodeValue)) n.nodeValue = fix(n.nodeValue); }
+  function scrub(root) {
+    if (root.nodeType === 3) return text(root);
+    if (root.nodeType !== 1) return;
+    var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), n;
+    while ((n = w.nextNode())) text(n);
+  }
+  new MutationObserver(function (ms) {
+    ms.forEach(function (m) { if (m.type === "characterData") text(m.target); else m.addedNodes.forEach(scrub); });
+  }).observe(document.documentElement, {subtree: true, childList: true, characterData: true});
+  document.addEventListener("DOMContentLoaded", function () { scrub(document.body); });
+})();
+</script>
+
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-logo" viewBox="0 0 24 24"><path d="M7 4v16M7 12l9-8M10.5 9l7 11"/></symbol>
   <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5L12 4l8 6.5V20h-5.5v-6h-5v6H4z"/></symbol>
@@ -816,12 +843,12 @@ html.presenter .demo { display: none; }
     if (!svg || !svg.clientWidth) return;
     var days = (last && last.days) || 14, w = svg.clientWidth, h = svg.clientHeight, K = pts("kairos", field), F = pts("cn10", field), hasF = F.length > 1;
     var max = 1; K.concat(F).forEach(function (p) { max = Math.max(max, p[1]); });
-    var step = niceStep(max / 100, 3) * 100, top = Math.ceil(max / step) * step;
+    var step = Math.max(niceStep(max / 100, 3) * 100, spark ? 0 : 10000), top = Math.ceil(max / step) * step;  // >= ₹100 per gridline: no ₹0 ₹0 ₹0 axis before money arrives
     var L = spark ? 2 : 46, R = spark ? 4 : 118, T = spark ? 3 : 10, B = spark ? 3 : 22;
     var x = function (d) { return L + (w - L - R) * d / days; }, y = function (v) { return T + (h - T - B) * (1 - v / top); };
     var g = "";
     if (!spark) {
-      for (var v = 0; v <= top + 1; v += step) g += '<line class="gl" x1="' + L + '" x2="' + (w - R + 6) + '" y1="' + y(v) + '" y2="' + y(v) + '"/><text x="' + (L - 8) + '" y="' + (y(v) + 4) + '" text-anchor="end">' + compact(v) + "</text>";
+      for (var v = 0; v <= top + step / 2; v += step) g += '<line class="gl" x1="' + L + '" x2="' + (w - R + 6) + '" y1="' + y(v) + '" y2="' + y(v) + '"/><text x="' + (L - 8) + '" y="' + (y(v) + 4) + '" text-anchor="end">' + compact(v) + "</text>";
       [1, 7, days].forEach(function (d) { g += '<text x="' + x(d) + '" y="' + (h - 4) + '" text-anchor="middle">Day ' + d + "</text>"; });
       if (days >= 7 && last && last.series) { var left = K[K.length - 1][0] > 6.4 && x(6.5) - L > 190; g += '<line class="ann" x1="' + x(6.5) + '" x2="' + x(6.5) + '" y1="' + T + '" y2="' + (h - B) + '"/><text class="ann-t" x="' + (x(6.5) + (left ? -6 : 6)) + '" y="' + (T + 10) + '" text-anchor="' + (left ? "end" : "start") + '">Day 7: WhatsApp replies drop</text>'; }
     }

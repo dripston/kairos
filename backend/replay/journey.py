@@ -399,13 +399,13 @@ class Journey:
         self.webhooks[call_id] = payload
         r = self.voice.ingest(payload)
         if r["status"] == "DUPLICATE":
-            self.ev(step, ended, "voice", f"Sarvam call-end {call_id} again -> DUPLICATE, ignored (first: "
+            self.ev(step, ended, "voice", f"Voice agent call-end {call_id} again -> DUPLICATE, ignored (first: "
                                           f"{r['first']['effective_disposition']} {r['first']['action']})",
                     rule="IDEMPOTENCY", policy_version=self.voice.version, detail={"first": r["first"]})
             return r
         env = r.get("envelope") or {}
         p = env.get("payload", {})
-        self.ev(step, ended, "voice", f"Sarvam call-end: {disposition} @ {conf} -> {p.get('effective_disposition')} "
+        self.ev(step, ended, "voice", f"Voice agent call-end: {disposition} @ {conf} -> {p.get('effective_disposition')} "
                                       f"action {p.get('action')}", borrower=env.get("borrower_id"),
                 rule=p.get("rule"), policy_version=p.get("policy_version") or self.voice.version,
                 provenance=env.get("provenance", PROVENANCE),
@@ -466,7 +466,7 @@ class Journey:
 
     def step1_pre_due(self):
         lg, A = self.ledger, self.cast["A"]
-        self.section('pre_due', 'Pre-due · cohort plan + voice bot', 'A', "Day 0, three days before the EMI. K09 and the SupervisorFSM pick a channel, slot and K22 template for each borrower in the pre-due cohort. Borrower A also gets the Pre-Due voice bot: the call is held for a supervisor (every call needs a person), the Gate re-runs at approval, and select_bot fills the call variables with no amounts, phones or loan numbers. The Sarvam call-end webhook says PTP at 0.9 confidence, so Kairos places a PTP hold and A's queued WhatsApp is withdrawn.", '1 · Day 0, pre-due: K09 + SupervisorFSM plan the cohort; A gets the Pre-Due voice bot')
+        self.section('pre_due', 'Pre-due · cohort plan + voice bot', 'A', "Day 0, three days before the EMI. K09 and the SupervisorFSM pick a channel, slot and K22 template for each borrower in the pre-due cohort. Borrower A also gets the Pre-Due voice bot: the call is held for a supervisor (every call needs a person), the Gate re-runs at approval, and select_bot fills the call variables with no amounts, phones or loan numbers. The voice agent's call-end webhook says PTP at 0.9 confidence, so Kairos places a PTP hold and A's queued WhatsApp is withdrawn.", '1 · Day 0, pre-due: K09 + SupervisorFSM plan the cohort; A gets the Pre-Due voice bot')
         lg.start_day(D0)
         plan_at = _at(D0, 8)
         sends = []
@@ -766,10 +766,10 @@ class Journey:
     def step7_duplicates_and_learning(self):
         lg = self.ledger
         d5 = D0 + timedelta(days=5)
-        self.section('learner', 'Duplicates ignored · learner update', 'A', 'The Sarvam webhook and a WhatsApp delivery receipt arrive a second time: both are ignored, nothing changes. The 24 h reply windows close, one outcome per executed touch is finalized, and the K09 arm posteriors move.', '7 · Duplicates are ignored; reply windows close and the K09 posteriors move')
+        self.section('learner', 'Duplicates ignored · learner update', 'A', 'The voice agent webhook and a WhatsApp delivery receipt arrive a second time: both are ignored, nothing changes. The 24 h reply windows close, one outcome per executed touch is finalized, and the K09 arm posteriors move.', '7 · Duplicates are ignored; reply windows close and the K09 posteriors move')
         first = self.webhooks["sv-call-A-predue"]
         dup = self.voice.ingest(dict(first))
-        self.ev(7, _at(d5, 18), "voice", f"Sarvam call-end sv-call-A-predue delivered again -> {dup['status']}",
+        self.ev(7, _at(d5, 18), "voice", f"Voice agent call-end sv-call-A-predue delivered again -> {dup['status']}",
                 borrower=self.cast["A"], rule="IDEMPOTENCY", policy_version=self.voice.version)
         dup_cb = None
         if getattr(self, "a_wa", None) is not None and self.a_wa.decision == "SEND":

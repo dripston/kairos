@@ -1,4 +1,7 @@
 import { DEFAULT_CAMPAIGN } from '../api/config'
+import { OfflineError } from '../api/client'
+import { useApiRole, useApiStatus } from '../api/hooks'
+import { setOutboundPaused } from '../api/kairos'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ResponsiveContainer, BarChart, Bar as RBar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, AreaChart, Area, LineChart, Line, PieChart, Pie, Cell } from 'recharts'
@@ -38,6 +41,8 @@ export default function ControlRoom() {
   const [dialog, setDialog] = useState(null)
   const ask = (cfg) => setDialog(cfg)
   const { scope } = state
+  const apiStatus = useApiStatus()
+  const { actor } = useApiRole()
 
   // deep links from Cohorts / Campaigns: /control?scope=cohort&id=C3  or  ?campaign=C-01
   useEffect(() => {
@@ -71,7 +76,17 @@ export default function ControlRoom() {
   const setTab = (t) => setParams((p) => { const n = new URLSearchParams(p); if (t === 'overview') n.delete('tab'); else n.set('tab', t); return n }, { replace: true })
   const pauseAll = () => ask({ title: state.globalPause ? 'Resume all outbound' : 'Pause all outbound', danger: !state.globalPause,
     effect: state.globalPause ? 'Paused sends return to the queue and are re-checked against every guardrail before they go.' : `Every channel stops sending immediately. ${d.allQueue.filter((q) => ACTIVE.includes(q.status)).length} pending sends will be held — nothing is lost.`,
-    confirm: state.globalPause ? 'Resume' : 'Pause everything', run: (reason) => dispatch({ type: 'GLOBAL_PAUSE', reason }) })
+    confirm: state.globalPause ? 'Resume' : 'Pause everything', run: (reason) => {
+      const on = !state.globalPause
+      dispatch({ type: 'GLOBAL_PAUSE', reason })
+      // With a backend connected, the kill switch is the real one (K06 Ledger.set_outbound_paused), not only the demo view.
+      if (apiStatus.state !== 'online') return
+      setOutboundPaused(on, { actor, reason })
+        .then((r) => dispatch({ type: 'TOAST', tone: on ? 'warn' : 'ok',
+          text: on ? `Backend: all outbound paused · ${r?.canceled ?? 0} queued touches canceled` : 'Backend: outbound resumed · Aladdin replans, every guardrail re-checked' }))
+        .catch((e) => dispatch({ type: 'TOAST', tone: 'bad',
+          text: `Backend kill switch not applied · ${e instanceof OfflineError ? 'Kairos API unreachable' : e.message}` }))
+    } })
 
   return (
     <>

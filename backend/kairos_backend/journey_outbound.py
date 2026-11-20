@@ -26,7 +26,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal, Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -73,17 +73,37 @@ class OverrideIn(BaseModel):
     time: Optional[Literal["07:30", "09:30", "14:30", "17:30", "20:00"]] = None
 
 
-def _session() -> J.OutboundJourney:
+TOKEN = r"^[A-Za-z0-9_-]{4,64}$"
+# The page sends back the session id it started (X-Journey-Session): a request for a session another client replaced
+# or closed is a clear 409, never a hang and never an action on someone else's session.
+SessionHeader = Header(None, alias="X-Journey-Session", pattern=r"^[0-9a-f]{12}$")
+REPLACED = ("Another presenter started a new session (or closed this one). Restart?")
+
+
+def _replaced(e: Exception) -> HTTPException:
+    return HTTPException(409, {"code": J.SessionClosed.code, "message": REPLACED, "why": str(e)})
+
+
+def _session(session_id: Optional[str] = None) -> J.OutboundJourney:
     try:
-        return manager.get()
+        return manager.get(session_id)
     except LookupError as e:
         raise HTTPException(409, str(e))
+    except J.SessionClosed as e:
+        raise _replaced(e)
 
 
-def _act(action: str, **params):
-    s = _session()
+def _call(fn):
     try:
-        out = s.act(action, **params)
+        return fn()
+    except J.SessionClosed as e:
+        raise _replaced(e)
+
+
+def _act(action: str, session_id: Optional[str] = None, **params):
+    s = _session(session_id)
+    try:
+        out = _call(lambda: s.act(action, **params))
     except ValueError as e:
         raise HTTPException(422, str(e))
     if not out.get("ok"):
@@ -103,75 +123,101 @@ def presets():
             "presets": J.presets_for(), "stages": list(J.STAGES), "override_times": list(J.OVERRIDE_TIMES)}
 
 
+def _presenter(query: Optional[str], header: Optional[str]) -> Optional[str]:
+    return query or header
+
+
+Presenter = Query(None, pattern=TOKEN, description="opt-in presenter lock token (or X-Journey-Presenter)")
+PresenterHeader = Header(None, alias="X-Journey-Presenter", pattern=TOKEN)
+
+
+def _locked(e: Exception) -> HTTPException:
+    return HTTPException(409, {"code": J.PresenterLocked.code, "message": str(e)})
+
+
 @router.post("/api/start")
-def start(body: Optional[StartIn] = None):
-    """A fresh SIMULATED campaign (own temp DB) with one spotlight borrower; replaces any running session."""
+def start(body: Optional[StartIn] = None, presenter: Optional[str] = Presenter,
+          x_presenter: Optional[str] = PresenterHeader):
+    """A fresh SIMULATED campaign (own temp DB) with one spotlight borrower; replaces any running session, unless a
+    presenter holds the opt-in lock (`?presenter=<token>` on their /start): then only that token may start or close."""
     b = body or StartIn()
     try:
-        s = manager.start(seed=b.seed, borrowers=b.borrowers, days=b.days, spotlight=b.spotlight)
+        s = manager.start(presenter=_presenter(presenter, x_presenter), seed=b.seed, borrowers=b.borrowers,
+                          days=b.days, spotlight=b.spotlight)
     except KeyError:
         raise HTTPException(404, "no such borrower in this campaign")
-    return s.state(0)
+    except J.PresenterLocked as e:
+        raise _locked(e)
+    return {**_call(lambda: s.state(0)), "session_id": s.session_id}
 
 
 @router.post("/api/step")
-def step():
-    """Run the next phase on the real engines: plan (→ approval window) or the window's close + the day's sends."""
-    s = _session()
-    out = s.step()
-    st = s.state(len(s.events))
-    first = len(s.events) - len(out["events"])
-    return {**st, "events": [J.compact(e) for e in s.events[first:]], "cursor": len(s.events)}
+def step(session_id: Optional[str] = SessionHeader):
+    """Run the next phase on the real engines: plan (→ approval window) or the window's close + the day's sends.
+    409 SESSION_REPLACED (never a hang) when another client replaced or closed the session meanwhile."""
+    s = _session(session_id)
+
+    def run():
+        out = s.step()
+        st = s.state(len(s.events))
+        first = len(s.events) - len(out["events"])
+        return {**st, "events": [J.compact(e) for e in s.events[first:]], "cursor": len(s.events),
+                "session_id": s.session_id}
+    return _call(run)
 
 
 @router.get("/api/state")
-def state(cursor: int = Query(0, ge=0)):
-    return _session().state(cursor)
+def state(cursor: int = Query(0, ge=0), session_id: Optional[str] = SessionHeader):
+    s = _session(session_id)
+    return {**_call(lambda: s.state(cursor)), "session_id": s.session_id}
 
 
 @router.post("/api/campaign")
-def campaign(body: PausedIn):
-    return _act("campaign", paused=body.paused)
+def campaign(body: PausedIn, session_id: Optional[str] = SessionHeader):
+    return _act("campaign", session_id, paused=body.paused)
 
 
 @router.post("/api/outbound")
-def outbound(body: PausedIn):
-    return _act("outbound", paused=body.paused)
+def outbound(body: PausedIn, session_id: Optional[str] = SessionHeader):
+    return _act("outbound", session_id, paused=body.paused)
 
 
 @router.post("/api/approvals/{approval_id}/approve")
-def approve(approval_id: str, body: Optional[DecideIn] = None):
-    return _act("approve", approval_id=approval_id, reason=body.reason if body else None)
+def approve(approval_id: str, body: Optional[DecideIn] = None, session_id: Optional[str] = SessionHeader):
+    return _act("approve", session_id, approval_id=approval_id, reason=body.reason if body else None)
 
 
 @router.post("/api/approvals/{approval_id}/reject")
-def reject(approval_id: str, body: Optional[DecideIn] = None):
-    return _act("reject", approval_id=approval_id, reason=body.reason if body else None)
+def reject(approval_id: str, body: Optional[DecideIn] = None, session_id: Optional[str] = SessionHeader):
+    return _act("reject", session_id, approval_id=approval_id, reason=body.reason if body else None)
 
 
 @router.post("/api/spotlight/preview")
-def preview(body: PreviewIn):
-    return _act("preview", channel=body.channel, time=body.time)
+def preview(body: PreviewIn, session_id: Optional[str] = SessionHeader):
+    return _act("preview", session_id, channel=body.channel, time=body.time)
 
 
 @router.post("/api/spotlight/override")
-def override(body: OverrideIn):
+def override(body: OverrideIn, session_id: Optional[str] = SessionHeader):
     if body.mode == "channel" and (body.channel is None or body.time is None):
         raise HTTPException(422, "a channel override needs channel and time")
-    return _act("override", mode=body.mode, channel=body.channel, time=body.time)
+    return _act("override", session_id, mode=body.mode, channel=body.channel, time=body.time)
 
 
 @router.post("/api/spotlight/hold")
-def hold(body: OnIn):
-    return _act("hold", on=body.on)
+def hold(body: OnIn, session_id: Optional[str] = SessionHeader):
+    return _act("hold", session_id, on=body.on)
 
 
 @router.post("/api/spotlight/stop")
-def stop():
-    return _act("stop")
+def stop(session_id: Optional[str] = SessionHeader):
+    return _act("stop", session_id)
 
 
 @router.post("/api/close")
-def close():
-    manager.close()
+def close(presenter: Optional[str] = Presenter, x_presenter: Optional[str] = PresenterHeader):
+    try:
+        manager.close(presenter=_presenter(presenter, x_presenter))
+    except J.PresenterLocked as e:
+        raise _locked(e)
     return {"closed": True}

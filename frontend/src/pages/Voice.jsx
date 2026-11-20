@@ -53,12 +53,12 @@ export default function Voice() {
 
   return (
     <>
-      <PageHeader title="Voice bots" sub="Kairos decides whether a call may happen (K01 Gate); the registry picks which Sarvam bot, voice and language. Kairos, not the bot, decides what a disposition does."
+      <PageHeader title="Voice bots" sub="Kairos decides whether a call may happen (K01 Gate); the registry picks which AI voice agent, voice and language. Kairos, not the bot, decides what a disposition does."
         chip={<SourceBadge res={reg} />} />
       <div className="space-y-5">
         <div className="grid grid-cols-3 gap-5">
           <Card className="col-span-2">
-            <CardHead title="Bot registry" sub={`Use case → Sarvam agent · registry v${r.registry_version ?? '—'} · ${r.status || ''}`} right={<RefreshButton onClick={reg.reload} />} />
+            <CardHead title="Bot registry" sub={`Use case → AI voice agent · registry v${r.registry_version ?? '—'} · ${r.status || ''}`} right={<RefreshButton onClick={reg.reload} />} />
             <MockNote res={reg} />
             <table className="w-full">
               <thead><tr><Th>Use case</Th><Th>DPD bands</Th><Th>Agent</Th><Th>Voice</Th><Th>Human approval</Th></tr></thead>
@@ -116,7 +116,7 @@ export default function Voice() {
               ))}
             </tbody>
           </table>
-          {!(calls.data || []).length && <Empty>{calls.loading ? 'Loading…' : 'No calls yet. Calls arrive through POST /webhooks/sarvam/call-end.'}</Empty>}
+          {!(calls.data || []).length && <Empty>{calls.loading ? 'Loading…' : 'No calls yet. Calls arrive through the voice agents\' call-end webhook.'}</Empty>}
         </Card>
       </div>
     </>

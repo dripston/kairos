@@ -175,6 +175,7 @@ def _model_flags() -> dict:
 class World:
     def __init__(self):
         self.lock = threading.RLock()
+        self.closed = False
         self.policy = load_policy()
         self.dir = tempfile.mkdtemp(prefix="kairos-j2-")
         self.ledger = Ledger(self.policy, Path(self.dir) / "journey_inbound.db")
@@ -225,6 +226,7 @@ class World:
         self.clock.offset = timedelta(0)
 
     def close(self) -> None:
+        self.closed = True  # a request that picked up this world before a reset gets a 409, not a closed-DB 500
         try:
             self.ledger.close_all()
         finally:
@@ -554,7 +556,7 @@ class World:
         return trace
 
     def _understand(self, u_ent, otp_check, fraud, stop, human_owned, st_before, replies) -> dict:
-        prism_note = "off: no Sarvam key" if not self.flags["prism"] else "not needed"
+        prism_note = "off in this demo" if not self.flags["prism"] else "not needed"
         if u_ent is None:
             if human_owned:
                 why = "Not needed: a person owns this chat, so the bot does not interpret it"
@@ -576,7 +578,7 @@ class World:
             decided = "rules"
             ladder = [{"tier": "Rules", "status": "hit", "note": INTENT_WORDS.get(intent, intent)},
                       {"tier": "Small model", "status": "skip", "note": "not needed"},
-                      {"tier": "Prism", "status": "skip", "note": prism_note},
+                      {"tier": "Decision model", "status": "skip", "note": prism_note},
                       {"tier": "Person", "status": "skip", "note": "not needed"}]
             detail = {"source": "CM-03 servicing + K09 safety rules"}
         else:
@@ -594,9 +596,9 @@ class World:
             else:
                 ladder.append({"tier": "Small model", "status": "skip", "note": "not needed"})
             if "prism" in esc or tier == "prism":
-                ladder.append({"tier": "Prism", "status": "hit" if tier == "prism" else "unsure", "note": "sarvam-prism"})
+                ladder.append({"tier": "Decision model", "status": "hit" if tier == "prism" else "unsure", "note": "decision model"})
             else:
-                ladder.append({"tier": "Prism", "status": "skip", "note": prism_note if tier in ("abstain",) or not self.flags["prism"] else "not needed"})
+                ladder.append({"tier": "Decision model", "status": "skip", "note": prism_note if tier in ("abstain",) or not self.flags["prism"] else "not needed"})
             ladder.append({"tier": "Person", "status": "hit" if tier == "abstain" else "skip",
                            "note": "nobody is sure: ask again, then a person" if tier == "abstain" else "not needed"})
             detail = {"source": f"K09 intent stack ({tier})", "confidence": u.k09.confidence, "stack_label": st.get("label"),
@@ -904,10 +906,24 @@ def page():
     return PAGE.read_text(encoding="utf-8")
 
 
+WORLD_RESET = {"code": "WORLD_RESET", "message": "Someone reset the demo while this request was running. Refresh to continue."}
+
+
+def _open(w: World) -> World:
+    """Call with w.lock held: refuse a world another client's Reset demo closed meanwhile."""
+    if w.closed:
+        raise HTTPException(409, WORLD_RESET)
+    return w
+
+
 @router.get("/state")
 def get_state():
     w = world()
     with w.lock:
+        if w.closed:  # reset meanwhile: show the new world
+            w = world()
+            with w.lock:
+                return _open(w).state()
         return w.state()
 
 
@@ -917,7 +933,7 @@ async def send(body: dict):
 
     def run():
         with w.lock:
-            tr = w.send(str(body.get("phone") or ""), body.get("text"), body.get("scenario"))
+            tr = _open(w).send(str(body.get("phone") or ""), body.get("text"), body.get("scenario"))
             return {"trace": tr, "state": w.state()}
     return await run_in_threadpool(run)
 
@@ -928,7 +944,7 @@ async def agent(action: str, body: dict):
 
     def run():
         with w.lock:
-            tr = w.human(action, str(body.get("conversation_id") or ""), str(body.get("text") or ""),
+            tr = _open(w).human(action, str(body.get("conversation_id") or ""), str(body.get("text") or ""),
                          str(body.get("decision") or ""))
             return {"trace": tr, "state": w.state()}
     return await run_in_threadpool(run)
