@@ -1,143 +1,133 @@
-# Kairos films (v3): QA
+# Kairos films (v4 finals): QA
 
-Built 20 Nov 2026 05:14 IST from branch `film/walkthrough` at ab9a8be. Everything shown is **SIMULATED**: synthetic borrowers, local servers (plus the read-only deployed dashboard), and dry-run adapters. Nothing was sent to anyone, and no real call was placed.
+Built 20 Nov 2026 14:00 IST from `film/walkthrough` at 30f470e. Everything shown is **SIMULATED**: synthetic borrowers, the release-candidate server (port 8120) and the deployed dashboard read-only, and dry-run adapters. Nothing was sent to anyone.
 
-| | Product film, "Kairos in action" | Technical film, "How Kairos works" |
-|---|---|---|
-| Master | `film_out/kairos_product.mp4` | `film_out/kairos_technical.mp4` |
-| Copy | `film_out/kairos_product_720p.mp4` | `film_out/kairos_technical_720p.mp4` |
-| Captions (sidecars) | `kairos_product.srt` / `.vtt` | `kairos_technical.srt` / `.vtt` |
-| Master check (AVAsset reader) | 121.417 s, 1920x1080 @ 60.00 fps, 7285 frames decoded (reader completed), audio tracks 1 (121.369 s), last frame ok, 227.1 MB | 112.617 s, 1920x1080 @ 60.00 fps, 6757 frames decoded (reader completed), audio tracks 1 (112.569 s), last frame ok, 195.2 MB |
-| `afinfo` | 121.438912 s | 112.638549 s |
+**How they are made**
+- **4K:** the 1920×1080 CSS stage is re-painted by WebKit at 3840×2160 (not upscaled). H.264 High, 48 Mb/s, BT.709, 30 fps. The 1080p file is a downscale of the 4K master.
+- **Captures:** every product page is a capture at device scale 4. Zooms are capped at 2× of the page, so captures are never upscaled. The F02/F03 dashboard recordings are 1080p video, shown at ≤ 1× of their pixels.
+- **Windows:** a window shows a whole page, then animates to a whole component (DOM rect + margin, header row included). It never holds empty fill and never cuts a glyph.
+- **Footage:** retimed so every output frame maps to exactly one source frame (25 fps at 1.2×, 24 fps at 1.25×).
+- **Nebula:** always plays in real time (ping-pong on long spans).
+- **Rendering:** each frame is snapshotted only after its video frames are presented and its paint is committed.
+- **Captions:** each cue starts at its clip's measured speech onset or at the end of the real pause nearest the phrase boundary.
 
-## Gate checklist
+### Product film, “Kairos in action”
 
-| Check | Product | Technical | How it was checked |
-|---|---|---|---|
-| Captions on every spoken second | ✅ 21 cues, 0 uncovered lines, ≤ 2 lines, longest line 44 chars, sidecars written | ✅ 20 cues, 0 uncovered lines, ≤ 2 lines, longest line 43 chars, sidecars written | `tools/captions.py` builds the cues from the mix's own line timings, and exits non-zero if any spoken line is uncovered. The same cues are burned in (46 px, white on a 74% dark pill, speaker tag in teal) and written as `.srt` and `.vtt`. Cues are whole sentences, or explicit complete phrases for the two long lines; 2 lines max, about 42 characters per line (44 max); line breaks fall after a clause mark or before a conjunction. Dialogue cues carry the speaker tag on every cue. |
-| Human → screen → human | ✅ longest run 2 (at 18.0 s) | ✅ longest run 2 (at 5.2 s) | The longest run of consecutive shots with no person in them, counted from the film data (`tools/qa_doc.py`). The rule is at most 2 cream cards back to back. |
-| Text is large enough | ✅ | ✅ | Captions 46 px; headlines 72–150 px; tags, fine print and credits 32 px. Real UI is shown as one component per card, scaled so 13 px UI text renders at 28–47 px (see the per-5 s tables). Phone and laptop screens in footage are scene detail; the readable component always follows on a card. |
-| No text over UI | ✅ 0 collisions | ✅ 0 collisions | `render --qa` walks each film at 10 fps and fails if a callout overlaps the focused subject or unfocused UI, or a caption overlaps a card. Cards sit above the caption band; tags sit on cream above the card. |
-| Real product in every product beat | ✅ | ✅ | Every phone, laptop and monitor screen is a real capture composited onto the footage (`tools/screen_comp.swift`, Core Image chroma or white-screen key, perspective tracking). Every card is a crop of a real capture (`tools/record.swift`, offscreen WKWebView). Terminal lines are recorded output. |
-| Music: licensed, cut on phrases, never stretched | ✅ | ✅ | **Product:** "Corporate Inspirational" (AtlasAudio, Pixabay licence), 0 → 116.82 s, the bar 68 downbeat that ends the outro's first 4-bar phrase (140 BPM). **Technical:** "Inspiring Technology" (The_Mountain, Pixabay licence), 0 → 108.02 s, the bar 36 downbeat (80 BPM). Each ends with a 25 ms hard stop into the silent lockup. No internal splices, no time-stretch. Bars from `tools/beats.swift`. |
-| Narration: 10 lines or fewer | ✅ 10 Neha lines, 99 words | ✅ 10 Neha lines, 160 words | Sarvam bulbul:v3, Neha, pace 1.2 (`audio/vo/`). Characters: Ritu (Kairos) and Pooja (Sunita), en-IN, pace 1.05 (`audio/dlg/`); the technical film's voice call is the earlier Hindi recording, captioned in English. Vikram's Hindi WhatsApp reply is on screen only, captioned "I'll pay by the 29th." |
-| Loudness | ✅ mix -14.01 LUFS, true peak -1.04 dBTP; music -31.0 dB under voice vs -14.1 dB in gaps; after AAC -14.03 LUFS, sample peak -1.38 dBFS | ✅ mix -14.07 LUFS, true peak -1.04 dBTP; music -28.2 dB under voice vs -11.6 dB in gaps; after AAC -14.08 LUFS, sample peak -0.84 dBFS | BS.1770 integrated loudness and true peak on the mix (`tools/mix`), then again on the master's own AAC track (`../tools/score_analyze.swift`, sample peak). Music ducks 18 dB under every voice. |
-| No empty frames, no dead seconds | ✅ 0 empty / 0 identical of 122 sampled seconds | ✅ 0 empty / 0 identical of 113 sampled seconds | `tools/qa_frames` samples every 1 s; it fails on a frame more than 97% uniform, and flags a second identical to the next. |
+| | |
+|---|---|
+| 4K master | `film_out/kairos_product_final_4k.mp4` · 220.000 s, 3840x2160 @ 30.00 fps, 6600 frames decoded (reader completed), audio tracks 1 (219.952 s), last frame ok, 1308.3 MB |
+| 1080p | `film_out/kairos_product_final_1080p.mp4` · 220.000 s, 1920x1080 @ 30.00 fps, 6600 frames decoded (reader completed), audio tracks 1 (219.952 s), last frame ok, 289.9 MB |
+| Captions | `film_out/kairos_product_final.srt` / `.vtt` · 50 cues, ≤ 2 lines, ≤ 44 characters per line, burned in |
+| Narration | 18 Neha lines (pace 1.3), 7 dialogue lines (Kavya 1.05 / Tanya 1.0) |
+| Mix | integrated -14.10 LUFS (target -14.0)  true peak -1.04 dBTP  duration 220.01 s · voice on 174.8 s = 79% of runtime, 25 lines · music under voice -26.1 dB vs in gaps -12.9 dB (duck 18 dB) |
 
-## Claims on screen and in narration
+Every-frame analysis of the 1080p (`qa_tools/frameqa` + `analyze.py`):
 
-| Claim | Where | Source | Label in film |
-|---|---|---|---|
-| Fixed schedule: 1,262 messages → 23 replies | product hook | `/demo/live/state` after the seed-42 run (`counters.cn10`) | "Fixed schedule · SIMULATED run, seed 42" |
-| About twice the money back per ₹ | product N10 and proof card | `backend/README.md` final unseen seeds; `film/TRUTH_TABLE.md` | "In our tests"; "vs a fixed-schedule stand-in"; "SIMULATED · synthetic borrowers · 3 unseen seeds · same budget and caps" |
-| 0 rule breaches | product N10 and proof card | PROGRESS §1; `/demo/live` "Rule breaches 0" | SIMULATED |
-| 49/49 attacks blocked | product proof card; technical terminal | real `run_redteam.py` output | "on our own red-team suite" |
-| Identity first (OTP), fake screenshot caught, STOP on every channel | product Sunita beats | real `/demo/journey/inbound` captures (engine times 0.7–4.0 ms) | the page's own labels |
-| Vikram: SMS 9:30 → no reply → WhatsApp → Hindi promise → paid ₹7,409 | product Vikram beats | real `/demo/journey/outbound` captures | Day / time stamps from the page; SIMULATED |
-| Approval before a voice call; an override at 20:00 is blocked | product Asha beats | real outbound captures (Aarav) | "Locked by guardrails: no person can override this." |
-| Churn re-sorts borrowers daily; every move names its rule | technical | Engine Room (`demo/engine-room` @ c3abbd8), K27 churn panel and `&inspect=1` rule card | "Engine Room · SIMULATED · seed 42 · 300 synthetic borrowers · 14 days" |
-| Day 7: WhatsApp replies drop to about a third; Kairos is not told | technical | Engine Room `?at=6.05` (the simulated world change, ×0.35) | same tag; the page's own callout |
-| End of day 14: the 1–30-days-late segment moved to SMS, learned from replies | technical | Engine Room `?at=13.98` | same tag; the page's own callout |
-| Voice dispositions with confidence; below a hand-set threshold a person reviews | technical | deployed dashboard Voice bots page (read-only); `policy/K17-voice-dispositions/thresholds.json` (0.5–0.8) | "hand-set" |
-| Same seed twice: IDENTICAL; 50,000 atomic decisions in 11.1 s, 0 cap breaches; 3030 passed; OPE 18.2 vs truth 18.4 | technical terminal | real recorded runs (`term/*.json`) | speed-up badges; "SIMULATED" on OPE |
-| Built on research (10 citations) | technical card | `research/papers.md` §B | "Built on research" |
-
-Wording rules kept: "Bayesian learner" (never Thompson sampling, RL or cost-optimal); thresholds are "hand-set"; "pause outbound", not per-campaign; SMS and WhatsApp are dry-run; 9.9× / 15.9× never shown.
-
-## Frame check every 5 s
-
-Thumbnails from the finished masters: `qa/kairos_product_every5s.jpg` and `qa/kairos_technical_every5s.jpg`. The tables are generated from the film data at the same timestamps (`render --describe`, `tools/qa_table.py`).
-
-### Product film
-
-| t | On screen | Readable size at 1080p | Real product? | Caption |
-|---|---|---|---|---|
-|   0.0 s | `M1_flyover`: footage H1 | — | people (story) | — |
-|   5.0 s | `M5_shopkeeper`: footage H4 | caption 46 px | people (story) | Every month, lenders send the same reminder, at the same time, to everyone. |
-|  10.0 s | `P02_vikram_sms`: footage H8, real UI on the phone screen | — | yes (real UI composited) | — |
-|  15.0 s | unit chart: 1,262 dots, 23 lit (seed-42 fixed schedule); words “1,262 messages. / 23 replies.” | 150 px | real counts | — |
-|  20.0 s | logo lockup; headline “Collections that decide who, when and how.” | 112 px logo, 56–72 px line, 32 px credits; 72 px; caption 46 px | — | Kairos looks at every borrower, every day, and decides. |
-|  25.0 s | `P07_laptop_dashboard`: footage H6, real UI on the laptop screen (push in) | — | yes (real UI composited) | — |
-|  30.0 s | card: capture `ov` frame `d1_aladdin_tech` | UI 13 px → 32 px, 16 px → 40 px (zoom 2.49); caption 46 px | yes (real capture) | Aladdin, our safety supervisor, checks it against the lender's rules. |
-|  35.0 s | card: capture `ov` frame `v11` | UI 13 px → 32 px, 16 px → 40 px (zoom 2.49); caption 46 px | yes (real capture) | No reply on SMS. So it learns, and tries WhatsApp. |
-|  40.0 s | `V2_vikram_smiles`: footage H7 | — | people (story) | — |
-|  45.0 s | card: capture `ov` frame `v18` | UI 13 px → 32 px, 16 px → 40 px (zoom 2.49) | yes (real capture) | — |
-|  50.0 s | `P15_laptop_paid`: footage H6, real UI on the laptop screen | — | yes (real UI composited) | — |
-|  55.0 s | `V4_vikram_relief`: footage H7 | — | people (story) | — |
-|  60.0 s | card: capture `aarav` frame `approved` | UI 13 px → 42 px, 16 px → 51 px (zoom 3.20); caption 46 px | yes (real capture) | Your team stays in charge. |
-|  65.0 s | `P17a_sunita`: footage H4 | — | people (story) | — |
-|  70.0 s | `P17_sunita_otp`: footage H8, real UI on the phone screen | caption 46 px | yes (real UI composited) | Kairos: To protect your account, |
-|  75.0 s | `P17_sunita_otp`: footage H8, real UI on the phone screen | caption 46 px | yes (real UI composited) | Kairos: Thank you, you are verified. |
-|  80.0 s | `P19_sunita_fake`: footage H8, real UI on the phone screen | caption 46 px | yes (real UI composited) | Kairos answers in seconds. But only once it knows it's really them. |
-|  85.0 s | card: capture `in` frame `fake_tech` | UI 13 px → 34 px, 16 px → 42 px (zoom 2.60); caption 46 px | yes (real capture) | Kairos: For your security, I can't help with this request in chat. |
-|  90.0 s | card: capture `in` frame `fake_tech` | UI 13 px → 34 px, 16 px → 42 px (zoom 2.60); caption 46 px | yes (real capture) | A doctored payment screenshot? It checks with the bank. |
-|  95.0 s | `P20c_laptop_console`: footage H6, real UI on the laptop screen | — | yes (real UI composited) | — |
-| 100.0 s | `P20d_borrower_b_reply`: footage H8, real UI on the phone screen | — | yes (real UI composited) | — |
-| 105.0 s | `P21_sunita_stop`: footage H8, real UI on the phone screen | caption 46 px | yes (real UI composited) | Kairos: You will not receive further automated reminders from us on any channel. |
-| 110.0 s | `P22_team`: footage H11 | caption 46 px | people (story) | In our tests, about twice the money back for every rupee. With zero rule breaches. |
-| 115.0 s | proof card (≈2×, 0, 49/49); fine print | 150 px numbers, 40/32 px labels; 32 px; caption 46 px | sourced figures | In our tests, about twice the money back for every rupee. With zero rule breaches. |
-| 120.0 s | logo lockup | 112 px logo, 56–72 px line, 32 px credits | — | — |
-
-### Technical film
-
-| t | On screen | Readable size at 1080p | Real product? | Caption |
-|---|---|---|---|---|
-|   0.0 s | `T01_engineer`: footage H13 | — | people (story) | — |
-|   5.0 s | headline “How Kairos works.” | 108 px; caption 46 px | — | This is what happens inside Kairos, for one borrower, on one day. |
-|  10.0 s | `T03_street`: footage H1 | — | people (story) | — |
-|  15.0 s | card: capture `er` frame `d12`; architecture diagram | UI 13 px → 34 px, 16 px → 42 px (zoom 2.60); titles 36 px, subtitles 27 px; caption 46 px | yes (real capture) | Each day, every borrower is re-sorted. Every move names its rule. |
-|  20.0 s | card: capture `er` frame `d12`; architecture diagram | UI 13 px → 32 px, 16 px → 40 px (zoom 2.48); titles 36 px, subtitles 27 px; caption 46 px | yes (real capture) | A Bayesian learner tracks reply chances. |
-|  25.0 s | card: capture `er` frame `d12`; tag “Engine Room · SIMULATED · seed 42 · 300 synthetic borrowers · 14 days”; architecture diagram | UI 13 px → 32 px, 16 px → 40 px (zoom 2.48); 32 px tag; titles 36 px, subtitles 27 px; caption 46 px | yes (real capture) | On day seven, WhatsApp replies drop. Kairos isn't told. |
-|  30.0 s | card: capture `er` frame ``; tag “Engine Room · SIMULATED · seed 42 · 300 synthetic borrowers · 14 days”; architecture diagram | UI 13 px → 32 px, 16 px → 40 px (zoom 2.48); 32 px tag; titles 36 px, subtitles 27 px; caption 46 px | yes (real capture) | By the end of day fourteen, that segment has moved to SMS. |
-|  35.0 s | `P16b_laptop_held`: footage H6, real UI on the laptop screen; architecture diagram | titles 36 px, subtitles 27 px; caption 46 px | yes (real UI composited) | Aladdin reserves the budget and limits, then checks every rule again at send time. |
-|  40.0 s | card: capture `aarav` frame `approved`; architecture diagram | UI 13 px → 30 px, 16 px → 36 px (zoom 2.28); titles 36 px, subtitles 27 px; caption 46 px | yes (real capture) | Aladdin reserves the budget and limits, then checks every rule again at send time. |
-|  45.0 s | card: capture `sys` frame `trace`; architecture diagram | UI 13 px → 28 px, 16 px → 35 px (zoom 2.16); titles 36 px, subtitles 27 px; caption 46 px | yes (real capture) | Delivery and replies come back as webhooks, and duplicates are ignored. |
-|  50.0 s | `T07_sunita_call`: footage H4; architecture diagram | titles 36 px, subtitles 27 px; caption 46 px | people (story) | Kairos: Your EMI was due last week. Could you pay by Friday? |
-|  55.0 s | card: capture `dv` frame `learning`; architecture diagram | UI 13 px → 32 px, 16 px → 39 px (zoom 2.46); titles 36 px, subtitles 27 px; caption 46 px | yes (real capture) | Voice calls run on Sarvam agents. |
-|  60.0 s | `T07b_person_reviews`: footage H10; architecture diagram | titles 36 px, subtitles 27 px; caption 46 px | people (story) | Every call comes back with a disposition and a confidence. |
-|  65.0 s | `P12_vikram_whatsapp`: footage H8, real UI on the phone screen; architecture diagram | titles 36 px, subtitles 27 px; caption 46 px | yes (real UI composited) | Replies climb a ladder: rules first, then a small model. |
-|  70.0 s | card: capture `ov` frame `d3_intent_tech_scrolled`; architecture diagram | UI 13 px → 30 px, 16 px → 36 px (zoom 2.28); titles 36 px, subtitles 27 px; caption 46 px | yes (real capture) | Still unsure? A person decides. |
-|  75.0 s | `P20c_laptop_console`: footage H6, real UI on the laptop screen; architecture diagram | titles 36 px, subtitles 27 px; caption 46 px | yes (real UI composited) | Every action still passes Aladdin, and lands in the audit log. |
-|  80.0 s | `T10_engineer`: footage H13, real UI on the monitor screen | caption 46 px | yes (real UI composited) | Same data in, same decisions out. And we attack it, load it, and test it. |
-|  85.0 s | terminal (real run) | mono 28 px → 29 px; caption 46 px | yes (real run) | Same data in, same decisions out. And we attack it, load it, and test it. |
-|  90.0 s | terminal (real run); callout “50,000 atomic decisions in 11.1 scap breaches: 0” | mono 28 px → 29 px; 50 px | yes (real run) | — |
-|  95.0 s | terminal (real run) | mono 28 px → 29 px | yes (real run) | — |
-| 100.0 s | callout “Built on research.” | 88 px | — | — |
-| 105.0 s | `T12_team_claps`: footage H11 | — | people (story) | — |
-| 110.0 s | logo lockup | 112 px logo, 56–72 px line, 32 px credits | — | — |
-
-## Honest notes (what is not perfect)
-
-**Footage and composites**
-- **Stock people:** every person is Pexels stock footage, cast to the story (Vikram, Asha, Sunita, borrower B, the team). They are actors, not users. Every screen they hold shows the real Kairos UI, composited in post.
-- **Screen composites:** phone screens are green-screen keyed and laptop screens are white-screen tracked (`tools/screen_comp.swift`). On close inspection there is a thin edge along some phone bezels. The pale green phone in borrower B's shots (H8_5) needed a lower key threshold and a UI contrast lift. Asha's laptop is H6_3, a woman's hands over the shoulder; her sleeve colour does not match her wide shots.
-- **UI inside footage:** phone and laptop screens in footage are scene detail and are not meant to be read at 1080p. The readable component always follows on a cream card.
-
-**Captures**
-- **Recorder animations:** the offscreen WKWebView recorder disables page animations. The Engine Room's one-time pulse on the 1–30 card, and its chip flip at the switch, are therefore not in the film. The stills show the final states. All motion comes from the compositor.
-- **Real UI wording:** cards show the pages' own wording, for example "Locked by guardrails: no person can override this." and engine times in ms. The approval beat crops the Approvals row before and after the click, so no "presenter" wording appears on screen.
-- **Mixed sources:** the Engine Room panels come from a separate local run (seed 42, 300 synthetic borrowers, 14 days). The journey cards come from the K03 demo journeys. They are different SIMULATED runs and are labelled as such.
-
-**Captions never over UI**
-- **Moving band:** in phone shots where the phone reaches the bottom of the frame, the caption band moves to the clean top of the shot. Sunita's phone uses top centre; Vikram's phone uses top left. The band jumps position at those cuts.
-- **No push-ins under narration:** the laptop push-ins carry no narration. In the technical film, the two laptop shots under narration are wide, so the caption sits on the keyboard.
-
-**Timing and sound**
-- **Long phrases:** two narration lines are longer than one caption cue: "Before anything goes out, …" and Kairos's OTP line. They are split at the clause boundary into two complete cues. A few line breaks fall before a conjunction rather than at a comma.
-- **Tight dialogue:** in the Sunita exchange, the gap between speakers is 0.17–0.27 s, including the files' own tail silence.
-- **Lockup:** the product runtime is 2:01. The music stops on the bar 68 downbeat, and the lockup holds 4.6 s in silence by design. The technical film runs 1:53, and its closing loop animation is shortened to about 2.5 s to land on the hard stop.
-
-## Rebuild
-
-```sh
-cd film/walkthrough
-python3 tools/shots_product.py                     # footage + real UI → comp/*.mov
-python3 tools/build_product3.py && python3 tools/build_technical3.py
-./tools/mix mix/product3.json && ./tools/mix mix/technical3.json
-python3 tools/captions.py audio/product3_cues_raw.json audio/product3_cues.json ../out/kairos_product audio/product3_cues_extra.json
-python3 tools/captions.py audio/technical3_cues_raw.json audio/technical3_cues.json ../out/kairos_technical
-bash tools/final.sh product3 kairos_product ../out && bash tools/final.sh technical3 kairos_technical ../out
-python3 tools/qa_doc.py ../out
+```
+out/kairos_product_final_rs_frames.csv: 6600 frames, 220.0 s, 30.0 fps
+groups: {'FLICKER': 8, 'STUTTER': 19}
+    10.13          FLICKER  x1   tile top-left r=0.18 d=5.6/6.3
+    10.70          FLICKER  x1   tile top-right r=0.24 d=9.4/7.3
+    11.07-  11.13  FLICKER  x2   tile top-midL r=0.22 d=8.3/6.4
+    14.67          FLICKER  x1   tile upper-midR r=0.12 d=7.9/8.1
+    36.47          STUTTER  x1   motion 0.89 -> freeze 0.014 -> 0.90
+    41.10          STUTTER  x1   motion 0.79 -> freeze 0.014 -> 0.91
+    46.63          STUTTER  x1   motion 1.66 -> freeze 0.018 -> 1.67
+    52.37          STUTTER  x1   motion 1.64 -> freeze 0.013 -> 1.59
+    59.73          STUTTER  x1   motion 1.27 -> freeze 0.019 -> 1.27
+    73.70          STUTTER  x1   motion 1.38 -> freeze 0.018 -> 1.35
+    75.53          STUTTER  x1   motion 1.47 -> freeze 0.014 -> 1.48
+    90.00          STUTTER  x1   motion 0.95 -> freeze 0.012 -> 0.96
+    90.93          STUTTER  x1   motion 1.05 -> freeze 0.012 -> 1.05
+    96.80          FLICKER  x1   tile upper-midR r=0.20 d=1.5/2.1
+   104.07          FLICKER  x1   tile bottom-midR r=0.18 d=1.8/1.8
+   104.63          FLICKER  x1   tile lower-midL r=0.11 d=1.2/1.1
+   104.77          STUTTER  x1   motion 0.62 -> freeze 0.016 -> 0.63
+   109.40          STUTTER  x1   motion 0.98 -> freeze 0.012 -> 0.97
+   111.57          FLICKER  x1   tile lower-midR r=0.15 d=57.2/64.0
+   138.33          STUTTER  x1   motion 1.10 -> freeze 0.008 -> 1.09
+   142.93          STUTTER  x1   motion 1.51 -> freeze 0.007 -> 1.63
+   148.67          STUTTER  x1   motion 1.49 -> freeze 0.017 -> 1.80
+   149.60          STUTTER  x1   motion 1.38 -> freeze 0.016 -> 1.36
+   152.37          STUTTER  x1   motion 1.15 -> freeze 0.016 -> 1.16
+   208.27          STUTTER  x1   motion 1.64 -> freeze 0.018 -> 1.59
+   209.77          STUTTER  x1   motion 1.56 -> freeze 0.013 -> 2.39
+   211.03          STUTTER  x1   motion 1.68 -> freeze 0.019 -> 1.70
 ```
 
-Captures: `tools/record` with `scripts/*.json` against a local server (isolated `KAIROS_DB`, `KAIROS_CHURN_DB`, `KAIROS_CM03_DEMO_INBOX=1`), the read-only deployed dashboard, and the Engine Room. Footage: `footage_manifest/fetch_human.sh` (Pexels; not committed). Music: `../music/licensed/fetch_music.sh` (Pixabay; not committed). Narration: `tools/vo.py` and `tools/dlg.py` (the Sarvam key is read from `backend/.env` and never printed).
+### Technical film, “How Kairos works”
+
+| | |
+|---|---|
+| 4K master | `film_out/kairos_technical_final_4k.mp4` · 204.033 s, 3840x2160 @ 30.00 fps, 6121 frames decoded (reader completed), audio tracks 1 (203.972 s), last frame ok, 1210.0 MB |
+| 1080p | `film_out/kairos_technical_final_1080p.mp4` · 204.033 s, 1920x1080 @ 30.00 fps, 6121 frames decoded (reader completed), audio tracks 1 (203.972 s), last frame ok, 268.0 MB |
+| Captions | `film_out/kairos_technical_final.srt` / `.vtt` · 41 cues, ≤ 2 lines, ≤ 44 characters per line, burned in |
+| Narration | 10 Neha lines (pace 1.3), 0 dialogue lines (Kavya 1.05 / Tanya 1.0) |
+| Mix | integrated -14.05 LUFS (target -14.0)  true peak -1.04 dBTP  duration 204.02 s · voice on 179.6 s = 88% of runtime, 10 lines · music under voice -24.0 dB vs in gaps -9.0 dB (duck 18 dB) |
+
+Every-frame analysis of the 1080p (`qa_tools/frameqa` + `analyze.py`):
+
+```
+out/kairos_technical_final_tf_frames.csv: 6121 frames, 204.0 s, 30.0 fps
+groups: {'STUTTER': 23, 'FLICKER': 1}
+    11.17          STUTTER  x1   motion 1.64 -> freeze 0.017 -> 1.65
+    13.93          STUTTER  x1   motion 2.17 -> freeze 0.019 -> 2.23
+    17.27          STUTTER  x1   motion 1.85 -> freeze 0.015 -> 1.85
+    17.83          STUTTER  x1   motion 1.83 -> freeze 0.013 -> 1.87
+    41.93          STUTTER  x1   motion 0.99 -> freeze 0.012 -> 0.97
+    42.83          STUTTER  x1   motion 1.00 -> freeze 0.011 -> 0.99
+    49.30          STUTTER  x1   motion 1.61 -> freeze 0.012 -> 1.68
+    49.87          STUTTER  x1   motion 1.68 -> freeze 0.007 -> 1.85
+    57.80          STUTTER  x1   motion 1.46 -> freeze 0.016 -> 1.49
+    62.43          STUTTER  x1   motion 1.01 -> freeze 0.015 -> 1.00
+    74.53          STUTTER  x1   motion 1.20 -> freeze 0.012 -> 1.17
+    79.13          STUTTER  x1   motion 2.06 -> freeze 0.017 -> 2.12
+    81.90          STUTTER  x1   motion 1.86 -> freeze 0.016 -> 1.86
+    82.47          STUTTER  x1   motion 1.94 -> freeze 0.009 -> 1.92
+    84.87          STUTTER  x1   motion 1.99 -> freeze 0.019 -> 1.98
+    90.40          STUTTER  x1   motion 1.69 -> freeze 0.018 -> 1.70
+    95.03          STUTTER  x1   motion 0.65 -> freeze 0.012 -> 0.64
+   115.63          STUTTER  x1   motion 1.10 -> freeze 0.015 -> 1.09
+   121.17          STUTTER  x1   motion 1.58 -> freeze 0.011 -> 1.60
+   140.63          STUTTER  x1   motion 1.62 -> freeze 0.010 -> 1.62
+   144.33          STUTTER  x1   motion 1.83 -> freeze 0.014 -> 1.87
+   145.27          STUTTER  x1   motion 1.73 -> freeze 0.016 -> 1.73
+   164.30          STUTTER  x1   motion 1.04 -> freeze 0.011 -> 1.15
+   172.40          FLICKER  x1   tile upper-midR r=0.10 d=0.8/1.0
+```
+
+## Honest notes
+
+**Length**
+- The user chose about 3:30 per film. Neha stays at pace 1.3, and time was cut only from words and holds.
+- With the approved trimmed lines, the voice alone is about 186 s in the product film (narration plus dialogue) and 180 s in the technical film.
+- The product film lands at about 3:46. It also carries a cold open, a logo, two part cards, the Aladdin flash, three slogans and the lockup.
+- The technical film lands at about 3:24.
+
+**Footage and screens**
+- **Stock people:** every person is Pexels stock, cast per `CASTING.md`: Vikram is the Delhi man (H2_4 and H7_6), and the montage and lender side use the human2 batch. They are actors, not users.
+- **No tracked composites:** no UI is composited onto a moving phone or laptop. Every real screen is a still or recorded page in a glass window, or a still phone frame (`comp/phone.html` renders of the real message texts).
+- **Whole pages:** pages are shown whole first. Where a browser viewport ends mid-page (the journey and inbound pages are 1440×810 and 1440×1150 viewports), the glass window shows the viewport the app shows. For the Control Room, the Engine Room and Voice bots, the page rectangle is chosen so that every card on screen is complete.
+- **Engine Room animations:** the recorder freezes page animations, so the Engine Room's pulse and chip flip are not in the film; the stills show the final states.
+
+**Data and wording**
+- **Mixed runs:** the journey cards are from the release-candidate server (8120) and were matched to the story by content, not by step index (the indices drift between runs). The Engine Room run (seed 42, 300 borrowers, 14 days) and the journeys are different SIMULATED runs.
+- **73% resolved without a person:** from 1,000 seeded test conversations. Counting only bank-verified payments (not recorded claims), the rate is **67.3%** (backend/README.md). That caveat is kept here, not on screen.
+- **No vendor names:** the word "Sarvam" appears nowhere. The Voice bots page is shown only from the Calls card down; its header names the vendor. The deployed frontend's Control Room and Learning & Proof pages are cropped to cards without it.
+- **The "presenter" wording** on one journey approval card is not used. The approval is shown from the F02 dashboard recording instead.
+
+**Sound**
+- **Music length:** both tracks are extended by repeating whole phrases (32, 16 or 8 bars, at downbeats, with 20–30 ms joins). They end on their own outro and ending, with no time-stretch.
+- **Voices:** Neha (narration, pace 1.3, "Alaadin" in the TTS text), Kavya (the agent, 1.05) and Tanya (the borrower, 1.0), all AI-generated.
+
+## Fixes after the final review (20 Nov, 13:08–13:59 IST)
+
+- **Product** (re-spliced into the reviewed 4K master at 13:08):
+  - At 1:51.57 the glass now fades in from the nebula (no empty glass frame).
+  - Every glass-to-glass dissolve now eases over 0.6 s: the new window fades in over 0.4 s while the old one fades out over 0.1–0.6 s.
+  - The identity, fake-proof and STOP beats hold on the result card (no phone-to-card snap).
+  - The first splice at 12:47 had 2 bare-background frames at each range start. It was withdrawn. Range renders now use `--preroll 1.0`.
+- **Technical** (re-spliced into the v4e 4K master at 13:57): all 21 transitions into or out of a title, chapter, big-number or brand card are sequential dips. The old element fades out over 0.25 s, then the card fades in over 0.25 s; texts never overlap. Window, diagram and panel crossfades are unchanged.
+- **Still in both films:** single duplicated frames from the N1 nebula source (STUTTER flags). About 1 frame per second shows during nebula backgrounds.
+  - The final2 attempt dropped those frames (`comp/NEB1c.mov`, `shots/NEB1c.json`). It was rejected: the technical final2 dropped to flat dark for one frame about every 31.3 s, which is the ping-pong period of the shorter clip.
+  - The product final2 render timed out on a seek. NEB1c is not used.

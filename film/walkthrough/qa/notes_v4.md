@@ -19,3 +19,15 @@
 **Sound**
 - **Music length:** both tracks are extended by repeating whole phrases (32, 16 or 8 bars, at downbeats, with 20–30 ms joins). They end on their own outro and ending, with no time-stretch.
 - **Voices:** Neha (narration, pace 1.3, "Alaadin" in the TTS text), Kavya (the agent, 1.05) and Tanya (the borrower, 1.0), all AI-generated.
+
+## Fixes after the final review (20 Nov, 13:08–13:59 IST)
+
+- **Product** (re-spliced into the reviewed 4K master at 13:08):
+  - At 1:51.57 the glass now fades in from the nebula (no empty glass frame).
+  - Every glass-to-glass dissolve now eases over 0.6 s: the new window fades in over 0.4 s while the old one fades out over 0.1–0.6 s.
+  - The identity, fake-proof and STOP beats hold on the result card (no phone-to-card snap).
+  - The first splice at 12:47 had 2 bare-background frames at each range start. It was withdrawn. Range renders now use `--preroll 1.0`.
+- **Technical** (re-spliced into the v4e 4K master at 13:57): all 21 transitions into or out of a title, chapter, big-number or brand card are sequential dips. The old element fades out over 0.25 s, then the card fades in over 0.25 s; texts never overlap. Window, diagram and panel crossfades are unchanged.
+- **Still in both films:** single duplicated frames from the N1 nebula source (STUTTER flags). About 1 frame per second shows during nebula backgrounds.
+  - The final2 attempt dropped those frames (`comp/NEB1c.mov`, `shots/NEB1c.json`). It was rejected: the technical final2 dropped to flat dark for one frame about every 31.3 s, which is the ping-pong period of the shorter clip.
+  - The product final2 render timed out on a seek. NEB1c is not used.

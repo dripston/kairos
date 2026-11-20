@@ -345,7 +345,7 @@
     update: function (L, t, A) {
       var e = enterT(A, L, t);
       L.root.style.opacity = L.bg ? 1 : 1;
-      L.box.style.opacity = e.q;
+      L.box.style.opacity = (L.dipIn ? e.p : 1) * e.q;   // dipIn: the card fades in from nothing (after a sequential dip)
       var life = A.clamp((t - L.t0) / Math.max(1, L.t1 - L.t0), 0, 1);
       L.box.style.transform = "translate(-50%,-50%)";   // text holds still (no sub-pixel scale drift)
       if (L.bgDrift && L.bgEl) { var lf = A.clamp((t - L.t0) / Math.max(1, L.t1 - L.t0), 0, 1); L.bgEl.style.backgroundPosition = (40 + 20 * lf) + "% 50%"; }  // a slow light on the background only

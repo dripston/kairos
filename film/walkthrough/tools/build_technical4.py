@@ -257,10 +257,17 @@ for a, b in zip(gl, gl[1:]):
 XF = 0.4
 base = [L for L in layers if L["kind"] in ("video", "glass", "title", "flow", "seq", "panel", "brand", "term") and abs(L.get("t1", 0) - L.get("t0", 0)) > 0.5]
 base.sort(key=lambda L: L["t0"])
+CARD, DIP = ("title", "brand"), 0.25
 for a, b in zip(base, base[1:]):
     if abs(a["t1"] - b["t0"]) < 0.06:
-        a["t1"] = round(a["t1"] + XF, 3); a["exit"] = dict(a.get("exit") or {}, dur=XF, type="fade")
-        b["enter"] = dict(b.get("enter") or {}, dur=XF, type="fade")
+        if a["kind"] in CARD or b["kind"] in CARD:
+            # into or out of a title / chapter / big-number card: a sequential dip, never two texts on top of each other
+            a["t1"] = round(b["t0"], 3); a["exit"] = dict(a.get("exit") or {}, dur=DIP, type="fade")
+            b["enter"] = dict(b.get("enter") or {}, dur=DIP, type="fade")
+            if b["kind"] == "title": b["dipIn"] = True
+        else:
+            a["t1"] = round(a["t1"] + XF, 3); a["exit"] = dict(a.get("exit") or {}, dur=XF, type="fade")
+            b["enter"] = dict(b.get("enter") or {}, dur=XF, type="fade")
 film = {"duration": round(END, 3), "ccStyle": "v4", "cues": "audio/technical4_cues.json", "bg": "#02040a", "captures": CAPS,
         "terms": {"redteam": "term/redteam.json", "bench": "term/bench.json", "determinism": "term/determinism.json", "pytest": "term/pytest.json", "ope": "term/ope.json"}, "layers": layers}
 for L in layers:
