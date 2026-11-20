@@ -94,8 +94,21 @@ def test_api_is_mounted_on_the_main_app(tmp_path, monkeypatch):
     monkeypatch.setenv("KAIROS_DB", str(tmp_path / "api.db"))
     import kairos_backend.api as api
     api = importlib.reload(api)
-    paths = {getattr(r, "path", "") for r in api.app.routes}
+    paths = _route_paths(api.app.routes)
     assert "/demo/journey/outbound" in paths and "/demo/journey/outbound/api/step" in paths
+
+
+def _route_paths(routes):
+    """Every route path, also inside included routers (FastAPI >= 0.165 wraps them in _IncludedRouter)."""
+    out = set()
+    for r in routes:
+        if getattr(r, "path", ""):
+            out.add(r.path)
+        inner = getattr(r, "original_router", None)
+        if inner is not None:
+            prefix = getattr(getattr(r, "include_context", None), "prefix", "") or ""
+            out |= {prefix + p for p in _route_paths(inner.routes)}
+    return out
 
 
 # ---------------- real engines ----------------
