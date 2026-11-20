@@ -99,17 +99,17 @@ beat([other("title", 2.2, lines=[{"text": "Part 2", "size": 40, "cls": "kicker"}
 beat([clip("P17a_sunita", 1.8)], name="writein")
 beat([glass("in", "tabA", 6.0, margin=6, title="Kairos · Inbound WhatsApp", frames=[(0, "tabA"), ("@d2", "emi"), ("@d3", "otp")], cam=[(0.0, PHONE, 0.01), ("@d2", PHONE_CARD("emi"), 0.9)], neb=("comp/NEB1.mov", 12.0), enter={"type": "fade", "dur": 0.3})],
      voice=["d1", "d2", "d3"], at=0.3, gap=0.3, tail=0.25, name="otp")
-beat([glass("in", "otp", 3.0, margin=4, title="Kairos · Inbound WhatsApp", cam=[(0.0, PHONE_CARD("otp"), 0.01), (0.3, RC("in", "otp", "thead"), 1.0)], neb=("comp/NEB1.mov", 16.0))], voice=["p16"], at=0.3, name="identity")
+beat([glass("in", "otp", 3.0, margin=4, title="Kairos · Inbound WhatsApp", cam=[(0.0, RC("in", "otp", "thead"), 0.01)], neb=("comp/NEB1.mov", 16.0))], voice=["p16"], at=0.3, name="identity")
 if os.environ.get("REAL_WA"):
     beat([("glass", 12.0, dict(video=os.environ["REAL_WA"], vw=1920, vh=1080, title="Real WhatsApp · Meta Cloud API test number", neb=("comp/NEB2.mov", 1.0)))], name="realwa")
 beat([glass("in", "paylink", 5.0, margin=6, title="Kairos · Inbound WhatsApp", frames=[(0, "paylink"), ("@d5", "fake")], cam=[(0.0, PHONE_CARD("paylink"), 0.01)], neb=("comp/NEB2.mov", 1.0))],
      voice=["d4", "d5"], at=0.15, gap=0.3, tail=0.2, name="fake")
-beat([glass("in", "fake", 5.0, margin=4, title="Kairos · Inbound WhatsApp", cam=[(0.0, PHONE_CARD("fake"), 0.01), (0.3, RC("in", "fake", "thead"), 1.0)], neb=("comp/NEB2.mov", 6.0))], voice=["p17"], at=0.3, name="fakecheck")
+beat([glass("in", "fake", 5.0, margin=4, title="Kairos · Inbound WhatsApp", cam=[(0.0, RC("in", "fake", "thead"), 0.01)], neb=("comp/NEB2.mov", 6.0))], voice=["p17"], at=0.3, name="fakecheck")
 beat([clip("B1_borrower_b", 5.3, keep=5.3), clip("X_callcentre", 1.6),
       glass("in", "takeoverB", 2.6, title="Kairos · Agent console", cam=[(0.0, RC("in", "takeoverB", "convo"), 0.01)], neb=("comp/NEB2.mov", 12.0))], voice=["p18"], at=0.3, name="hardship")
 beat([glass("in", "tabA2", 3.5, margin=6, title="Kairos · Inbound WhatsApp", frames=[(0, "tabA2"), ("@d7", "stop")], cam=[(0.0, PHONE_CARD("tabA2"), 0.01)], neb=("comp/NEB1.mov", 2.0))],
      voice=["d6", "d7"], at=0.15, gap=0.35, tail=0.2, name="stop")
-beat([glass("in", "stop", 4.0, margin=4, title="Kairos · Inbound WhatsApp", cam=[(0.0, PHONE_CARD("stop"), 0.01), (0.3, RC("in", "stop", "thead"), 1.0)], neb=("comp/NEB1.mov", 7.0))], voice=["p19"], at=0.3, name="stopall")
+beat([glass("in", "stop", 4.0, margin=4, title="Kairos · Inbound WhatsApp", cam=[(0.0, RC("in", "stop", "thead"), 0.01)], neb=("comp/NEB1.mov", 7.0))], voice=["p19"], at=0.3, name="stopall")
 # 7 · the team stays in charge (the real deployed dashboard, recorded at 60 fps; F02 whole page, F03 the manual-send card)
 F02, F03 = "rec/F02_approvals_supervisor_clean.mp4", "rec/F03_crm_explain_manual_preview_clean.mp4"
 beat([clip("P06_asha_typing", 2.0),
@@ -243,12 +243,14 @@ for kind, dur, p, t0, bname in seq:
         layers.append(loop_layer(t0, t1, built=t0 + 0.3, voice_t={"checks": checks, "rest": c + 0.6, "pulse": c + 4.2}))
 
 # one nebula per contiguous span (cuts to footage hide the joins); rate keeps inside the clip
-NEB_LEN = {"comp/NEB1.mov": 16.4, "comp/NEB2.mov": 30.4}
+NEB_LEN = {"comp/NEB1.mov": 16.4, "comp/NEB1c.mov": 15.75, "comp/NEB2.mov": 30.4}
+NEB1 = os.environ.get("KAIROS_NEB1", "comp/NEB1.mov")   # comp/NEB1c.mov = N1 with its built-in duplicate frames dropped (final2)
 merged = []
 for t0, t1, src, frm in sorted(neb_spans):
     if merged and abs(merged[-1][1] - t0) < 2e-2: merged[-1][1] = t1           # adjacent platform shots share one background
     else: merged.append([t0, t1, src, frm])
 for t0, t1, src, frm in merged:
+    src = NEB1 if src == "comp/NEB1.mov" else src
     n, dur = NEB_LEN[src], t1 - t0
     rate, frm = 1.0, (min(frm, n - dur - 0.2) if dur <= n - 0.3 else 0.0)        # always real time: a new frame every frame (long spans ping-pong)
     layers.insert(0, {"kind": "nebula", "t0": max(0, t0 - 0.05), "t1": round(t1 + 0.05, 3), "src": src, "from": round(frm, 3), "rate": rate, "len": n - 0.1, "dim": 0.45, "zoom": [1.04, 1.04 + 0.004 * dur], "enter": {"dur": 0}, "exit": {"dur": 0}})
@@ -256,14 +258,14 @@ for t0, t1, src, frm in merged:
 gl = [L for L in layers if L.get("kind") == "glass"]
 for a, b in zip(gl, gl[1:]):
     if abs(a["t1"] - b["t0"]) < 1e-3:
-        a["t1"] = round(a["t1"] + 0.35, 3); a["exit"] = {"type": "fade", "dur": 0.0}; b["enter"] = {"type": "fade", "dur": 0.35}
+        a["t1"] = round(a["t1"] + 0.6, 3); a["exit"] = {"type": "fade", "dur": 0.5}; b["enter"] = {"type": "fade", "dur": 0.4}   # an eased 0.6 s dissolve: the new window is opaque by 0.4 s while the old one fades out over 0.1–0.6 s, so no edge of a larger old window drops out in one frame
 # (the corner mini-loop was removed: too small to read)
 
 film = {"duration": round(END, 3), "ccStyle": "v4", "cues": "audio/product4_cues.json", "bg": "#02040a", "captures": CAPS, "layers": layers}
 import os as _os
 for L in layers:
     if L.get("kind") == "video" and not _os.path.exists(L["src"]): raise SystemExit("missing clip " + L["src"])
-open("films/product4.js", "w").write("/* generated by tools/build_product4.py */\nwindow.FILM = " + json.dumps(film, ensure_ascii=False, indent=1) + ";\n")
+open("films/" + os.environ.get("KAIROS_FILM", "product4") + ".js", "w").write("/* generated by tools/build_product4.py */\nwindow.FILM = " + json.dumps(film, ensure_ascii=False, indent=1) + ";\n")
 
 # ---------------------------------------------------------------- soundtrack: music starts with the hit after the cold open
 MUSIC_AT = seq[1][3]                               # the logo shot
@@ -295,7 +297,7 @@ for L in layers:
     elif L.get("kind") == "nebula" and L["t1"] >= old_end - 1e-2: L["t1"] = round(L["t1"] + grow, 3)
     elif L["t0"] >= seq[ib][3] + 1e-3 and L.get("kind") != "nebula": L["t0"] = round(L["t0"] + grow, 3); L["t1"] = round(L["t1"] + grow, 3)
 END = round(END + grow, 3); film["duration"] = END
-open("films/product4.js", "w").write("/* generated by tools/build_product4.py */\nwindow.FILM = " + json.dumps(film, ensure_ascii=False, indent=1) + ";\n")
+open("films/" + os.environ.get("KAIROS_FILM", "product4") + ".js", "w").write("/* generated by tools/build_product4.py */\nwindow.FILM = " + json.dumps(film, ensure_ascii=False, indent=1) + ";\n")
 print("music %.2f s (base + %d×32 + %d×16 + %d×8 bars + outro %.1f s) from %.2f; film %.2f s (%d:%02d)" % (total, n32, n16, n8, outro, MUSIC_AT, END, END // 60, END % 60))
 vo = [{"file": "audio/v4/%s.wav" % vid, "at": round(vt, 3), "text": V[vid]["text"], "who": V[vid].get("who", ""), "gain": 0 if not V[vid].get("who") else -1.0} for vt, vid in voice]
 mix = {"out": "audio/product4_mix.wav", "duration": round(END, 3), "lufs": -14, "ceiling": -1.0,

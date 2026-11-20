@@ -7,7 +7,7 @@ import AVFoundation
 import Foundation
 
 let a = CommandLine.arguments
-guard a.count == 5, let from = Double(a[3]) else { print("usage: splice base.mov seg.mov from out.mov"); exit(1) }
+guard a.count == 5 else { print("usage: splice base.mov seg.mov[,seg2.mov…] from[,from2…] out.mov"); exit(1) }
 func reader(_ p: String) -> (AVAssetReader, AVAssetReaderTrackOutput, Double, CGSize) {
     let asset = AVURLAsset(url: URL(fileURLWithPath: p))
     let sem = DispatchSemaphore(value: 0); var track: AVAssetTrack?; var fps: Float = 30; var size = CGSize(width: 1920, height: 1080)
@@ -20,8 +20,11 @@ func reader(_ p: String) -> (AVAssetReader, AVAssetReaderTrackOutput, Double, CG
     return (r, o, Double(fps), size)
 }
 let (rb, ob, fps, size) = reader(a[1])
-let (rs, os, sfps, _) = reader(a[2])
-if abs(fps - sfps) > 0.01 { print("fps mismatch \(fps) vs \(sfps)"); exit(1) }
+let segPaths = a[2].split(separator: ",").map(String.init), froms = a[3].split(separator: ",").map { Double($0)! }
+var segs = segPaths.map { reader($0) }
+for sg in segs where abs(sg.2 - fps) > 0.01 { print("fps mismatch"); exit(1) }
+let starts = froms.map { Int(($0 * fps).rounded()) }
+let from = froms[0]
 let out = URL(fileURLWithPath: a[4]); try? FileManager.default.removeItem(at: out)
 let w = try! AVAssetWriter(outputURL: out, fileType: .mov)
 let input = AVAssetWriterInput(mediaType: .video, outputSettings: [
@@ -32,14 +35,15 @@ let input = AVAssetWriterInput(mediaType: .video, outputSettings: [
 input.expectsMediaDataInRealTime = false
 let ad = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: input, sourcePixelBufferAttributes: nil)
 w.add(input); w.startWriting(); w.startSession(atSourceTime: .zero)
-let f0 = Int((from * fps).rounded())
+let f0 = starts[0]
 var n = 0, replaced = 0
-var segDone = false
+var done = [Bool](repeating: false, count: segs.count)
 while let sb = ob.copyNextSampleBuffer() {
     guard let pb = CMSampleBufferGetImageBuffer(sb) else { continue }
     var use = pb
-    if n >= f0 && !segDone {
-        if let ss = os.copyNextSampleBuffer(), let sp = CMSampleBufferGetImageBuffer(ss) { use = sp; replaced += 1 } else { segDone = true }
+    for k in 0..<segs.count where n >= starts[k] && !done[k] {
+        if let ss = segs[k].1.copyNextSampleBuffer(), let sp = CMSampleBufferGetImageBuffer(ss) { use = sp; replaced += 1 } else { done[k] = true }
+        break
     }
     while !input.isReadyForMoreMediaData { Thread.sleep(forTimeInterval: 0.002) }
     ad.append(use, withPresentationTime: CMTime(value: CMTimeValue(n), timescale: CMTimeScale(fps)))
@@ -48,4 +52,4 @@ while let sb = ob.copyNextSampleBuffer() {
 input.markAsFinished()
 let sem = DispatchSemaphore(value: 0); w.finishWriting { sem.signal() }; sem.wait()
 print(String(format: "spliced %d frames from %.3f s (frame %d) into %d frames → %@", replaced, from, f0, n, a[4]))
-_ = rb; _ = rs
+_ = rb; _ = segs.count; segs.removeAll()

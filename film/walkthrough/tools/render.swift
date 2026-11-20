@@ -165,6 +165,9 @@ writer.startWriting(); writer.startSession(atSourceTime: .zero)
 let n0 = Int((from * fps).rounded()), n1 = Int((to * fps).rounded())
 let started = Date()
 let srgb = CGColorSpace(name: CGColorSpace.sRGB)!
+// --preroll S: play the S seconds before --from without writing them, so a range starts with every layer already painted
+let preroll = Double(opts["preroll"] ?? "0")!
+for n in max(0, n0 - Int((preroll * fps).rounded()))..<n0 { autoreleasepool { seek(Double(n) / fps); _ = snapshot() } }
 for n in n0..<n1 {
     autoreleasepool {
         let t = Double(n) / fps

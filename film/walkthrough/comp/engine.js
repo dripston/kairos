@@ -476,7 +476,7 @@
     return new Promise(function (res) {
       var done = false; function fin() { if (!done) { done = true; res(); } }
       L.v.addEventListener("seeked", fin, { once: true }); setTimeout(fin, 3000);
-      L.v.currentTime = want;
+      L.v.currentTime = want + (FILM.halfFrame ? 1 / 120 : 0);   // final2: the middle of the wanted frame
     }).then(function () { return shown; });
   }
 

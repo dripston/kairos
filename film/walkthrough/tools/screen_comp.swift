@@ -154,12 +154,46 @@ let srcW = abs(natural.width), srcH = abs(natural.height)
 let fill = max(CGFloat(OW) / srcW, CGFloat(OH) / srcH)
 let fitT = CGAffineTransform(scaleX: fill, y: fill).concatenating(CGAffineTransform(translationX: (CGFloat(OW) - srcW * fill) / 2, y: (CGFloat(OH) - srcH * fill) / 2))
 var pending: (Double, CIImage)? = nil, current: CIImage? = nil
+// "dedupe": drop source frames that repeat the previous one (pulldown duplicates) and re-time the unique
+// frames at exactly "uniqueFps", so every output frame gets a new picture (no built-in judder)
+let dedupeThr = (spec["dedupeThr"] as? Double) ?? 0.1
+let dedupe = (spec["dedupe"] as? Bool) ?? false, uniqueFps = (spec["uniqueFps"] as? Double) ?? 24
+let dropFrames = Set((spec["dropFrames"] as? [Int]) ?? [])        // explicit source frame indices (measured), else the threshold
+var lastSig: [UInt8]? = nil, uniqueN = 0, dropped = 0, readN = -1
+func signature(_ im: CIImage) -> [UInt8] {
+    let small = im.transformed(by: CGAffineTransform(scaleX: 96 / CGFloat(OW), y: 54 / CGFloat(OH)))
+    var buf = [UInt8](repeating: 0, count: 96 * 54 * 4)
+    ctx.render(small, toBitmap: &buf, rowBytes: 96 * 4, bounds: CGRect(x: 0, y: 0, width: 96, height: 54), format: .RGBA8, colorSpace: CGColorSpace(name: CGColorSpace.sRGB)!)
+    return buf
+}
 func nextSource() -> (Double, CIImage)? {
-    guard let sb = ro.copyNextSampleBuffer(), let pb = CMSampleBufferGetImageBuffer(sb) else { return nil }
-    let t = CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sb)) - tIn
-    var im = CIImage(cvPixelBuffer: pb).transformed(by: vt.preferredTransform)
-    im = im.transformed(by: CGAffineTransform(translationX: -im.extent.minX, y: -im.extent.minY)).transformed(by: fitT)
-    return (t, im.cropped(to: CGRect(x: 0, y: 0, width: OW, height: OH)))
+    while true {
+        guard let sb = ro.copyNextSampleBuffer(), let pb = CMSampleBufferGetImageBuffer(sb) else { return nil }
+        var t = CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sb)) - tIn
+        var im = CIImage(cvPixelBuffer: pb).transformed(by: vt.preferredTransform)
+        im = im.transformed(by: CGAffineTransform(translationX: -im.extent.minX, y: -im.extent.minY)).transformed(by: fitT)
+        im = im.cropped(to: CGRect(x: 0, y: 0, width: OW, height: OH))
+        readN += 1
+        if dedupe && !dropFrames.isEmpty {
+            if dropFrames.contains(readN) { dropped += 1; continue }
+            if ProcessInfo.processInfo.environment["DEDUPE_DEBUG"] != nil {
+                let sig = signature(im)
+                if let l = lastSig { var d = 0; for i in stride(from: 0, to: sig.count, by: 4) { d += abs(Int(sig[i]) - Int(l[i])) + abs(Int(sig[i + 1]) - Int(l[i + 1])) + abs(Int(sig[i + 2]) - Int(l[i + 2])) }; print(String(format: "diff %.4f", Double(d) / Double(sig.count / 4 * 3))) }
+                lastSig = sig
+            }
+            t = Double(uniqueN) / uniqueFps; uniqueN += 1
+        } else if dedupe {
+            let sig = signature(im)
+            if let l = lastSig {
+                var d = 0; for i in stride(from: 0, to: sig.count, by: 4) { d += abs(Int(sig[i]) - Int(l[i])) + abs(Int(sig[i + 1]) - Int(l[i + 1])) + abs(Int(sig[i + 2]) - Int(l[i + 2])) }
+                let md = Double(d) / Double(sig.count / 4 * 3)
+                if ProcessInfo.processInfo.environment["DEDUPE_DEBUG"] != nil { print(String(format: "diff %.4f", md)) }
+                if md < dedupeThr { dropped += 1; continue }   // the same picture again: drop it
+            }
+            lastSig = sig; t = Double(uniqueN) / uniqueFps; uniqueN += 1
+        }
+        return (t, im)
+    }
 }
 func frameAt(_ t: Double) -> CIImage? {
     if pending == nil { pending = nextSource() }
@@ -228,4 +262,5 @@ for i in 0..<nFrames {
 input.markAsFinished()
 var done = false; writer.finishWriting { done = true }
 while !done { RunLoop.current.run(until: Date().addingTimeInterval(0.05)) }
+if dedupe { print("dedupe: dropped \(dropped) repeated source frames, \(uniqueN) unique") }
 print("wrote \(outURL.path)  \(nFrames) frames  tracking lost on \(lost) frames")

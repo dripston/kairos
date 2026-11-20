@@ -24,7 +24,7 @@
     return new Promise(function (res) {
       var done = false; function fin() { if (!done) { done = true; res(); } }
       L.v.addEventListener("seeked", fin, { once: true }); setTimeout(fin, 3000);
-      L.v.currentTime = want;
+      L.v.currentTime = want + ((A.film().halfFrame) ? 1 / 120 : 0);
     }).then(function () { L.painted = true; return shown; });
   }
 
@@ -129,11 +129,11 @@
         } else { L.cur.style.display = "none"; L.rip.style.display = "none"; }
       }
       // never show the window before its content has been painted for one committed frame
-      function reveal() { L.win.style.opacity = L.ready ? op : 0; }   // the window appears together with its first painted frame
+      function reveal() { if (L.ready && L.readyAt != null && L.readyAt !== t) L.win.style.opacity = op; else L.win.style.opacity = 0; }   // shown from the frame after its first image was painted
       if (L.video) {
         var want = (L.from || 0) + (t - L.t0) * (L.rate || 1);
         reveal();
-        return Promise.resolve(seekVideo(A, L, want)).then(function () { if (!L.ready) A.fresh(); L.ready = true; L.win.style.opacity = op; });
+        return Promise.resolve(seekVideo(A, L, want)).then(function () { if (!L.ready) { A.fresh(); L.readyAt = t; } L.ready = true; });
       }
       reveal();
       var c = A.caps[L.cap], fi = A.trackAt(L.track, t), url = A.frameUrl(c, fi);
@@ -145,7 +145,7 @@
         return back.decode().catch(function () {});
       }).then(function () {
         back.style.zIndex = 2; front.style.zIndex = 1; back.style.opacity = 1;
-        L.front = 1 - L.front; L.curUrl = url; L.hideOld = true; A.fresh(); L.ready = true; L.win.style.opacity = op;
+        L.front = 1 - L.front; L.curUrl = url; L.hideOld = true; A.fresh(); if (!L.ready) L.readyAt = t; L.ready = true;
       });
     }
   };

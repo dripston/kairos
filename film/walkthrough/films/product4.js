@@ -469,7 +469,7 @@ window.FILM = {
   {
    "kind": "glass",
    "t0": 32.772,
-   "t1": 37.603,
+   "t1": 37.853,
    "cap": "dv",
    "frames": [
     {
@@ -496,7 +496,7 @@ window.FILM = {
    },
    "exit": {
     "type": "fade",
-    "dur": 0.0
+    "dur": 0.5
    },
    "page": [
     272,
@@ -508,7 +508,7 @@ window.FILM = {
   {
    "kind": "glass",
    "t0": 37.253,
-   "t1": 41.684,
+   "t1": 41.934,
    "cap": "ov",
    "frames": [
     {
@@ -531,17 +531,17 @@ window.FILM = {
    ],
    "enter": {
     "type": "fade",
-    "dur": 0.35
+    "dur": 0.4
    },
    "exit": {
     "type": "fade",
-    "dur": 0.0
+    "dur": 0.5
    }
   },
   {
    "kind": "glass",
    "t0": 41.334,
-   "t1": 49.285,
+   "t1": 49.535,
    "cap": "ov",
    "frames": [
     {
@@ -574,11 +574,11 @@ window.FILM = {
    ],
    "enter": {
     "type": "fade",
-    "dur": 0.35
+    "dur": 0.4
    },
    "exit": {
     "type": "fade",
-    "dur": 0.0
+    "dur": 0.5
    },
    "maxh": 720,
    "cy": 505
@@ -617,7 +617,7 @@ window.FILM = {
    "cam": [],
    "enter": {
     "type": "fade",
-    "dur": 0.35
+    "dur": 0.4
    },
    "exit": {
     "type": "fade",
@@ -1196,7 +1196,7 @@ window.FILM = {
   {
    "kind": "glass",
    "t0": 129.996,
-   "t1": 139.728,
+   "t1": 139.978,
    "cap": "in",
    "frames": [
     {
@@ -1241,14 +1241,14 @@ window.FILM = {
    },
    "exit": {
     "type": "fade",
-    "dur": 0.0
+    "dur": 0.5
    },
    "margin": 6
   },
   {
    "kind": "glass",
    "t0": 139.378,
-   "t1": 145.797,
+   "t1": 146.047,
    "cap": "in",
    "frames": [
     {
@@ -1261,38 +1261,28 @@ window.FILM = {
     {
      "t": 139.378,
      "rect": [
-      19,
-      132,
-      918,
-      767
-     ],
-     "dur": 0.01
-    },
-    {
-     "t": 139.678,
-     "rect": [
       414,
       200,
       523,
       181
      ],
-     "dur": 1.0
+     "dur": 0.01
     }
    ],
    "enter": {
     "type": "fade",
-    "dur": 0.35
+    "dur": 0.4
    },
    "exit": {
     "type": "fade",
-    "dur": 0.0
+    "dur": 0.5
    },
    "margin": 4
   },
   {
    "kind": "glass",
    "t0": 145.447,
-   "t1": 154.783,
+   "t1": 155.033,
    "cap": "in",
    "frames": [
     {
@@ -1319,11 +1309,11 @@ window.FILM = {
    ],
    "enter": {
     "type": "fade",
-    "dur": 0.35
+    "dur": 0.4
    },
    "exit": {
     "type": "fade",
-    "dur": 0.0
+    "dur": 0.5
    },
    "margin": 6
   },
@@ -1343,27 +1333,17 @@ window.FILM = {
     {
      "t": 154.433,
      "rect": [
-      19,
-      132,
-      918,
-      767
-     ],
-     "dur": 0.01
-    },
-    {
-     "t": 154.733,
-     "rect": [
       414,
       200,
       523,
       235
      ],
-     "dur": 1.0
+     "dur": 0.01
     }
    ],
    "enter": {
     "type": "fade",
-    "dur": 0.35
+    "dur": 0.4
    },
    "exit": {
     "type": "fade",
@@ -1402,7 +1382,7 @@ window.FILM = {
   {
    "kind": "glass",
    "t0": 170.781,
-   "t1": 173.331,
+   "t1": 173.581,
    "cap": "in",
    "frames": [
     {
@@ -1429,13 +1409,13 @@ window.FILM = {
    },
    "exit": {
     "type": "fade",
-    "dur": 0.0
+    "dur": 0.5
    }
   },
   {
    "kind": "glass",
    "t0": 172.981,
-   "t1": 179.31,
+   "t1": 179.56,
    "cap": "in",
    "frames": [
     {
@@ -1462,11 +1442,11 @@ window.FILM = {
    ],
    "enter": {
     "type": "fade",
-    "dur": 0.35
+    "dur": 0.4
    },
    "exit": {
     "type": "fade",
-    "dur": 0.0
+    "dur": 0.5
    },
    "margin": 6
   },
@@ -1486,27 +1466,17 @@ window.FILM = {
     {
      "t": 178.96,
      "rect": [
-      19,
-      132,
-      918,
-      767
-     ],
-     "dur": 0.01
-    },
-    {
-     "t": 179.26,
-     "rect": [
       414,
       200,
       523,
       181
      ],
-     "dur": 1.0
+     "dur": 0.01
     }
    ],
    "enter": {
     "type": "fade",
-    "dur": 0.35
+    "dur": 0.4
    },
    "exit": {
     "type": "fade",
@@ -1531,7 +1501,7 @@ window.FILM = {
   {
    "kind": "glass",
    "t0": 188.611,
-   "t1": 193.586,
+   "t1": 193.836,
    "title": "Kairos · Control Room · approvals",
    "cam": [],
    "enter": {
@@ -1540,7 +1510,7 @@ window.FILM = {
    },
    "exit": {
     "type": "fade",
-    "dur": 0.0
+    "dur": 0.5
    },
    "video": "rec/F02_approvals_supervisor_clean.mp4",
    "from": 36.0,
@@ -1567,7 +1537,7 @@ window.FILM = {
    ],
    "enter": {
     "type": "fade",
-    "dur": 0.35
+    "dur": 0.4
    },
    "exit": {
     "type": "fade",
