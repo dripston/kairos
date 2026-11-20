@@ -5,10 +5,10 @@ window.FILM = {
  "cues": "audio/technical4_cues.json",
  "bg": "#02040a",
  "captures": {
-  "ov": "captures_rc/out_vikram",
-  "in": "captures_rc/inbound_tall",
-  "er": "captures_rc/engine_room",
-  "dv": "captures_rc/deployed_voice_tall"
+  "ov": "captures_hd/out_vikram",
+  "in": "captures_hd/inbound_tall",
+  "er": "captures_hd/engine_room",
+  "dv": "captures_hd/deployed_voice_tall"
  },
  "terms": {
   "redteam": "term/redteam.json",
@@ -22,10 +22,12 @@ window.FILM = {
    "kind": "nebula",
    "t0": 160.32,
    "t1": 202.397,
-   "src": "comp/NEB2.mov",
-   "from": 0.0,
-   "rate": 0.7171,
-   "dim": 0.45,
+   "src": "comp/NEB1.mov",
+   "from": 9.0,
+   "rate": 1.0,
+   "len": 16.299999999999997,
+   "dim": 0.38,
+   "tint": "8,26,56",
    "zoom": [
     1.04,
     1.207908
@@ -41,10 +43,12 @@ window.FILM = {
    "kind": "nebula",
    "t0": 1.95,
    "t1": 158.82,
-   "src": "comp/NEB2.mov",
-   "from": 0.0,
-   "rate": 0.192,
-   "dim": 0.45,
+   "src": "comp/NEB1.mov",
+   "from": 1.0,
+   "rate": 1.0,
+   "len": 16.299999999999997,
+   "dim": 0.38,
+   "tint": "8,26,56",
    "zoom": [
     1.04,
     1.6670800000000001
@@ -60,20 +64,21 @@ window.FILM = {
    "kind": "video",
    "src": "comp/T01_engineer.mov",
    "t0": 0.0,
-   "t1": 2.0,
+   "t1": 2.4,
    "from": 0.0,
    "graded": true,
    "enter": {
     "dur": 0
    },
    "exit": {
-    "dur": 0
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "title",
    "t0": 2.0,
-   "t1": 4.0,
+   "t1": 4.4,
    "lines": [
     {
      "text": "How Kairos works",
@@ -89,16 +94,18 @@ window.FILM = {
    "y": 470,
    "stagger": 0.18,
    "enter": {
-    "dur": 0
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "flow",
    "t0": 4.0,
-   "t1": 13.231,
+   "t1": 13.631,
    "nodes": [
     {
      "id": "rec",
@@ -348,16 +355,18 @@ window.FILM = {
     }
    ],
    "enter": {
-    "dur": 0.35
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "title",
    "t0": 13.231,
-   "t1": 14.531,
+   "t1": 14.931,
    "lines": [
     {
      "text": "01",
@@ -379,16 +388,18 @@ window.FILM = {
    "y": 470,
    "stagger": 0.18,
    "enter": {
-    "dur": 0
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "flow",
    "t0": 14.531,
-   "t1": 21.138,
+   "t1": 21.538,
    "nodes": [
     {
      "id": "bor",
@@ -531,16 +542,18 @@ window.FILM = {
     }
    ],
    "enter": {
-    "dur": 0.35
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "glass",
    "t0": 21.139,
-   "t1": 27.246,
+   "t1": 27.646,
    "title": "Kairos · Live journey · borrower record",
    "cam": [
     {
@@ -555,12 +568,12 @@ window.FILM = {
     }
    ],
    "enter": {
-    "type": "rise",
-    "dur": 0.6
+    "type": "fade",
+    "dur": 0.4
    },
    "exit": {
     "type": "fade",
-    "dur": 0.25
+    "dur": 0.4
    },
    "cap": "ov",
    "frames": [
@@ -573,7 +586,7 @@ window.FILM = {
   {
    "kind": "title",
    "t0": 27.246,
-   "t1": 29.446,
+   "t1": 29.846,
    "lines": [
     {
      "text": "₹7,409 = 740,900 paise",
@@ -589,16 +602,18 @@ window.FILM = {
    "y": 470,
    "stagger": 0.18,
    "enter": {
-    "dur": 0
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "title",
    "t0": 29.446,
-   "t1": 30.746,
+   "t1": 31.146,
    "lines": [
     {
      "text": "02",
@@ -620,16 +635,18 @@ window.FILM = {
    "y": 470,
    "stagger": 0.18,
    "enter": {
-    "dur": 0
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "flow",
    "t0": 30.746,
-   "t1": 39.031,
+   "t1": 39.431,
    "nodes": [
     {
      "id": "tick",
@@ -888,16 +905,18 @@ window.FILM = {
     }
    ],
    "enter": {
-    "dur": 0.35
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "glass",
    "t0": 39.031,
-   "t1": 50.316,
+   "t1": 50.716,
    "title": "Kairos · Engine Room · churn · SIMULATED",
    "cam": [
     {
@@ -922,12 +941,12 @@ window.FILM = {
     }
    ],
    "enter": {
-    "type": "rise",
-    "dur": 0.6
+    "type": "fade",
+    "dur": 0.4
    },
    "exit": {
     "type": "fade",
-    "dur": 0.25
+    "dur": 0.4
    },
    "cap": "er",
    "frames": [
@@ -940,7 +959,7 @@ window.FILM = {
   {
    "kind": "title",
    "t0": 50.316,
-   "t1": 51.616,
+   "t1": 52.016,
    "lines": [
     {
      "text": "03",
@@ -962,16 +981,18 @@ window.FILM = {
    "y": 470,
    "stagger": 0.18,
    "enter": {
-    "dur": 0
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "flow",
    "t0": 51.616,
-   "t1": 62.559,
+   "t1": 62.959,
    "nodes": [
     {
      "id": "touch",
@@ -1098,16 +1119,18 @@ window.FILM = {
     }
    ],
    "enter": {
-    "dur": 0.35
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "glass",
    "t0": 62.558,
-   "t1": 76.501,
+   "t1": 76.901,
    "title": "Kairos · Engine Room · day 7 → end of day 14 · SIMULATED",
    "cam": [
     {
@@ -1132,12 +1155,12 @@ window.FILM = {
     }
    ],
    "enter": {
-    "type": "rise",
-    "dur": 0.6
+    "type": "fade",
+    "dur": 0.4
    },
    "exit": {
     "type": "fade",
-    "dur": 0.25
+    "dur": 0.4
    },
    "cap": "er",
    "frames": [
@@ -1154,7 +1177,7 @@ window.FILM = {
   {
    "kind": "title",
    "t0": 76.501,
-   "t1": 77.801,
+   "t1": 78.201,
    "lines": [
     {
      "text": "04",
@@ -1176,16 +1199,18 @@ window.FILM = {
    "y": 470,
    "stagger": 0.18,
    "enter": {
-    "dur": 0
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "seq",
    "t0": 77.801,
-   "t1": 90.923,
+   "t1": 91.323,
    "actors": [
     {
      "id": "k09",
@@ -1253,36 +1278,38 @@ window.FILM = {
    "bottom": 860,
    "row": 104,
    "enter": {
-    "dur": 0.35
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "glass",
    "t0": 90.922,
-   "t1": 100.044,
+   "t1": 100.444,
    "title": "Kairos · Live journey · Aladdin",
    "cam": [
     {
      "t": 91.922,
      "rect": [
       349,
-      335,
+      285,
       658,
-      259
+      309
      ],
      "dur": 1.4
     }
    ],
    "enter": {
-    "type": "rise",
-    "dur": 0.6
+    "type": "fade",
+    "dur": 0.4
    },
    "exit": {
     "type": "fade",
-    "dur": 0.25
+    "dur": 0.4
    },
    "cap": "ov",
    "frames": [
@@ -1295,7 +1322,7 @@ window.FILM = {
   {
    "kind": "title",
    "t0": 100.044,
-   "t1": 102.644,
+   "t1": 103.044,
    "lines": [
     {
      "text": "50,000 decisions · 11.1 s",
@@ -1311,16 +1338,18 @@ window.FILM = {
    "y": 470,
    "stagger": 0.18,
    "enter": {
-    "dur": 0
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "title",
    "t0": 102.644,
-   "t1": 103.944,
+   "t1": 104.344,
    "lines": [
     {
      "text": "05",
@@ -1342,16 +1371,18 @@ window.FILM = {
    "y": 470,
    "stagger": 0.18,
    "enter": {
-    "dur": 0
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "seq",
    "t0": 103.944,
-   "t1": 111.474,
+   "t1": 111.874,
    "actors": [
     {
      "id": "ex",
@@ -1421,36 +1452,38 @@ window.FILM = {
    "bottom": 860,
    "row": 104,
    "enter": {
-    "dur": 0.35
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "glass",
    "t0": 111.474,
-   "t1": 116.004,
+   "t1": 116.404,
    "title": "Kairos · Live journey · webhooks",
    "cam": [
     {
      "t": 112.474,
      "rect": [
       349,
-      335,
+      285,
       658,
-      259
+      309
      ],
      "dur": 1.4
     }
    ],
    "enter": {
-    "type": "rise",
-    "dur": 0.6
+    "type": "fade",
+    "dur": 0.4
    },
    "exit": {
     "type": "fade",
-    "dur": 0.25
+    "dur": 0.4
    },
    "cap": "ov",
    "frames": [
@@ -1463,7 +1496,7 @@ window.FILM = {
   {
    "kind": "flow",
    "t0": 116.005,
-   "t1": 121.535,
+   "t1": 121.935,
    "nodes": [
     {
      "id": "uc",
@@ -1645,25 +1678,27 @@ window.FILM = {
     }
    ],
    "enter": {
-    "dur": 0.35
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "glass",
    "t0": 121.535,
-   "t1": 127.065,
+   "t1": 127.465,
    "title": "Kairos · Voice bots · calls",
    "cam": [],
    "enter": {
-    "type": "rise",
-    "dur": 0.6
+    "type": "fade",
+    "dur": 0.4
    },
    "exit": {
     "type": "fade",
-    "dur": 0.25
+    "dur": 0.4
    },
    "cap": "dv",
    "frames": [
@@ -1682,7 +1717,7 @@ window.FILM = {
   {
    "kind": "title",
    "t0": 127.065,
-   "t1": 128.365,
+   "t1": 128.765,
    "lines": [
     {
      "text": "06",
@@ -1704,16 +1739,18 @@ window.FILM = {
    "y": 470,
    "stagger": 0.18,
    "enter": {
-    "dur": 0
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "flow",
    "t0": 128.365,
-   "t1": 137.968,
+   "t1": 138.368,
    "nodes": [
     {
      "id": "new",
@@ -1884,16 +1921,18 @@ window.FILM = {
     }
    ],
    "enter": {
-    "dur": 0.35
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "glass",
    "t0": 137.968,
-   "t1": 145.571,
+   "t1": 145.971,
    "title": "Kairos · Inbound WhatsApp · Technical",
    "cam": [
     {
@@ -1908,12 +1947,12 @@ window.FILM = {
     }
    ],
    "enter": {
-    "type": "rise",
-    "dur": 0.6
+    "type": "fade",
+    "dur": 0.4
    },
    "exit": {
     "type": "fade",
-    "dur": 0.25
+    "dur": 0.4
    },
    "cap": "in",
    "frames": [
@@ -1926,7 +1965,7 @@ window.FILM = {
   {
    "kind": "panel",
    "t0": 145.572,
-   "t1": 153.175,
+   "t1": 153.575,
    "w": 1300,
    "y": 110,
    "heading": "1,000 seeded test conversations",
@@ -1946,16 +1985,18 @@ window.FILM = {
    ],
    "fine": "SIMULATED · 1,000 seeded conversations · 500 at once: 0 errors",
    "enter": {
-    "dur": 0.6
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "title",
    "t0": 153.175,
-   "t1": 154.475,
+   "t1": 154.875,
    "lines": [
     {
      "text": "07",
@@ -1977,16 +2018,18 @@ window.FILM = {
    "y": 470,
    "stagger": 0.18,
    "enter": {
-    "dur": 0
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "flow",
    "t0": 154.475,
-   "t1": 158.77,
+   "t1": 159.17,
    "nodes": [
     {
      "id": "appr",
@@ -2116,24 +2159,28 @@ window.FILM = {
     }
    ],
    "enter": {
-    "dur": 0.35
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "video",
    "src": "comp/P16a_asha_close.mov",
    "t0": 158.77,
-   "t1": 160.37,
+   "t1": 160.77,
    "from": 0.0,
    "graded": true,
    "enter": {
-    "dur": 0
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
@@ -2143,8 +2190,8 @@ window.FILM = {
    "title": "Kairos · Control Room · approvals",
    "cam": [],
    "enter": {
-    "type": "rise",
-    "dur": 0.6
+    "type": "fade",
+    "dur": 0.4
    },
    "exit": {
     "type": "fade",
@@ -2159,7 +2206,7 @@ window.FILM = {
   {
    "kind": "glass",
    "t0": 165.065,
-   "t1": 170.96,
+   "t1": 171.36,
    "title": "Kairos · Smart CRM · manual send at 20:00",
    "cam": [
     {
@@ -2179,18 +2226,19 @@ window.FILM = {
    },
    "exit": {
     "type": "fade",
-    "dur": 0.25
+    "dur": 0.4
    },
    "video": "rec/F03_crm_explain_manual_preview_clean.mp4",
    "from": 50.0,
    "rate": 1.0,
    "vw": 1920,
-   "vh": 1080
+   "vh": 1080,
+   "kmax": 1.0
   },
   {
    "kind": "title",
    "t0": 170.96,
-   "t1": 172.26,
+   "t1": 172.66,
    "lines": [
     {
      "text": "08",
@@ -2212,16 +2260,18 @@ window.FILM = {
    "y": 470,
    "stagger": 0.18,
    "enter": {
-    "dur": 0
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "term",
    "t0": 172.26,
-   "t1": 192.26,
+   "t1": 192.66,
    "title": "kairos/backend — zsh",
    "prompt": "%",
    "rows": 15,
@@ -2233,11 +2283,11 @@ window.FILM = {
    ],
    "enter": {
     "type": "fade",
-    "dur": 0.3
+    "dur": 0.4
    },
    "exit": {
     "type": "fade",
-    "dur": 0.2
+    "dur": 0.4
    },
    "cam": [
     {
@@ -2369,7 +2419,7 @@ window.FILM = {
   {
    "kind": "panel",
    "t0": 192.26,
-   "t1": 196.147,
+   "t1": 196.547,
    "w": 1420,
    "y": 120,
    "heading": "Built on research",
@@ -2381,16 +2431,18 @@ window.FILM = {
    ],
    "fine": "Lineage: Aladdin ≈ a safety shield (Alshiekh 2018) · the intent ladder ≈ a reject option (Chow 1970)",
    "enter": {
-    "dur": 0.5
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    }
   },
   {
    "kind": "flow",
    "t0": 196.147,
-   "t1": 198.347,
+   "t1": 198.747,
    "nodes": [
     {
      "id": "rec",
@@ -2640,10 +2692,12 @@ window.FILM = {
     }
    ],
    "enter": {
-    "dur": 0.35
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
-    "dur": 0.3
+    "dur": 0.4,
+    "type": "fade"
    },
    "pulses": [
     {
@@ -2674,7 +2728,8 @@ window.FILM = {
    "credits": "Music: “Inspiring Technology”, The_Mountain (Pixabay licence) · Voices: AI-generated · Footage: Pexels<br>Every screen and terminal run is the real Kairos software · All data SIMULATED",
    "from": 0.97,
    "enter": {
-    "dur": 0
+    "dur": 0.4,
+    "type": "fade"
    },
    "exit": {
     "dur": 0.35

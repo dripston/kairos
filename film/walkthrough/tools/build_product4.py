@@ -9,8 +9,8 @@ measured voice files, so a different TTS pace re-times the edit by itself.
 import json, os, subprocess, sys
 
 V = json.load(open("tools/lines_v4.json"))
-CAPS = {"ov": "captures/out_vikram", "aa": "captures/out_aarav", "in": "captures/inbound_tall", "er": "captures/engine_room", "dv": "captures/deployed_voice"}
-if not os.environ.get("OLDCAPS"):                          # release-candidate recaptures (port 8120): no vendor names; labels verified by content
+CAPS = {"ov": "captures_hd/out_vikram", "aa": "captures/out_aarav", "in": "captures_hd/inbound_tall", "er": "captures_hd/engine_room", "dv": "captures_hd/deployed_voice_tall"}   # 4× captures (crisp at 4K)
+if False:                          # release-candidate recaptures (port 8120): no vendor names; labels verified by content
     CAPS.update({k: v.replace("captures/", "captures_rc/") for k, v in CAPS.items() if os.path.exists(v.replace("captures/", "captures_rc/") + "/log.json") and k != "dv"})
 _dur = {}
 def d(vid):
@@ -18,7 +18,7 @@ def d(vid):
         out = subprocess.run(["afinfo", "audio/v4/%s.wav" % vid], capture_output=True, text=True).stdout
         _dur[vid] = float(out.split("estimated duration:")[1].split()[0])
     return _dur[vid]
-OVL = {"@SMS": "v01", "@ALD": "v02", "@WAIT": "v08", "@WA": "v10", "@REPLY": "v16", "@PTP": "v21", "@QUIET": "v23", "@PAID": "v41"} if not os.environ.get("OLDCAPS") else \
+OVL = {"@SMS": "v01", "@ALD": "v02", "@WAIT": "v08", "@WA": "v11", "@REPLY": "v16", "@PTP": "v21", "@QUIET": "v23", "@PAID": "v41"} if not os.environ.get("OLDCAPS") else \
       {"@SMS": "v02", "@ALD": "v03", "@WAIT": "v10", "@WA": "v11", "@REPLY": "v17", "@PTP": "v17", "@QUIET": "v17", "@PAID": "v41"}
 def lab(cap, name):
     name = OVL.get(name, name)
@@ -44,10 +44,14 @@ IN_PHONE = [10, 126, 372, 778]                  # the inbound page's own phone (
 def RC(cap, label, key):
     lg = json.load(open(CAPS[cap] + "/log.json")); label = OVL.get(label, label)
     for e in lg["events"]:
-        if e.get("type") == "rect" and e["name"] == "%s_%s" % (label, key): return [round(v) for v in e["rect"]]
+        if e.get("type") == "rect" and e["name"] == "%s_%s" % (label, key):
+            r = [round(v) for v in e["rect"]]
+            if key == "detail": r = [r[0], r[1] - 50, r[2], r[3] + 50]          # include the card's header row
+            return r
     raise SystemExit("no rect %s_%s in %s" % (label, key, cap))
 def U(*rs): x0 = min(r[0] for r in rs); y0 = min(r[1] for r in rs); return [x0, y0, max(r[0] + r[2] for r in rs) - x0, max(r[1] + r[3] for r in rs) - y0]
 PHONE = [19, 132, 360, 767]                         # the inbound page's own phone, whole
+PHONE_CARD = lambda lab: U(PHONE, RC("in", lab, "thead"))  # phone + the engine's first card, side by side
 LEGAL = {"cls": "legal", "size": 34}
 CTRL_SENDS = [1046, 397, 353, 372]                  # Control Room · "Today's sends by channel" card (deployed frontend, 1440 px)
 ER_LEARN = lambda lab: U([647, 199, 606, 52 if lab == "d7" else 70], [647, 259 if lab == "d7" else 277, 606, 165])
@@ -93,24 +97,24 @@ beat([glass("er", "d7", 8.0, title="Kairos · Engine Room · SIMULATED", frames=
 # 6 · Part 2 · When borrowers write in (CM-03); one window, the camera stays on whole components
 beat([other("title", 2.2, lines=[{"text": "Part 2", "size": 40, "cls": "kicker"}, {"text": "When borrowers write in", "size": 110, "mt": 10}, {"text": "any hour · replies in seconds", "size": 46, "cls": "soft", "mt": 16}], neb=("comp/NEB1.mov", 9.0))], name="part2")
 beat([clip("P17a_sunita", 1.8)], name="writein")
-beat([glass("in", "tabA", 6.0, title="Kairos · Inbound WhatsApp", frames=[(0, "tabA"), ("@d2", "emi"), ("@d3", "otp")], cam=[(0.0, PHONE, 0.01)], neb=("comp/NEB1.mov", 12.0), enter={"type": "fade", "dur": 0.3})],
+beat([glass("in", "tabA", 6.0, margin=6, title="Kairos · Inbound WhatsApp", frames=[(0, "tabA"), ("@d2", "emi"), ("@d3", "otp")], cam=[(0.0, PHONE, 0.01), ("@d2", PHONE_CARD("emi"), 0.9)], neb=("comp/NEB1.mov", 12.0), enter={"type": "fade", "dur": 0.3})],
      voice=["d1", "d2", "d3"], at=0.3, gap=0.3, tail=0.25, name="otp")
-beat([glass("in", "otp", 3.0, title="Kairos · Inbound WhatsApp", cam=[(0.0, PHONE, 0.01), (0.3, RC("in", "otp", "thead"), 1.0)], neb=("comp/NEB1.mov", 16.0))], voice=["p16"], at=0.3, name="identity")
+beat([glass("in", "otp", 3.0, margin=4, title="Kairos · Inbound WhatsApp", cam=[(0.0, PHONE_CARD("otp"), 0.01), (0.3, RC("in", "otp", "thead"), 1.0)], neb=("comp/NEB1.mov", 16.0))], voice=["p16"], at=0.3, name="identity")
 if os.environ.get("REAL_WA"):
     beat([("glass", 12.0, dict(video=os.environ["REAL_WA"], vw=1920, vh=1080, title="Real WhatsApp · Meta Cloud API test number", neb=("comp/NEB2.mov", 1.0)))], name="realwa")
-beat([glass("in", "paylink", 5.0, title="Kairos · Inbound WhatsApp", frames=[(0, "paylink"), ("@d5", "fake")], cam=[(0.0, PHONE, 0.01)], neb=("comp/NEB2.mov", 1.0))],
+beat([glass("in", "paylink", 5.0, margin=6, title="Kairos · Inbound WhatsApp", frames=[(0, "paylink"), ("@d5", "fake")], cam=[(0.0, PHONE_CARD("paylink"), 0.01)], neb=("comp/NEB2.mov", 1.0))],
      voice=["d4", "d5"], at=0.15, gap=0.3, tail=0.2, name="fake")
-beat([glass("in", "fake", 5.0, title="Kairos · Inbound WhatsApp", cam=[(0.0, PHONE, 0.01), (0.3, RC("in", "fake", "thead"), 1.0)], neb=("comp/NEB2.mov", 6.0))], voice=["p17"], at=0.3, name="fakecheck")
+beat([glass("in", "fake", 5.0, margin=4, title="Kairos · Inbound WhatsApp", cam=[(0.0, PHONE_CARD("fake"), 0.01), (0.3, RC("in", "fake", "thead"), 1.0)], neb=("comp/NEB2.mov", 6.0))], voice=["p17"], at=0.3, name="fakecheck")
 beat([clip("B1_borrower_b", 5.3, keep=5.3), clip("X_callcentre", 1.6),
       glass("in", "takeoverB", 2.6, title="Kairos · Agent console", cam=[(0.0, RC("in", "takeoverB", "convo"), 0.01)], neb=("comp/NEB2.mov", 12.0))], voice=["p18"], at=0.3, name="hardship")
-beat([glass("in", "tabA2", 3.5, title="Kairos · Inbound WhatsApp", frames=[(0, "tabA2"), ("@d7", "stop")], cam=[(0.0, PHONE, 0.01)], neb=("comp/NEB1.mov", 2.0))],
+beat([glass("in", "tabA2", 3.5, margin=6, title="Kairos · Inbound WhatsApp", frames=[(0, "tabA2"), ("@d7", "stop")], cam=[(0.0, PHONE_CARD("tabA2"), 0.01)], neb=("comp/NEB1.mov", 2.0))],
      voice=["d6", "d7"], at=0.15, gap=0.35, tail=0.2, name="stop")
-beat([glass("in", "stop", 4.0, title="Kairos · Inbound WhatsApp", cam=[(0.0, PHONE, 0.01), (0.3, RC("in", "stop", "thead"), 1.0)], neb=("comp/NEB1.mov", 7.0))], voice=["p19"], at=0.3, name="stopall")
+beat([glass("in", "stop", 4.0, margin=4, title="Kairos · Inbound WhatsApp", cam=[(0.0, PHONE_CARD("stop"), 0.01), (0.3, RC("in", "stop", "thead"), 1.0)], neb=("comp/NEB1.mov", 7.0))], voice=["p19"], at=0.3, name="stopall")
 # 7 · the team stays in charge (the real deployed dashboard, recorded at 60 fps; F02 whole page, F03 the manual-send card)
 F02, F03 = "rec/F02_approvals_supervisor_clean.mp4", "rec/F03_crm_explain_manual_preview_clean.mp4"
 beat([clip("P06_asha_typing", 2.0),
       ("glass", 4.4, dict(video=F02, frm=36.0, rate=2.0, vw=1920, vh=1080, title="Kairos · Control Room · approvals", neb=("comp/NEB2.mov", 12.0))),
-      ("glass", 5.0, dict(video=F03, frm=53.0, rate=1.0, vw=1920, vh=1080, title="Kairos · Smart CRM · manual send", cam=[(0.6, F03_CARD, 1.4)], neb=("comp/NEB2.mov", 16.0)))],
+      ("glass", 5.0, dict(video=F03, frm=53.0, rate=1.0, vw=1920, vh=1080, title="Kairos · Smart CRM · manual send", cam=[(0.6, F03_CARD, 1.4)], kmax=1.0, neb=("comp/NEB2.mov", 16.0)))],
      voice=["p20"], at=0.3, name="team")
 # 8 · results and ending
 beat([clip("X_rajesh", 2.4),
@@ -197,13 +201,13 @@ for kind, dur, p, t0, bname in seq:
         fr = [] if p.get("video") else [{"at": 0, "label": lab(p["cap"], p["label"])}] if not p.get("frames") else [{"at": round(t0 + _at(a), 3), "label": lab(p["cap"], l)} for a, l in p["frames"]]
         if p.get("frames"): fr[0]["at"] = 0
         L = {"kind": "glass", "t0": t0, "t1": round(t1, 3), "cap": p["cap"], "frames": fr, "title": p.get("title"),
-             "cam": [{"t": round(t0 + a, 3), "rect": r, "dur": dd} for a, r, dd in p.get("cam", [])],
+             "cam": [{"t": round(t0 + _at(a), 3), "rect": r, "dur": dd} for a, r, dd in p.get("cam", [])],
              "enter": p.get("enter", {"type": "rise", "dur": 0.6}), "exit": {"type": "fade", "dur": 0.25}}
         if p.get("cursor"): L["cursor"] = [dict(k, t=round(t0 + k["t"], 3)) for k in p["cursor"]]
         if p.get("page"): L["page"] = p["page"]
         if p.get("video"):
             L.pop("cap"); L.pop("frames"); L.update({"video": p["video"], "from": p.get("frm", 0.0), "rate": p.get("rate", 1.0), "vw": p.get("vw", 1920), "vh": p.get("vh", 1080)})
-        for k in ("maxh", "cy", "maxw"):
+        for k in ("maxh", "cy", "maxw", "margin", "kmax"):
             if k in p: L[k] = p[k]
         if p.get("mini"): L["maxw"] = 1380; L["cx"] = 800
         layers.append(L)
@@ -246,9 +250,8 @@ for t0, t1, src, frm in sorted(neb_spans):
     else: merged.append([t0, t1, src, frm])
 for t0, t1, src, frm in merged:
     n, dur = NEB_LEN[src], t1 - t0
-    if dur <= n - 0.3: rate, frm = 1.0, min(frm, n - dur - 0.2)               # real-time playback: every frame a new frame, no stutter
-    else: rate, frm = (n - 0.3) / dur, 0.0
-    layers.insert(0, {"kind": "nebula", "t0": max(0, t0 - 0.05), "t1": round(t1 + 0.05, 3), "src": src, "from": round(frm, 3), "rate": round(rate, 4), "dim": 0.45, "zoom": [1.04, 1.04 + 0.004 * dur], "enter": {"dur": 0}, "exit": {"dur": 0}})
+    rate, frm = 1.0, (min(frm, n - dur - 0.2) if dur <= n - 0.3 else 0.0)        # always real time: a new frame every frame (long spans ping-pong)
+    layers.insert(0, {"kind": "nebula", "t0": max(0, t0 - 0.05), "t1": round(t1 + 0.05, 3), "src": src, "from": round(frm, 3), "rate": rate, "len": n - 0.1, "dim": 0.45, "zoom": [1.04, 1.04 + 0.004 * dur], "enter": {"dur": 0}, "exit": {"dur": 0}})
 # a glass window that cuts to another glass window crossfades (the old one stays under the new one), no dip to the background
 gl = [L for L in layers if L.get("kind") == "glass"]
 for a, b in zip(gl, gl[1:]):

@@ -24,7 +24,10 @@ var k = 1; let A = CommandLine.arguments
 while k < A.count { if A[k].hasPrefix("--"), k + 1 < A.count { opts[String(A[k].dropFirst(2))] = A[k + 1]; k += 2 } else { k += 1 } }
 let film = opts["film"] ?? "product"
 let fps = Double(opts["fps"] ?? "30")!
-let Wd = 1920.0, Ht = 1080.0
+let Wd = 1920.0, Ht = 1080.0                       // the CSS stage
+let outSize = (opts["size"] ?? "1920x1080").split(separator: "x").map { Double($0)! }
+let Ow = outSize[0], Oh = outSize[1]               // the encoded frame: the stage is re-painted at this scale (not upscaled)
+let bitrate = Int(opts["mbps"] ?? (Ow > 3000 ? "48" : Ow > 2000 ? "28" : "16"))! * 1_000_000
 let port = opts["port"] ?? "8772"
 
 let app = NSApplication.shared
@@ -77,7 +80,7 @@ print("film \(film) duration \(duration) s")
 func snapshotOnce() -> CGImage? {
     var out: CGImage?
     autoreleasepool {
-        let c = WKSnapshotConfiguration(); c.snapshotWidth = NSNumber(value: Wd / window.backingScaleFactor); c.afterScreenUpdates = true
+        let c = WKSnapshotConfiguration(); c.snapshotWidth = NSNumber(value: Ow / window.backingScaleFactor); c.afterScreenUpdates = true
         var img: NSImage?; var finished = false
         web.takeSnapshot(with: c) { i, _ in img = i; finished = true }
         _ = waitUntil(20) { finished }
@@ -89,7 +92,7 @@ func snapshot() -> CGImage {
     var out: CGImage?
     for attempt in 0..<6 {
         autoreleasepool {
-            let c = WKSnapshotConfiguration(); c.snapshotWidth = NSNumber(value: Wd / window.backingScaleFactor); c.afterScreenUpdates = true
+            let c = WKSnapshotConfiguration(); c.snapshotWidth = NSNumber(value: Ow / window.backingScaleFactor); c.afterScreenUpdates = true
             var img: NSImage?; var finished = false
             web.takeSnapshot(with: c) { i, _ in img = i; finished = true }
             _ = waitUntil(20) { finished }
@@ -105,7 +108,7 @@ func snapshot() -> CGImage {
 func seek(_ t: Double) {
     let fresh = (js("return await seek(\(t))") as? Int) ?? 0
     if fresh > 0 { // a new capture frame was just swapped in: give WebKit a beat to raster it, then flush once
-        RunLoop.main.run(until: Date().addingTimeInterval(0.12)); _ = snapshotOnce()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.25)); _ = snapshotOnce()   // a new image: let WebKit rasterise it fully before the real snapshot
     }
 }
 
@@ -150,13 +153,13 @@ let outURL = URL(fileURLWithPath: outPath)
 try? FileManager.default.removeItem(at: outURL)
 let writer = try! AVAssetWriter(outputURL: outURL, fileType: .mov)
 let input = AVAssetWriterInput(mediaType: .video, outputSettings: [
-    AVVideoCodecKey: AVVideoCodecType.h264, AVVideoWidthKey: Int(Wd), AVVideoHeightKey: Int(Ht),
-    AVVideoCompressionPropertiesKey: [AVVideoAverageBitRateKey: 16_000_000, AVVideoProfileLevelKey: AVVideoProfileLevelH264HighAutoLevel,
+    AVVideoCodecKey: AVVideoCodecType.h264, AVVideoWidthKey: Int(Ow), AVVideoHeightKey: Int(Oh),
+    AVVideoCompressionPropertiesKey: [AVVideoAverageBitRateKey: bitrate, AVVideoProfileLevelKey: AVVideoProfileLevelH264HighAutoLevel,
                                       AVVideoMaxKeyFrameIntervalKey: Int(fps * 2), AVVideoExpectedSourceFrameRateKey: Int(fps)],
     AVVideoColorPropertiesKey: [AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2, AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2, AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2]])
 input.expectsMediaDataInRealTime = false
 let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: input, sourcePixelBufferAttributes: [
-    kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA, kCVPixelBufferWidthKey as String: Int(Wd), kCVPixelBufferHeightKey as String: Int(Ht)])
+    kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA, kCVPixelBufferWidthKey as String: Int(Ow), kCVPixelBufferHeightKey as String: Int(Oh)])
 writer.add(input)
 writer.startWriting(); writer.startSession(atSourceTime: .zero)
 let n0 = Int((from * fps).rounded()), n1 = Int((to * fps).rounded())
@@ -172,10 +175,10 @@ for n in n0..<n1 {
         CVPixelBufferPoolCreatePixelBuffer(nil, adaptor.pixelBufferPool!, &pb)
         guard let buf = pb else { fail("no pixel buffer") }
         CVPixelBufferLockBaseAddress(buf, [])
-        let ctx = CGContext(data: CVPixelBufferGetBaseAddress(buf), width: Int(Wd), height: Int(Ht), bitsPerComponent: 8,
+        let ctx = CGContext(data: CVPixelBufferGetBaseAddress(buf), width: Int(Ow), height: Int(Oh), bitsPerComponent: 8,
                             bytesPerRow: CVPixelBufferGetBytesPerRow(buf), space: srgb,
                             bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue)!
-        ctx.draw(cg, in: CGRect(x: 0, y: 0, width: Wd, height: Ht))
+        ctx.draw(cg, in: CGRect(x: 0, y: 0, width: Ow, height: Oh))
         CVPixelBufferUnlockBaseAddress(buf, [])
         adaptor.append(buf, withPresentationTime: CMTime(value: CMTimeValue(n - n0), timescale: CMTimeScale(fps)))
         if (n - n0) % 150 == 0 {

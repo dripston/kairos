@@ -8,7 +8,7 @@ window on the nebula, then an eased zoom) → one or two real numbers. People ap
 import json, os, subprocess
 
 V = json.load(open("tools/lines_v4.json"))
-CAPS = {"ov": "captures_rc/out_vikram", "in": "captures_rc/inbound_tall", "er": "captures_rc/engine_room", "dv": "captures_rc/deployed_voice_tall"}
+CAPS = {"ov": "captures_hd/out_vikram", "in": "captures_hd/inbound_tall", "er": "captures_hd/engine_room", "dv": "captures_hd/deployed_voice_tall"}   # 4× captures
 _dur = {}
 def d(vid):
     if vid not in _dur:
@@ -18,7 +18,10 @@ def d(vid):
 def RC(cap, label, key):
     lg = json.load(open(CAPS[cap] + "/log.json"))
     for e in lg["events"]:
-        if e.get("type") == "rect" and e["name"] == "%s_%s" % (label, key): return [round(v) for v in e["rect"]]
+        if e.get("type") == "rect" and e["name"] == "%s_%s" % (label, key):
+            r = [round(v) for v in e["rect"]]
+            if key == "detail": r = [r[0], r[1] - 50, r[2], r[3] + 50]          # include the card's header row
+            return r
     raise SystemExit("no rect %s_%s in %s" % (label, key, cap))
 def U(*rs): x0 = min(r[0] for r in rs); y0 = min(r[1] for r in rs); return [x0, y0, max(r[0] + r[2] for r in rs) - x0, max(r[1] + r[3] for r in rs) - y0]
 ER_FLOW, ER_RULE = [27, 199, 582, 321], [27, 677, 582, 200]
@@ -154,7 +157,7 @@ if os.environ.get("REAL_WA"):
 beat([chapter("07", "Human in the loop", "people decide; Aladdin still checks"), other("flow", 4.0, key="hitl", neb=("comp/NEB2.mov", 4.0)),
       clip("P16a_asha_close", 1.6),
       ("glass", 4.4, dict(video=F02, frm=36.0, rate=2.0, vw=1920, vh=1080, title="Kairos · Control Room · approvals", neb=("comp/NEB2.mov", 9.0))),
-      ("glass", 5.6, dict(video=F03, frm=50.0, rate=1.0, vw=1920, vh=1080, title="Kairos · Smart CRM · manual send at 20:00", cam=[(0.6, F03_CARD, 1.4)], neb=("comp/NEB2.mov", 14.0)))],
+      ("glass", 5.6, dict(video=F03, frm=50.0, rate=1.0, vw=1920, vh=1080, title="Kairos · Smart CRM · manual send at 20:00", cam=[(0.6, F03_CARD, 1.4)], kmax=1.0, neb=("comp/NEB2.mov", 14.0)))],
      voice=["c08"], at=AT, name="07")
 beat([chapter("08", "Determinism and testing", "same seed, same decisions"), other("terminal", 20.0, neb=("comp/NEB1.mov", 2.0))],
      voice=["c09"], at=AT, name="08")
@@ -199,6 +202,8 @@ for kind, dur, p, t0, bname in seq:
         elif p.get("frames"): L.update({"cap": p["cap"], "frames": [{"at": 0 if i == 0 else round(t0 + a, 3), "label": lab(p["cap"], l)} for i, (a, l) in enumerate(p["frames"])]})
         else: L.update({"cap": p["cap"], "frames": [{"at": 0, "label": lab(p["cap"], p["label"])}]})
         if p.get("page"): L["page"] = p["page"]
+        for kk in ("margin", "kmax"):
+            if kk in p: L[kk] = p[kk]
         layers.append(L)
     elif kind == "title":
         layers.append({"kind": "title", "t0": t0, "t1": t1, "lines": p["lines"], "y": p.get("y", 470), "stagger": 0.18, "enter": {"dur": 0}, "exit": {"dur": 0.3}})
@@ -240,15 +245,21 @@ for t0, t1, src, frm in sorted(neb_spans):
     if merged and abs(merged[-1][1] - t0) < 2e-2: merged[-1][1] = t1           # adjacent platform shots share one background
     else: merged.append([t0, t1, src, frm])
 for t0, t1, src, frm in merged:
-    n, dur = NEB_LEN[src], t1 - t0
-    if dur <= n - 0.3: rate, frm = 1.0, min(frm, n - dur - 0.2)               # real-time playback: every frame a new frame, no stutter
-    else: rate, frm = (n - 0.3) / dur, 0.0
-    layers.insert(0, {"kind": "nebula", "t0": max(0, t0 - 0.05), "t1": round(t1 + 0.05, 3), "src": src, "from": round(frm, 3), "rate": round(rate, 4), "dim": 0.45, "zoom": [1.04, 1.04 + 0.004 * dur], "enter": {"dur": 0}, "exit": {"dur": 0}})
+    src = "comp/NEB1.mov"; n, dur = NEB_LEN[src], t1 - t0
+    frm = frm % max(1.0, n - 1.0)
+    layers.insert(0, {"kind": "nebula", "t0": max(0, t0 - 0.05), "t1": round(t1 + 0.05, 3), "src": src, "from": round(frm, 3), "rate": 1.0, "len": n - 0.1, "dim": 0.38, "tint": "8,26,56", "zoom": [1.04, 1.04 + 0.004 * dur], "enter": {"dur": 0}, "exit": {"dur": 0}})
 # a glass window that cuts to another glass window crossfades (the old one stays under the new one), no dip to the background
 gl = [L for L in layers if L.get("kind") == "glass"]
 for a, b in zip(gl, gl[1:]):
     if abs(a["t1"] - b["t0"]) < 1e-3:
         a["t1"] = round(a["t1"] + 0.35, 3); a["exit"] = {"type": "fade", "dur": 0.0}; b["enter"] = {"type": "fade", "dur": 0.35}
+XF = 0.4
+base = [L for L in layers if L["kind"] in ("video", "glass", "title", "flow", "seq", "panel", "brand", "term") and abs(L.get("t1", 0) - L.get("t0", 0)) > 0.5]
+base.sort(key=lambda L: L["t0"])
+for a, b in zip(base, base[1:]):
+    if abs(a["t1"] - b["t0"]) < 0.06:
+        a["t1"] = round(a["t1"] + XF, 3); a["exit"] = dict(a.get("exit") or {}, dur=XF, type="fade")
+        b["enter"] = dict(b.get("enter") or {}, dur=XF, type="fade")
 film = {"duration": round(END, 3), "ccStyle": "v4", "cues": "audio/technical4_cues.json", "bg": "#02040a", "captures": CAPS,
         "terms": {"redteam": "term/redteam.json", "bench": "term/bench.json", "determinism": "term/determinism.json", "pytest": "term/pytest.json", "ope": "term/ope.json"}, "layers": layers}
 for L in layers:

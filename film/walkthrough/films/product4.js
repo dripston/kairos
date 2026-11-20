@@ -5,11 +5,11 @@ window.FILM = {
  "cues": "audio/product4_cues.json",
  "bg": "#02040a",
  "captures": {
-  "ov": "captures_rc/out_vikram",
-  "aa": "captures_rc/out_aarav",
-  "in": "captures_rc/inbound_tall",
-  "er": "captures_rc/engine_room",
-  "dv": "captures/deployed_voice"
+  "ov": "captures_hd/out_vikram",
+  "aa": "captures/out_aarav",
+  "in": "captures_hd/inbound_tall",
+  "er": "captures_hd/engine_room",
+  "dv": "captures_hd/deployed_voice_tall"
  },
  "layers": [
   {
@@ -18,7 +18,8 @@ window.FILM = {
    "t1": 220.063,
    "src": "comp/NEB1.mov",
    "from": 0.0,
-   "rate": 0.8617,
+   "rate": 1.0,
+   "len": 16.299999999999997,
    "dim": 0.45,
    "zoom": [
     1.04,
@@ -38,6 +39,7 @@ window.FILM = {
    "src": "comp/NEB2.mov",
    "from": 12.0,
    "rate": 1.0,
+   "len": 30.299999999999997,
    "dim": 0.45,
    "zoom": [
     1.04,
@@ -57,6 +59,7 @@ window.FILM = {
    "src": "comp/NEB2.mov",
    "from": 12.0,
    "rate": 1.0,
+   "len": 30.299999999999997,
    "dim": 0.45,
    "zoom": [
     1.04,
@@ -75,7 +78,8 @@ window.FILM = {
    "t1": 164.231,
    "src": "comp/NEB1.mov",
    "from": 0.0,
-   "rate": 0.471,
+   "rate": 1.0,
+   "len": 16.299999999999997,
    "dim": 0.45,
    "zoom": [
     1.04,
@@ -95,6 +99,7 @@ window.FILM = {
    "src": "comp/NEB2.mov",
    "from": 13.564,
    "rate": 1.0,
+   "len": 30.299999999999997,
    "dim": 0.45,
    "zoom": [
     1.04,
@@ -114,6 +119,7 @@ window.FILM = {
    "src": "comp/NEB1.mov",
    "from": 2.0,
    "rate": 1.0,
+   "len": 16.299999999999997,
    "dim": 0.45,
    "zoom": [
     1.04,
@@ -133,6 +139,7 @@ window.FILM = {
    "src": "comp/NEB2.mov",
    "from": 2.0,
    "rate": 1.0,
+   "len": 30.299999999999997,
    "dim": 0.45,
    "zoom": [
     1.04,
@@ -152,6 +159,7 @@ window.FILM = {
    "src": "comp/NEB1.mov",
    "from": 9.571,
    "rate": 1.0,
+   "len": 16.299999999999997,
    "dim": 0.45,
    "zoom": [
     1.04,
@@ -170,7 +178,8 @@ window.FILM = {
    "t1": 84.101,
    "src": "comp/NEB1.mov",
    "from": 0.0,
-   "rate": 0.314,
+   "rate": 1.0,
+   "len": 16.299999999999997,
    "dim": 0.45,
    "zoom": [
     1.04,
@@ -190,6 +199,7 @@ window.FILM = {
    "src": "comp/NEB2.mov",
    "from": 3.0,
    "rate": 1.0,
+   "len": 30.299999999999997,
    "dim": 0.45,
    "zoom": [
     1.04,
@@ -209,6 +219,7 @@ window.FILM = {
    "src": "comp/NEB1.mov",
    "from": 1.0,
    "rate": 1.0,
+   "len": 16.299999999999997,
    "dim": 0.45,
    "zoom": [
     1.04,
@@ -511,9 +522,9 @@ window.FILM = {
      "t": 38.253,
      "rect": [
       349,
-      335,
+      285,
       658,
-      259
+      309
      ],
      "dur": 1.4
     }
@@ -544,9 +555,9 @@ window.FILM = {
      "t": 41.334,
      "rect": [
       349,
-      335,
+      285,
       658,
-      259
+      309
      ],
      "dur": 0.01
     },
@@ -913,9 +924,9 @@ window.FILM = {
      "t": 87.251,
      "rect": [
       349,
-      335,
+      285,
       658,
-      259
+      309
      ],
      "dur": 1.2
     }
@@ -955,7 +966,7 @@ window.FILM = {
     },
     {
      "at": 98.28,
-     "label": "v10"
+     "label": "v11"
     }
    ],
    "title": "Kairos · Live journey · Vikram",
@@ -964,9 +975,9 @@ window.FILM = {
      "t": 95.68,
      "rect": [
       349,
-      335,
+      285,
       658,
-      259
+      309
      ],
      "dur": 1.2
     }
@@ -1046,9 +1057,9 @@ window.FILM = {
      "t": 103.467,
      "rect": [
       349,
-      335,
+      285,
       658,
-      259
+      309
      ],
      "dur": 1.2
     },
@@ -1212,6 +1223,16 @@ window.FILM = {
       767
      ],
      "dur": 0.01
+    },
+    {
+     "t": 132.288,
+     "rect": [
+      19,
+      132,
+      918,
+      767
+     ],
+     "dur": 0.9
     }
    ],
    "enter": {
@@ -1221,7 +1242,8 @@ window.FILM = {
    "exit": {
     "type": "fade",
     "dur": 0.0
-   }
+   },
+   "margin": 6
   },
   {
    "kind": "glass",
@@ -1241,7 +1263,7 @@ window.FILM = {
      "rect": [
       19,
       132,
-      360,
+      918,
       767
      ],
      "dur": 0.01
@@ -1264,7 +1286,8 @@ window.FILM = {
    "exit": {
     "type": "fade",
     "dur": 0.0
-   }
+   },
+   "margin": 4
   },
   {
    "kind": "glass",
@@ -1288,7 +1311,7 @@ window.FILM = {
      "rect": [
       19,
       132,
-      360,
+      918,
       767
      ],
      "dur": 0.01
@@ -1301,7 +1324,8 @@ window.FILM = {
    "exit": {
     "type": "fade",
     "dur": 0.0
-   }
+   },
+   "margin": 6
   },
   {
    "kind": "glass",
@@ -1321,7 +1345,7 @@ window.FILM = {
      "rect": [
       19,
       132,
-      360,
+      918,
       767
      ],
      "dur": 0.01
@@ -1344,7 +1368,8 @@ window.FILM = {
    "exit": {
     "type": "fade",
     "dur": 0.25
-   }
+   },
+   "margin": 4
   },
   {
    "kind": "video",
@@ -1429,7 +1454,7 @@ window.FILM = {
      "rect": [
       19,
       132,
-      360,
+      918,
       767
      ],
      "dur": 0.01
@@ -1442,7 +1467,8 @@ window.FILM = {
    "exit": {
     "type": "fade",
     "dur": 0.0
-   }
+   },
+   "margin": 6
   },
   {
    "kind": "glass",
@@ -1462,7 +1488,7 @@ window.FILM = {
      "rect": [
       19,
       132,
-      360,
+      918,
       767
      ],
      "dur": 0.01
@@ -1485,7 +1511,8 @@ window.FILM = {
    "exit": {
     "type": "fade",
     "dur": 0.25
-   }
+   },
+   "margin": 4
   },
   {
    "kind": "video",
@@ -1550,7 +1577,8 @@ window.FILM = {
    "from": 53.0,
    "rate": 1.0,
    "vw": 1920,
-   "vh": 1080
+   "vh": 1080,
+   "kmax": 1.0
   },
   {
    "kind": "video",

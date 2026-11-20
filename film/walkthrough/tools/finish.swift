@@ -35,7 +35,7 @@ func export(_ asset: AVAsset, _ preset: String, _ url: URL) {
     if ex.status != .completed { fail("export \(preset) failed: \(String(describing: ex.error))") }
 }
 export(comp, AVAssetExportPresetPassthrough, out)
-export(AVURLAsset(url: out), AVAssetExportPreset1280x720, out720)
+export(AVURLAsset(url: out), (a.count > 5 && a[5] == "1080") ? AVAssetExportPreset1920x1080 : AVAssetExportPreset1280x720, out720)
 
 for u in [out, out720] {
     let as1 = AVURLAsset(url: u)

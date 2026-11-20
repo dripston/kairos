@@ -1,27 +1,27 @@
 [
   {
     "t0" : 2.1000000000000001,
-    "who" : "",
+    "t1" : 12.781201814058957,
     "text" : "Kairos is a decision engine for loan collections. Every morning it decides, for each borrower, whether to make contact today, on which channel, and at what hour.",
-    "t1" : 12.781201814058957
+    "who" : ""
   },
   {
     "text" : "Everything starts from one record per borrower: their loans, each EMI, every payment, their consent for each channel, and a log of every event. Money is stored in paise, the smallest unit, so totals never drift.",
-    "t1" : 28.985943310657596,
+    "who" : "",
     "t0" : 14.581,
-    "who" : ""
+    "t1" : 28.985943310657596
   },
   {
+    "t0" : 30.795999999999999,
     "t1" : 49.965365079365078,
     "text" : "Each morning, the churn engine sorts every borrower into groups: by cohort, risk, contact layer and status, using written rules. Every move records the rule that fired and the value it checked. Here, a borrower moves from medium to high risk because he is now more than 60 days late.",
-    "t0" : 30.795999999999999,
     "who" : ""
   },
   {
-    "t0" : 51.665999999999997,
-    "text" : "The learner is a Bayesian model. For each group of borrowers, every channel and hour keeps a reply chance estimate with its uncertainty, updated when each message's 24-hour window closes. When we cut WhatsApp replies on day 7, its estimate fell from 13.5 to 9.7 in 100, and that group moved to SMS.",
+    "who" : "",
     "t1" : 76.011260770975056,
-    "who" : ""
+    "text" : "The learner is a Bayesian model. For each group of borrowers, every channel and hour keeps a reply chance estimate with its uncertainty, updated when each message's 24-hour window closes. When we cut WhatsApp replies on day 7, its estimate fell from 13.5 to 9.7 in 100, and that group moved to SMS.",
+    "t0" : 51.665999999999997
   },
   {
     "t0" : 77.850999999999999,
@@ -31,32 +31,32 @@
   },
   {
     "t0" : 103.994,
+    "t1" : 126.68506575963718,
     "text" : "Adapters send each message, and each channel calls us back with what happened: a webhook. Repeats are ignored, a delivery never counts as a reply, and voice calls come back from AI voice agents with an outcome and a confidence. Kairos, not the agent, acts on it, and anything below a hand-set threshold waits for a person.",
-    "who" : "",
-    "t1" : 126.68506575963718
-  },
-  {
-    "t0" : 128.41499999999999,
-    "text" : "Inbound chats run on a state machine, which means a chat can only move through a few allowed steps. Nothing about the account is shared until the borrower enters a one-time code, and edited or reused payment proofs go to a person. In 1,000 seeded test conversations, 73% were resolved without a person, and all 127 fakes were caught.",
-    "t1" : 152.79434240362812,
     "who" : ""
   },
   {
-    "t0" : 154.52500000000001,
+    "who" : "",
+    "t1" : 152.79434240362812,
+    "text" : "Inbound chats run on a state machine, which means a chat can only move through a few allowed steps. Nothing about the account is shared until the borrower enters a one-time code, and edited or reused payment proofs go to a person. In 1,000 seeded test conversations, 73% were resolved without a person, and all 127 fakes were caught.",
+    "t0" : 128.41499999999999
+  },
+  {
     "t1" : 170.50021541950113,
+    "t0" : 154.52500000000001,
     "text" : "People stay in charge: they can approve calls, pause borrowers and take over chats. Each action passes Aladdin and lands in the audit log. When an operator tries to send an SMS at 8 in the evening, Aladdin blocks it, and no role can override that.",
     "who" : ""
   },
   {
-    "t1" : 191.79952380952381,
-    "who" : "",
+    "t0" : 172.31,
     "text" : "Same data and seed, same decisions. The replay matched exactly, 49 out of 49 attacks were stopped, and 3030 tests passed. From the logs alone, off policy evaluation estimated 18.2 replies per 1,000 messages against a true 18.4.",
-    "t0" : 172.31
+    "who" : "",
+    "t1" : 191.79952380952381
   },
   {
+    "who" : "",
     "text" : "None of this is magic. Each part stands on published research.",
-    "t0" : 193.86000000000001,
     "t1" : 197.90702947845807,
-    "who" : ""
+    "t0" : 193.86000000000001
   }
 ]

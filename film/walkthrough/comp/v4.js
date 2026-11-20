@@ -37,14 +37,15 @@
       L.vid = true; L.src = L.src || "comp/NEB1.mov";
       L.v.style.filter = "brightness(0.82) saturate(1.05)";
       var dd = L.dim != null ? L.dim : 0.45;
-      var dim = A.el("div", "", r); dim.style.cssText = "position:absolute;inset:0;background:radial-gradient(ellipse 60% 55% at 50% 45%, rgba(2,5,14," + Math.min(0.85, dd + 0.25) + ") 0%, rgba(2,5,14," + dd + ") 65%, rgba(1,3,10," + Math.min(0.9, dd + 0.2) + ") 100%)";
+      var tint = L.tint || "2,5,14";   // technical: a soft blue (e.g. "6,22,48") so diagrams and cards stay readable
+      var dim = A.el("div", "", r); dim.style.cssText = "position:absolute;inset:0;background:radial-gradient(ellipse 60% 55% at 50% 45%, rgba(" + tint + "," + Math.min(0.85, dd + 0.25) + ") 0%, rgba(" + tint + "," + dd + ") 65%, rgba(" + tint + "," + Math.min(0.9, dd + 0.2) + ") 100%)";
     },
     update: function (L, t, A) {
       var e = enterT(A, L, t);
       var life = A.clamp((t - L.t0) / Math.max(1, L.t1 - L.t0), 0, 1), z = L.zoom || [1.04, 1.1];
       L.v.style.transform = "scale(" + A.lerp(z[0], z[1], life) + ")";
-      var want = (L.from || 0) + (t - L.t0) * (L.rate || 0.6);
-      if (L.len) want = want % L.len;
+      var want = (L.from || 0) + (t - L.t0) * (L.rate || 1.0);
+      if (L.len) { var per = 2 * L.len, m = want % per; want = m <= L.len ? m : per - m; }   // ping-pong: seamless, a new frame every frame
       if (!L.shownOnce) L.v.style.opacity = 0;          // never show an unpainted video element (no white/black blob)
       var pr = seekVideo(A, L, want);
       return Promise.resolve(pr).then(function () { L.shownOnce = true; L.v.style.opacity = 1; });
@@ -97,38 +98,29 @@
       if (type === "push") { sc *= A.lerp(1.18, 1, e.p); }
       if (xt === "zoom") { sc *= A.lerp(1.25, 1, e.q); }
       if (xt === "push") { sc *= A.lerp(0.9, 1, e.q); }
-      L.win.style.transform = "translateY(" + ty + "px) scale(" + sc + ")";
-      // inner camera + focus clip, one continuous eased move per key (log zoom); the focus is the WHOLE target component
-      var P = L.pageR, keys = L.cam || [], full = [P[0], P[1], P[2], P[3]], M = L.margin != null ? L.margin : 24;
-      function grow(rc) { return [Math.max(P[0], rc[0] - M), Math.max(P[1], rc[1] - M), Math.min(P[0] + P[2], rc[0] + rc[2] + M) - Math.max(P[0], rc[0] - M), Math.min(P[1] + P[3], rc[1] + rc[3] + M) - Math.max(P[1], rc[1] - M)]; }
-      function fit(rc) { // the camera rect: the focus expanded to the pane aspect, kept inside the page
-        var asp = g.pw / g.ph, w = rc[2], h = rc[3];
-        if (w / h > asp) h = w / asp; else w = h * asp;
-        if (w > P[2]) { w = P[2]; h = w / asp; } if (h > P[3]) { h = P[3]; w = h * asp; }
-        var x = rc[0] + rc[2] / 2 - w / 2, y = rc[1] + rc[3] / 2 - h / 2;
-        x = A.clamp(x, P[0], P[0] + P[2] - w); y = A.clamp(y, P[1], P[1] + P[3] - h);
-        return [x, y, w, h];
-      }
-      var cur = fit(full), foc = full;
+      // the focus: the whole page, or a whole component (+ margin), eased from key to key (one continuous move)
+      var P = L.pageR, keys = L.cam || [], full = [P[0], P[1], P[2], P[3]], M = L.margin != null ? L.margin : 10;
+      function grow(rc) { var x0 = Math.max(P[0], rc[0] - M), y0 = Math.max(P[1], rc[1] - M); return [x0, y0, Math.min(P[0] + P[2], rc[0] + rc[2] + M) - x0, Math.min(P[1] + P[3], rc[1] + rc[3] + M) - y0]; }
+      var foc = full;
       keys.forEach(function (k) {
         if (t < k.t) return;
-        var tf = k.rect ? grow(k.rect) : full, tg = fit(tf), s = ease(A, (t - k.t) / (k.dur || 1.2));
-        var wz = Math.exp(A.lerp(Math.log(cur[2]), Math.log(tg[2]), s));
-        var cx = A.lerp(cur[0] + cur[2] / 2, tg[0] + tg[2] / 2, s), cy = A.lerp(cur[1] + cur[3] / 2, tg[1] + tg[3] / 2, s);
-        cur = [cx - wz / 2, cy - (wz * g.ph / g.pw) / 2, wz, wz * g.ph / g.pw];
+        var tf = k.rect ? grow(k.rect) : full, s = ease(A, (t - k.t) / (k.dur || 1.2));
         foc = [A.lerp(foc[0], tf[0], s), A.lerp(foc[1], tf[1], s), A.lerp(foc[2], tf[2], s), A.lerp(foc[3], tf[3], s)];
       });
-      var k = g.pw / cur[2];
-      L.inner.style.transform = "scale(" + k + ") translate(" + (-cur[0]) + "px," + (-cur[1]) + "px)";
-      var vw = L.video ? (L.vw || 1920) : A.caps[L.cap].log.viewport.w, vh = L.video ? (L.vh || 1080) : A.caps[L.cap].log.viewport.h;
-      var clip = (foc[0] <= P[0] + 0.5 && foc[1] <= P[1] + 0.5 && foc[2] >= P[2] - 1 && foc[3] >= P[3] - 1) ? "none"
-        : "inset(" + foc[1] + "px " + (vw - foc[0] - foc[2]) + "px " + (vh - foc[1] - foc[3]) + "px " + foc[0] + "px round 12px)";
-      L.media.forEach(function (m) { m.style.clipPath = clip; m.style.webkitClipPath = clip; });
-      L.subjectNow = [[g.cx - g.ww / 2, g.cy - g.wh / 2, g.ww, g.wh]];
+      // the window wraps the focus exactly: scale k (capped so captures are never upscaled), centred
+      var maxw = L.maxw || 1640, maxh = L.maxh || 810, kmax = L.kmax || 2.0;
+      var k = Math.min((maxw - 2 * g.pad) / foc[2], (maxh - 2 * g.pad - g.head) / foc[3], kmax);
+      var pw = foc[2] * k, ph = foc[3] * k, ww = pw + 2 * g.pad, wh = ph + 2 * g.pad + g.head;
+      L.win.style.width = ww + "px"; L.win.style.height = wh + "px";
+      L.win.style.left = (g.cx - ww / 2) + "px"; L.win.style.top = (g.cy - wh / 2) + "px";
+      L.pane.style.width = pw + "px"; L.pane.style.height = ph + "px";
+      L.win.style.transform = "translateY(" + ty + "px) scale(" + sc + ")";
+      L.inner.style.transform = "scale(" + k + ") translate(" + (-foc[0]) + "px," + (-foc[1]) + "px)";
+      L.subjectNow = [[g.cx - ww / 2, g.cy - wh / 2, ww, wh]];
       if (L.cur) {
         var cs = A.cursorAt(L, t);
         if (cs && cs.vis > 0) {
-          var px = g.cx - g.ww / 2 + g.pad + (cs.pos[0] - cur[0]) * k, py = g.cy - g.wh / 2 + g.pad + g.head + (cs.pos[1] - cur[1]) * k;
+          var px = g.cx - ww / 2 + g.pad + (cs.pos[0] - foc[0]) * k, py = g.cy - wh / 2 + g.pad + g.head + (cs.pos[1] - foc[1]) * k;
           var press = cs.click != null ? t - cs.click : 99, psc = press >= 0 && press < 0.2 ? 0.92 + 0.08 * A.E.enter(press / 0.2) : 1;
           L.cur.style.display = ""; L.cur.style.opacity = cs.vis * op;
           L.cur.style.transform = "translate(" + (px - 6) + "px," + (py - 4) + "px) scale(" + psc + ")";
@@ -136,13 +128,14 @@
           else L.rip.style.display = "none";
         } else { L.cur.style.display = "none"; L.rip.style.display = "none"; }
       }
+      // never show the window before its content has been painted for one committed frame
+      function reveal() { L.win.style.opacity = L.ready ? op : 0; }   // the window appears together with its first painted frame
       if (L.video) {
         var want = (L.from || 0) + (t - L.t0) * (L.rate || 1);
-        if (!L.ready) L.win.style.opacity = 0;
-        return Promise.resolve(seekVideo(A, L, want)).then(function () { L.ready = true; L.win.style.opacity = op; });
+        reveal();
+        return Promise.resolve(seekVideo(A, L, want)).then(function () { if (!L.ready) A.fresh(); L.ready = true; L.win.style.opacity = op; });
       }
-      // double-buffered capture frames
-      if (L.ready) L.win.style.opacity = op;
+      reveal();
       var c = A.caps[L.cap], fi = A.trackAt(L.track, t), url = A.frameUrl(c, fi);
       var front = L.ims[L.front], back = L.ims[1 - L.front];
       if (L.hideOld) { back.style.opacity = 0; L.hideOld = false; }        // the previous frame stayed one painted frame under the new one
@@ -152,8 +145,7 @@
         return back.decode().catch(function () {});
       }).then(function () {
         back.style.zIndex = 2; front.style.zIndex = 1; back.style.opacity = 1;
-        L.front = 1 - L.front; L.curUrl = url; L.hideOld = true; A.fresh();
-        if (!L.ready) { L.ready = true; L.win.style.opacity = op; }
+        L.front = 1 - L.front; L.curUrl = url; L.hideOld = true; A.fresh(); L.ready = true; L.win.style.opacity = op;
       });
     }
   };

@@ -1,7 +1,7 @@
 [
  {
-  "t0": 2.1,
-  "t1": 5.372,
+  "t0": 2.11,
+  "t1": 5.05,
   "who": "",
   "lines": [
    "Kairos is a decision engine",
@@ -9,16 +9,16 @@
   ]
  },
  {
-  "t0": 5.392,
-  "t1": 8.327,
+  "t0": 5.23,
+  "t1": 8.04,
   "who": "",
   "lines": [
    "Every morning it decides, for each borrower,"
   ]
  },
  {
-  "t0": 8.347,
-  "t1": 13.031,
+  "t0": 8.32,
+  "t1": 12.98,
   "who": "",
   "lines": [
    "whether to make contact today,",
@@ -26,8 +26,8 @@
   ]
  },
  {
-  "t0": 14.581,
-  "t1": 19.386,
+  "t0": 14.591,
+  "t1": 19.371,
   "who": "",
   "lines": [
    "Everything starts from one record",
@@ -35,8 +35,8 @@
   ]
  },
  {
-  "t0": 19.406,
-  "t1": 24.348,
+  "t0": 19.461,
+  "t1": 24.131,
   "who": "",
   "lines": [
    "every payment, their consent",
@@ -44,8 +44,8 @@
   ]
  },
  {
-  "t0": 24.368,
-  "t1": 29.236,
+  "t0": 24.421,
+  "t1": 29.201,
   "who": "",
   "lines": [
    "Money is stored in paise,",
@@ -53,8 +53,8 @@
   ]
  },
  {
-  "t0": 30.796,
-  "t1": 35.158,
+  "t0": 30.826,
+  "t1": 34.916,
   "who": "",
   "lines": [
    "Each morning, the churn engine",
@@ -62,8 +62,8 @@
   ]
  },
  {
-  "t0": 35.178,
-  "t1": 39.471,
+  "t0": 35.046,
+  "t1": 39.416,
   "who": "",
   "lines": [
    "by cohort, risk, contact layer",
@@ -71,8 +71,8 @@
   ]
  },
  {
-  "t0": 39.491,
-  "t1": 44.263,
+  "t0": 39.526,
+  "t1": 44.546,
   "who": "",
   "lines": [
    "Every move records the rule that fired",
@@ -80,8 +80,8 @@
   ]
  },
  {
-  "t0": 44.283,
-  "t1": 50.215,
+  "t0": 44.586,
+  "t1": 50.246,
   "who": "",
   "lines": [
    "a borrower moves from medium to high risk",
@@ -89,8 +89,8 @@
   ]
  },
  {
-  "t0": 51.666,
-  "t1": 56.697,
+  "t0": 51.676,
+  "t1": 56.996,
   "who": "",
   "lines": [
    "The learner is a Bayesian model.",
@@ -98,8 +98,8 @@
   ]
  },
  {
-  "t0": 56.717,
-  "t1": 62.825,
+  "t0": 57.286,
+  "t1": 61.576,
   "who": "",
   "lines": [
    "every channel and hour keeps a reply",
@@ -107,8 +107,8 @@
   ]
  },
  {
-  "t0": 62.845,
-  "t1": 66.965,
+  "t0": 61.766,
+  "t1": 65.926,
   "who": "",
   "lines": [
    "updated",
@@ -116,16 +116,16 @@
   ]
  },
  {
-  "t0": 66.985,
-  "t1": 70.112,
+  "t0": 65.946,
+  "t1": 69.036,
   "who": "",
   "lines": [
    "When we cut WhatsApp replies on day 7,"
   ]
  },
  {
-  "t0": 70.132,
-  "t1": 76.261,
+  "t0": 69.306,
+  "t1": 76.146,
   "who": "",
   "lines": [
    "its estimate fell from 13.5 to 9.7",
@@ -133,16 +133,16 @@
   ]
  },
  {
-  "t0": 77.851,
-  "t1": 81.008,
+  "t0": 77.861,
+  "t1": 81.041,
   "who": "",
   "lines": [
    "Aladdin is the gate every message must pass."
   ]
  },
  {
-  "t0": 81.028,
-  "t1": 85.556,
+  "t0": 81.171,
+  "t1": 85.961,
   "who": "",
   "lines": [
    "It checks consent, stop requests,",
@@ -150,8 +150,8 @@
   ]
  },
  {
-  "t0": 85.576,
-  "t1": 89.961,
+  "t0": 86.141,
+  "t1": 90.031,
   "who": "",
   "lines": [
    "budget and holds,",
@@ -159,8 +159,8 @@
   ]
  },
  {
-  "t0": 89.981,
-  "t1": 95.953,
+  "t0": 90.141,
+  "t1": 96.001,
   "who": "",
   "lines": [
    "so two decisions can never spend the same",
@@ -168,8 +168,8 @@
   ]
  },
  {
-  "t0": 95.973,
-  "t1": 100.429,
+  "t0": 96.171,
+  "t1": 100.281,
   "who": "",
   "lines": [
    "In a load test, 50,000 decisions",
@@ -177,16 +177,16 @@
   ]
  },
  {
-  "t0": 100.449,
-  "t1": 102.504,
+  "t0": 100.521,
+  "t1": 102.491,
   "who": "",
   "lines": [
    "with zero limit breaches."
   ]
  },
  {
-  "t0": 103.994,
-  "t1": 110.325,
+  "t0": 104.004,
+  "t1": 110.394,
   "who": "",
   "lines": [
    "Adapters send each message, and each channel",
@@ -194,8 +194,8 @@
   ]
  },
  {
-  "t0": 110.345,
-  "t1": 114.321,
+  "t0": 110.414,
+  "t1": 114.344,
   "who": "",
   "lines": [
    "Repeats are ignored,",
@@ -203,8 +203,8 @@
   ]
  },
  {
-  "t0": 114.341,
-  "t1": 120.029,
+  "t0": 114.404,
+  "t1": 120.144,
   "who": "",
   "lines": [
    "and voice calls come back from AI voice",
@@ -212,16 +212,16 @@
   ]
  },
  {
-  "t0": 120.049,
-  "t1": 122.455,
+  "t0": 120.304,
+  "t1": 122.854,
   "who": "",
   "lines": [
    "Kairos, not the agent, acts on it,"
   ]
  },
  {
-  "t0": 122.475,
-  "t1": 126.935,
+  "t0": 122.894,
+  "t1": 126.894,
   "who": "",
   "lines": [
    "and anything below a hand-set",
@@ -229,16 +229,16 @@
   ]
  },
  {
-  "t0": 128.415,
-  "t1": 131.145,
+  "t0": 128.435,
+  "t1": 130.605,
   "who": "",
   "lines": [
    "Inbound chats run on a state machine,"
   ]
  },
  {
-  "t0": 131.165,
-  "t1": 135.679,
+  "t0": 130.965,
+  "t1": 136.265,
   "who": "",
   "lines": [
    "which means a chat can only move",
@@ -246,8 +246,8 @@
   ]
  },
  {
-  "t0": 135.699,
-  "t1": 141.477,
+  "t0": 136.395,
+  "t1": 142.165,
   "who": "",
   "lines": [
    "Nothing about the account is shared",
@@ -255,8 +255,8 @@
   ]
  },
  {
-  "t0": 141.497,
-  "t1": 145.267,
+  "t0": 142.295,
+  "t1": 145.765,
   "who": "",
   "lines": [
    "and edited or reused payment proofs go",
@@ -264,16 +264,16 @@
   ]
  },
  {
-  "t0": 145.287,
-  "t1": 147.869,
+  "t0": 146.025,
+  "t1": 148.015,
   "who": "",
   "lines": [
    "In 1,000 seeded test conversations,"
   ]
  },
  {
-  "t0": 147.889,
-  "t1": 153.044,
+  "t0": 148.135,
+  "t1": 153.025,
   "who": "",
   "lines": [
    "73% were resolved without a person,",
@@ -281,8 +281,8 @@
   ]
  },
  {
-  "t0": 154.525,
-  "t1": 159.939,
+  "t0": 154.555,
+  "t1": 159.885,
   "who": "",
   "lines": [
    "People stay in charge: they can approve",
@@ -290,8 +290,8 @@
   ]
  },
  {
-  "t0": 159.959,
-  "t1": 163.475,
+  "t0": 160.015,
+  "t1": 163.405,
   "who": "",
   "lines": [
    "Each action passes Aladdin",
@@ -299,8 +299,8 @@
   ]
  },
  {
-  "t0": 163.495,
-  "t1": 167.272,
+  "t0": 163.545,
+  "t1": 167.165,
   "who": "",
   "lines": [
    "When an operator tries",
@@ -308,8 +308,8 @@
   ]
  },
  {
-  "t0": 167.292,
-  "t1": 170.75,
+  "t0": 167.295,
+  "t1": 170.725,
   "who": "",
   "lines": [
    "Aladdin blocks it,",
@@ -317,16 +317,16 @@
   ]
  },
  {
-  "t0": 172.31,
-  "t1": 175.335,
+  "t0": 172.33,
+  "t1": 175.55,
   "who": "",
   "lines": [
    "Same data and seed, same decisions."
   ]
  },
  {
-  "t0": 175.355,
-  "t1": 182.731,
+  "t0": 175.57,
+  "t1": 182.48,
   "who": "",
   "lines": [
    "The replay matched exactly, 49 out of 49",
@@ -334,16 +334,16 @@
   ]
  },
  {
-  "t0": 182.751,
-  "t1": 184.471,
+  "t0": 182.61,
+  "t1": 183.81,
   "who": "",
   "lines": [
    "From the logs alone,"
   ]
  },
  {
-  "t0": 184.491,
-  "t1": 192.05,
+  "t0": 184.01,
+  "t1": 191.98,
   "who": "",
   "lines": [
    "off policy evaluation estimated 18.2 replies",
@@ -351,8 +351,8 @@
   ]
  },
  {
-  "t0": 193.86,
-  "t1": 198.157,
+  "t0": 193.87,
+  "t1": 198.14,
   "who": "",
   "lines": [
    "None of this is magic.",
