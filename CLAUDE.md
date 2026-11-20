@@ -63,23 +63,22 @@ python scripts/run_replay.py        # K15 baseline vs reference policy
 cd ../frontend && npm install && npm run dev
 ```
 
-## Work in flight (check the open PRs before starting)
+## Current state (20 Nov 2026, demo day)
 
-| PR / branch | What | State |
-|---|---|---|
-| #11 `k09/on-spine` | K09 learner, outcome finalizer, borrower context, K06 SupervisorFSM, intent/propensity, K09 replay vs CN10 on the K03 spine | Open. 4 seeds +19% to +39% replies/₹ (mean +30%), 0 breaches |
-| #12 `k06/hitl-control` | Human in the loop: approvals, holds, manual sends, maker-checker, audit (`reserve_hook` in ledger) | Open, 229 tests |
-| #13 `k26/report-pack` | HDFC report formats + CM-02 daily per-segment report | Open, 203 tests |
-| #14 `redteam/guardrail-suite` | 49 attacks, 10 findings tracked as strict xfails | Open; HIGH fixes on `redteam/fix-high` |
-| #10 `k07-k08/channel-adapters` | Channel adapters + phone-demo mode (runtime allow-list in `~/.kairos`, never committed) | Open |
-| #8 `k22/template-selector` | 83 templates, 14-rule compliance checker | Open |
-| #6 `feat/k05-k14-crm-voice` | `crm/` borrower page, shared ingestion, 5-step replay | Open |
-| #15 `k17-k18/voice-engine` | Bot registry (use case → agent, voice, language), unified dispositions, confidence thresholds, `/webhooks/sarvam/call-end` (stacked on #11) | Open, 1208 tests |
-| #17 `k09/optimize` | Evidence decay 0.7 + relative value floor 0.5 (replay default): unseen seeds +48% / +61% / +56% vs CN10; STOP opt-outs higher than CN10 (open follow-up) | Open, stacked on #11 |
-| PRs #2–#5 | Pre-spine K09/K06 versions | Superseded by #11 |
+Everything is on `main`, which Render deploys automatically. Read [`DEMO_DAY.md`](DEMO_DAY.md) first.
 
-Merge order that minimises conflicts: #7, #11, #12, #13, #14, #10, #8, #6. #11, #12 and #13 all touch
-`ledger.py`/`api.py` additively; re-run `pytest` after each merge.
+| Area | Where it lives on `main` |
+|---|---|
+| K03 spine, K06 gate + ledger + HITL, K09 learner, K27 churn, K13, K22, K26, red team | merged via #25 and later PRs |
+| Live dashboard `/demo/live` (comparison + full system trace) | #53 |
+| Journeys `/demo/journey/outbound` + `/inbound` (take control, take over, presenter lock) | #58 + E2E fixes |
+| Engine Room `/demo/engines` (churn + learning loop, live) | merged 20 Nov |
+| CM-03 live WhatsApp mode (Cloud API, one allow-listed number, off by default) | merged 20 Nov; see `docs/LIVE_WHATSAPP.md` |
+| Research quick wins: Learn-then-Test thresholds, propensity logging + OPE | #59 |
+| E2E QA fixes (audit Infinity P0, kill switch, hang, placeholder guardrail, vendor-neutral UI labels) | #60 + merged 20 Nov |
+
+PRs #1–#5, #15–#19 and #21–#24 are superseded or already merged (see issue #50) and can be closed.
+Open decisions are tracked as issues #36–#49. Before starting new work, branch from `main` and run `python -m pytest`.
 
 ### Sarvam voice bots (CreditNirvana workspace; only touch agents named "Kairos - ...")
 
