@@ -115,6 +115,10 @@ export async function getRoutes(o) {
 export const CM03_CONSOLE_URL = `${API_BASE}/cm03/console`
 // Live collections view (backend-served page, no build step): K09 vs fixed schedule, SIMULATED
 export const LIVE_COLLECTIONS_URL = `${API_BASE}/demo/live`
+// Engine room (churn engine + learning loop) and the two presenter journeys, all backend-served, SIMULATED
+export const ENGINE_ROOM_URL = `${API_BASE}/demo/engines`
+export const JOURNEY_OUTBOUND_URL = `${API_BASE}/demo/journey/outbound`
+export const JOURNEY_INBOUND_URL = `${API_BASE}/demo/journey/inbound`
 
 // ---------- K09 replay report (static JSON, optional) ----------
 export async function getReplayReport(o) {
