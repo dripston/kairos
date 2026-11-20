@@ -131,12 +131,12 @@ beat([chapter("06", "Inbound WhatsApp", "CM-03 · a small state machine"), other
 if os.environ.get("REAL_WA"):
     beat([("glass", 12.0, dict(video=os.environ["REAL_WA"], vw=1920, vh=1080, title="Real WhatsApp · Meta Cloud API test number", neb=("comp/NEB2.mov", 1.0)))], name="realwa")
 beat([chapter("07", "Voice", "AI voice agents · outcomes · thresholds"), other("flow", 10.0, key="voice", neb=("comp/NEB1.mov", 3.0)),
-      glass("dv", "voice", 8.0, title="Kairos · Voice bots · calls", page=[290, 650, 1150, 380], cam=[(1.4, [290, 650, 1150, 250], 1.6)], neb=("comp/NEB1.mov", 8.0))],
+      glass("dv", "voice", 8.0, title="Kairos · Voice bots · calls", page=[280, 640, 1135, 305], cam=[(1.4, [700, 715, 720, 210], 1.6)], neb=("comp/NEB1.mov", 8.0))],
      voice=["c07"], at=2.4, name="07")
 beat([chapter("08", "Human in the loop", "people decide; Aladdin still checks"), other("flow", 6.0, key="hitl", neb=("comp/NEB2.mov", 4.0)),
       clip("P16a_asha_close", 2.0),
       ("glass", 5.0, dict(video=F02, frm=36.0, rate=1.6, vw=1920, vh=1080, title="Kairos · Control Room · approvals", cam=[(0.6, [380, 90, 1100, 230], 1.4)], neb=("comp/NEB2.mov", 9.0))),
-      ("glass", 6.0, dict(video=F03, frm=50.0, rate=1.0, vw=1920, vh=1080, title="Kairos · Smart CRM · manual send at 20:00", cam=[(0.6, [1440, 540, 470, 520], 1.4)], neb=("comp/NEB2.mov", 14.0)))],
+      ("glass", 6.0, dict(video=F03, frm=50.0, rate=1.0, vw=1920, vh=1080, title="Kairos · Smart CRM · manual send at 20:00", cam=[(0.6, [1540, 560, 380, 490], 1.4)], neb=("comp/NEB2.mov", 14.0)))],
      voice=["c08"], at=2.4, name="08")
 beat([chapter("09", "Determinism and testing", "same seed, same decisions"), other("terminal", 16.0, neb=("comp/NEB1.mov", 2.0)), clip("T11_engineer_face", 1.6)],
      voice=["c09"], at=2.6, name="09")

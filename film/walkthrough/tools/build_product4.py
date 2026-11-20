@@ -53,11 +53,11 @@ beat([phone([{"t": 0, "src": PH("sms3")}], 3.6, neb=("comp/NEB2.mov", 3.0)),
 # 2 · Part 1 · Reaching out (CM-02)
 beat([other("title", 2.4, lines=[{"text": "Part 1", "size": 40, "cls": "kicker"}, {"text": "Reaching out", "size": 110, "mt": 10}], neb=("comp/NEB1.mov", 2.0))], name="part1")
 beat([clip("X_vikas", 2.4),
-      glass("dv", "control", 5.0, title="Kairos · Control Room", cam=[(2.0, [300, 120, 1140, 420], 1.8)], neb=("comp/NEB1.mov", 4.0)),
+      glass("dv", "control", 5.0, title="Kairos · Control Room", page=[272, 80, 1146, 700], cam=[(2.0, [1040, 390, 370, 385], 1.8)], neb=("comp/NEB1.mov", 4.0)),
       glass("ov", "@SMS", 5.0, title="Kairos · Live journey", cam=[(1.0, [340, 320, 680, 200], 1.6)], neb=("comp/NEB1.mov", 7.0))],
      voice=["p04"], at=0.4, name="looks")
 beat([glass("ov", "@SMS", 6.0, title="Kairos · Live journey", cam=[(0.0, [340, 320, 680, 200], 0.01), (2.6, [0, 100, 1440, 130], 1.6)], neb=("comp/NEB1.mov", 10.0), enter={"type": "fade", "dur": 0.3}),
-      glass("dv", "learning", 7.0, title="Kairos · Learning & Proof", maxh=730, cy=500, tag="Within a fixed budget · daily report per group", neb=("comp/NEB2.mov", 8.0))],
+      glass("er", "d14", 7.0, title="Kairos · Engine Room · learning per group · SIMULATED", page=[632, 158, 634, 735], maxh=730, cy=500, tag="Within a fixed budget · daily report per group", neb=("comp/NEB2.mov", 8.0))],
      voice=["p05"], at=0.2, name="choice")
 # 3 · Meet Aladdin
 beat([other("title", 3.0, lines=[{"text": "ALADDIN", "size": 150, "track": 0.18, "dur": 0.5, "blur": True},
@@ -103,7 +103,7 @@ beat([glass("in", "stop", 6.0, title="Kairos · Inbound WhatsApp", cam=[(0.0, IN
 F02, F03 = "rec/F02_approvals_supervisor_clean.mp4", "rec/F03_crm_explain_manual_preview_clean.mp4"
 beat([clip("P06_asha_typing", 2.0),
       ("glass", 4.4, dict(video=F02, frm=36.0, rate=1.6, vw=1920, vh=1080, title="Kairos · Control Room · approvals", cam=[(0.6, [380, 90, 1100, 230], 1.4)], neb=("comp/NEB2.mov", 12.0))),
-      ("glass", 5.0, dict(video=F03, frm=50.0, rate=1.2, vw=1920, vh=1080, title="Kairos · Smart CRM · manual send", cam=[(0.6, [1440, 540, 470, 520], 1.4)], neb=("comp/NEB2.mov", 16.0), mini=["aladdin", "block"]))],
+      ("glass", 5.0, dict(video=F03, frm=53.0, rate=1.0, vw=1920, vh=1080, title="Kairos · Smart CRM · manual send", cam=[(0.6, [1540, 560, 380, 490], 1.4)], neb=("comp/NEB2.mov", 16.0), mini=["aladdin", "block"]))],
      voice=["p20"], at=0.3, name="team")
 # 8 · results and ending
 beat([clip("X_rajesh", 2.4),
@@ -183,6 +183,7 @@ for kind, dur, p, t0, bname in seq:
              "cam": [{"t": round(t0 + a, 3), "rect": r, "dur": dd} for a, r, dd in p.get("cam", [])],
              "enter": p.get("enter", {"type": "rise", "dur": 0.6}), "exit": {"type": "fade", "dur": 0.25}}
         if p.get("cursor"): L["cursor"] = [dict(k, t=round(t0 + k["t"], 3)) for k in p["cursor"]]
+        if p.get("page"): L["page"] = p["page"]
         if p.get("video"):
             L.pop("cap"); L.pop("frames"); L.update({"video": p["video"], "from": p.get("frm", 0.0), "rate": p.get("rate", 1.0), "vw": p.get("vw", 1920), "vh": p.get("vh", 1080)})
         for k in ("maxh", "cy", "maxw"):
@@ -192,7 +193,7 @@ for kind, dur, p, t0, bname in seq:
         if p.get("tag"): layers.append({"kind": "title", "t0": round(t0 + 0.3, 3), "t1": round(t1, 3), "y": 64, "lines": [{"text": p["tag"], "size": 34, "cls": "soft"}], "enter": {"dur": 0}, "exit": {"dur": 0.25}})
         if p.get("mini"): mini_lit.append((t0, t1, p["mini"]))
     elif kind == "phone":
-        layers.append({"kind": "phone", "t0": t0, "t1": round(t1, 3), "imgs": [{"t": round(t0 + i["t"], 3), "src": i["src"]} for i in p["imgs"]], "h": 860, "enter": {"dur": 0.5}, "exit": {"dur": 0.25}})
+        layers.append({"kind": "phone", "t0": t0, "t1": round(t1, 3), "imgs": [{"t": round(t0 + i["t"], 3), "src": i["src"]} for i in p["imgs"]], "h": 770, "cy": 470, "enter": {"dur": 0.5}, "exit": {"dur": 0.25}})
         if p.get("cc"): text, who, a, dd = p["cc"]; cc_extra.append({"t0": round(t0 + a, 3), "t1": round(t0 + a + dd, 3), "text": text, "who": who})
     elif kind == "title":
         lines = []

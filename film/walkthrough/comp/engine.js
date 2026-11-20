@@ -871,7 +871,7 @@
     layers.forEach(function (L) {
       if (L.kind !== "captions" || !L.cueNow) return;
       var b = L.pill.getBoundingClientRect();
-      layers.forEach(function (C) { if (C.kind === "card" && t >= C.t0 && t < C.t1 && C.subjectNow) C.subjectNow.forEach(function (r) {
+      layers.forEach(function (C) { if ((C.kind === "card" || C.kind === "glass" || C.kind === "phone" || C.kind === "panel") && t >= C.t0 && t < C.t1 && C.subjectNow) C.subjectNow.forEach(function (r) {
         if (Math.min(b.right, r[0] + r[2]) - Math.max(b.left, r[0]) > 4 && Math.min(b.bottom, r[1] + r[3]) - Math.max(b.top, r[1]) > 4) QA.push({ t: t, kind: "caption over card", text: L.cueNow.lines.join(" ") });
       }); });
     });

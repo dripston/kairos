@@ -714,7 +714,8 @@ window.FILM = {
      "src": "captures/phone_sms3/f00001.jpg"
     }
    ],
-   "h": 860,
+   "h": 770,
+   "cy": 470,
    "enter": {
     "dur": 0.5
    },
@@ -841,10 +842,10 @@ window.FILM = {
     {
      "t": 46.535,
      "rect": [
-      300,
-      120,
-      1140,
-      420
+      1040,
+      390,
+      370,
+      385
      ],
      "dur": 1.8
     }
@@ -856,7 +857,13 @@ window.FILM = {
    "exit": {
     "type": "fade",
     "dur": 0.25
-   }
+   },
+   "page": [
+    272,
+    80,
+    1146,
+    700
+   ]
   },
   {
    "kind": "glass",
@@ -938,14 +945,14 @@ window.FILM = {
    "kind": "glass",
    "t0": 60.535,
    "t1": 69.012,
-   "cap": "dv",
+   "cap": "er",
    "frames": [
     {
      "at": 0,
-     "label": "learning"
+     "label": "d14"
     }
    ],
-   "title": "Kairos · Learning & Proof",
+   "title": "Kairos · Engine Room · learning per group · SIMULATED",
    "cam": [],
    "enter": {
     "type": "rise",
@@ -955,6 +962,12 @@ window.FILM = {
     "type": "fade",
     "dur": 0.25
    },
+   "page": [
+    632,
+    158,
+    634,
+    735
+   ],
    "maxh": 730,
    "cy": 500
   },
@@ -1394,7 +1407,8 @@ window.FILM = {
      "src": "captures/phone_wa2/f00001.jpg"
     }
    ],
-   "h": 860,
+   "h": 770,
+   "cy": 470,
    "enter": {
     "dur": 0.5
    },
@@ -2031,10 +2045,10 @@ window.FILM = {
     {
      "t": 230.919,
      "rect": [
-      1440,
-      540,
-      470,
-      520
+      1540,
+      560,
+      380,
+      490
      ],
      "dur": 1.4
     }
@@ -2048,8 +2062,8 @@ window.FILM = {
     "dur": 0.25
    },
    "video": "rec/F03_crm_explain_manual_preview_clean.mp4",
-   "from": 50.0,
-   "rate": 1.2,
+   "from": 53.0,
+   "rate": 1.0,
    "vw": 1920,
    "vh": 1080,
    "maxw": 1380,

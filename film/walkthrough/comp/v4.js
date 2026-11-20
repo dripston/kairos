@@ -286,11 +286,13 @@
       L.msgEls = L.msgs.map(function (m, i) {
         var y = y0 + i * row + (m.dy || 0), a = by[m.from], b = by[m.to || m.from], g = A.sv("g", {}, svg), col = TONE[m.tone || "teal"] || m.tone;
         var x1 = a.x, x2 = b.x, d, len, lx;
-        if (m.from === (m.to || m.from)) { d = "M" + x1 + " " + y + " h 90 v 34 h -84"; len = 214; lx = x1 + 110; }
+        var left = m.from === (m.to || m.from) && x1 > 1300;
+        if (m.from === (m.to || m.from)) { d = left ? "M" + x1 + " " + y + " h -90 v 34 h 84" : "M" + x1 + " " + y + " h 90 v 34 h -84"; len = 214; lx = left ? x1 - 110 : x1 + 110; }
         else { var dir = x2 > x1 ? 1 : -1; d = "M" + (x1 + dir * 6) + " " + y + " L" + (x2 - dir * 10) + " " + y; len = Math.abs(x2 - x1); lx = (x1 + x2) / 2; }
         var p = A.sv("path", { d: d, fill: "none", stroke: m.tone === "red" ? TONE.red : "#E2E8F0", "stroke-width": 3, "marker-end": "url(#sah" + L.z + ")", "stroke-dasharray": m.ret ? "9 8" : "" }, g);
-        var lab = A.sv("text", { x: lx, y: y - 14, "text-anchor": m.from === (m.to || m.from) ? "start" : "middle", "class": "slab", fill: col }, g); lab.textContent = m.label;
-        var note = null; if (m.note) { note = A.sv("text", { x: lx, y: y + 34, "text-anchor": m.from === (m.to || m.from) ? "start" : "middle", "class": "snote" }, g); note.textContent = m.note; }
+        var anc = m.from === (m.to || m.from) ? (left ? "end" : "start") : "middle";
+        var lab = A.sv("text", { x: lx, y: y - 14, "text-anchor": anc, "class": "slab", fill: col }, g); lab.textContent = m.label;
+        var note = null; if (m.note) { note = A.sv("text", { x: lx, y: y + 34, "text-anchor": anc, "class": "snote" }, g); note.textContent = m.note; }
         return { m: m, g: g, p: p, len: len };
       });
     },
@@ -331,7 +333,7 @@
       var life = A.clamp((t - L.t0) / Math.max(1, L.t1 - L.t0), 0, 1);
       L.box.style.transform = "translate(-50%,-50%) scale(" + (1 + (L.drift != null ? L.drift : 0.02) * life) + ")";
       L.parts.forEach(function (p, i) {
-        var t0 = p.ln.t != null ? p.ln.t : L.t0 + i * (L.stagger != null ? L.stagger : 0.18);
+        var t0 = p.ln.t != null ? p.ln.t : L.t0 - 0.3 + i * (L.stagger != null ? L.stagger : 0.18);
         var k = A.E.enter(A.clamp((t - t0) / (p.ln.dur || 0.6), 0, 1));
         p.d.style.opacity = k * (p.ln.opacity != null ? p.ln.opacity : 1);
         p.d.style.transform = "translateY(" + (1 - k) * (p.ln.rise != null ? p.ln.rise : 18) + "px)";
