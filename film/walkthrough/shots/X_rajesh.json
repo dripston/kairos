@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human2/L04_staff_phone_good_news_smile.mp4",
+ "in": 0.6,
+ "dur": 4.0,
+ "mode": "none",
+ "out": "comp/X_rajesh.mov",
+ "fps": 30
+}

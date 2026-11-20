@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human2/B16_old_man_smiling_tilak.mp4",
+ "in": 2.8,
+ "dur": 4.0,
+ "mode": "none",
+ "out": "comp/X_elder.mov",
+ "fps": 30
+}

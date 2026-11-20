@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human2/L06_young_analyst_presents.mp4",
+ "in": 8.0,
+ "dur": 4.0,
+ "mode": "none",
+ "out": "comp/X_analyst.mov",
+ "fps": 30
+}

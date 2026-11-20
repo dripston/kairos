@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human2/B15_family_sofa_mumbai_mother.mp4",
+ "in": 0.8,
+ "dur": 4.0,
+ "mode": "none",
+ "out": "comp/X_family.mov",
+ "fps": 30
+}

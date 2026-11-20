@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human2/B12_student_laptop_phone.mp4",
+ "in": 2.4,
+ "dur": 4.0,
+ "mode": "none",
+ "out": "comp/X_student.mov",
+ "fps": 30
+}

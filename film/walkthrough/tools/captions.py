@@ -54,7 +54,22 @@ def split_line(text, who):
             if all(lay):
                 key = (sum(1 for l in lay if l[1] >= 25), len(groups), max(len(g) for g in groups))
                 if best is None or key < best[0]: best = (key, groups)
-        if best is None: raise SystemExit("caption needs an explicit split in OVERRIDES: " + text)
+        if best is None:   # a sentence too long for one cue: split it at the clause mark nearest the middle (recursively)
+            def split_long(sent):
+                if lines_for(sent, tag): return [sent]
+                cands = [m.end() for m in re.finditer(r"[,;:](?=\s)", sent)]
+                if not cands: raise SystemExit("caption needs an explicit split in OVERRIDES: " + sent)
+                k = min(cands, key=lambda c: abs(c - len(sent) / 2))
+                return split_long(sent[:k].strip()) + split_long(sent[k:].strip())
+            cues = []
+            for g in sents:
+                cues += split_long(g)
+            # re-pack neighbours that fit together
+            packed = []
+            for c in cues:
+                if packed and lines_for(packed[-1] + " " + c, tag) and lines_for(packed[-1] + " " + c, tag)[1] < 25: packed[-1] = packed[-1] + " " + c
+                else: packed.append(c)
+            best = (None, packed)
         cues = best[1]
     out = []
     for c in cues:

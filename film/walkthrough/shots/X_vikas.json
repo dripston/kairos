@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human2/L01_manager_navy_suit_reviews_desk.mp4",
+ "in": 2.0,
+ "dur": 4.0,
+ "mode": "none",
+ "out": "comp/X_vikas.mov",
+ "fps": 30
+}

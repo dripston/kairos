@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human2/B01_gig_worker_backpack_with_auto_driver.mp4",
+ "in": 1.4,
+ "dur": 4.0,
+ "mode": "none",
+ "out": "comp/X_gig.mov",
+ "fps": 30
+}

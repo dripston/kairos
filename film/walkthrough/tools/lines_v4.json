@@ -1,0 +1,150 @@
+{
+ "d1": {
+  "text": "When is my EMI due?",
+  "who": "Sunita"
+ },
+ "d2": {
+  "text": "To protect your account, I have sent a 6-digit code to your registered WhatsApp number.",
+  "who": "Kairos"
+ },
+ "d3": {
+  "text": "Thank you, you are verified.",
+  "who": "Kairos"
+ },
+ "d4": {
+  "text": "I already paid, here is the screenshot.",
+  "who": "Sunita"
+ },
+ "d5": {
+  "text": "For your security, I can't help with this request in chat. A specialist from our team will review it.",
+  "who": "Kairos"
+ },
+ "d6": {
+  "text": "Stop.",
+  "who": "Sunita"
+ },
+ "d7": {
+  "text": "You will not receive further automated reminders from us on any channel.",
+  "who": "Kairos"
+ },
+ "p01": {
+  "text": "Every month, millions of people in India pay back a loan. And every month, their lender sends them the same reminder, at the same time, as everyone else.",
+  "who": ""
+ },
+ "p02": {
+  "text": "In one simulated campaign, that fixed schedule sent 1,262 messages. Only 23 replies came back.",
+  "who": ""
+ },
+ "p03": {
+  "text": "Every one of those messages cost money. Almost all of them went unanswered.",
+  "who": ""
+ },
+ "p04": {
+  "text": "Kairos works differently. Every morning, it looks at each borrower on their own: how late they are, how they replied before, and when they usually read their messages.",
+  "who": ""
+ },
+ "p05": {
+  "text": "Then it makes one choice for each person: reach out today, or wait. If it reaches out, it picks the channel, SMS, WhatsApp, email or a voice call, and the hour that person is most likely to answer.",
+  "who": ""
+ },
+ "p07": {
+  "text": "Before any message goes out, it has to get past Aladdin, our safety supervisor.",
+  "who": ""
+ },
+ "p08": {
+  "text": "Aladdin asks the lender's questions. Has this person agreed to be contacted on this channel? Have they asked us to stop? Is it between 8 in the morning and 7 in the evening? Have we already contacted them enough this week? Is there budget left? Is their account on hold?",
+  "who": ""
+ },
+ "p09": {
+  "text": "It asks when the message is planned, and again right before it is sent, in case anything has changed. If any answer is no, the message does not go.",
+  "who": ""
+ },
+ "p10": {
+  "text": "This is Vikram. His EMI of ₹7,409 is 10 days late. Kairos sends him one SMS at 9:30 in the morning. Aladdin clears it. Vikram doesn't reply.",
+  "who": ""
+ },
+ "p11": {
+  "text": "So the next day, Kairos waits instead of sending another reminder. On day 3, it tries WhatsApp. This time, Vikram replies: he will pay by the 29th.",
+  "who": ""
+ },
+ "p12": {
+  "text": "Kairos recognises a promise to pay, and goes quiet. No more reminders. On day 7, the bank confirms ₹7,409. Reaching Vikram cost 65 paise.",
+  "who": ""
+ },
+ "p13": {
+  "text": "Kairos learns from every reply. When we quietly made WhatsApp worse for one group, nobody told it. Within a week, it had moved them to SMS on its own.",
+  "who": ""
+ },
+ "p15": {
+  "text": "Borrowers also write in on WhatsApp, at any hour. Kairos replies in seconds.",
+  "who": ""
+ },
+ "p16": {
+  "text": "First, it made sure it was really her.",
+  "who": ""
+ },
+ "p17": {
+  "text": "That screenshot had been edited. Kairos checks every payment proof against the bank's records, so a fake one can never mark a loan as paid. It goes to a person instead.",
+  "who": ""
+ },
+ "p18": {
+  "text": "When another borrower says she has lost her job, Kairos pauses her reminders and hands her to a person.",
+  "who": ""
+ },
+ "p19": {
+  "text": "And when someone says stop, everything stops. SMS, WhatsApp, email and calls, all at once.",
+  "who": ""
+ },
+ "p20": {
+  "text": "The team stays in charge, and Aladdin checks their actions too. Even a supervisor can't send a message at 8 at night.",
+  "who": ""
+ },
+ "p22": {
+  "text": "In our simulated tests, Kairos recovered more for every rupee spent than a fixed schedule, without breaking a single rule.",
+  "who": ""
+ },
+ "c00": {
+  "text": "Kairos is a decision engine for loan collections. Every morning it decides, for each borrower, whether to make contact today, on which channel, and at what hour. Let's open up each part and watch it run.",
+  "who": ""
+ },
+ "c01": {
+  "text": "Everything starts from one record per borrower: their loans, each EMI, every payment, their consent for each channel, and a log of every event. Money is stored in paise, the smallest unit, so totals never drift.",
+  "who": ""
+ },
+ "c02": {
+  "text": "Each morning, the churn engine sorts every borrower into groups: by cohort, risk, contact layer and status, using written rules. Every move records the rule that fired and the value it checked. Here, a borrower moves from medium to high risk because he is now more than 60 days late.",
+  "who": ""
+ },
+ "c03": {
+  "text": "The learner is a Bayesian model. For each group of borrowers, every channel and hour keeps a reply chance estimate, with its uncertainty. Each message earns exactly one result, reply or no reply, when its 24-hour window closes. Older evidence slowly counts for less. On day 7 we cut WhatsApp replies to a third and told it nothing. Its WhatsApp estimate fell from 13.5 to 9.7 in 100. By the end of day 14, that group had moved to SMS.",
+  "who": ""
+ },
+ "c04": {
+  "text": "Aladdin is the gate every message must pass. When a message is planned, it checks consent, stop requests, contact hours, weekly limits, budget and holds. It reserves the budget in one atomic step, so two decisions can never spend the same rupee. At send time it checks every rule again. If anything has changed, nothing is sent. In a load test, 50,000 decisions went through in 11.1 seconds, with zero limit breaches.",
+  "who": ""
+ },
+ "c05": {
+  "text": "Adapters send each message on its channel. The channel then calls us back with what happened. That callback is a webhook: delivered, read, or a reply. A repeated callback is ignored, and a delivery is never counted as a reply.",
+  "who": ""
+ },
+ "c06": {
+  "text": "Inbound chats run on a state machine. That means a chat can only move through a few allowed steps. Nothing about the account is shared until the borrower enters a one-time code. Payment proofs are checked for edits, hidden instructions and reused references, so a fake never marks anything paid. In 1,000 seeded test conversations, 73% were resolved without a person, and all 127 fakes were caught.",
+  "who": ""
+ },
+ "c07": {
+  "text": "Voice calls are made by six AI voice agents, one for each use case. After each call, the agent reports an outcome, such as a promise to pay or a stop request, with a confidence score. Kairos, not the agent, decides what that outcome does. Anything below a hand-set threshold waits for a person.",
+  "who": ""
+ },
+ "c08": {
+  "text": "People stay in charge. Calls wait in a morning approval window, any borrower can be paused or resumed, and any chat can be taken over. Each action passes Aladdin, and lands in the audit log. When an operator tries to send an SMS at 8 in the evening, Aladdin blocks it. No role can override that.",
+  "who": ""
+ },
+ "c09": {
+  "text": "Same data and seed, same decisions. The replay matched exactly, 49 out of 49 attacks were stopped, and 3030 tests passed. From the logs alone, off policy evaluation estimated 18.2 replies per 1,000 messages against a true 18.4.",
+  "who": ""
+ },
+ "c10": {
+  "text": "None of this is magic. Each part stands on published research.",
+  "who": ""
+ }
+}

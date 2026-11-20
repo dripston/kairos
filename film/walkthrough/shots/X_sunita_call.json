@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H4_3_woman_kurta_phone_call.mp4",
+ "in": 0.3,
+ "dur": 4.0,
+ "mode": "none",
+ "out": "comp/X_sunita_call.mov",
+ "fps": 30
+}

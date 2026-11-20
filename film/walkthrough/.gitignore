@@ -17,3 +17,5 @@ tools/*.new
 tools/render_desc
 comp/*.mov
 tools/screen_comp
+captures_rc/
+rec

@@ -118,3 +118,47 @@ body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: anti
   background: rgba(17, 17, 17, .74); color: #fff; font: 600 46px/1.22 var(--sans); letter-spacing: -.005em; text-align: center; white-space: nowrap; opacity: 0; }
 .cc b { color: #8CE3D6; font-weight: 700; }
 .vid .shade { background: linear-gradient(180deg, rgba(0,0,0,0) 62%, rgba(0,0,0,.38)); }
+
+/* ======================= v4: nebula + glass ======================= */
+/* captions: no pill; white text with a soft shadow and a thin dark outline, readable on any image */
+.cc.v4 { background: transparent !important; box-shadow: none !important; padding: 0 !important; border-radius: 0 !important;
+  color: #fff; font-weight: 700; letter-spacing: -0.005em;
+  /* a solid ~3 px dark outline (ring of hard shadows) plus a soft drop shadow: readable on white pages, footage and nebula */
+  text-shadow: 3px 0px 0 rgba(0,0,0,.92), -3px 0px 0 rgba(0,0,0,.92), 0px 3px 0 rgba(0,0,0,.92), 0px -3px 0 rgba(0,0,0,.92), 2px 2px 0 rgba(0,0,0,.92), -2px 2px 0 rgba(0,0,0,.92), 2px -2px 0 rgba(0,0,0,.92), -2px -2px 0 rgba(0,0,0,.92), 3px 1px 0 rgba(0,0,0,.92), -3px 1px 0 rgba(0,0,0,.92), 3px -1px 0 rgba(0,0,0,.92), -3px -1px 0 rgba(0,0,0,.92), 1px 3px 0 rgba(0,0,0,.92), -1px 3px 0 rgba(0,0,0,.92), 1px -3px 0 rgba(0,0,0,.92), -1px -3px 0 rgba(0,0,0,.92), 0 4px 14px rgba(0,0,0,.65), 0 0 30px rgba(0,0,0,.35); }
+.cc.v4 b { color: #7DF3E1; }
+.glasswin { position: absolute; border-radius: 24px; background: linear-gradient(155deg, rgba(255,255,255,.17), rgba(255,255,255,.05) 55%, rgba(255,255,255,.09));
+  border: 1px solid rgba(255,255,255,.30); box-shadow: 0 60px 140px -20px rgba(0,0,0,.75), 0 20px 50px -10px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.45), inset 0 0 40px rgba(255,255,255,.05);
+  -webkit-backdrop-filter: blur(26px) saturate(150%); backdrop-filter: blur(26px) saturate(150%); transform-origin: 50% 50%; }
+.glasshead { position: absolute; left: 0; right: 0; top: 0; display: flex; align-items: center; gap: 9px; padding: 0 22px; color: rgba(255,255,255,.82); font: 600 19px/1 "Inter", -apple-system, sans-serif; letter-spacing: .01em; }
+.glasshead i { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,.35); display: block; }
+.glasshead span { margin-left: 12px; }
+.glasspane { position: absolute; border-radius: 14px; overflow: hidden; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.25), 0 10px 30px rgba(0,0,0,.25); }
+.glassmini { position: absolute; border-radius: 22px; background: rgba(10,16,30,.55); border: 1px solid rgba(255,255,255,.22);
+  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); box-shadow: 0 24px 60px -18px rgba(0,0,0,.7); }
+.phonebody { position: absolute; border-radius: 64px; background: #0b0d10; padding: 16px; box-shadow: 0 0 0 2px #2a2e35, 0 0 0 3px #090a0c, 0 60px 120px -20px rgba(0,0,0,.8), inset 0 0 0 1px rgba(255,255,255,.08); transform-origin: 50% 50%; }
+.phonescreen { position: absolute; inset: 16px; border-radius: 50px; overflow: hidden; background: #e6ddd3; }
+.phonenotch { position: absolute; left: 50%; top: 30px; width: 112px; height: 32px; margin-left: -56px; border-radius: 18px; background: #0b0d10; }
+.fnode { fill: rgba(15,23,42,.62); stroke: rgba(255,255,255,.30); stroke-width: 1.5; }
+.ftitle { fill: #F8FAFC; font: 700 46px "Inter", -apple-system, sans-serif; letter-spacing: -.01em; }
+.fbody { fill: rgba(226,232,240,.88); font: 500 36px "Inter", -apple-system, sans-serif; }
+.ftag { font: 700 24px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .04em; }
+.flab { fill: rgba(226,232,240,.95); font: 600 32px "Inter", -apple-system, sans-serif; }
+.slab { font: 600 30px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.snote { fill: rgba(203,213,225,.85); font: 500 26px "Inter", -apple-system, sans-serif; }
+.v4title { position: absolute; left: 50%; transform: translate(-50%,-50%); width: max-content; max-width: 1640px; text-align: center; color: #F8FAFC; font-family: "Inter", -apple-system, sans-serif; }
+.v4line { line-height: 1.18; font-weight: 700; letter-spacing: -.02em; }
+.v4line.legal { font-family: "Times New Roman", Georgia, serif; font-weight: 400; letter-spacing: .01em; line-height: 1.45; color: rgba(255,255,255,.86); text-align: left; }
+.v4line.kicker { font-weight: 700; letter-spacing: .32em; text-transform: uppercase; color: #7DF3E1; }
+.v4line.soft { font-weight: 500; color: rgba(226,232,240,.82); letter-spacing: -.005em; }
+.v4logo { display: inline-flex; align-items: center; gap: 26px; font: 750 150px/1 "Inter", -apple-system, sans-serif; letter-spacing: -.035em; color: #fff; }
+.v4logo .mk { width: 150px; height: 150px; border-radius: 36px; background: linear-gradient(145deg, #14B8A6, #0F766E); font-size: 92px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 20px 60px -10px rgba(20,184,166,.55); }
+.v4credits { position: absolute; left: 0; right: 0; bottom: 70px; text-align: center; color: rgba(226,232,240,.78); font: 500 32px/1.5 "Inter", -apple-system, sans-serif; }
+.glasspanel { position: absolute; border-radius: 28px; padding: 44px 56px 40px; background: linear-gradient(155deg, rgba(255,255,255,.16), rgba(255,255,255,.05)); border: 1px solid rgba(255,255,255,.28);
+  box-shadow: 0 60px 140px -20px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.4); -webkit-backdrop-filter: blur(26px) saturate(150%); backdrop-filter: blur(26px) saturate(150%); color: #F8FAFC; font-family: "Inter", -apple-system, sans-serif; }
+.gphead { font-weight: 700; font-size: 36px; letter-spacing: .28em; text-transform: uppercase; color: #7DF3E1; margin-bottom: 18px; }
+.gprow { padding: 20px 0; border-top: 1px solid rgba(255,255,255,.14); }
+.gprow:first-of-type { border-top: 0; }
+.gpbig { font-weight: 700; font-size: 54px; letter-spacing: -.02em; line-height: 1.12; }
+.gpbig em { font-style: normal; color: #7DF3E1; }
+.gpsmall { margin-top: 6px; font-weight: 500; font-size: 32px; color: rgba(226,232,240,.8); }
+.gpfine { margin-top: 22px; font-weight: 500; font-size: 32px; color: rgba(226,232,240,.68); }

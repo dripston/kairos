@@ -3,7 +3,7 @@
     python3 tools/shots_product.py [name …]     → comp/<name>.mov via tools/screen_comp
 """
 import json, os, subprocess, sys
-H = "../assets/human/"; B = os.path.expandvars("$TMPDIR/wt-film/film/assets/broll/")
+H = "../assets/human/"; H2 = "../assets/human2/"; B = os.path.expandvars("$TMPDIR/wt-film/film/assets/broll/")
 IN_T = "captures/inbound_tall/f%05d.jpg"          # inbound page at a phone-shaped viewport (1440×1150 @2.5)
 IN_SCREEN = [70, 457, 855, 1425]                  # its WhatsApp screen below the status bar, in px
 OV = "captures/out_vikram/f%05d.jpg"; AA = "captures/out_aarav/f%05d.jpg"; DL = "captures/deployed_voice/f%05d.jpg"
@@ -17,6 +17,24 @@ def lbl(cap, name):
     return m[name]
 def inb(name): return {"img": IN_T % lbl("inbound_tall", name), "crop": IN_SCREEN}
 SHOTS = {
+  # ---- v4 casting (human2, CASTING.md): b-roll only, no screen composites
+  "X_tea": {"clip": H2 + "B02_tea_stall_owner_red_shirt.mp4", "in": 4.6, "dur": 4.0, "mode": "none"},
+  "X_fruit": {"clip": H2 + "B05_fruit_vendor_night_older_man.mp4", "in": 2.6, "dur": 4.0, "mode": "none"},
+  "X_farmer": {"clip": H2 + "B09_farmer_field_crouching.mp4", "in": 3.6, "dur": 4.0, "mode": "none"},
+  "X_student": {"clip": H2 + "B12_student_laptop_phone.mp4", "in": 2.4, "dur": 4.0, "mode": "none"},
+  "X_gig": {"clip": H2 + "B01_gig_worker_backpack_with_auto_driver.mp4", "in": 1.4, "dur": 4.0, "mode": "none"},
+  "X_family": {"clip": H2 + "B15_family_sofa_mumbai_mother.mp4", "in": 0.8, "dur": 4.0, "mode": "none"},
+  "X_elder": {"clip": H2 + "B16_old_man_smiling_tilak.mp4", "in": 2.8, "dur": 4.0, "mode": "none"},
+  "X_metro": {"clip": H2 + "C01_delhi_metro_platform.mp4", "in": 1.0, "dur": 4.0, "mode": "none"},
+  "X_vikram_a": {"clip": H + "H2_4_delhi_man_phone_annoyed_bed.mp4", "in": 0.4, "dur": 4.0, "mode": "none"},
+  "X_vikram_b": {"clip": H + "H2_4_delhi_man_phone_annoyed_bed.mp4", "in": 4.2, "dur": 4.0, "mode": "none"},
+  "X_vikram_c": {"clip": H + "H7_6_delhi_man_smiling_laptop.mp4", "in": 10.4, "dur": 4.0, "mode": "none"},
+  "X_vikram_d": {"clip": H + "H7_6_delhi_man_smiling_laptop.mp4", "in": 18.8, "dur": 4.0, "mode": "none"},
+  "X_vikas": {"clip": H2 + "L01_manager_navy_suit_reviews_desk.mp4", "in": 2.0, "dur": 4.0, "mode": "none"},
+  "X_analyst": {"clip": H2 + "L06_young_analyst_presents.mp4", "in": 8.0, "dur": 4.0, "mode": "none"},
+  "X_rajesh": {"clip": H2 + "L04_staff_phone_good_news_smile.mp4", "in": 0.6, "dur": 4.0, "mode": "none"},
+  "X_callcentre": {"clip": H2 + "L09_call_centre_floor_agents.mp4", "in": 9.2, "dur": 4.0, "mode": "none"},
+  "X_sunita_call": {"clip": H + "H4_3_woman_kurta_phone_call.mp4", "in": 0.3, "dur": 4.0, "mode": "none"},
   "T01_engineer": {"clip": H + "H13_8_ots_dev_curved_monitor.mp4", "in": 6.0, "dur": 3.6, "mode": "none"},
   "T03_street": {"clip": H + "H1_4_mumbai_street_autos.mp4", "in": 3.0, "dur": 2.8, "mode": "none"},
   "T07_sunita_call": {"clip": H + "H4_3_woman_kurta_phone_call.mp4", "in": 0.3, "dur": 5.4, "mode": "none"},

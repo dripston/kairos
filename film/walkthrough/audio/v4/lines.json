@@ -1,0 +1,872 @@
+{
+ "n01": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Every month, lenders send the same reminder. Same words, same time, to everyone.",
+  "tts": "Every month, lenders send the same reminder. Same words, same time, to everyone.",
+  "who": "",
+  "ok": true
+ },
+ "n02": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "In one simulated campaign, a fixed schedule sent 1,262 messages, and got just 23 replies.",
+  "tts": "In one simulated campaign, a fixed schedule sent 1,262 messages, and got just 23 replies.",
+  "who": "",
+  "ok": true
+ },
+ "n03": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "The rest went unanswered.",
+  "tts": "The rest went unanswered.",
+  "who": "",
+  "ok": true
+ },
+ "n04": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Kairos looks at every borrower, every day, and makes one decision: reach out or wait. And if it reaches out, on which channel, and at what time.",
+  "tts": "Kairos looks at every borrower, every day, and makes one decision: reach out or wait. And if it reaches out, on which channel, and at what time.",
+  "who": "",
+  "ok": true
+ },
+ "n05": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "It keeps every campaign within budget, and reports what worked for each group of borrowers, every day.",
+  "tts": "It keeps every campaign within budget, and reports what worked for each group of borrowers, every day.",
+  "who": "",
+  "ok": true
+ },
+ "n06": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "But a smart decision is not enough. It has to be a safe one. Meet Aladdin, our safety supervisor.",
+  "tts": "But a smart decision is not enough. It has to be a safe one. Meet Alaadin, our safety supervisor.",
+  "who": "",
+  "ok": true
+ },
+ "n07": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Every message passes Aladdin twice: when it is planned, and again at the moment it is sent. Consent, opt outs, quiet hours, contact limits, budget and holds. If any rule says no, nothing goes out.",
+  "tts": "Every message passes Alaadin twice: when it is planned, and again at the moment it is sent. Consent, opt outs, quiet hours, contact limits, budget and holds. If any rule says no, nothing goes out.",
+  "who": "",
+  "ok": true
+ },
+ "n08": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Take Vikram. His EMI of ₹7,409 is overdue. Kairos sends one SMS at 9:30, Aladdin clears it, and he doesn't reply.",
+  "tts": "Take Vikram. His EMI of 7,409 rupees is overdue. Kairos sends one SMS at 9:30, Alaadin clears it, and he doesn't reply.",
+  "who": "",
+  "ok": true
+ },
+ "n09": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "So Kairos tries WhatsApp instead. This time Vikram answers: he will pay by the 29th.",
+  "tts": "So Kairos tries WhatsApp instead. This time Vikram answers: he will pay by the 29th.",
+  "who": "",
+  "ok": true
+ },
+ "n10": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "He pays. The bank confirms it, and Kairos steps back.",
+  "tts": "He pays. The bank confirms it, and Kairos steps back.",
+  "who": "",
+  "ok": true
+ },
+ "n11": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "And it keeps learning. When WhatsApp replies dropped for one group of borrowers, nobody told Kairos. It noticed on its own, and within a week it had moved them to SMS.",
+  "tts": "And it keeps learning. When WhatsApp replies dropped for one group of borrowers, nobody told Kairos. It noticed on its own, and within a week it had moved them to SMS.",
+  "who": "",
+  "ok": true
+ },
+ "n12": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Kairos answers in seconds, but only once it knows it's really her.",
+  "tts": "Kairos answers in seconds, but only once it knows it's really her.",
+  "who": "",
+  "ok": true
+ },
+ "n13": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "An edited screenshot, hidden instructions, a reused payment reference. Kairos spots the fake, marks nothing as paid, and passes it to a person.",
+  "tts": "An edited screenshot, hidden instructions, a reused payment reference. Kairos spots the fake, marks nothing as paid, and passes it to a person.",
+  "who": "",
+  "ok": true
+ },
+ "n14": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "When another borrower writes that she has lost her job, a person takes over, and the bot goes quiet.",
+  "tts": "When another borrower writes that she has lost her job, a person takes over, and the bot goes quiet.",
+  "who": "",
+  "ok": true
+ },
+ "n15": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "And stop means stop. Aladdin blocks every channel, and every queued reminder is cancelled.",
+  "tts": "And stop means stop. Alaadin blocks every channel, and every queued reminder is cancelled.",
+  "who": "",
+  "ok": true
+ },
+ "n16": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Your team stays in control. They approve calls, pause and resume, and can step in at any moment. Every action they take passes Aladdin too. Even they cannot send a message at 8 pm.",
+  "tts": "Your team stays in control. They approve calls, pause and resume, and can step in at any moment. Every action they take passes Alaadin too. Even they cannot send a message at 8 pm.",
+  "who": "",
+  "ok": true
+ },
+ "n17": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "In our tests: about twice the money back for every rupee spent. Zero rule breaches. And 73% of chats resolved without a person, with every fake caught.",
+  "tts": "In our tests: about twice the money back for every rupee spent. Zero rule breaches. And 73 percent of chats resolved without a person, with every fake caught.",
+  "who": "",
+  "ok": true
+ },
+ "t00": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Kairos is a decision engine for collections. Every day, for every borrower, it decides whether to make contact, on which channel, and when. Here is how each part works.",
+  "tts": "Kairos is a decision engine for collections. Every day, for every borrower, it decides whether to make contact, on which channel, and when. Here is how each part works.",
+  "who": "",
+  "ok": true
+ },
+ "t01": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Everything starts from one record per borrower: loans, EMIs, payments, consent for each channel, and every event. Money is kept in paise, so totals never drift.",
+  "tts": "Everything starts from one record per borrower: loans, EMIs, payments, consent for each channel, and every event. Money is kept in paise, so totals never drift.",
+  "who": "",
+  "ok": true
+ },
+ "t02": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Each morning, the churn engine sorts every borrower again, by cohort, risk, contact layer and status. Every move records the rule that fired and the inputs it read.",
+  "tts": "Each morning, the churn engine sorts every borrower again, by cohort, risk, contact layer and status. Every move records the rule that fired and the inputs it read.",
+  "who": "",
+  "ok": true
+ },
+ "t03a": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "The learner is a Bayesian model. Every channel and hour keeps a reply-chance estimate for each group of borrowers, and each touch earns exactly one reward when its 24-hour reply window closes.",
+  "tts": "The learner is a Bayesian model. Every channel and hour keeps a reply chance estimate for each group of borrowers, and each touch earns exactly one reward when its 24 hour reply window closes.",
+  "who": "",
+  "ok": true
+ },
+ "t03b": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "On day 7 we cut WhatsApp replies to a third and told it nothing. By the end of day 14, that segment had moved to SMS.",
+  "tts": "On day 7 we cut WhatsApp replies to a third and told it nothing. By the end of day 14, that segment had moved to SMS.",
+  "who": "",
+  "ok": true
+ },
+ "t04": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Models only suggest. Aladdin decides what may happen. When a message is planned, it reserves budget and contact limits in one atomic step. At send time, it checks every rule again. If anything has changed, nothing is sent.",
+  "tts": "Models only suggest. Alaadin decides what may happen. When a message is planned, it reserves budget and contact limits in one atomic step. At send time, it checks every rule again. If anything has changed, nothing is sent.",
+  "who": "",
+  "ok": true
+ },
+ "t05": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Adapters send through each channel. Receipts and replies come back as webhooks. Duplicates are ignored, and a delivery is never counted as a reply.",
+  "tts": "Adapters send through each channel. Receipts and replies come back as webhooks. Duplicates are ignored, and a delivery is never counted as a reply.",
+  "who": "",
+  "ok": true
+ },
+ "t06": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Inbound chats run a small state machine. Nothing about the account is shared until a one-time code is verified. Payment proof is checked for edits, hidden instructions and reused references, and a fake never marks anything paid.",
+  "tts": "Inbound chats run a small state machine. Nothing about the account is shared until a one time code is verified. Payment proof is checked for edits, hidden instructions and reused references, and a fake never marks anything paid.",
+  "who": "",
+  "ok": true
+ },
+ "t07": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Voice calls run on six AI voice agents, chosen by use case. Each call returns a disposition and a confidence. Kairos, not the bot, decides what happens next, and anything below a hand-set threshold goes to a person.",
+  "tts": "Voice calls run on six AI voice agents, chosen by use case. Each call returns a disposition and a confidence. Kairos, not the bot, decides what happens next, and anything below a hand set threshold goes to a person.",
+  "who": "",
+  "ok": true
+ },
+ "t08": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "People can approve, hold, resume or take over at any moment. Their actions pass Aladdin too, and every one lands in the audit log.",
+  "tts": "People can approve, hold, resume or take over at any moment. Their actions pass Alaadin too, and every one lands in the audit log.",
+  "who": "",
+  "ok": true
+ },
+ "t09": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Given the same seed, Kairos makes the same decisions every time. And we attack it, load it and test it.",
+  "tts": "Given the same seed, Kairos makes the same decisions every time. And we attack it, load it and test it.",
+  "who": "",
+  "ok": true
+ },
+ "t10": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "None of this is magic. Each part stands on published research.",
+  "tts": "None of this is magic. Each part stands on published research.",
+  "who": "",
+  "ok": true
+ },
+ "d1": {
+  "speaker": "tanya",
+  "pace": 1.0,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "When is my EMI due?",
+  "tts": "When is my EMI due?",
+  "who": "Sunita",
+  "ok": true
+ },
+ "d2": {
+  "speaker": "kavya",
+  "pace": 1.05,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "To protect your account, I have sent a 6-digit code to your registered WhatsApp number.",
+  "tts": "To protect your account, I have sent a 6 digit code to your registered WhatsApp number.",
+  "who": "Kairos",
+  "ok": true
+ },
+ "d3": {
+  "speaker": "kavya",
+  "pace": 1.05,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Thank you, you are verified.",
+  "tts": "Thank you, you are verified.",
+  "who": "Kairos",
+  "ok": true
+ },
+ "d4": {
+  "speaker": "tanya",
+  "pace": 1.0,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "I already paid, here is the screenshot.",
+  "tts": "I already paid, here is the screenshot.",
+  "who": "Sunita",
+  "ok": true
+ },
+ "d5": {
+  "speaker": "kavya",
+  "pace": 1.05,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "For your security, I can't help with this request in chat. A specialist from our team will review it.",
+  "tts": "For your security, I can't help with this request in chat. A specialist from our team will review it.",
+  "who": "Kairos",
+  "ok": true
+ },
+ "d6": {
+  "speaker": "tanya",
+  "pace": 1.0,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Stop.",
+  "tts": "Stop.",
+  "who": "Sunita",
+  "ok": true
+ },
+ "d7": {
+  "speaker": "kavya",
+  "pace": 1.05,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "You will not receive further automated reminders from us on any channel.",
+  "tts": "You will not receive further automated reminders from us on any channel.",
+  "who": "Kairos",
+  "ok": true
+ },
+ "p01": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Every month, millions of people in India pay back a loan. And every month, their lender sends them the same reminder, at the same time, as everyone else.",
+  "tts": "Every month, millions of people in India pay back a loan. And every month, their lender sends them the same reminder, at the same time, as everyone else.",
+  "who": "",
+  "ok": true
+ },
+ "p02": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "In one simulated campaign, that fixed schedule sent 1,262 messages. Only 23 replies came back.",
+  "tts": "In one simulated campaign, that fixed schedule sent 1,262 messages. Only 23 replies came back.",
+  "who": "",
+  "ok": true
+ },
+ "p03": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Every one of those messages cost money. Almost all of them went unanswered.",
+  "tts": "Every one of those messages cost money. Almost all of them went unanswered.",
+  "who": "",
+  "ok": true
+ },
+ "p04": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Kairos works differently. Every morning, it looks at each borrower on their own: how late they are, how they replied before, and when they usually read their messages.",
+  "tts": "Kairos works differently. Every morning, it looks at each borrower on their own: how late they are, how they replied before, and when they usually read their messages.",
+  "who": "",
+  "ok": true
+ },
+ "p05": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Then it makes one choice for each person: reach out today, or wait. If it reaches out, it picks the channel, SMS, WhatsApp, email or a voice call, and the hour that person is most likely to answer.",
+  "tts": "Then it makes one choice for each person: reach out today, or wait. If it reaches out, it picks the channel, SMS, WhatsApp, email or a voice call, and the hour that person is most likely to answer.",
+  "who": "",
+  "ok": true
+ },
+ "p06": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "It plans the whole day within a fixed budget, and every evening it reports what worked for each group of borrowers.",
+  "tts": "It plans the whole day within a fixed budget, and every evening it reports what worked for each group of borrowers.",
+  "who": "",
+  "ok": true
+ },
+ "p07": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Before any message goes out, it has to get past Aladdin, our safety supervisor.",
+  "tts": "Before any message goes out, it has to get past Alaadin, our safety supervisor.",
+  "who": "",
+  "ok": true
+ },
+ "p08": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Aladdin asks the lender's questions. Has this person agreed to be contacted on this channel? Have they asked us to stop? Is it between 8 in the morning and 7 in the evening? Have we already contacted them enough this week? Is there budget left? Is their account on hold?",
+  "tts": "Alaadin asks the lender's questions. Has this person agreed to be contacted on this channel? Have they asked us to stop? Is it between 8 in the morning and 7 in the evening? Have we already contacted them enough this week? Is there budget left? Is their account on hold?",
+  "who": "",
+  "ok": true
+ },
+ "p09": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "It asks when the message is planned, and again right before it is sent, in case anything has changed. If any answer is no, the message does not go.",
+  "tts": "It asks when the message is planned, and again right before it is sent, in case anything has changed. If any answer is no, the message does not go.",
+  "who": "",
+  "ok": true
+ },
+ "p10": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "This is Vikram. His EMI of ₹7,409 is 10 days late. Kairos sends him one SMS at 9:30 in the morning. Aladdin clears it. Vikram doesn't reply.",
+  "tts": "This is Vikram. His EMI of 7,409 rupees is 10 days late. Kairos sends him one SMS at 9:30 in the morning. Alaadin clears it. Vikram doesn't reply.",
+  "who": "",
+  "ok": true
+ },
+ "p11": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "So the next day, Kairos waits instead of sending another reminder. On day 3, it tries WhatsApp. This time, Vikram replies: he will pay by the 29th.",
+  "tts": "So the next day, Kairos waits instead of sending another reminder. On day 3, it tries WhatsApp. This time, Vikram replies: he will pay by the 29th.",
+  "who": "",
+  "ok": true
+ },
+ "p12": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Kairos recognises a promise to pay, and goes quiet. No more reminders. On day 7, the bank confirms ₹7,409. Reaching Vikram cost 65 paise.",
+  "tts": "Kairos recognises a promise to pay, and goes quiet. No more reminders. On day 7, the bank confirms 7,409 rupees. Reaching Vikram cost 65 paise.",
+  "who": "",
+  "ok": true
+ },
+ "p13": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Kairos learns from every reply. When we quietly made WhatsApp worse for one group, nobody told it. Within a week, it had moved them to SMS on its own.",
+  "tts": "Kairos learns from every reply. When we quietly made WhatsApp worse for one group, nobody told it. Within a week, it had moved them to SMS on its own.",
+  "who": "",
+  "ok": true
+ },
+ "p14": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "As the replies dried up, its estimate for WhatsApp fell. By the end of the campaign, it had moved that group to SMS on its own. Nobody changed a setting.",
+  "tts": "As the replies dried up, its estimate for WhatsApp fell. By the end of the campaign, it had moved that group to SMS on its own. Nobody changed a setting.",
+  "who": "",
+  "ok": true
+ },
+ "p15": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Borrowers also write in on WhatsApp, at any hour. Kairos replies in seconds.",
+  "tts": "Borrowers also write in on WhatsApp, at any hour. Kairos replies in seconds.",
+  "who": "",
+  "ok": true
+ },
+ "p16": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "First, it made sure it was really her.",
+  "tts": "First, it made sure it was really her.",
+  "who": "",
+  "ok": true
+ },
+ "p17": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "That screenshot had been edited. Kairos checks every payment proof against the bank's records, so a fake one can never mark a loan as paid. It goes to a person instead.",
+  "tts": "That screenshot had been edited. Kairos checks every payment proof against the bank's records, so a fake one can never mark a loan as paid. It goes to a person instead.",
+  "who": "",
+  "ok": true
+ },
+ "p18": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "When another borrower says she has lost her job, Kairos pauses her reminders and hands her to a person.",
+  "tts": "When another borrower says she has lost her job, Kairos pauses her reminders and hands her to a person.",
+  "who": "",
+  "ok": true
+ },
+ "p19": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "And when someone says stop, everything stops. SMS, WhatsApp, email and calls, all at once.",
+  "tts": "And when someone says stop, everything stops. SMS, WhatsApp, email and calls, all at once.",
+  "who": "",
+  "ok": true
+ },
+ "p20": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "The team stays in charge, and Aladdin checks their actions too. Even a supervisor can't send a message at 8 at night.",
+  "tts": "The team stays in charge, and Alaadin checks their actions too. Even a supervisor can't send a message at 8 at night.",
+  "who": "",
+  "ok": true
+ },
+ "p21": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "And Aladdin checks their actions too. Even a supervisor cannot send a message at 8 at night.",
+  "tts": "And Alaadin checks their actions too. Even a supervisor cannot send a message at 8 at night.",
+  "who": "",
+  "ok": true
+ },
+ "p22": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "In our simulated tests, Kairos recovered more for every rupee spent than a fixed schedule, without breaking a single rule.",
+  "tts": "In our simulated tests, Kairos recovered more for every rupee spent than a fixed schedule, without breaking a single rule.",
+  "who": "",
+  "ok": true
+ },
+ "c00": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Kairos is a decision engine for loan collections. Every morning it decides, for each borrower, whether to make contact today, on which channel, and at what hour. Let's open up each part and watch it run.",
+  "tts": "Kairos is a decision engine for loan collections. Every morning it decides, for each borrower, whether to make contact today, on which channel, and at what hour. Let's open up each part and watch it run.",
+  "who": "",
+  "ok": true
+ },
+ "c01a": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Everything starts from one record per borrower: their loans, each EMI, every payment, their consent for each channel, and a log of every event. Money is stored in paise, the smallest unit, so totals never drift.",
+  "tts": "Everything starts from one record per borrower: their loans, each EMI, every payment, their consent for each channel, and a log of every event. Money is stored in paise, the smallest unit, so totals never drift.",
+  "who": "",
+  "ok": true
+ },
+ "c01b": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "In a 14 day test run with 300 borrowers, that log holds 11,565 events.",
+  "tts": "In a 14 day test run with 300 borrowers, that log holds 11,565 events.",
+  "who": "",
+  "ok": true
+ },
+ "c02a": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Each morning, the churn engine sorts every borrower into groups, by cohort, risk, contact layer and status, using written rules. Every move records the rule that fired and the value it checked.",
+  "tts": "Each morning, the churn engine sorts every borrower into groups, by cohort, risk, contact layer and status, using written rules. Every move records the rule that fired and the value it checked.",
+  "who": "",
+  "ok": true
+ },
+ "c02b": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Here, a borrower moves from medium to high risk because he is now more than 60 days late.",
+  "tts": "Here, a borrower moves from medium to high risk because he is now more than 60 days late.",
+  "who": "",
+  "ok": true
+ },
+ "c03a": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "The learner picks the channel and the hour. It is a Bayesian model: for each group of borrowers, every channel and hour keeps a reply chance estimate, with its uncertainty. Each message earns exactly one result, reply or no reply, when its 24 hour window closes, and older evidence slowly counts for less.",
+  "tts": "The learner picks the channel and the hour. It is a Bayesian model: for each group of borrowers, every channel and hour keeps a reply chance estimate, with its uncertainty. Each message earns exactly one result, reply or no reply, when its 24 hour window closes, and older evidence slowly counts for less.",
+  "who": "",
+  "ok": true
+ },
+ "c03b": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "To test it, on day 7 we cut WhatsApp replies to a third and told it nothing. Its WhatsApp estimate fell from 13.5 to 9.7 in 100, and by the end of day 14 that group had moved to SMS.",
+  "tts": "To test it, on day 7 we cut WhatsApp replies to a third and told it nothing. Its WhatsApp estimate fell from 13.5 to 9.7 in 100, and by the end of day 14 that group had moved to SMS.",
+  "who": "",
+  "ok": true
+ },
+ "c04a": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Aladdin is the gate every message must pass. When a message is planned, it checks consent, stop requests, contact hours, weekly limits, budget and holds, and reserves the budget in one atomic step, which means two decisions can never spend the same rupee. At send time, it checks every rule again, and if anything has changed, the message is not sent.",
+  "tts": "Alaadin is the gate every message must pass. When a message is planned, it checks consent, stop requests, contact hours, weekly limits, budget and holds, and reserves the budget in one atomic step, which means two decisions can never spend the same rupee. At send time, it checks every rule again, and if anything has changed, the message is not sent.",
+  "who": "",
+  "ok": true
+ },
+ "c04b": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "In a load test, 50,000 decisions went through in 11.1 seconds, with zero limit breaches.",
+  "tts": "In a load test, 50,000 decisions went through in 11.1 seconds, with zero limit breaches.",
+  "who": "",
+  "ok": true
+ },
+ "c05a": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Adapters send each message on its channel. The channel then calls us back with what happened. That callback is a webhook: delivered, read, or a reply. A repeated callback is ignored, and a delivery is never counted as a reply.",
+  "tts": "Adapters send each message on its channel. The channel then calls us back with what happened. That callback is a webhook: delivered, read, or a reply. A repeated callback is ignored, and a delivery is never counted as a reply.",
+  "who": "",
+  "ok": true
+ },
+ "c05b": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "In this trace, a duplicate delivery arrives and is ignored.",
+  "tts": "In this trace, a duplicate delivery arrives and is ignored.",
+  "who": "",
+  "ok": true
+ },
+ "c06a": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Inbound chats run on a state machine, which means a chat can only move through a few allowed steps. Nothing about the account is shared until the borrower enters a one time code sent to their registered number. Payment proofs are checked for edits, hidden instructions and payment references used before, and a suspicious one goes to a person, with nothing marked paid.",
+  "tts": "Inbound chats run on a state machine, which means a chat can only move through a few allowed steps. Nothing about the account is shared until the borrower enters a one time code sent to their registered number. Payment proofs are checked for edits, hidden instructions and payment references used before, and a suspicious one goes to a person, with nothing marked paid.",
+  "who": "",
+  "ok": true
+ },
+ "c06b": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "In 1,000 seeded test conversations, 73% were resolved without a person, and all 127 fakes were caught.",
+  "tts": "In 1,000 seeded test conversations, 73 percent were resolved without a person, and all 127 fakes were caught.",
+  "who": "",
+  "ok": true
+ },
+ "c07a": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Voice calls are made by six AI voice agents, one for each use case. After each call, the agent reports an outcome, such as a promise to pay or a stop request, with a confidence score. Kairos, not the agent, decides what that outcome does.",
+  "tts": "Voice calls are made by six AI voice agents, one for each use case. After each call, the agent reports an outcome, such as a promise to pay or a stop request, with a confidence score. Kairos, not the agent, decides what that outcome does.",
+  "who": "",
+  "ok": true
+ },
+ "c07b": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Anything below a hand set threshold waits for a person: here, a stop request at 0.45 confidence is held for review.",
+  "tts": "Anything below a hand set threshold waits for a person: here, a stop request at 0.45 confidence is held for review.",
+  "who": "",
+  "ok": true
+ },
+ "c08a": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "People stay in charge. Calls wait in a morning approval window, any borrower can be paused or resumed, and any chat can be taken over. Each of those actions passes Aladdin too, and lands in the audit log.",
+  "tts": "People stay in charge. Calls wait in a morning approval window, any borrower can be paused or resumed, and any chat can be taken over. Each of those actions passes Alaadin too, and lands in the audit log.",
+  "who": "",
+  "ok": true
+ },
+ "c08b": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "When an operator tries to send an SMS at 8 in the evening, Aladdin blocks it, and no role can override that.",
+  "tts": "When an operator tries to send an SMS at 8 in the evening, Alaadin blocks it, and no role can override that.",
+  "who": "",
+  "ok": true
+ },
+ "c09a": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Kairos is deterministic: the same data and the same seed give the same decisions. We replay a full campaign and compare every decision, attack the system with our own red team, load the ledger, and run the full test suite.",
+  "tts": "Kairos is deterministic: the same data and the same seed give the same decisions. We replay a full campaign and compare every decision, attack the system with our own red team, load the ledger, and run the full test suite.",
+  "who": "",
+  "ok": true
+ },
+ "c09b": {
+  "speaker": "neha",
+  "pace": 1.2,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "The replay matched exactly, 49 out of 49 attacks were stopped, and 3030 tests passed. From the logs alone, off policy evaluation estimated 18.2 replies per 1,000 messages for the fixed schedule. The true value was 18.4.",
+  "tts": "The replay matched exactly, 49 out of 49 attacks were stopped, and 3030 tests passed. From the logs alone, off policy evaluation estimated 18.2 replies per 1,000 messages for the fixed schedule. The true value was 18.4.",
+  "who": "",
+  "ok": true
+ },
+ "c10": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "None of this is magic. Each part stands on published research.",
+  "tts": "None of this is magic. Each part stands on published research.",
+  "who": "",
+  "ok": true
+ },
+ "c01": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Everything starts from one record per borrower: their loans, each EMI, every payment, their consent for each channel, and a log of every event. Money is stored in paise, the smallest unit, so totals never drift.",
+  "tts": "Everything starts from one record per borrower: their loans, each EMI, every payment, their consent for each channel, and a log of every event. Money is stored in paise, the smallest unit, so totals never drift.",
+  "who": "",
+  "ok": true
+ },
+ "c02": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Each morning, the churn engine sorts every borrower into groups: by cohort, risk, contact layer and status, using written rules. Every move records the rule that fired and the value it checked. Here, a borrower moves from medium to high risk because he is now more than 60 days late.",
+  "tts": "Each morning, the churn engine sorts every borrower into groups: by cohort, risk, contact layer and status, using written rules. Every move records the rule that fired and the value it checked. Here, a borrower moves from medium to high risk because he is now more than 60 days late.",
+  "who": "",
+  "ok": true
+ },
+ "c03": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "The learner is a Bayesian model. For each group of borrowers, every channel and hour keeps a reply chance estimate, with its uncertainty. Each message earns exactly one result, reply or no reply, when its 24-hour window closes. Older evidence slowly counts for less. On day 7 we cut WhatsApp replies to a third and told it nothing. Its WhatsApp estimate fell from 13.5 to 9.7 in 100. By the end of day 14, that group had moved to SMS.",
+  "tts": "The learner is a Bayesian model. For each group of borrowers, every channel and hour keeps a reply chance estimate, with its uncertainty. Each message earns exactly one result, reply or no reply, when its 24 hour window closes. Older evidence slowly counts for less. On day 7 we cut WhatsApp replies to a third and told it nothing. Its WhatsApp estimate fell from 13.5 to 9.7 in 100. By the end of day 14, that group had moved to SMS.",
+  "who": "",
+  "ok": true
+ },
+ "c04": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Aladdin is the gate every message must pass. When a message is planned, it checks consent, stop requests, contact hours, weekly limits, budget and holds. It reserves the budget in one atomic step, so two decisions can never spend the same rupee. At send time it checks every rule again. If anything has changed, nothing is sent. In a load test, 50,000 decisions went through in 11.1 seconds, with zero limit breaches.",
+  "tts": "Alaadin is the gate every message must pass. When a message is planned, it checks consent, stop requests, contact hours, weekly limits, budget and holds. It reserves the budget in one atomic step, so two decisions can never spend the same rupee. At send time it checks every rule again. If anything has changed, nothing is sent. In a load test, 50,000 decisions went through in 11.1 seconds, with zero limit breaches.",
+  "who": "",
+  "ok": true
+ },
+ "c05": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Adapters send each message on its channel. The channel then calls us back with what happened. That callback is a webhook: delivered, read, or a reply. A repeated callback is ignored, and a delivery is never counted as a reply.",
+  "tts": "Adapters send each message on its channel. The channel then calls us back with what happened. That callback is a webhook: delivered, read, or a reply. A repeated callback is ignored, and a delivery is never counted as a reply.",
+  "who": "",
+  "ok": true
+ },
+ "c06": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Inbound chats run on a state machine. That means a chat can only move through a few allowed steps. Nothing about the account is shared until the borrower enters a one-time code. Payment proofs are checked for edits, hidden instructions and reused references, so a fake never marks anything paid. In 1,000 seeded test conversations, 73% were resolved without a person, and all 127 fakes were caught.",
+  "tts": "Inbound chats run on a state machine. That means a chat can only move through a few allowed steps. Nothing about the account is shared until the borrower enters a one time code. Payment proofs are checked for edits, hidden instructions and reused references, so a fake never marks anything paid. In 1,000 seeded test conversations, 73 percent were resolved without a person, and all 127 fakes were caught.",
+  "who": "",
+  "ok": true
+ },
+ "c07": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Voice calls are made by six AI voice agents, one for each use case. After each call, the agent reports an outcome, such as a promise to pay or a stop request, with a confidence score. Kairos, not the agent, decides what that outcome does. Anything below a hand-set threshold waits for a person.",
+  "tts": "Voice calls are made by six AI voice agents, one for each use case. After each call, the agent reports an outcome, such as a promise to pay or a stop request, with a confidence score. Kairos, not the agent, decides what that outcome does. Anything below a hand set threshold waits for a person.",
+  "who": "",
+  "ok": true
+ },
+ "c08": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "People stay in charge. Calls wait in a morning approval window, any borrower can be paused or resumed, and any chat can be taken over. Each action passes Aladdin, and lands in the audit log. When an operator tries to send an SMS at 8 in the evening, Aladdin blocks it. No role can override that.",
+  "tts": "People stay in charge. Calls wait in a morning approval window, any borrower can be paused or resumed, and any chat can be taken over. Each action passes Alaadin, and lands in the audit log. When an operator tries to send an SMS at 8 in the evening, Alaadin blocks it. No role can override that.",
+  "who": "",
+  "ok": true
+ },
+ "c09": {
+  "speaker": "neha",
+  "pace": 1.3,
+  "model": "bulbul:v3",
+  "lang": "en-IN",
+  "text": "Same data and seed, same decisions. The replay matched exactly, 49 out of 49 attacks were stopped, and 3030 tests passed. From the logs alone, off policy evaluation estimated 18.2 replies per 1,000 messages against a true 18.4.",
+  "tts": "Same data and seed, same decisions. The replay matched exactly, 49 out of 49 attacks were stopped, and 3030 tests passed. From the logs alone, off policy evaluation estimated 18.2 replies per 1,000 messages against a true 18.4.",
+  "who": "",
+  "ok": true
+ }
+}

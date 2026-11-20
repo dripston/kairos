@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human2/B09_farmer_field_crouching.mp4",
+ "in": 3.6,
+ "dur": 4.0,
+ "mode": "none",
+ "out": "comp/X_farmer.mov",
+ "fps": 30
+}

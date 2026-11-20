@@ -606,7 +606,7 @@
   // ---------------------------------------------------------------- captions (closed captions, burned in)
   function buildCaptions(L) {
     var root = el("div", "layer", stage); root.style.width = W + "px"; root.style.height = H + "px"; L.root = root;
-    L.pill = el("div", "cc", root);
+    L.pill = el("div", "cc" + (FILM.ccStyle === "v4" ? " v4" : ""), root);
   }
   function updateCaptions(L, t) {
     var cue = null; (FILM.cueList || []).forEach(function (c) { if (t >= c.t0 && t < c.t1) cue = c; });
@@ -646,7 +646,8 @@
       var show = i / n <= appear; if (!show) break;
       var x = L.x0 + (i % L.cols) * L.gap, y = L.y0 + Math.floor(i / L.cols) * L.gap, isHi = !!L.hiSet[i];
       ctx.globalAlpha = a * (isHi ? 1 : lerp(0.9, 0.55, lit));
-      ctx.fillStyle = isHi && lit > 0 ? "rgba(15,118,110," + (0.25 + 0.75 * lit) + ")" : "#E2D9C8";
+      ctx.fillStyle = L.theme === "dark" ? (isHi && lit > 0 ? "rgba(45,212,191," + (0.35 + 0.65 * lit) + ")" : "rgba(226,232,240,.55)")
+                                         : (isHi && lit > 0 ? "rgba(15,118,110," + (0.25 + 0.75 * lit) + ")" : "#E2D9C8");
       var r = isHi ? lerp(7, 9, lit) : 7;
       ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
     }
@@ -839,6 +840,7 @@
         else if (L.kind === "dots") buildDots(L);
         else if (L.kind === "card") buildCard(L);
         else if (L.kind === "captions") buildCaptions(L);
+        else if (EXT[L.kind]) { var vb = EXT[L.kind].build(L, API); if (vb && vb.then) vids.push(vb); }
         else buildText(L);
         L.root.style.zIndex = L.z;
         show(L.root, false);
@@ -849,7 +851,7 @@
   }
   function seek(t) {
     var pending = []; FRESH = 0;
-    layers.forEach(function (L) { if (L.kind === "video" && (t < L.t0 - 1.5 || t > L.t1 + 0.5)) detachVideo(L); });
+    layers.forEach(function (L) { if ((L.kind === "video" || L.vid) && (t < L.t0 - 1.5 || t > L.t1 + 0.5)) detachVideo(L); });
     layers.forEach(function (L) {
       var on = t >= L.t0 && t < L.t1;
       show(L.root, on);
@@ -861,6 +863,7 @@
       else if (L.kind === "dots") r = updateDots(L, t);
       else if (L.kind === "card") r = updateCard(L, t);
       else if (L.kind === "captions") r = updateCaptions(L, t);
+      else if (EXT[L.kind]) r = EXT[L.kind].update(L, t, API);
       else r = updateText(L, t);
       if (r) pending.push(r);
     });
@@ -888,6 +891,12 @@
     return Promise.all(pending).then(function () { return FRESH; });
   }
   window.seek = seek;
+  // v4 layer kinds (comp/v4.js) plug in here: KAIROS_EXT[kind] = {build(L, API), update(L, t, API)}
+  var EXT = window.KAIROS_EXT || {};
+  var API = { W: W, H: H, el: el, sv: sv, esc: esc, E: E, clamp: clamp, lerp: lerp, envelope: envelope, show: show,
+              caps: caps, getImg: getImg, frameUrl: frameUrl, resolveTrack: resolveTrack, trackAt: trackAt,
+              attachVideo: attachVideo, detachVideo: detachVideo, cursorAt: cursorAt, stage: function () { return stage; }, base: base,
+              fresh: function () { FRESH++; }, film: function () { return FILM; } };
   function describe(t) { // what is on screen at t (for QA.md): layers, focus subject, UI scale
     var out = [];
     layers.forEach(function (L) {

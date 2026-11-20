@@ -1,0 +1,480 @@
+[
+ {
+  "t0": 13.6,
+  "t1": 17.556,
+  "who": "",
+  "lines": [
+   "Every month, millions of people",
+   "in India pay back a loan."
+  ]
+ },
+ {
+  "t0": 17.576,
+  "t1": 21.672,
+  "who": "",
+  "lines": [
+   "And every month,",
+   "their lender sends them the same reminder,"
+  ]
+ },
+ {
+  "t0": 21.692,
+  "t1": 24.383,
+  "who": "",
+  "lines": [
+   "at the same time, as everyone else."
+  ]
+ },
+ {
+  "t0": 24.9,
+  "t1": 30.992,
+  "who": "",
+  "lines": [
+   "In one simulated campaign,",
+   "that fixed schedule sent 1,262 messages."
+  ]
+ },
+ {
+  "t0": 31.012,
+  "t1": 33.633,
+  "who": "",
+  "lines": [
+   "Only 23 replies came back."
+  ]
+ },
+ {
+  "t0": 33.743,
+  "t1": 39.125,
+  "who": "",
+  "lines": [
+   "Every one of those messages cost money.",
+   "Almost all of them went unanswered."
+  ]
+ },
+ {
+  "t0": 42.535,
+  "t1": 44.032,
+  "who": "",
+  "lines": [
+   "Kairos works differently."
+  ]
+ },
+ {
+  "t0": 44.052,
+  "t1": 48.463,
+  "who": "",
+  "lines": [
+   "Every morning, it looks at each borrower",
+   "on their own: how late they are,"
+  ]
+ },
+ {
+  "t0": 48.483,
+  "t1": 52.8,
+  "who": "",
+  "lines": [
+   "how they replied before,",
+   "and when they usually read their messages."
+  ]
+ },
+ {
+  "t0": 54.735,
+  "t1": 59.49,
+  "who": "",
+  "lines": [
+   "Then it makes one choice for each person:",
+   "reach out today, or wait."
+  ]
+ },
+ {
+  "t0": 59.51,
+  "t1": 63.41,
+  "who": "",
+  "lines": [
+   "If it reaches out,",
+   "it picks the channel, SMS, WhatsApp,"
+  ]
+ },
+ {
+  "t0": 63.43,
+  "t1": 68.882,
+  "who": "",
+  "lines": [
+   "email or a voice call, and the hour",
+   "that person is most likely to answer."
+  ]
+ },
+ {
+  "t0": 72.412,
+  "t1": 78.21,
+  "who": "",
+  "lines": [
+   "Before any message goes out, it has",
+   "to get past Aladdin, our safety supervisor."
+  ]
+ },
+ {
+  "t0": 78.29,
+  "t1": 80.358,
+  "who": "",
+  "lines": [
+   "Aladdin asks the lender's questions."
+  ]
+ },
+ {
+  "t0": 80.378,
+  "t1": 83.547,
+  "who": "",
+  "lines": [
+   "Has this person agreed",
+   "to be contacted on this channel?"
+  ]
+ },
+ {
+  "t0": 83.567,
+  "t1": 88.186,
+  "who": "",
+  "lines": [
+   "Have they asked us to stop? Is it between 8",
+   "in the morning and 7 in the evening?"
+  ]
+ },
+ {
+  "t0": 88.206,
+  "t1": 90.969,
+  "who": "",
+  "lines": [
+   "Have we already contacted",
+   "them enough this week?"
+  ]
+ },
+ {
+  "t0": 90.989,
+  "t1": 93.965,
+  "who": "",
+  "lines": [
+   "Is there budget left?",
+   "Is their account on hold?"
+  ]
+ },
+ {
+  "t0": 94.025,
+  "t1": 96.439,
+  "who": "",
+  "lines": [
+   "It asks when the message is planned,"
+  ]
+ },
+ {
+  "t0": 96.459,
+  "t1": 100.766,
+  "who": "",
+  "lines": [
+   "and again right before it is sent,",
+   "in case anything has changed."
+  ]
+ },
+ {
+  "t0": 100.786,
+  "t1": 104.078,
+  "who": "",
+  "lines": [
+   "If any answer is no,",
+   "the message does not go."
+  ]
+ },
+ {
+  "t0": 105.468,
+  "t1": 109.88,
+  "who": "",
+  "lines": [
+   "This is Vikram.",
+   "His EMI of ₹7,409 is 10 days late."
+  ]
+ },
+ {
+  "t0": 109.9,
+  "t1": 114.136,
+  "who": "",
+  "lines": [
+   "Kairos sends him one SMS",
+   "at 9:30 in the morning."
+  ]
+ },
+ {
+  "t0": 114.156,
+  "t1": 117.951,
+  "who": "",
+  "lines": [
+   "Aladdin clears it. Vikram doesn't reply."
+  ]
+ },
+ {
+  "t0": 118.401,
+  "t1": 123.223,
+  "who": "",
+  "lines": [
+   "So the next day, Kairos waits",
+   "instead of sending another reminder."
+  ]
+ },
+ {
+  "t0": 123.243,
+  "t1": 127.481,
+  "who": "",
+  "lines": [
+   "On day 3, it tries WhatsApp. This time,",
+   "Vikram replies: he will pay by the 29th."
+  ]
+ },
+ {
+  "t0": 127.501,
+  "t1": 129.951,
+  "who": "Vikram",
+  "lines": [
+   "I'll pay by the 29th."
+  ]
+ },
+ {
+  "t0": 132.001,
+  "t1": 138.612,
+  "who": "",
+  "lines": [
+   "Kairos recognises a promise to pay,",
+   "and goes quiet. No more reminders."
+  ]
+ },
+ {
+  "t0": 138.632,
+  "t1": 145.133,
+  "who": "",
+  "lines": [
+   "On day 7, the bank confirms ₹7,409.",
+   "Reaching Vikram cost 65 paise."
+  ]
+ },
+ {
+  "t0": 145.684,
+  "t1": 147.857,
+  "who": "",
+  "lines": [
+   "Kairos learns from every reply."
+  ]
+ },
+ {
+  "t0": 147.877,
+  "t1": 152.525,
+  "who": "",
+  "lines": [
+   "When we quietly made WhatsApp worse",
+   "for one group, nobody told it."
+  ]
+ },
+ {
+  "t0": 152.545,
+  "t1": 156.402,
+  "who": "",
+  "lines": [
+   "Within a week,",
+   "it had moved them to SMS on its own."
+  ]
+ },
+ {
+  "t0": 159.984,
+  "t1": 166.769,
+  "who": "",
+  "lines": [
+   "Borrowers also write in on WhatsApp,",
+   "at any hour. Kairos replies in seconds."
+  ]
+ },
+ {
+  "t0": 166.958,
+  "t1": 168.79,
+  "who": "Sunita",
+  "lines": [
+   "When is my EMI due?"
+  ]
+ },
+ {
+  "t0": 169.2,
+  "t1": 170.456,
+  "who": "Kairos",
+  "lines": [
+   "To protect your account,"
+  ]
+ },
+ {
+  "t0": 170.476,
+  "t1": 174.023,
+  "who": "Kairos",
+  "lines": [
+   "I have sent a 6-digit code",
+   "to your registered WhatsApp number."
+  ]
+ },
+ {
+  "t0": 174.374,
+  "t1": 176.281,
+  "who": "Kairos",
+  "lines": [
+   "Thank you, you are verified."
+  ]
+ },
+ {
+  "t0": 176.79,
+  "t1": 179.868,
+  "who": "",
+  "lines": [
+   "First, it made sure it was really her."
+  ]
+ },
+ {
+  "t0": 180.99,
+  "t1": 183.841,
+  "who": "Sunita",
+  "lines": [
+   "I already paid,",
+   "here is the screenshot."
+  ]
+ },
+ {
+  "t0": 184.171,
+  "t1": 187.367,
+  "who": "Kairos",
+  "lines": [
+   "For your security,",
+   "I can't help with this request in chat."
+  ]
+ },
+ {
+  "t0": 187.387,
+  "t1": 189.966,
+  "who": "Kairos",
+  "lines": [
+   "A specialist",
+   "from our team will review it."
+  ]
+ },
+ {
+  "t0": 190.376,
+  "t1": 192.42,
+  "who": "",
+  "lines": [
+   "That screenshot had been edited."
+  ]
+ },
+ {
+  "t0": 192.44,
+  "t1": 196.356,
+  "who": "",
+  "lines": [
+   "Kairos checks every payment",
+   "proof against the bank's records,"
+  ]
+ },
+ {
+  "t0": 196.376,
+  "t1": 201.335,
+  "who": "",
+  "lines": [
+   "so a fake one can never mark a loan as paid.",
+   "It goes to a person instead."
+  ]
+ },
+ {
+  "t0": 201.795,
+  "t1": 205.26,
+  "who": "",
+  "lines": [
+   "When another borrower",
+   "says she has lost her job,"
+  ]
+ },
+ {
+  "t0": 205.28,
+  "t1": 209.451,
+  "who": "",
+  "lines": [
+   "Kairos pauses her reminders",
+   "and hands her to a person."
+  ]
+ },
+ {
+  "t0": 209.872,
+  "t1": 210.778,
+  "who": "Sunita",
+  "lines": [
+   "Stop."
+  ]
+ },
+ {
+  "t0": 211.908,
+  "t1": 215.751,
+  "who": "Kairos",
+  "lines": [
+   "You will not receive further",
+   "automated reminders from us on any channel."
+  ]
+ },
+ {
+  "t0": 216.25,
+  "t1": 219.8,
+  "who": "",
+  "lines": [
+   "And when someone says stop,",
+   "everything stops."
+  ]
+ },
+ {
+  "t0": 219.82,
+  "t1": 223.561,
+  "who": "",
+  "lines": [
+   "SMS, WhatsApp, email and calls, all at once."
+  ]
+ },
+ {
+  "t0": 224.001,
+  "t1": 228.401,
+  "who": "",
+  "lines": [
+   "The team stays in charge,",
+   "and Aladdin checks their actions too."
+  ]
+ },
+ {
+  "t0": 228.421,
+  "t1": 232.389,
+  "who": "",
+  "lines": [
+   "Even a supervisor can't send a message",
+   "at 8 at night."
+  ]
+ },
+ {
+  "t0": 235.501,
+  "t1": 236.99,
+  "who": "",
+  "lines": [
+   "In our simulated tests,"
+  ]
+ },
+ {
+  "t0": 237.01,
+  "t1": 241.32,
+  "who": "",
+  "lines": [
+   "Kairos recovered more",
+   "for every rupee spent than a fixed schedule,"
+  ]
+ },
+ {
+  "t0": 241.34,
+  "t1": 243.624,
+  "who": "",
+  "lines": [
+   "without breaking a single rule."
+  ]
+ }
+]

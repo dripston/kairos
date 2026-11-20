@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human/H2_4_delhi_man_phone_annoyed_bed.mp4",
+ "in": 4.2,
+ "dur": 4.0,
+ "mode": "none",
+ "out": "comp/X_vikram_b.mov",
+ "fps": 30
+}

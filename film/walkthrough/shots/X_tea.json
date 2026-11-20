@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human2/B02_tea_stall_owner_red_shirt.mp4",
+ "in": 4.6,
+ "dur": 4.0,
+ "mode": "none",
+ "out": "comp/X_tea.mov",
+ "fps": 30
+}

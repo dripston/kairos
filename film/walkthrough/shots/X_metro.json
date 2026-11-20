@@ -1,0 +1,8 @@
+{
+ "clip": "../assets/human2/C01_delhi_metro_platform.mp4",
+ "in": 1.0,
+ "dur": 4.0,
+ "mode": "none",
+ "out": "comp/X_metro.mov",
+ "fps": 30
+}
