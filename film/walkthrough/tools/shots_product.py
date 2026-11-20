@@ -98,6 +98,9 @@ want = sys.argv[1:] or list(SHOTS)
 os.makedirs("comp", exist_ok=True); os.makedirs("shots", exist_ok=True)
 for k in want:
     s = dict(SHOTS[k]); s.setdefault("out", "comp/%s.mov" % k); s.setdefault("fps", 30)
+    if os.environ.get("FPS60") and s.get("mode") == "none":   # v4: 60 fps, retimed so each output frame maps to exactly one source frame
+        sf = float(subprocess.run(["./out/fps", s["clip"]], capture_output=True, text=True).stdout.split()[0])
+        s["fps"] = 60; s["speed"] = {25: 1.2, 24: 1.25, 50: 1.2}.get(round(sf), 1.0)
     json.dump(s, open("shots/%s.json" % k, "w"), indent=1)
     r = subprocess.run(["./tools/screen_comp", "shots/%s.json" % k], capture_output=True, text=True)
     print(k, (r.stdout.strip() or r.stderr.strip())[-140:])

@@ -21,6 +21,7 @@ let spec = try! JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLW
 let OW = 1920, OH = 1080
 let fps = (spec["fps"] as? Double) ?? 30
 let tIn = (spec["in"] as? Double) ?? 0, dur = spec["dur"] as! Double
+let speed = (spec["speed"] as? Double) ?? 1.0   // 25 fps → 1.2, 24 fps → 1.25: every output frame at 60 fps maps to exactly one source frame, shown an even number of times
 let mode = (spec["mode"] as? String) ?? "green"
 let expand = (spec["expand"] as? Double) ?? 0.025
 let uiGain = (spec["uiGain"] as? Double) ?? 0.94
@@ -145,7 +146,7 @@ func trackGreen(_ frame: CIImage) -> Quad? {
 let asset = AVURLAsset(url: URL(fileURLWithPath: spec["clip"] as! String))
 guard let vt = asset.tracks(withMediaType: .video).first else { fail("no video") }
 let reader = try! AVAssetReader(asset: asset)
-reader.timeRange = CMTimeRange(start: CMTime(seconds: tIn, preferredTimescale: 600), duration: CMTime(seconds: dur + 0.5, preferredTimescale: 600))
+reader.timeRange = CMTimeRange(start: CMTime(seconds: tIn, preferredTimescale: 600), duration: CMTime(seconds: dur * speed + 0.5, preferredTimescale: 600))
 let ro = AVAssetReaderTrackOutput(track: vt, outputSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
 reader.add(ro); reader.startReading()
 let natural = vt.naturalSize.applying(vt.preferredTransform)
@@ -162,7 +163,8 @@ func nextSource() -> (Double, CIImage)? {
 }
 func frameAt(_ t: Double) -> CIImage? {
     if pending == nil { pending = nextSource() }
-    while let p = pending, p.0 <= t + 0.5 / fps { current = p.1; pending = nextSource() }
+    let ts = t * speed
+    while let p = pending, p.0 <= ts + 1e-4 { current = p.1; pending = nextSource() }   // the newest source frame at or before t·speed (exact, no rounding drift)
     return current
 }
 

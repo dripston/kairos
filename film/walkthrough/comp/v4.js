@@ -20,11 +20,12 @@
     if (!L.loaded) return A.attachVideo(L).then(function () { return seekVideo(A, L, want); });
     if (Math.abs(want - (L.lastSeek == null ? -1 : L.lastSeek)) < 1e-4) return null;
     L.lastSeek = want;
+    var shown = A.presented(L.v);
     return new Promise(function (res) {
       var done = false; function fin() { if (!done) { done = true; res(); } }
       L.v.addEventListener("seeked", fin, { once: true }); setTimeout(fin, 3000);
       L.v.currentTime = want;
-    });
+    }).then(function () { L.painted = true; return shown; });
   }
 
   // ------------------------------------------------------------------ nebula
@@ -34,19 +35,27 @@
       L.v = A.el("video", "", r); L.v.muted = true; L.v.preload = "auto"; L.v.playsInline = true;
       L.v.style.cssText = "position:absolute;left:0;top:0;width:" + A.W + "px;height:" + A.H + "px;object-fit:cover;transform-origin:50% 50%";
       L.vid = true; L.src = L.src || "comp/NEB1.mov";
-      var dim = A.el("div", "", r); dim.style.cssText = "position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%, rgba(2,6,16," + (L.dim != null ? L.dim * 0.55 : 0.2) + ") 0%, rgba(2,6,16," + (L.dim != null ? L.dim : 0.4) + ") 70%, rgba(1,3,10," + Math.min(0.92, (L.dim != null ? L.dim : 0.4) + 0.25) + ") 100%)";
+      L.v.style.filter = "brightness(0.82) saturate(1.05)";
+      var dd = L.dim != null ? L.dim : 0.45;
+      var dim = A.el("div", "", r); dim.style.cssText = "position:absolute;inset:0;background:radial-gradient(ellipse 60% 55% at 50% 45%, rgba(2,5,14," + Math.min(0.85, dd + 0.25) + ") 0%, rgba(2,5,14," + dd + ") 65%, rgba(1,3,10," + Math.min(0.9, dd + 0.2) + ") 100%)";
     },
     update: function (L, t, A) {
-      var e = enterT(A, L, t); L.root.style.opacity = e.p * e.q;
+      var e = enterT(A, L, t);
       var life = A.clamp((t - L.t0) / Math.max(1, L.t1 - L.t0), 0, 1), z = L.zoom || [1.04, 1.1];
       L.v.style.transform = "scale(" + A.lerp(z[0], z[1], life) + ")";
       var want = (L.from || 0) + (t - L.t0) * (L.rate || 0.6);
       if (L.len) want = want % L.len;
-      return seekVideo(A, L, want);
+      if (!L.shownOnce) L.v.style.opacity = 0;          // never show an unpainted video element (no white/black blob)
+      var pr = seekVideo(A, L, want);
+      return Promise.resolve(pr).then(function () { L.shownOnce = true; L.v.style.opacity = 1; });
     }
   };
 
   // ------------------------------------------------------------------ glass window with a whole real page
+  // The page is shown WHOLE first. A zoom targets a whole component (+ margin): the camera eases to it and a soft
+  // focus clip hides everything outside it, so no text or phone is ever cut by the window edge. Images are
+  // double-buffered (the old frame stays until the new one is decoded and painted), and a window never shows
+  // before its first frame is ready.
   X.glass = {
     build: function (L, A) {
       var r = layerRoot(A, L);
@@ -57,7 +66,7 @@
       var maxw = L.maxw || 1640, maxh = L.maxh || 810, pad = L.pad != null ? L.pad : 16, head = L.title ? 46 : 0;
       var s = Math.min((maxw - 2 * pad) / page[2], (maxh - 2 * pad - head) / page[3]);
       var pw = page[2] * s, ph = page[3] * s, ww = pw + 2 * pad, wh = ph + 2 * pad + head;
-      L.geo = { s0: s, pw: pw, ph: ph, ww: ww, wh: wh, pad: pad, head: head, cx: L.cx || A.W / 2, cy: L.cy || 462 };   // the window ends above the caption band
+      L.geo = { s0: s, pw: pw, ph: ph, ww: ww, wh: wh, pad: pad, head: head, cx: L.cx || A.W / 2, cy: L.cy || 462 };
       var win = A.el("div", "glasswin", r); L.win = win;
       win.style.width = ww + "px"; win.style.height = wh + "px";
       win.style.left = (L.geo.cx - ww / 2) + "px"; win.style.top = (L.geo.cy - wh / 2) + "px";
@@ -68,45 +77,53 @@
       if (L.video) {
         L.v = A.el("video", "", inner); L.v.muted = true; L.v.preload = "auto"; L.v.playsInline = true; L.vid = true; L.src = L.video;
         L.v.style.cssText = "position:absolute;left:0;top:0;width:" + (L.vw || 1920) + "px;height:" + (L.vh || 1080) + "px";
+        L.media = [L.v];
       } else {
-        L.im = A.el("img", "", inner); L.im.style.cssText = "position:absolute;left:0;top:0;max-width:none";
+        L.ims = [0, 1].map(function () { var im = A.el("img", "", inner); im.style.cssText = "position:absolute;left:0;top:0;max-width:none;opacity:0"; return im; });
+        L.front = 0; L.media = L.ims;
         L.track = A.resolveTrack(c, L.frames || [{ at: 0, label: L.label }]);
       }
       if (L.cursor) {
         L.cur = A.el("div", "cursor", r, '<svg viewBox="0 0 32 32" width="44" height="44"><path d="M6 3 L6 26 L12 20.5 L16.2 29.4 L20.3 27.5 L16.2 18.8 L24 18.8 Z" fill="#111" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>');
         L.rip = A.el("div", "ripple", r);
       }
+      L.win.style.opacity = 0;
     },
     update: function (L, t, A) {
-      var g = L.geo, e = enterT(A, L, t), life = A.clamp((t - L.t0) / Math.max(1, L.t1 - L.t0), 0, 1);
-      // window entrance / exit
+      var g = L.geo, e = enterT(A, L, t);
       var ty = 0, sc = 1, op = e.p * e.q, type = (L.enter || {}).type || "rise", xt = (L.exit || {}).type || "fade";
       if (type === "rise") { ty += (1 - e.p) * 40; sc *= A.lerp(0.97, 1, e.p); }
       if (type === "zoom") { sc *= A.lerp(0.86, 1, e.p); }
-      if (type === "push") { ty += (1 - e.p) * 0; sc *= A.lerp(1.18, 1, e.p); }
+      if (type === "push") { sc *= A.lerp(1.18, 1, e.p); }
       if (xt === "zoom") { sc *= A.lerp(1.25, 1, e.q); }
       if (xt === "push") { sc *= A.lerp(0.9, 1, e.q); }
-      L.win.style.opacity = op;
       L.win.style.transform = "translateY(" + ty + "px) scale(" + sc + ")";
-      // inner camera: view rect in page coords, eased between keys (log zoom)
-      var P = L.pageR, keys = L.cam || [], view = [P[0], P[1], P[2], P[3]];
-      function fit(rc) { // expand rc to the pane aspect, keep inside the page
+      // inner camera + focus clip, one continuous eased move per key (log zoom); the focus is the WHOLE target component
+      var P = L.pageR, keys = L.cam || [], full = [P[0], P[1], P[2], P[3]], M = L.margin != null ? L.margin : 24;
+      function grow(rc) { return [Math.max(P[0], rc[0] - M), Math.max(P[1], rc[1] - M), Math.min(P[0] + P[2], rc[0] + rc[2] + M) - Math.max(P[0], rc[0] - M), Math.min(P[1] + P[3], rc[1] + rc[3] + M) - Math.max(P[1], rc[1] - M)]; }
+      function fit(rc) { // the camera rect: the focus expanded to the pane aspect, kept inside the page
         var asp = g.pw / g.ph, w = rc[2], h = rc[3];
         if (w / h > asp) h = w / asp; else w = h * asp;
+        if (w > P[2]) { w = P[2]; h = w / asp; } if (h > P[3]) { h = P[3]; w = h * asp; }
         var x = rc[0] + rc[2] / 2 - w / 2, y = rc[1] + rc[3] / 2 - h / 2;
         x = A.clamp(x, P[0], P[0] + P[2] - w); y = A.clamp(y, P[1], P[1] + P[3] - h);
         return [x, y, w, h];
       }
-      var cur = view;
+      var cur = fit(full), foc = full;
       keys.forEach(function (k) {
         if (t < k.t) return;
-        var tg = k.rect ? fit(k.rect) : view, s = ease(A, (t - k.t) / (k.dur || 1.2));
-        var z0 = Math.log(cur[2]), z1 = Math.log(tg[2]), wz = Math.exp(A.lerp(z0, z1, s));
+        var tf = k.rect ? grow(k.rect) : full, tg = fit(tf), s = ease(A, (t - k.t) / (k.dur || 1.2));
+        var wz = Math.exp(A.lerp(Math.log(cur[2]), Math.log(tg[2]), s));
         var cx = A.lerp(cur[0] + cur[2] / 2, tg[0] + tg[2] / 2, s), cy = A.lerp(cur[1] + cur[3] / 2, tg[1] + tg[3] / 2, s);
         cur = [cx - wz / 2, cy - (wz * g.ph / g.pw) / 2, wz, wz * g.ph / g.pw];
+        foc = [A.lerp(foc[0], tf[0], s), A.lerp(foc[1], tf[1], s), A.lerp(foc[2], tf[2], s), A.lerp(foc[3], tf[3], s)];
       });
       var k = g.pw / cur[2];
       L.inner.style.transform = "scale(" + k + ") translate(" + (-cur[0]) + "px," + (-cur[1]) + "px)";
+      var vw = L.video ? (L.vw || 1920) : A.caps[L.cap].log.viewport.w, vh = L.video ? (L.vh || 1080) : A.caps[L.cap].log.viewport.h;
+      var clip = (foc[0] <= P[0] + 0.5 && foc[1] <= P[1] + 0.5 && foc[2] >= P[2] - 1 && foc[3] >= P[3] - 1) ? "none"
+        : "inset(" + foc[1] + "px " + (vw - foc[0] - foc[2]) + "px " + (vh - foc[1] - foc[3]) + "px " + foc[0] + "px round 12px)";
+      L.media.forEach(function (m) { m.style.clipPath = clip; m.style.webkitClipPath = clip; });
       L.subjectNow = [[g.cx - g.ww / 2, g.cy - g.wh / 2, g.ww, g.wh]];
       if (L.cur) {
         var cs = A.cursorAt(L, t);
@@ -121,17 +138,23 @@
       }
       if (L.video) {
         var want = (L.from || 0) + (t - L.t0) * (L.rate || 1);
-        return seekVideo(A, L, want);
+        if (!L.ready) L.win.style.opacity = 0;
+        return Promise.resolve(seekVideo(A, L, want)).then(function () { L.ready = true; L.win.style.opacity = op; });
       }
+      // double-buffered capture frames
+      if (L.ready) L.win.style.opacity = op;
       var c = A.caps[L.cap], fi = A.trackAt(L.track, t), url = A.frameUrl(c, fi);
-      if (L.curUrl !== url) {
-        return A.getImg(url).then(function () {
-          L.im.src = url; L.curUrl = url; A.fresh();
-          L.im.style.width = c.log.viewport.w + "px"; L.im.style.height = c.log.viewport.h + "px";
-          return L.im.decode().catch(function () {});
-        });
-      }
-      return L.im.decode().catch(function () {});
+      var front = L.ims[L.front], back = L.ims[1 - L.front];
+      if (L.hideOld) { back.style.opacity = 0; L.hideOld = false; }        // the previous frame stayed one painted frame under the new one
+      if (L.curUrl === url) return null;
+      return A.getImg(url).then(function () {
+        back.src = url; back.style.width = c.log.viewport.w + "px"; back.style.height = c.log.viewport.h + "px";
+        return back.decode().catch(function () {});
+      }).then(function () {
+        back.style.zIndex = 2; front.style.zIndex = 1; back.style.opacity = 1;
+        L.front = 1 - L.front; L.curUrl = url; L.hideOld = true; A.fresh();
+        if (!L.ready) { L.ready = true; L.win.style.opacity = op; }
+      });
     }
   };
 
@@ -234,7 +257,10 @@
         var anyLit = Object.keys(lit).length > 0, l = lit[ne.n.id] || 0;
         ne.halo.setAttribute("opacity", 0.85 * l);
         if (anyLit && !lit[ne.n.id]) ne.g.style.opacity = a * 0.45;
-        if (ne.n.bodyT) ne.body.forEach(function (tb, i) { var bt = ne.n.bodyT[i]; var k = bt == null ? 1 : A.E.enter(A.clamp((t - bt) / 0.4, 0, 1)); tb.style.opacity = k; tb.style.fill = t >= bt && t < bt + 1.6 ? "#7DF3E1" : ""; });
+        if (ne.n.bodyT) ne.body.forEach(function (tb, i) {   // every check is there from the start, dimmed; each lights as it is spoken
+          var bt = ne.n.bodyT[i], k = bt == null ? 1 : A.E.enter(A.clamp((t - bt) / 0.4, 0, 1));
+          tb.style.opacity = 0.38 + 0.62 * k; tb.style.fill = t >= bt && t < bt + 1.8 ? "#7DF3E1" : "";
+        });
       });
       L.edgeEls.forEach(function (ee) {
         var a = A.clamp((t - (ee.e.t != null ? ee.e.t : L.t0)) / 0.5, 0, 1), s = A.E.move(a);
@@ -312,7 +338,7 @@
   X.title = {
     build: function (L, A) {
       var r = layerRoot(A, L);
-      if (L.bg) { var b = A.el("div", "", r); b.style.cssText = "position:absolute;inset:0;background:" + L.bg; }
+      if (L.bg) { var b = A.el("div", "", r); b.style.cssText = "position:absolute;inset:0;background:" + L.bg; L.bgEl = b; }
       var box = A.el("div", "v4title", r); L.box = box;
       box.style.top = (L.y != null ? L.y : A.H / 2) + "px"; if (L.maxw) box.style.maxWidth = L.maxw + "px";
       if (L.align) box.style.textAlign = L.align;
@@ -330,6 +356,7 @@
       L.box.style.opacity = e.q;
       var life = A.clamp((t - L.t0) / Math.max(1, L.t1 - L.t0), 0, 1);
       L.box.style.transform = "translate(-50%,-50%)";   // text holds still (no sub-pixel scale drift)
+      if (L.bgDrift && L.bgEl) { var lf = A.clamp((t - L.t0) / Math.max(1, L.t1 - L.t0), 0, 1); L.bgEl.style.backgroundPosition = (40 + 20 * lf) + "% 50%"; }  // a slow light on the background only
       L.parts.forEach(function (p, i) {
         var t0 = p.ln.t != null ? p.ln.t : L.t0 - 0.3 + i * (L.stagger != null ? L.stagger : 0.18);
         var k = A.E.enter(A.clamp((t - t0) / (p.ln.dur || 0.6), 0, 1));

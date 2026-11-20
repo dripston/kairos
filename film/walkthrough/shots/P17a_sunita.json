@@ -4,5 +4,6 @@
  "dur": 2.4,
  "mode": "none",
  "out": "comp/P17a_sunita.mov",
- "fps": 30
+ "fps": 60,
+ "speed": 1.2
 }

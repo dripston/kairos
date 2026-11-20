@@ -40,9 +40,22 @@ def other(kind, dur, **kw): return (kind, dur, kw)
 PH = lambda s: "captures/phone_%s/f00001.jpg" % s
 IN_PHONE = [10, 126, 372, 778]                  # the inbound page's own phone (whole), CSS px
 
+# ---- whole-component zoom targets, straight from the DOM rects the recorder logged (the glass adds a 24 px margin)
+def RC(cap, label, key):
+    lg = json.load(open(CAPS[cap] + "/log.json")); label = OVL.get(label, label)
+    for e in lg["events"]:
+        if e.get("type") == "rect" and e["name"] == "%s_%s" % (label, key): return [round(v) for v in e["rect"]]
+    raise SystemExit("no rect %s_%s in %s" % (label, key, cap))
+def U(*rs): x0 = min(r[0] for r in rs); y0 = min(r[1] for r in rs); return [x0, y0, max(r[0] + r[2] for r in rs) - x0, max(r[1] + r[3] for r in rs) - y0]
+PHONE = [19, 132, 360, 767]                         # the inbound page's own phone, whole
+LEGAL = {"cls": "legal", "size": 34}
+CTRL_SENDS = [1046, 397, 353, 372]                  # Control Room · "Today's sends by channel" card (deployed frontend, 1440 px)
+ER_LEARN = lambda lab: U([647, 199, 606, 52 if lab == "d7" else 70], [647, 259 if lab == "d7" else 277, 606, 165])
+F03_CARD = [1540, 560, 380, 500]                    # Smart CRM · "Manual send · preview" card (F03, 1920 px)
+
 # 0 · cold open (silence), then the music hit and the logo
-beat([other("title", 5.0, bg="#000", y=540, maxw=1240, align="left", lines=[
-        {"text": "DISCLAIMER: This product may make your collections team's life noticeably easier. Side effects include fewer angry customers and more money recovered. Use at your own risk.", "size": 40, "cls": "legal", "dur": 0.5, "t": -0.4}])],
+beat([other("title", 5.0, bg="radial-gradient(ellipse 70% 80% at 50% 48%, #2a2f3a 0%, #10131a 50%, #030406 100%) no-repeat; background-size: 140% 140%", bgDrift=True, y=540, maxw=1100, lines=[
+        dict(LEGAL, text="DISCLAIMER: This product may make your collections team's life noticeably easier. Side effects include fewer angry customers and more money recovered. Use at your own risk.", dur=0.5, t=-0.4)])],
      name="cold")
 beat([other("brand", 3.2, lines=["Collections that decide who, when and how."], neb=("comp/NEB1.mov", 1.0))], name="logo")
 # 1 · the problem: many different people, one identical reminder
@@ -52,58 +65,52 @@ beat([phone([{"t": 0, "src": PH("sms3")}], 3.0, neb=("comp/NEB2.mov", 3.0)),
 # 2 · Part 1 · Reaching out (CM-02)
 beat([other("title", 1.6, lines=[{"text": "Part 1", "size": 40, "cls": "kicker"}, {"text": "Reaching out", "size": 110, "mt": 10}], neb=("comp/NEB1.mov", 2.0))], name="part1")
 beat([clip("X_vikas", 2.0),
-      glass("dv", "control", 4.0, title="Kairos · Control Room", page=[272, 80, 1146, 700], cam=[(2.0, [1040, 390, 370, 385], 1.8)], neb=("comp/NEB1.mov", 4.0)),
-      glass("ov", "@SMS", 3.6, title="Kairos · Live journey", cam=[(1.0, [340, 320, 680, 200], 1.4)], neb=("comp/NEB1.mov", 7.0))],
+      glass("dv", "control", 4.0, title="Kairos · Control Room", page=[272, 80, 1146, 700], cam=[(1.8, CTRL_SENDS, 1.6)], neb=("comp/NEB1.mov", 4.0)),
+      glass("ov", "@SMS", 3.6, title="Kairos · Live journey", cam=[(1.0, RC("ov", "@SMS", "detail"), 1.4)], neb=("comp/NEB1.mov", 7.0))],
      voice=["p04"], at=0.4, name="looks")
-beat([glass("ov", "@SMS", 4.0, title="Kairos · Live journey", cam=[(0.0, [340, 320, 680, 200], 0.01), (1.6, [0, 100, 1440, 130], 1.4)], neb=("comp/NEB1.mov", 10.0), enter={"type": "fade", "dur": 0.3},
+beat([glass("ov", "@SMS", 4.0, title="Kairos · Live journey", maxh=720, cy=505, cam=[(0.0, RC("ov", "@SMS", "detail"), 0.01), (1.4, RC("ov", "@SMS", "pipe"), 1.4)], neb=("comp/NEB1.mov", 10.0),
             tag="SMS · WhatsApp · email · voice call")], voice=["p05"], at=0.2, name="choice")
-beat([glass("er", "d14", 4.0, title="Kairos · Engine Room · learning per group · SIMULATED", page=[632, 158, 634, 735], maxh=730, cy=500, tag="Within a fixed budget · daily report per group", neb=("comp/NEB2.mov", 8.0))],
+beat([glass("er", "d14", 4.0, title="Kairos · Engine Room · learning per group · SIMULATED", page=[632, 158, 634, 735], maxh=720, cy=505, tag="Within a fixed budget · daily report per group", neb=("comp/NEB2.mov", 8.0))],
      voice=["p06"], at=0.25, name="budget")
 # 3 · Meet Aladdin
 beat([other("title", 2.4, lines=[{"text": "ALADDIN", "size": 150, "track": 0.18, "dur": 0.5, "blur": True},
                                  {"text": "the safety supervisor", "size": 46, "cls": "soft", "mt": 6},
                                  {"text": "No message leaves without passing its checks.", "size": 54, "mt": 34}], stagger=0.35, neb=("comp/NEB1.mov", 6.0))], name="flash")
 beat([other("loop", 18.0, neb=("comp/NEB2.mov", 0.5))], voice=["p07", "p08", "p09"], at=0.3, tail=0.8, name="aladdin")
-# 4 · Vikram (CASTING.md: the Delhi man, H2_4 / H7_6)
+# 4 · Vikram (CASTING.md: the Delhi man, H2_4 / H7_6); one window, the camera moves card to card
 beat([clip("X_vikram_a", 2.6),
-      glass("ov", "@SMS", 4.0, title="Kairos · Live journey · Vikram", cam=[(0.6, [340, 320, 680, 200], 1.4)], neb=("comp/NEB1.mov", 12.0)),
-      glass("ov", "@ALD", 4.0, title="Kairos · Live journey · Vikram", cam=[(0.0, [340, 320, 680, 260], 0.01)], neb=("comp/NEB1.mov", 14.0), mini=["aladdin"], enter={"type": "fade", "dur": 0.3}),
+      glass("ov", "@SMS", 4.0, title="Kairos · Live journey · Vikram", frames=[(0, "@SMS"), (2.2, "@ALD")], cam=[(0.6, RC("ov", "@SMS", "detail"), 1.2)], neb=("comp/NEB1.mov", 12.0)),
       clip("X_vikram_b", 2.0)], voice=["p10"], at=0.4, name="vikram1")
-beat([glass("ov", "@WAIT", 4.0, title="Kairos · Live journey · Vikram", cam=[(0.4, [340, 320, 680, 280], 1.4)], neb=("comp/NEB2.mov", 2.0)),
-      glass("ov", "@WA", 3.4, title="Kairos · Live journey · Vikram", cam=[(0.0, [340, 320, 680, 180], 0.01)], neb=("comp/NEB2.mov", 5.0), enter={"type": "fade", "dur": 0.3}),
+beat([glass("ov", "@WAIT", 6.0, title="Kairos · Live journey · Vikram", frames=[(0, "@WAIT"), (3.0, "@WA")], cam=[(0.4, RC("ov", "@WAIT", "detail"), 1.2)], neb=("comp/NEB2.mov", 2.0)),
       phone([{"t": 0, "src": PH("wa1")}, {"t": 1.0, "src": PH("wa1t")}, {"t": 1.9, "src": PH("wa2")}], 4.2, neb=("comp/NEB2.mov", 8.0), cc=("I'll pay by the 29th.", "Vikram", 2.0, 2.2)),
       clip("X_vikram_c", 2.0)], voice=["p11"], at=0.3, name="vikram2")
-beat([glass("ov", "@PTP", 3.2, title="Kairos · Live journey · Vikram", cam=[(0.4, [340, 320, 680, 160], 1.2)], neb=("comp/NEB1.mov", 2.0)),
-      glass("ov", "@QUIET", 3.0, title="Kairos · Live journey · Vikram", cam=[(0.0, [340, 320, 680, 160], 0.01)], neb=("comp/NEB1.mov", 4.0), enter={"type": "fade", "dur": 0.3}),
-      glass("ov", "@PAID", 5.6, title="Kairos · Live journey · Vikram", cam=[(0.6, [0, 200, 1100, 330], 1.6)], neb=("comp/NEB1.mov", 6.0)),
+beat([glass("ov", "@PTP", 7.0, title="Kairos · Live journey · Vikram", frames=[(0, "@PTP"), (2.4, "@QUIET"), (4.6, "@PAID")],
+            cam=[(0.4, RC("ov", "@PTP", "detail"), 1.2), (4.6, U(RC("ov", "@PAID", "banner"), RC("ov", "@PAID", "detail")), 1.0)], neb=("comp/NEB1.mov", 2.0)),
       clip("X_vikram_d", 2.0)], voice=["p12"], at=0.3, name="vikram3")
 # 5 · it keeps learning
-beat([glass("er", "d7", 4.0, title="Kairos · Engine Room · SIMULATED", cam=[(0.8, [640, 190, 620, 260], 1.6)], neb=("comp/NEB2.mov", 15.0)),
-      glass("er", "d14", 4.0, title="Kairos · Engine Room · SIMULATED", cam=[(0.0, [640, 190, 620, 260], 0.01)], neb=("comp/NEB2.mov", 20.0), enter={"type": "fade", "dur": 0.4})],
+beat([glass("er", "d7", 8.0, title="Kairos · Engine Room · SIMULATED", frames=[(0, "d7"), (4.2, "d14")], cam=[(0.8, ER_LEARN("d7"), 1.4), (4.2, ER_LEARN("d14"), 0.8)], neb=("comp/NEB2.mov", 15.0))],
      voice=["p13"], at=0.4, name="learning")
-# 6 · Part 2 · When borrowers write in (CM-03)
+# 6 · Part 2 · When borrowers write in (CM-03); one window, the camera stays on whole components
 beat([other("title", 2.2, lines=[{"text": "Part 2", "size": 40, "cls": "kicker"}, {"text": "When borrowers write in", "size": 110, "mt": 10}, {"text": "any hour · replies in seconds", "size": 46, "cls": "soft", "mt": 16}], neb=("comp/NEB1.mov", 9.0))], name="part2")
-beat([clip("P17a_sunita", 1.8),
-      glass("in", "tabA", 2.4, title="Kairos · Inbound WhatsApp", cam=[(0.5, IN_PHONE, 1.2)], neb=("comp/NEB1.mov", 12.0))], name="writein")
-beat([glass("in", "emi", 6.0, title="Kairos · Inbound WhatsApp", frames=[(0, "tabA"), ("@d2", "emi"), ("@d3", "otp")], cam=[(0.0, IN_PHONE, 0.01)], neb=("comp/NEB1.mov", 14.0), enter={"type": "fade", "dur": 0.2})],
-     voice=["d1", "d2", "d3"], at=0.15, gap=0.3, tail=0.25, name="otp")
-beat([glass("in", "otp", 3.0, title="Kairos · Inbound WhatsApp", cam=[(0.0, IN_PHONE, 0.01), (0.6, [380, 60, 560, 360], 1.4)], neb=("comp/NEB1.mov", 18.0))], voice=["p16"], at=0.3, name="identity")
-# [slot] real WhatsApp on a real phone: a 10-15 s still/recording goes here when it lands (REAL_WA env var)
+beat([clip("P17a_sunita", 1.8)], name="writein")
+beat([glass("in", "tabA", 6.0, title="Kairos · Inbound WhatsApp", frames=[(0, "tabA"), ("@d2", "emi"), ("@d3", "otp")], cam=[(0.0, PHONE, 0.01)], neb=("comp/NEB1.mov", 12.0), enter={"type": "fade", "dur": 0.3})],
+     voice=["d1", "d2", "d3"], at=0.3, gap=0.3, tail=0.25, name="otp")
+beat([glass("in", "otp", 3.0, title="Kairos · Inbound WhatsApp", cam=[(0.0, PHONE, 0.01), (0.3, RC("in", "otp", "thead"), 1.0)], neb=("comp/NEB1.mov", 16.0))], voice=["p16"], at=0.3, name="identity")
 if os.environ.get("REAL_WA"):
     beat([("glass", 12.0, dict(video=os.environ["REAL_WA"], vw=1920, vh=1080, title="Real WhatsApp · Meta Cloud API test number", neb=("comp/NEB2.mov", 1.0)))], name="realwa")
-beat([glass("in", "paylink", 5.0, title="Kairos · Inbound WhatsApp", frames=[(0, "paylink"), ("@d5", "fake")], cam=[(0.0, IN_PHONE, 0.01)], neb=("comp/NEB2.mov", 1.0))],
+beat([glass("in", "paylink", 5.0, title="Kairos · Inbound WhatsApp", frames=[(0, "paylink"), ("@d5", "fake")], cam=[(0.0, PHONE, 0.01)], neb=("comp/NEB2.mov", 1.0))],
      voice=["d4", "d5"], at=0.15, gap=0.3, tail=0.2, name="fake")
-beat([glass("in", "fake", 5.0, title="Kairos · Inbound WhatsApp", cam=[(0.0, IN_PHONE, 0.01), (0.8, [380, 60, 560, 380], 1.6)], neb=("comp/NEB2.mov", 5.0))], voice=["p17"], at=0.3, name="fakecheck")
-beat([clip("B1_borrower_b", 2.0), clip("X_callcentre", 2.0),
-      glass("in", "takeoverB", 3.0, title="Kairos · Agent console", cam=[(1.0, [930, 40, 500, 560], 1.6)], neb=("comp/NEB2.mov", 9.0))], voice=["p18"], at=0.3, name="hardship")
-beat([glass("in", "tabA2", 3.5, title="Kairos · Inbound WhatsApp", frames=[(0, "tabA2"), ("@d7", "stop")], cam=[(0.0, IN_PHONE, 0.01)], neb=("comp/NEB1.mov", 2.0))],
+beat([glass("in", "fake", 5.0, title="Kairos · Inbound WhatsApp", cam=[(0.0, PHONE, 0.01), (0.3, RC("in", "fake", "thead"), 1.0)], neb=("comp/NEB2.mov", 6.0))], voice=["p17"], at=0.3, name="fakecheck")
+beat([clip("B1_borrower_b", 5.3, keep=5.3), clip("X_callcentre", 1.6),
+      glass("in", "takeoverB", 2.6, title="Kairos · Agent console", cam=[(0.0, RC("in", "takeoverB", "convo"), 0.01)], neb=("comp/NEB2.mov", 12.0))], voice=["p18"], at=0.3, name="hardship")
+beat([glass("in", "tabA2", 3.5, title="Kairos · Inbound WhatsApp", frames=[(0, "tabA2"), ("@d7", "stop")], cam=[(0.0, PHONE, 0.01)], neb=("comp/NEB1.mov", 2.0))],
      voice=["d6", "d7"], at=0.15, gap=0.35, tail=0.2, name="stop")
-beat([glass("in", "stop", 4.0, title="Kairos · Inbound WhatsApp", cam=[(0.0, IN_PHONE, 0.01), (0.8, [380, 60, 560, 300], 1.6)], neb=("comp/NEB1.mov", 7.0), mini=["block"])], voice=["p19"], at=0.3, name="stopall")
-# 7 · the team stays in charge (the real deployed dashboard, recorded at 60 fps)
+beat([glass("in", "stop", 4.0, title="Kairos · Inbound WhatsApp", cam=[(0.0, PHONE, 0.01), (0.3, RC("in", "stop", "thead"), 1.0)], neb=("comp/NEB1.mov", 7.0))], voice=["p19"], at=0.3, name="stopall")
+# 7 · the team stays in charge (the real deployed dashboard, recorded at 60 fps; F02 whole page, F03 the manual-send card)
 F02, F03 = "rec/F02_approvals_supervisor_clean.mp4", "rec/F03_crm_explain_manual_preview_clean.mp4"
 beat([clip("P06_asha_typing", 2.0),
-      ("glass", 4.4, dict(video=F02, frm=36.0, rate=2.0, vw=1920, vh=1080, title="Kairos · Control Room · approvals", cam=[(0.6, [380, 90, 1100, 230], 1.4)], neb=("comp/NEB2.mov", 12.0))),
-      ("glass", 5.0, dict(video=F03, frm=53.0, rate=1.0, vw=1920, vh=1080, title="Kairos · Smart CRM · manual send", cam=[(0.6, [1540, 560, 380, 490], 1.4)], neb=("comp/NEB2.mov", 16.0), mini=["aladdin", "block"]))],
+      ("glass", 4.4, dict(video=F02, frm=36.0, rate=2.0, vw=1920, vh=1080, title="Kairos · Control Room · approvals", neb=("comp/NEB2.mov", 12.0))),
+      ("glass", 5.0, dict(video=F03, frm=53.0, rate=1.0, vw=1920, vh=1080, title="Kairos · Smart CRM · manual send", cam=[(0.6, F03_CARD, 1.4)], neb=("comp/NEB2.mov", 16.0)))],
      voice=["p20"], at=0.3, name="team")
 # 8 · results and ending
 beat([clip("X_rajesh", 2.4),
@@ -119,7 +126,7 @@ beat([other("title", 2.4, lines=[{"text": "The right message, at the right time.
       other("title", 2.2, lines=[{"text": "Built to be trusted", "size": 84}, {"text": "with every rupee.", "size": 84, "t_off": 0.5}], neb=("comp/NEB2.mov", 26.0))], name="slogans")
 beat([other("brand", 3.6, end=True, neb=("comp/NEB1.mov", 12.0),
             credits="Music: “Corporate Inspirational”, AtlasAudio (Pixabay licence) · Voices: AI-generated · Footage: Pexels<br>Every screen is the real Kairos software · All data SIMULATED"),
-      other("title", 2.2, bg="#000", lines=[{"text": "Results may vary. Rules won't.", "size": 46, "cls": "soft"}])], name="end")
+      other("title", 2.2, neb=("comp/NEB1.mov", 14.0), lines=[dict(LEGAL, text="Results may vary. Rules won't.", size=40)])], name="end")
 
 # ---------------------------------------------------------------- lay out
 t, seq, voice, cc_extra = 0.0, [], [], []
@@ -134,7 +141,7 @@ for b in beats:
         g = [s for s in shots if s[0] in ("glass", "flow", "seq", "loop", "panel")] or shots[-1:]
         for s in g: s[1] += (need - have) / len(g)
     elif vends and have > need + 0.3:   # the voice is shorter: the voice is the clock, shots shrink (never below their floor)
-        floor = lambda s: 1.3 if s[0] == "clip" else (1.0 if s[0] == "title" else 2.2)
+        floor = lambda s: s[2].get("keep") or (1.3 if s[0] == "clip" else (1.0 if s[0] == "title" else 2.2))
         for _ in range(4):
             have = sum(s[1] for s in shots); flex = [s for s in shots if s[1] > floor(s) + 1e-3]
             if have <= need + 0.05 or not flex: break
@@ -213,7 +220,7 @@ for kind, dur, p, t0, bname in seq:
             ln = dict(ln)
             if "t_off" in ln: ln["t"] = round(t0 + ln.pop("t_off"), 3)
             lines.append(ln)
-        layers.append({"kind": "title", "t0": t0, "t1": round(t1, 3), "lines": lines, "bg": p.get("bg"), "y": p.get("y", 540), "maxw": p.get("maxw"), "align": p.get("align"),
+        layers.append({"kind": "title", "t0": t0, "t1": round(t1, 3), "lines": lines, "bg": p.get("bg"), "bgDrift": p.get("bgDrift", False), "y": p.get("y", 540), "maxw": p.get("maxw"), "align": p.get("align"),
                        "stagger": p.get("stagger", 0.2), "enter": {"dur": 0.0}, "exit": {"dur": 0.35 if not p.get("bg") else 0.5}})
     elif kind == "brand":
         L = {"kind": "brand", "t0": t0, "t1": round(t1, 3), "y": 470 if p.get("credits") else 520, "lines": p.get("lines", []) if not p.get("end") else [], "enter": {"dur": 0.0}, "exit": {"dur": 0.35}}
@@ -224,7 +231,7 @@ for kind, dur, p, t0, bname in seq:
         layers.append({"kind": "title", "t0": t0, "t1": round(t1, 3), "y": 470, "lines": [{"text": "1,262 messages", "size": 120, "t": t0}, {"html": "<span style='color:#7DF3E1'>23 replies</span>", "size": 120, "t": round(t0 + 1.4, 3)}], "enter": {"dur": 0}, "exit": {"dur": 0.3}})
         layers.append({"kind": "title", "t0": round(t0 + 0.3, 3), "t1": round(t1, 3), "y": 90, "lines": [{"text": "Fixed schedule · SIMULATED run, seed 42", "size": 32, "cls": "soft"}], "enter": {"dur": 0}, "exit": {"dur": 0.3}})
     elif kind == "panel":
-        layers.append({"kind": "panel", "t0": t0, "t1": round(t1, 3), "w": 1300, "y": 120, "heading": p["heading"], "items": p["items"], "fine": p["fine"], "enter": {"dur": 0.6}, "exit": {"dur": 0.3}})
+        layers.append({"kind": "panel", "t0": t0, "t1": round(t1, 3), "w": 1520, "y": 120, "heading": p["heading"], "items": p["items"], "fine": p["fine"], "enter": {"dur": 0.6}, "exit": {"dur": 0.3}})
     elif kind == "loop":
         a = vstart["p07"]; b = vstart["p08"]; c = vstart["p09"]   # checks light as each question is asked (offsets scale with pace)
         tx = V["p08"]["text"]
@@ -232,23 +239,22 @@ for kind, dur, p, t0, bname in seq:
         layers.append(loop_layer(t0, t1, built=t0 + 0.3, voice_t={"checks": checks, "rest": c + 0.6, "pulse": c + 4.2}))
 
 # one nebula per contiguous span (cuts to footage hide the joins); rate keeps inside the clip
-NEB_LEN = {"comp/NEB1.mov": 19.8, "comp/NEB2.mov": 30.4}
+NEB_LEN = {"comp/NEB1.mov": 16.4, "comp/NEB2.mov": 30.4}
 merged = []
 for t0, t1, src, frm in sorted(neb_spans):
-    if merged and abs(merged[-1][1] - t0) < 1e-3: merged[-1][1] = t1           # adjacent platform shots share one background
+    if merged and abs(merged[-1][1] - t0) < 2e-2: merged[-1][1] = t1           # adjacent platform shots share one background
     else: merged.append([t0, t1, src, frm])
 for t0, t1, src, frm in merged:
     n, dur = NEB_LEN[src], t1 - t0
     if dur <= n - 0.3: rate, frm = 1.0, min(frm, n - dur - 0.2)               # real-time playback: every frame a new frame, no stutter
     else: rate, frm = (n - 0.3) / dur, 0.0
-    layers.insert(0, {"kind": "nebula", "t0": t0, "t1": round(t1, 3), "src": src, "from": round(frm, 3), "rate": round(rate, 4), "dim": 0.45, "zoom": [1.04, 1.04 + 0.004 * dur], "enter": {"dur": 0}, "exit": {"dur": 0}})
+    layers.insert(0, {"kind": "nebula", "t0": max(0, t0 - 0.05), "t1": round(t1 + 0.05, 3), "src": src, "from": round(frm, 3), "rate": round(rate, 4), "dim": 0.45, "zoom": [1.04, 1.04 + 0.004 * dur], "enter": {"dur": 0}, "exit": {"dur": 0}})
 # a glass window that cuts to another glass window crossfades (the old one stays under the new one), no dip to the background
 gl = [L for L in layers if L.get("kind") == "glass"]
 for a, b in zip(gl, gl[1:]):
     if abs(a["t1"] - b["t0"]) < 1e-3:
         a["t1"] = round(a["t1"] + 0.35, 3); a["exit"] = {"type": "fade", "dur": 0.0}; b["enter"] = {"type": "fade", "dur": 0.35}
-for t0, t1, lit in mini_lit:
-    layers.append(loop_layer(t0 + 0.2, t1, built=True, mini=True, lit=[{"t0": t0 + 0.6, "t1": t1, "nodes": lit}]))
+# (the corner mini-loop was removed: too small to read)
 
 film = {"duration": round(END, 3), "ccStyle": "v4", "cues": "audio/product4_cues.json", "bg": "#02040a", "captures": CAPS, "layers": layers}
 import os as _os
@@ -283,7 +289,7 @@ grow = MUSIC_AT + total - old_end
 seq[ib] = (seq[ib][0], round(seq[ib][1] + grow, 3), seq[ib][2], seq[ib][3], seq[ib][4])
 for L in layers:
     if L.get("kind") == "brand" and abs(L["t0"] - seq[ib][3]) < 1e-3: L["t1"] = round(L["t1"] + grow, 3)
-    elif L.get("kind") == "nebula" and abs(L["t1"] - old_end) < 1e-2: L["t1"] = round(L["t1"] + grow, 3)
+    elif L.get("kind") == "nebula" and L["t1"] >= old_end - 1e-2: L["t1"] = round(L["t1"] + grow, 3)
     elif L["t0"] >= seq[ib][3] + 1e-3 and L.get("kind") != "nebula": L["t0"] = round(L["t0"] + grow, 3); L["t1"] = round(L["t1"] + grow, 3)
 END = round(END + grow, 3); film["duration"] = END
 open("films/product4.js", "w").write("/* generated by tools/build_product4.py */\nwindow.FILM = " + json.dumps(film, ensure_ascii=False, indent=1) + ";\n")

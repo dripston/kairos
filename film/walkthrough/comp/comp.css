@@ -132,7 +132,7 @@ body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: anti
 .glasshead { position: absolute; left: 0; right: 0; top: 0; display: flex; align-items: center; gap: 9px; padding: 0 22px; color: rgba(255,255,255,.82); font: 600 19px/1 "Inter", -apple-system, sans-serif; letter-spacing: .01em; }
 .glasshead i { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,.35); display: block; }
 .glasshead span { margin-left: 12px; }
-.glasspane { position: absolute; border-radius: 14px; overflow: hidden; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.25), 0 10px 30px rgba(0,0,0,.25); }
+.glasspane { position: absolute; border-radius: 14px; overflow: hidden; background: #eef1f5; box-shadow: 0 0 0 1px rgba(0,0,0,.25), 0 10px 30px rgba(0,0,0,.25); }
 .glassmini { position: absolute; border-radius: 22px; background: rgba(10,16,30,.55); border: 1px solid rgba(255,255,255,.22);
   -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); box-shadow: 0 24px 60px -18px rgba(0,0,0,.7); }
 .phonebody { position: absolute; border-radius: 64px; background: #0b0d10; padding: 16px; box-shadow: 0 0 0 2px #2a2e35, 0 0 0 3px #090a0c, 0 60px 120px -20px rgba(0,0,0,.8), inset 0 0 0 1px rgba(255,255,255,.08); transform-origin: 50% 50%; }
@@ -143,11 +143,11 @@ body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: anti
 .fbody { fill: rgba(226,232,240,.88); font: 500 36px "Inter", -apple-system, sans-serif; }
 .ftag { font: 700 24px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .04em; }
 .flab { fill: rgba(226,232,240,.95); font: 600 32px "Inter", -apple-system, sans-serif; }
-.slab { font: 600 30px ui-monospace, SFMono-Regular, Menlo, monospace; }
-.snote { fill: rgba(203,213,225,.85); font: 500 26px "Inter", -apple-system, sans-serif; }
+.slab { font: 600 36px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.snote { fill: rgba(203,213,225,.88); font: 500 30px "Inter", -apple-system, sans-serif; }
 .v4title { position: absolute; left: 50%; transform: translate(-50%,-50%); width: max-content; max-width: 1640px; text-align: center; color: #F8FAFC; font-family: "Inter", -apple-system, sans-serif; }
 .v4line { line-height: 1.18; font-weight: 700; letter-spacing: -.02em; }
-.v4line.legal { font-family: "Times New Roman", Georgia, serif; font-weight: 400; letter-spacing: .01em; line-height: 1.45; color: rgba(255,255,255,.86); text-align: left; }
+.v4line.legal { font-family: "Inter", -apple-system, sans-serif; font-weight: 400; letter-spacing: .01em; line-height: 1.5; color: rgba(214,220,230,.78); text-align: center; }
 .v4line.kicker { font-weight: 700; letter-spacing: .32em; text-transform: uppercase; color: #7DF3E1; }
 .v4line.soft { font-weight: 500; color: rgba(226,232,240,.82); letter-spacing: -.005em; }
 .v4logo { display: inline-flex; align-items: center; gap: 26px; font: 750 150px/1 "Inter", -apple-system, sans-serif; letter-spacing: -.035em; color: #fff; }

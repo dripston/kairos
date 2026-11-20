@@ -20,8 +20,8 @@ window.FILM = {
  "layers": [
   {
    "kind": "nebula",
-   "t0": 160.37,
-   "t1": 204.02,
+   "t0": 160.32,
+   "t1": 202.397,
    "src": "comp/NEB2.mov",
    "from": 0.0,
    "rate": 0.7171,
@@ -39,72 +39,15 @@ window.FILM = {
   },
   {
    "kind": "nebula",
-   "t0": 145.572,
-   "t1": 158.77,
-   "src": "comp/NEB2.mov",
-   "from": 10.0,
-   "rate": 1.0,
-   "dim": 0.45,
-   "zoom": [
-    1.04,
-    1.092792
-   ],
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 90.922,
-   "t1": 145.571,
+   "t0": 1.95,
+   "t1": 158.82,
    "src": "comp/NEB2.mov",
    "from": 0.0,
-   "rate": 0.5508,
+   "rate": 0.192,
    "dim": 0.45,
    "zoom": [
     1.04,
-    1.258596
-   ],
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 76.501,
-   "t1": 90.923,
-   "src": "comp/NEB2.mov",
-   "from": 6.8,
-   "rate": 1.0,
-   "dim": 0.45,
-   "zoom": [
-    1.04,
-    1.097688
-   ],
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 2.0,
-   "t1": 76.5,
-   "src": "comp/NEB2.mov",
-   "from": 0.0,
-   "rate": 0.404,
-   "dim": 0.45,
-   "zoom": [
-    1.04,
-    1.338
+    1.6670800000000001
    ],
    "enter": {
     "dur": 0
@@ -159,10 +102,10 @@ window.FILM = {
    "nodes": [
     {
      "id": "rec",
-     "x": 60,
-     "y": 330,
-     "w": 330,
-     "h": 150,
+     "x": 64,
+     "y": 363,
+     "w": 321,
+     "h": 146,
      "title": "Record",
      "body": [
       "one per borrower"
@@ -173,10 +116,10 @@ window.FILM = {
     },
     {
      "id": "churn",
-     "x": 470,
-     "y": 330,
-     "w": 330,
-     "h": 150,
+     "x": 463,
+     "y": 363,
+     "w": 321,
+     "h": 146,
      "title": "Churn",
      "body": [
       "sorts daily"
@@ -187,10 +130,10 @@ window.FILM = {
     },
     {
      "id": "learn",
-     "x": 880,
-     "y": 330,
-     "w": 330,
-     "h": 150,
+     "x": 862,
+     "y": 363,
+     "w": 321,
+     "h": 146,
      "title": "Learner",
      "body": [
       "channel × hour"
@@ -201,10 +144,10 @@ window.FILM = {
     },
     {
      "id": "ald",
-     "x": 1290,
-     "y": 330,
-     "w": 330,
-     "h": 150,
+     "x": 1261,
+     "y": 363,
+     "w": 321,
+     "h": 146,
      "title": "Aladdin",
      "body": [
       "the gate"
@@ -215,10 +158,10 @@ window.FILM = {
     },
     {
      "id": "exec",
-     "x": 1290,
-     "y": 620,
-     "w": 330,
-     "h": 130,
+     "x": 1261,
+     "y": 645,
+     "w": 321,
+     "h": 126,
      "title": "Executor",
      "body": [],
      "tone": "violet",
@@ -227,10 +170,10 @@ window.FILM = {
     },
     {
      "id": "chan",
-     "x": 880,
-     "y": 620,
-     "w": 330,
-     "h": 130,
+     "x": 862,
+     "y": 645,
+     "w": 321,
+     "h": 126,
      "title": "Channels",
      "body": [],
      "tone": "violet",
@@ -239,10 +182,10 @@ window.FILM = {
     },
     {
      "id": "hook",
-     "x": 470,
-     "y": 620,
-     "w": 330,
-     "h": 130,
+     "x": 463,
+     "y": 645,
+     "w": 321,
+     "h": 126,
      "title": "Webhooks",
      "body": [],
      "tone": "violet",
@@ -251,10 +194,10 @@ window.FILM = {
     },
     {
      "id": "out",
-     "x": 60,
-     "y": 620,
-     "w": 330,
-     "h": 130,
+     "x": 64,
+     "y": 645,
+     "w": 321,
+     "h": 126,
      "title": "Outcomes",
      "body": [],
      "tone": "blue",
@@ -263,10 +206,10 @@ window.FILM = {
     },
     {
      "id": "people",
-     "x": 1290,
-     "y": 80,
-     "w": 330,
-     "h": 130,
+     "x": 1261,
+     "y": 120,
+     "w": 321,
+     "h": 126,
      "title": "People",
      "body": [],
      "tone": "green",
@@ -275,10 +218,10 @@ window.FILM = {
     },
     {
      "id": "intent",
-     "x": 1660,
-     "y": 330,
-     "w": 230,
-     "h": 150,
+     "x": 1601,
+     "y": 363,
+     "w": 255,
+     "h": 146,
      "title": "Intent",
      "body": [
       "rules → model"
@@ -366,7 +309,7 @@ window.FILM = {
      "pts": [
       [
        225,
-       560
+       587
       ]
      ],
      "lx": 0,
@@ -390,12 +333,12 @@ window.FILM = {
      "label": null,
      "pts": [
       [
-       635,
-       790
+       623,
+       810
       ],
       [
-       1775,
-       790
+       1732,
+       810
       ]
      ],
      "lx": 0,
@@ -449,10 +392,10 @@ window.FILM = {
    "nodes": [
     {
      "id": "bor",
-     "x": 70,
-     "y": 120,
-     "w": 420,
-     "h": 150,
+     "x": 64,
+     "y": 228,
+     "w": 423,
+     "h": 151,
      "title": "Borrower",
      "body": [
       "one record"
@@ -463,10 +406,10 @@ window.FILM = {
     },
     {
      "id": "loan",
-     "x": 560,
-     "y": 120,
-     "w": 360,
-     "h": 150,
+     "x": 557,
+     "y": 228,
+     "w": 362,
+     "h": 151,
      "title": "Loans",
      "body": [],
      "tone": "blue",
@@ -476,9 +419,9 @@ window.FILM = {
     {
      "id": "emi",
      "x": 990,
-     "y": 120,
-     "w": 400,
-     "h": 150,
+     "y": 228,
+     "w": 403,
+     "h": 151,
      "title": "EMIs",
      "body": [
       "each one tracked"
@@ -489,10 +432,10 @@ window.FILM = {
     },
     {
      "id": "pay",
-     "x": 1460,
-     "y": 120,
-     "w": 390,
-     "h": 150,
+     "x": 1463,
+     "y": 228,
+     "w": 393,
+     "h": 151,
      "title": "Payments",
      "body": [
       "in paise"
@@ -503,10 +446,10 @@ window.FILM = {
     },
     {
      "id": "con",
-     "x": 560,
-     "y": 420,
-     "w": 520,
-     "h": 170,
+     "x": 557,
+     "y": 530,
+     "w": 524,
+     "h": 171,
      "title": "Consent",
      "body": [
       "per channel, versioned"
@@ -517,10 +460,10 @@ window.FILM = {
     },
     {
      "id": "ev",
-     "x": 1150,
-     "y": 420,
-     "w": 700,
-     "h": 170,
+     "x": 1151,
+     "y": 530,
+     "w": 705,
+     "h": 171,
      "title": "Events",
      "body": [
       "every touch, reply and decision"
@@ -567,8 +510,8 @@ window.FILM = {
      "label": null,
      "pts": [
       [
-       280,
-       505
+       275,
+       616
       ]
      ],
      "lx": 0,
@@ -603,10 +546,10 @@ window.FILM = {
     {
      "t": 22.139,
      "rect": [
-      20,
-      220,
-      320,
-      400
+      13,
+      268,
+      312,
+      252
      ],
      "dur": 1.4
     }
@@ -686,14 +629,14 @@ window.FILM = {
   {
    "kind": "flow",
    "t0": 30.746,
-   "t1": 37.936,
+   "t1": 39.031,
    "nodes": [
     {
      "id": "tick",
-     "x": 70,
-     "y": 330,
-     "w": 330,
-     "h": 150,
+     "x": 64,
+     "y": 390,
+     "w": 329,
+     "h": 149,
      "title": "Daily tick",
      "body": [
       "each morning"
@@ -704,10 +647,10 @@ window.FILM = {
     },
     {
      "id": "c",
-     "x": 520,
-     "y": 90,
-     "w": 400,
-     "h": 120,
+     "x": 512,
+     "y": 151,
+     "w": 398,
+     "h": 119,
      "title": "Cohort",
      "body": [],
      "tone": "teal",
@@ -716,10 +659,10 @@ window.FILM = {
     },
     {
      "id": "r",
-     "x": 520,
-     "y": 260,
-     "w": 400,
-     "h": 120,
+     "x": 512,
+     "y": 321,
+     "w": 398,
+     "h": 119,
      "title": "Risk tier",
      "body": [],
      "tone": "teal",
@@ -728,10 +671,10 @@ window.FILM = {
     },
     {
      "id": "l",
-     "x": 520,
-     "y": 430,
-     "w": 400,
-     "h": 120,
+     "x": 512,
+     "y": 490,
+     "w": 398,
+     "h": 119,
      "title": "Contact layer",
      "body": [],
      "tone": "teal",
@@ -740,10 +683,10 @@ window.FILM = {
     },
     {
      "id": "s",
-     "x": 520,
-     "y": 600,
-     "w": 400,
-     "h": 120,
+     "x": 512,
+     "y": 659,
+     "w": 398,
+     "h": 119,
      "title": "Status",
      "body": [],
      "tone": "teal",
@@ -752,10 +695,10 @@ window.FILM = {
     },
     {
      "id": "rule",
-     "x": 1060,
-     "y": 300,
-     "w": 380,
-     "h": 200,
+     "x": 1050,
+     "y": 360,
+     "w": 378,
+     "h": 199,
      "title": "Written rule",
      "body": [
       "e.g. 61+ days late",
@@ -767,10 +710,10 @@ window.FILM = {
     },
     {
      "id": "mv",
-     "x": 1540,
-     "y": 300,
-     "w": 330,
-     "h": 200,
+     "x": 1527,
+     "y": 360,
+     "w": 329,
+     "h": 199,
      "title": "Move logged",
      "body": [
       "rule + inputs"
@@ -787,12 +730,12 @@ window.FILM = {
      "label": null,
      "pts": [
       [
-       460,
-       405
+       452,
+       465
       ],
       [
-       460,
-       150
+       452,
+       211
       ]
      ],
      "lx": 0,
@@ -806,12 +749,12 @@ window.FILM = {
      "label": null,
      "pts": [
       [
-       460,
-       405
+       452,
+       465
       ],
       [
-       460,
-       320
+       452,
+       380
       ]
      ],
      "lx": 0,
@@ -825,12 +768,12 @@ window.FILM = {
      "label": null,
      "pts": [
       [
-       460,
-       405
+       452,
+       465
       ],
       [
-       460,
-       490
+       452,
+       550
       ]
      ],
      "lx": 0,
@@ -844,12 +787,12 @@ window.FILM = {
      "label": null,
      "pts": [
       [
-       460,
-       405
+       452,
+       465
       ],
       [
-       460,
-       660
+       452,
+       719
       ]
      ],
      "lx": 0,
@@ -863,12 +806,12 @@ window.FILM = {
      "label": null,
      "pts": [
       [
-       990,
-       150
+       980,
+       211
       ],
       [
-       990,
-       400
+       980,
+       460
       ]
      ],
      "lx": 0,
@@ -882,12 +825,12 @@ window.FILM = {
      "label": null,
      "pts": [
       [
-       990,
-       320
+       980,
+       380
       ],
       [
-       990,
-       400
+       980,
+       460
       ]
      ],
      "lx": 0,
@@ -901,12 +844,12 @@ window.FILM = {
      "label": null,
      "pts": [
       [
-       990,
-       490
+       980,
+       550
       ],
       [
-       990,
-       400
+       980,
+       460
       ]
      ],
      "lx": 0,
@@ -920,12 +863,12 @@ window.FILM = {
      "label": null,
      "pts": [
       [
-       990,
-       660
+       980,
+       719
       ],
       [
-       990,
-       400
+       980,
+       460
       ]
      ],
      "lx": 0,
@@ -953,57 +896,34 @@ window.FILM = {
   },
   {
    "kind": "glass",
-   "t0": 37.936,
-   "t1": 44.476,
+   "t0": 39.031,
+   "t1": 50.316,
    "title": "Kairos · Engine Room · churn · SIMULATED",
    "cam": [
     {
-     "t": 38.736,
+     "t": 39.831,
      "rect": [
-      20,
-      190,
-      600,
-      330
+      27,
+      199,
+      582,
+      321
      ],
      "dur": 1.4
+    },
+    {
+     "t": 43.231,
+     "rect": [
+      27,
+      677,
+      582,
+      200
+     ],
+     "dur": 1.2
     }
    ],
    "enter": {
     "type": "rise",
     "dur": 0.6
-   },
-   "exit": {
-    "type": "fade",
-    "dur": 0.0
-   },
-   "cap": "er",
-   "frames": [
-    {
-     "at": 0,
-     "label": "d7"
-    }
-   ]
-  },
-  {
-   "kind": "glass",
-   "t0": 44.126,
-   "t1": 50.316,
-   "title": "Kairos · Engine Room · one move and its rule",
-   "cam": [
-    {
-     "t": 44.126,
-     "rect": [
-      20,
-      670,
-      600,
-      215
-     ],
-     "dur": 0.01
-    }
-   ],
-   "enter": {
-    "type": "fade",
-    "dur": 0.35
    },
    "exit": {
     "type": "fade",
@@ -1051,14 +971,14 @@ window.FILM = {
   {
    "kind": "flow",
    "t0": 51.616,
-   "t1": 61.244,
+   "t1": 62.559,
    "nodes": [
     {
      "id": "touch",
-     "x": 70,
-     "y": 140,
-     "w": 360,
-     "h": 150,
+     "x": 64,
+     "y": 216,
+     "w": 358,
+     "h": 149,
      "title": "A message",
      "body": [
       "SMS · WhatsApp · call"
@@ -1069,10 +989,10 @@ window.FILM = {
     },
     {
      "id": "win",
-     "x": 560,
-     "y": 140,
-     "w": 400,
-     "h": 150,
+     "x": 552,
+     "y": 216,
+     "w": 398,
+     "h": 149,
      "title": "24 h window",
      "body": [
       "then it closes"
@@ -1083,10 +1003,10 @@ window.FILM = {
     },
     {
      "id": "res",
-     "x": 1090,
-     "y": 140,
-     "w": 380,
-     "h": 150,
+     "x": 1079,
+     "y": 216,
+     "w": 378,
+     "h": 149,
      "title": "One result",
      "body": [
       "reply or no reply"
@@ -1097,10 +1017,10 @@ window.FILM = {
     },
     {
      "id": "est",
-     "x": 1090,
-     "y": 450,
-     "w": 780,
-     "h": 190,
+     "x": 1079,
+     "y": 525,
+     "w": 777,
+     "h": 189,
      "title": "Reply chance estimate",
      "body": [
       "per group × channel × hour",
@@ -1112,10 +1032,10 @@ window.FILM = {
     },
     {
      "id": "dec",
-     "x": 70,
-     "y": 450,
-     "w": 520,
-     "h": 190,
+     "x": 64,
+     "y": 525,
+     "w": 518,
+     "h": 189,
      "title": "Tomorrow's choice",
      "body": [
       "best value per ₹"
@@ -1186,57 +1106,34 @@ window.FILM = {
   },
   {
    "kind": "glass",
-   "t0": 61.244,
-   "t1": 69.222,
-   "title": "Kairos · Engine Room · day 7 · SIMULATED",
+   "t0": 62.558,
+   "t1": 76.501,
+   "title": "Kairos · Engine Room · day 7 → end of day 14 · SIMULATED",
    "cam": [
     {
-     "t": 62.244,
+     "t": 63.558,
      "rect": [
-      640,
-      190,
-      620,
-      260
+      647,
+      199,
+      606,
+      225
      ],
      "dur": 1.4
+    },
+    {
+     "t": 67.558,
+     "rect": [
+      647,
+      199,
+      606,
+      243
+     ],
+     "dur": 0.8
     }
    ],
    "enter": {
     "type": "rise",
     "dur": 0.6
-   },
-   "exit": {
-    "type": "fade",
-    "dur": 0.0
-   },
-   "cap": "er",
-   "frames": [
-    {
-     "at": 0,
-     "label": "d7"
-    }
-   ]
-  },
-  {
-   "kind": "glass",
-   "t0": 68.872,
-   "t1": 76.5,
-   "title": "Kairos · Engine Room · end of day 14 · SIMULATED",
-   "cam": [
-    {
-     "t": 68.872,
-     "rect": [
-      640,
-      190,
-      620,
-      260
-     ],
-     "dur": 0.01
-    }
-   ],
-   "enter": {
-    "type": "fade",
-    "dur": 0.35
    },
    "exit": {
     "type": "fade",
@@ -1246,6 +1143,10 @@ window.FILM = {
    "frames": [
     {
      "at": 0,
+     "label": "d7"
+    },
+    {
+     "at": 67.558,
      "label": "d14"
     }
    ]
@@ -1362,15 +1263,15 @@ window.FILM = {
    "kind": "glass",
    "t0": 90.922,
    "t1": 100.044,
-   "title": "Kairos · Live journey · Technical · Aladdin",
+   "title": "Kairos · Live journey · Aladdin",
    "cam": [
     {
      "t": 91.922,
      "rect": [
-      340,
-      300,
-      690,
-      420
+      349,
+      335,
+      658,
+      259
      ],
      "dur": 1.4
     }
@@ -1387,7 +1288,7 @@ window.FILM = {
    "frames": [
     {
      "at": 0,
-     "label": "d1_aladdin_tech"
+     "label": "v02"
     }
    ]
   },
@@ -1530,15 +1431,15 @@ window.FILM = {
    "kind": "glass",
    "t0": 111.474,
    "t1": 116.004,
-   "title": "Kairos · Live journey · Technical · webhooks",
+   "title": "Kairos · Live journey · webhooks",
    "cam": [
     {
      "t": 112.474,
      "rect": [
-      340,
-      300,
-      690,
-      300
+      349,
+      335,
+      658,
+      259
      ],
      "dur": 1.4
     }
@@ -1555,7 +1456,7 @@ window.FILM = {
    "frames": [
     {
      "at": 0,
-     "label": "d1_dup_tech"
+     "label": "v06"
     }
    ]
   },
@@ -1566,8 +1467,8 @@ window.FILM = {
    "nodes": [
     {
      "id": "uc",
-     "x": 60,
-     "y": 120,
+     "x": 64,
+     "y": 205,
      "w": 330,
      "h": 150,
      "title": "Use case",
@@ -1580,8 +1481,8 @@ window.FILM = {
     },
     {
      "id": "reg",
-     "x": 460,
-     "y": 120,
+     "x": 464,
+     "y": 205,
      "w": 330,
      "h": 150,
      "title": "Registry",
@@ -1594,8 +1495,8 @@ window.FILM = {
     },
     {
      "id": "agent",
-     "x": 860,
-     "y": 120,
+     "x": 865,
+     "y": 205,
      "w": 360,
      "h": 150,
      "title": "AI voice agent",
@@ -1608,8 +1509,8 @@ window.FILM = {
     },
     {
      "id": "call",
-     "x": 1290,
-     "y": 120,
+     "x": 1295,
+     "y": 205,
      "w": 330,
      "h": 150,
      "title": "Call",
@@ -1620,9 +1521,9 @@ window.FILM = {
     },
     {
      "id": "hook",
-     "x": 1290,
-     "y": 420,
-     "w": 560,
+     "x": 1295,
+     "y": 505,
+     "w": 561,
      "h": 170,
      "title": "After the call",
      "body": [
@@ -1634,9 +1535,9 @@ window.FILM = {
     },
     {
      "id": "thr",
-     "x": 700,
-     "y": 420,
-     "w": 520,
+     "x": 705,
+     "y": 505,
+     "w": 521,
      "h": 170,
      "title": "Hand-set threshold",
      "body": [
@@ -1648,8 +1549,8 @@ window.FILM = {
     },
     {
      "id": "act",
-     "x": 60,
-     "y": 330,
+     "x": 64,
+     "y": 415,
      "w": 420,
      "h": 120,
      "title": "Act on it",
@@ -1660,8 +1561,8 @@ window.FILM = {
     },
     {
      "id": "hold",
-     "x": 60,
-     "y": 520,
+     "x": 64,
+     "y": 605,
      "w": 420,
      "h": 120,
      "title": "A person reviews",
@@ -1755,18 +1656,7 @@ window.FILM = {
    "t0": 121.535,
    "t1": 127.065,
    "title": "Kairos · Voice bots · calls",
-   "cam": [
-    {
-     "t": 122.735,
-     "rect": [
-      700,
-      715,
-      720,
-      210
-     ],
-     "dur": 1.4
-    }
-   ],
+   "cam": [],
    "enter": {
     "type": "rise",
     "dur": 0.6
@@ -1783,10 +1673,10 @@ window.FILM = {
     }
    ],
    "page": [
-    280,
-    640,
-    1135,
-    305
+    276,
+    633,
+    1136,
+    316
    ]
   },
   {
@@ -1827,10 +1717,10 @@ window.FILM = {
    "nodes": [
     {
      "id": "new",
-     "x": 60,
-     "y": 120,
-     "w": 300,
-     "h": 130,
+     "x": 64,
+     "y": 224,
+     "w": 236,
+     "h": 128,
      "title": "NEW",
      "body": [],
      "tone": "slate",
@@ -1839,10 +1729,10 @@ window.FILM = {
     },
     {
      "id": "otp",
-     "x": 460,
-     "y": 120,
-     "w": 340,
-     "h": 130,
+     "x": 497,
+     "y": 224,
+     "w": 325,
+     "h": 128,
      "title": "OTP_SENT",
      "body": [],
      "tone": "amber",
@@ -1851,10 +1741,10 @@ window.FILM = {
     },
     {
      "id": "ver",
-     "x": 900,
-     "y": 120,
-     "w": 340,
-     "h": 130,
+     "x": 1019,
+     "y": 224,
+     "w": 305,
+     "h": 128,
      "title": "VERIFIED",
      "body": [],
      "tone": "green",
@@ -1863,10 +1753,10 @@ window.FILM = {
     },
     {
      "id": "ans",
-     "x": 1340,
-     "y": 120,
-     "w": 360,
-     "h": 130,
+     "x": 1521,
+     "y": 224,
+     "w": 335,
+     "h": 128,
      "title": "ANSWERED",
      "body": [],
      "tone": "teal",
@@ -1875,10 +1765,10 @@ window.FILM = {
     },
     {
      "id": "hum",
-     "x": 640,
-     "y": 420,
-     "w": 640,
-     "h": 170,
+     "x": 635,
+     "y": 539,
+     "w": 630,
+     "h": 167,
      "title": "HUMAN",
      "body": [
       "fraud · hardship · unsure"
@@ -1889,10 +1779,10 @@ window.FILM = {
     },
     {
      "id": "opt",
-     "x": 1340,
-     "y": 420,
-     "w": 520,
-     "h": 170,
+     "x": 1364,
+     "y": 539,
+     "w": 492,
+     "h": 167,
      "title": "OPTED_OUT",
      "body": [
       "STOP: every channel"
@@ -1909,7 +1799,7 @@ window.FILM = {
      "label": "asks",
      "pts": null,
      "lx": 0,
-     "ly": 0,
+     "ly": -22,
      "dashed": false,
      "t": 129.185
     },
@@ -1919,7 +1809,7 @@ window.FILM = {
      "label": "code ok",
      "pts": null,
      "lx": 0,
-     "ly": 0,
+     "ly": -22,
      "dashed": false,
      "t": 129.505
     },
@@ -1939,8 +1829,8 @@ window.FILM = {
      "label": null,
      "pts": [
       [
-       630,
-       505
+       660,
+       623
       ]
      ],
      "lx": 0,
@@ -1954,8 +1844,8 @@ window.FILM = {
      "label": null,
      "pts": [
       [
-       1070,
-       380
+       1172,
+       499
       ]
      ],
      "lx": 0,
@@ -1968,7 +1858,7 @@ window.FILM = {
      "to": "opt",
      "label": "STOP",
      "pts": null,
-     "lx": 30,
+     "lx": 40,
      "ly": 0,
      "dashed": false,
      "t": 130.465
@@ -1979,12 +1869,12 @@ window.FILM = {
      "label": null,
      "pts": [
       [
-       1520,
-       360
+       1689,
+       460
       ],
       [
-       960,
-       360
+       950,
+       460
       ]
      ],
      "lx": 0,
@@ -2009,10 +1899,10 @@ window.FILM = {
     {
      "t": 138.968,
      "rect": [
-      380,
-      60,
-      560,
-      600
+      394,
+      64,
+      562,
+      1071
      ],
      "dur": 1.4
     }
@@ -2100,10 +1990,10 @@ window.FILM = {
    "nodes": [
     {
      "id": "appr",
-     "x": 60,
-     "y": 110,
-     "w": 520,
-     "h": 170,
+     "x": 64,
+     "y": 198,
+     "w": 524,
+     "h": 171,
      "title": "Approval window",
      "body": [
       "08:00 to 09:30"
@@ -2114,10 +2004,10 @@ window.FILM = {
     },
     {
      "id": "hold",
-     "x": 60,
-     "y": 330,
-     "w": 520,
-     "h": 130,
+     "x": 64,
+     "y": 420,
+     "w": 524,
+     "h": 131,
      "title": "Pause · resume",
      "body": [],
      "tone": "teal",
@@ -2126,10 +2016,10 @@ window.FILM = {
     },
     {
      "id": "take",
-     "x": 60,
-     "y": 510,
-     "w": 520,
-     "h": 130,
+     "x": 64,
+     "y": 601,
+     "w": 524,
+     "h": 131,
      "title": "Take over a chat",
      "body": [],
      "tone": "teal",
@@ -2138,10 +2028,10 @@ window.FILM = {
     },
     {
      "id": "ald",
-     "x": 770,
-     "y": 280,
-     "w": 420,
-     "h": 200,
+     "x": 779,
+     "y": 369,
+     "w": 423,
+     "h": 201,
      "title": "Aladdin",
      "body": [
       "same checks for people"
@@ -2152,10 +2042,10 @@ window.FILM = {
     },
     {
      "id": "audit",
-     "x": 1380,
-     "y": 280,
-     "w": 460,
-     "h": 200,
+     "x": 1393,
+     "y": 369,
+     "w": 463,
+     "h": 201,
      "title": "Audit log",
      "body": [
       "who · what · why"
@@ -2172,12 +2062,12 @@ window.FILM = {
      "label": null,
      "pts": [
       [
-       680,
-       195
+       688,
+       284
       ],
       [
-       680,
-       380
+       688,
+       470
       ]
      ],
      "lx": 0,
@@ -2201,12 +2091,12 @@ window.FILM = {
      "label": null,
      "pts": [
       [
-       680,
-       575
+       688,
+       666
       ],
       [
-       680,
-       380
+       688,
+       470
       ]
      ],
      "lx": 0,
@@ -2251,18 +2141,7 @@ window.FILM = {
    "t0": 160.37,
    "t1": 165.415,
    "title": "Kairos · Control Room · approvals",
-   "cam": [
-    {
-     "t": 160.97,
-     "rect": [
-      380,
-      90,
-      1100,
-      230
-     ],
-     "dur": 1.4
-    }
-   ],
+   "cam": [],
    "enter": {
     "type": "rise",
     "dur": 0.6
@@ -2289,7 +2168,7 @@ window.FILM = {
       1540,
       560,
       380,
-      490
+      500
      ],
      "dur": 1.4
     }
@@ -2515,10 +2394,10 @@ window.FILM = {
    "nodes": [
     {
      "id": "rec",
-     "x": 60,
-     "y": 330,
-     "w": 330,
-     "h": 150,
+     "x": 64,
+     "y": 363,
+     "w": 321,
+     "h": 146,
      "title": "Record",
      "body": [
       "one per borrower"
@@ -2529,10 +2408,10 @@ window.FILM = {
     },
     {
      "id": "churn",
-     "x": 470,
-     "y": 330,
-     "w": 330,
-     "h": 150,
+     "x": 463,
+     "y": 363,
+     "w": 321,
+     "h": 146,
      "title": "Churn",
      "body": [
       "sorts daily"
@@ -2543,10 +2422,10 @@ window.FILM = {
     },
     {
      "id": "learn",
-     "x": 880,
-     "y": 330,
-     "w": 330,
-     "h": 150,
+     "x": 862,
+     "y": 363,
+     "w": 321,
+     "h": 146,
      "title": "Learner",
      "body": [
       "channel × hour"
@@ -2557,10 +2436,10 @@ window.FILM = {
     },
     {
      "id": "ald",
-     "x": 1290,
-     "y": 330,
-     "w": 330,
-     "h": 150,
+     "x": 1261,
+     "y": 363,
+     "w": 321,
+     "h": 146,
      "title": "Aladdin",
      "body": [
       "the gate"
@@ -2571,10 +2450,10 @@ window.FILM = {
     },
     {
      "id": "exec",
-     "x": 1290,
-     "y": 620,
-     "w": 330,
-     "h": 130,
+     "x": 1261,
+     "y": 645,
+     "w": 321,
+     "h": 126,
      "title": "Executor",
      "body": [],
      "tone": "violet",
@@ -2583,10 +2462,10 @@ window.FILM = {
     },
     {
      "id": "chan",
-     "x": 880,
-     "y": 620,
-     "w": 330,
-     "h": 130,
+     "x": 862,
+     "y": 645,
+     "w": 321,
+     "h": 126,
      "title": "Channels",
      "body": [],
      "tone": "violet",
@@ -2595,10 +2474,10 @@ window.FILM = {
     },
     {
      "id": "hook",
-     "x": 470,
-     "y": 620,
-     "w": 330,
-     "h": 130,
+     "x": 463,
+     "y": 645,
+     "w": 321,
+     "h": 126,
      "title": "Webhooks",
      "body": [],
      "tone": "violet",
@@ -2607,10 +2486,10 @@ window.FILM = {
     },
     {
      "id": "out",
-     "x": 60,
-     "y": 620,
-     "w": 330,
-     "h": 130,
+     "x": 64,
+     "y": 645,
+     "w": 321,
+     "h": 126,
      "title": "Outcomes",
      "body": [],
      "tone": "blue",
@@ -2619,10 +2498,10 @@ window.FILM = {
     },
     {
      "id": "people",
-     "x": 1290,
-     "y": 80,
-     "w": 330,
-     "h": 130,
+     "x": 1261,
+     "y": 120,
+     "w": 321,
+     "h": 126,
      "title": "People",
      "body": [],
      "tone": "green",
@@ -2631,10 +2510,10 @@ window.FILM = {
     },
     {
      "id": "intent",
-     "x": 1660,
-     "y": 330,
-     "w": 230,
-     "h": 150,
+     "x": 1601,
+     "y": 363,
+     "w": 255,
+     "h": 146,
      "title": "Intent",
      "body": [
       "rules → model"
@@ -2722,7 +2601,7 @@ window.FILM = {
      "pts": [
       [
        225,
-       560
+       587
       ]
      ],
      "lx": 0,
@@ -2746,12 +2625,12 @@ window.FILM = {
      "label": null,
      "pts": [
       [
-       635,
-       790
+       623,
+       810
       ],
       [
-       1775,
-       790
+       1732,
+       810
       ]
      ],
      "lx": 0,

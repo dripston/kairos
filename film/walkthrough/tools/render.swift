@@ -36,6 +36,15 @@ cfg.mediaTypesRequiringUserActionForPlayback = []
 let web = WKWebView(frame: NSRect(x: 0, y: 0, width: Wd, height: Ht), configuration: cfg)
 window.contentView = web
 window.orderBack(nil)
+// the window is off-screen: tell WebKit not to treat it as occluded, so every seek is painted and committed before the snapshot
+do {
+    let sel = NSSelectorFromString("_setWindowOcclusionDetectionEnabled:")
+    if web.responds(to: sel) {
+        typealias SetBool = @convention(c) (AnyObject, Selector, Bool) -> Void
+        unsafeBitCast(web.method(for: sel), to: SetBool.self)(web, sel, false)
+        print("occlusion detection off")
+    }
+}
 
 final class Nav: NSObject, WKNavigationDelegate {
     var done = false

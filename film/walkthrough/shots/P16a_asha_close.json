@@ -4,5 +4,6 @@
  "dur": 2.4,
  "mode": "none",
  "out": "comp/P16a_asha_close.mov",
- "fps": 30
+ "fps": 60,
+ "speed": 1.2
 }

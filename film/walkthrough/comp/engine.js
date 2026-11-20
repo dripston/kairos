@@ -472,11 +472,12 @@
     if (!L.loaded) return attachVideo(L).then(function () { return updateVideo(L, t); });
     if (Math.abs(want - L.lastSeek) < 1e-4) return null;
     L.lastSeek = want;
+    var shown = presented(L.v);
     return new Promise(function (res) {
       var done = false; function fin() { if (!done) { done = true; res(); } }
       L.v.addEventListener("seeked", fin, { once: true }); setTimeout(fin, 3000);
       L.v.currentTime = want;
-    });
+    }).then(function () { return shown; });
   }
 
   function buildText(L) {
@@ -888,14 +889,26 @@
       var winsOpen = layers.filter(function (W2) { return W2.kind === "win" && t >= W2.t0 && t < W2.t1; });
       winsOpen.forEach(function (W2) { if (!W2.subjectNow && !L.bare) QA.push({ t: t, kind: "callout over unfocused UI", text: L.text || L.html }); });
     });
-    return Promise.all(pending).then(function () { return FRESH; });
+    return Promise.all(pending).then(commitFrame).then(function () { return FRESH; });
+  }
+  function commitFrame() { // let WebKit paint and commit this exact state before the snapshot (bounded so it can never hang)
+    return new Promise(function (res) {
+      var done = false; function fin() { if (!done) { done = true; res(); } }
+      requestAnimationFrame(function () { requestAnimationFrame(fin); }); setTimeout(fin, 120);
+    });
+  }
+  function presented(v) { // resolves when the video's seeked frame has been handed to the compositor (or after 80 ms)
+    return new Promise(function (res) {
+      var done = false; function fin() { if (!done) { done = true; res(); } }
+      if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(fin); setTimeout(fin, 80);
+    });
   }
   window.seek = seek;
   // v4 layer kinds (comp/v4.js) plug in here: KAIROS_EXT[kind] = {build(L, API), update(L, t, API)}
   var EXT = window.KAIROS_EXT || {};
   var API = { W: W, H: H, el: el, sv: sv, esc: esc, E: E, clamp: clamp, lerp: lerp, envelope: envelope, show: show,
               caps: caps, getImg: getImg, frameUrl: frameUrl, resolveTrack: resolveTrack, trackAt: trackAt,
-              attachVideo: attachVideo, detachVideo: detachVideo, cursorAt: cursorAt, stage: function () { return stage; }, base: base,
+              attachVideo: attachVideo, detachVideo: detachVideo, cursorAt: cursorAt, presented: presented, stage: function () { return stage; }, base: base,
               fresh: function () { FRESH++; }, film: function () { return FILM; } };
   function describe(t) { // what is on screen at t (for QA.md): layers, focus subject, UI scale
     var out = [];

@@ -4,5 +4,6 @@
  "dur": 2.0,
  "mode": "none",
  "out": "comp/T11_engineer_face.mov",
- "fps": 30
+ "fps": 60,
+ "speed": 1.2
 }

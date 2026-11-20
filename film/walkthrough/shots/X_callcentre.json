@@ -4,5 +4,6 @@
  "dur": 4.0,
  "mode": "none",
  "out": "comp/X_callcentre.mov",
- "fps": 30
+ "fps": 60,
+ "speed": 1.2
 }

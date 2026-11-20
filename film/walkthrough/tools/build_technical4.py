@@ -15,6 +15,15 @@ def d(vid):
         out = subprocess.run(["afinfo", "audio/v4/%s.wav" % vid], capture_output=True, text=True).stdout
         _dur[vid] = float(out.split("estimated duration:")[1].split()[0])
     return _dur[vid]
+def RC(cap, label, key):
+    lg = json.load(open(CAPS[cap] + "/log.json"))
+    for e in lg["events"]:
+        if e.get("type") == "rect" and e["name"] == "%s_%s" % (label, key): return [round(v) for v in e["rect"]]
+    raise SystemExit("no rect %s_%s in %s" % (label, key, cap))
+def U(*rs): x0 = min(r[0] for r in rs); y0 = min(r[1] for r in rs); return [x0, y0, max(r[0] + r[2] for r in rs) - x0, max(r[1] + r[3] for r in rs) - y0]
+ER_FLOW, ER_RULE = [27, 199, 582, 321], [27, 677, 582, 200]
+ER_LEARN = lambda lab: U([647, 199, 606, 52 if lab == "d7" else 70], [647, 259 if lab == "d7" else 277, 606, 165])
+F03_CARD = [1540, 560, 380, 500]
 def lab(cap, name):
     lg = json.load(open(CAPS[cap] + "/log.json"))
     if any(f["label"] == name for f in lg["frames"]): return name
@@ -38,7 +47,7 @@ DIA = {
            N("learn", 880, 330, 330, 150, "Learner", ["channel × hour"], "teal", "K09"), N("ald", 1290, 330, 330, 150, "Aladdin", ["the gate"], "amber", "K06"),
            N("exec", 1290, 620, 330, 130, "Executor", [], "violet"), N("chan", 880, 620, 330, 130, "Channels", [], "violet"),
            N("hook", 470, 620, 330, 130, "Webhooks", [], "violet"), N("out", 60, 620, 330, 130, "Outcomes", [], "blue"),
-           N("people", 1290, 80, 330, 130, "People", [], "green"), N("intent", 1660, 330, 230, 150, "Intent", ["rules → model"], "violet")],
+           N("people", 1290, 80, 330, 130, "People", [], "green"), N("intent", 1640, 330, 262, 150, "Intent", ["rules → model"], "violet")],
           [E("rec", "churn"), E("churn", "learn"), E("learn", "ald"), E("ald", "exec"), E("exec", "chan"), E("chan", "hook"), E("hook", "out"), E("out", "rec", None, [[225, 560]]),
            E("people", "ald"), E("hook", "intent", None, [[635, 790], [1775, 790]], dashed=True)]),
  "spine": ([N("bor", 70, 120, 420, 150, "Borrower", ["one record"], "blue"), N("loan", 560, 120, 360, 150, "Loans", [], "blue"), N("emi", 990, 120, 400, 150, "EMIs", ["each one tracked"], "blue"),
@@ -54,10 +63,10 @@ DIA = {
             N("res", 1090, 140, 380, 150, "One result", ["reply or no reply"], "green"), N("est", 1090, 450, 780, 190, "Reply chance estimate", ["per group × channel × hour", "with its uncertainty"], "teal", "Bayesian"),
             N("dec", 70, 450, 520, 190, "Tomorrow's choice", ["best value per ₹"], "amber")],
            [E("touch", "win"), E("win", "res"), E("res", "est"), E("est", "dec", "older evidence counts for less", None, 0, -8), E("dec", "touch")]),
- "cm03": ([N("new", 60, 120, 300, 130, "NEW", [], "slate"), N("otp", 460, 120, 340, 130, "OTP_SENT", [], "amber"), N("ver", 900, 120, 340, 130, "VERIFIED", [], "green"), N("ans", 1340, 120, 360, 130, "ANSWERED", [], "teal"),
-           N("hum", 640, 420, 640, 170, "HUMAN", ["fraud · hardship · unsure"], "red"), N("opt", 1340, 420, 520, 170, "OPTED_OUT", ["STOP: every channel"], "red")],
-          [E("new", "otp", "asks"), E("otp", "ver", "code ok"), E("ver", "ans"), E("otp", "hum", None, [[630, 505]], dashed=True), E("ver", "hum", None, [[1070, 380]], dashed=True),
-           E("ans", "opt", "STOP", None, 30, 0), E("ans", "hum", None, [[1520, 360], [960, 360]], dashed=True)]),
+ "cm03": ([N("new", 60, 120, 240, 130, "NEW", [], "slate"), N("otp", 500, 120, 330, 130, "OTP_SENT", [], "amber"), N("ver", 1030, 120, 310, 130, "VERIFIED", [], "green"), N("ans", 1540, 120, 340, 130, "ANSWERED", [], "teal"),
+           N("hum", 640, 440, 640, 170, "HUMAN", ["fraud · hardship · unsure"], "red"), N("opt", 1380, 440, 500, 170, "OPTED_OUT", ["STOP: every channel"], "red")],
+          [E("new", "otp", "asks", None, 0, -22), E("otp", "ver", "code ok", None, 0, -22), E("ver", "ans"), E("otp", "hum", None, [[665, 525]], dashed=True), E("ver", "hum", None, [[1185, 400]], dashed=True),
+           E("ans", "opt", "STOP", None, 40, 0), E("ans", "hum", None, [[1710, 360], [960, 360]], dashed=True)]),
  "voice": ([N("uc", 60, 120, 330, 150, "Use case", ["e.g. EMI reminder"], "slate"), N("reg", 460, 120, 330, 150, "Registry", ["agent · voice · language"], "teal"),
             N("agent", 860, 120, 360, 150, "AI voice agent", ["one per use case"], "violet"), N("call", 1290, 120, 330, 150, "Call", [], "violet"),
             N("hook", 1290, 420, 560, 170, "After the call", ["outcome + confidence"], "slate"), N("thr", 700, 420, 520, 170, "Hand-set threshold", ["Kairos decides"], "amber"),
@@ -68,9 +77,19 @@ DIA = {
            N("audit", 1380, 280, 460, 200, "Audit log", ["who · what · why"], "slate")],
           [E("appr", "ald", None, [[680, 195], [680, 380]]), E("hold", "ald"), E("take", "ald", None, [[680, 575], [680, 380]]), E("ald", "audit")]),
 }
+def fit_diagram(nodes, edges, box=(64, 80, 1856, 850), smax=1.3):
+    xs = [n["x"] for n in nodes] + [n["x"] + n["w"] for n in nodes] + [p[0] for e in edges for p in (e.get("pts") or [])]
+    ys = [n["y"] for n in nodes] + [n["y"] + n["h"] for n in nodes] + [p[1] for e in edges for p in (e.get("pts") or [])]
+    x0, x1, y0, y1 = min(xs), max(xs), min(ys), max(ys)
+    sc = min((box[2] - box[0]) / (x1 - x0), (box[3] - box[1]) / (y1 - y0), smax)
+    ox = box[0] + ((box[2] - box[0]) - (x1 - x0) * sc) / 2 - x0 * sc; oy = box[1] + ((box[3] - box[1]) - (y1 - y0) * sc) / 2 - y0 * sc
+    for n in nodes: n["x"], n["y"], n["w"], n["h"] = round(n["x"] * sc + ox), round(n["y"] * sc + oy), round(n["w"] * sc), round(n["h"] * sc)
+    for e in edges:
+        if e.get("pts"): e["pts"] = [[round(p[0] * sc + ox), round(p[1] * sc + oy)] for p in e["pts"]]
 def flow_layer(key, t0, t1, appear=None, pulse=None, lit=None):
     nodes, edges = DIA[key]
     nodes = [dict(n) for n in nodes]; edges = [dict(e) for e in edges]
+    fit_diagram(nodes, edges)
     for k, n in enumerate(nodes): n["t"] = (appear + k * 0.32) if appear is not None else t0 - 1
     nt = {n["id"]: n["t"] for n in nodes}
     for e in edges: e["t"] = max(nt[e["from"]], nt[e["to"]]) + 0.2
@@ -104,28 +123,27 @@ AT = 1.35
 beat([clip("T01_engineer", 2.0), other("title", 2.0, lines=[{"text": "How Kairos works", "size": 120}, {"text": "an engineering tour, part by part", "size": 44, "cls": "soft", "mt": 16}], neb=("comp/NEB2.mov", 1.0)),
       other("flow", 7.0, key="arch", neb=("comp/NEB2.mov", 3.0))], voice=["c00"], at=2.1, name="00")
 beat([chapter("01", "Data spine", "K03 · one record per borrower"), other("flow", 5.0, key="spine", neb=("comp/NEB1.mov", 2.0)),
-      glass("ov", "v01", 4.5, title="Kairos · Live journey · borrower record", cam=[(1.0, [20, 220, 320, 400], 1.4)], neb=("comp/NEB1.mov", 6.0)),
+      glass("ov", "v01", 4.5, title="Kairos · Live journey · borrower record", cam=[(1.0, RC("ov", "v01", "rec"), 1.4)], neb=("comp/NEB1.mov", 6.0)),
       num([{"text": "₹7,409 = 740,900 paise", "size": 96}, {"text": "every amount is stored in paise · SIMULATED data", "size": 36, "cls": "soft", "mt": 18}], 2.2)],
      voice=["c01"], at=AT, name="01")
 beat([chapter("02", "Churn engine", "K27 · re-sorts every borrower daily"), other("flow", 5.0, key="churn", neb=("comp/NEB2.mov", 3.0)),
-      glass("er", "d7", 4.0, title="Kairos · Engine Room · churn · SIMULATED", cam=[(0.8, [20, 190, 600, 330], 1.4)], neb=("comp/NEB2.mov", 6.0)),
-      glass("er", "d7", 4.0, title="Kairos · Engine Room · one move and its rule", cam=[(0.0, [20, 670, 600, 215], 0.01)], neb=("comp/NEB2.mov", 9.0), enter={"type": "fade", "dur": 0.3})],
+      glass("er", "d7", 8.0, title="Kairos · Engine Room · churn · SIMULATED", cam=[(0.8, ER_FLOW, 1.4), (4.2, ER_RULE, 1.2)], neb=("comp/NEB2.mov", 6.0)),
+      ],
      voice=["c02"], at=AT, name="02")
 beat([chapter("03", "Learning loop", "K09 · a Bayesian learner"), other("flow", 7.0, key="learn", neb=("comp/NEB1.mov", 4.0)),
-      glass("er", "d7", 5.0, title="Kairos · Engine Room · day 7 · SIMULATED", cam=[(1.0, [640, 190, 620, 260], 1.4)], neb=("comp/NEB1.mov", 8.0)),
-      glass("er", "d14", 5.0, title="Kairos · Engine Room · end of day 14 · SIMULATED", cam=[(0.0, [640, 190, 620, 260], 0.01)], neb=("comp/NEB1.mov", 12.0), enter={"type": "fade", "dur": 0.4})],
+      glass("er", "d7", 10.0, title="Kairos · Engine Room · day 7 → end of day 14 · SIMULATED", frames=[(0, "d7"), (5.0, "d14")], cam=[(1.0, ER_LEARN("d7"), 1.4), (5.0, ER_LEARN("d14"), 0.8)], neb=("comp/NEB1.mov", 8.0))],
      voice=["c03"], at=AT, name="03")
 beat([chapter("04", "Aladdin gate", "K06 · reserve, then re-check"), other("seq", 9.0, key="ald", neb=("comp/NEB2.mov", 2.0)),
-      glass("ov", "d1_aladdin_tech", 5.0, title="Kairos · Live journey · Technical · Aladdin", cam=[(1.0, [340, 300, 690, 420], 1.4)], neb=("comp/NEB2.mov", 7.0)),
+      glass("ov", "v02", 5.0, title="Kairos · Live journey · Aladdin", cam=[(1.0, RC("ov", "v02", "detail"), 1.4)], neb=("comp/NEB2.mov", 7.0)),
       num([{"text": "50,000 decisions · 11.1 s", "size": 100}, {"text": "limit breaches: 0 · ledger benchmark (real run)", "size": 38, "cls": "soft", "mt": 18}], 2.6)],
      voice=["c04"], at=AT, name="04")
 beat([chapter("05", "Channels, webhooks and voice", "send · call back · act"), other("seq", 7.0, key="hook", neb=("comp/NEB1.mov", 3.0)),
-      glass("ov", "d1_dup_tech", 4.0, title="Kairos · Live journey · Technical · webhooks", cam=[(1.0, [340, 300, 690, 300], 1.4)], neb=("comp/NEB1.mov", 7.0)),
+      glass("ov", "v06", 4.0, title="Kairos · Live journey · webhooks", cam=[(1.0, RC("ov", "v06", "detail"), 1.4)], neb=("comp/NEB1.mov", 7.0)),   # "delivery receipt again: the copy is ignored"
       other("flow", 5.0, key="voice", neb=("comp/NEB2.mov", 3.0)),
-      glass("dv", "voice", 5.0, title="Kairos · Voice bots · calls", page=[280, 640, 1135, 305], cam=[(1.2, [700, 715, 720, 210], 1.4)], neb=("comp/NEB1.mov", 8.0))],
+      glass("dv", "voice", 5.0, title="Kairos · Voice bots · calls", page=[276, 633, 1136, 316], neb=("comp/NEB1.mov", 8.0))],
      voice=["c05"], at=AT, name="05")
 beat([chapter("06", "Inbound WhatsApp", "CM-03 · a small state machine"), other("flow", 7.0, key="cm03", neb=("comp/NEB2.mov", 2.0)),
-      glass("in", "fake_tech", 5.0, title="Kairos · Inbound WhatsApp · Technical", cam=[(1.0, [380, 60, 560, 600], 1.4)], neb=("comp/NEB2.mov", 6.0)),
+      glass("in", "fake_tech", 5.0, title="Kairos · Inbound WhatsApp · Technical", cam=[(1.0, RC("in", "fake_tech", "trace"), 1.4)], neb=("comp/NEB2.mov", 6.0)),
       other("panel", 5.0, heading="1,000 seeded test conversations", items=[
           {"html": "<em>73.2%</em> resolved without a person"}, {"html": "<em>127 / 127</em> fakes caught · 0 false flags"},
           {"html": "<em>0</em> disclosures before the code"}, {"html": "first reply p95 <em>1.6 ms</em> · engine time"}],
@@ -135,8 +153,8 @@ if os.environ.get("REAL_WA"):
     beat([("glass", 12.0, dict(video=os.environ["REAL_WA"], vw=1920, vh=1080, title="Real WhatsApp · Meta Cloud API test number", neb=("comp/NEB2.mov", 1.0)))], name="realwa")
 beat([chapter("07", "Human in the loop", "people decide; Aladdin still checks"), other("flow", 4.0, key="hitl", neb=("comp/NEB2.mov", 4.0)),
       clip("P16a_asha_close", 1.6),
-      ("glass", 4.4, dict(video=F02, frm=36.0, rate=2.0, vw=1920, vh=1080, title="Kairos · Control Room · approvals", cam=[(0.6, [380, 90, 1100, 230], 1.4)], neb=("comp/NEB2.mov", 9.0))),
-      ("glass", 5.6, dict(video=F03, frm=50.0, rate=1.0, vw=1920, vh=1080, title="Kairos · Smart CRM · manual send at 20:00", cam=[(0.6, [1540, 560, 380, 490], 1.4)], neb=("comp/NEB2.mov", 14.0)))],
+      ("glass", 4.4, dict(video=F02, frm=36.0, rate=2.0, vw=1920, vh=1080, title="Kairos · Control Room · approvals", neb=("comp/NEB2.mov", 9.0))),
+      ("glass", 5.6, dict(video=F03, frm=50.0, rate=1.0, vw=1920, vh=1080, title="Kairos · Smart CRM · manual send at 20:00", cam=[(0.6, F03_CARD, 1.4)], neb=("comp/NEB2.mov", 14.0)))],
      voice=["c08"], at=AT, name="07")
 beat([chapter("08", "Determinism and testing", "same seed, same decisions"), other("terminal", 20.0, neb=("comp/NEB1.mov", 2.0))],
      voice=["c09"], at=AT, name="08")
@@ -178,6 +196,7 @@ for kind, dur, p, t0, bname in seq:
         L = {"kind": "glass", "t0": t0, "t1": t1, "title": p.get("title"), "cam": [{"t": round(t0 + a, 3), "rect": r, "dur": dd} for a, r, dd in p.get("cam", [])],
              "enter": p.get("enter", {"type": "rise", "dur": 0.6}), "exit": {"type": "fade", "dur": 0.25}}
         if p.get("video"): L.update({"video": p["video"], "from": p.get("frm", 0.0), "rate": p.get("rate", 1.0), "vw": p.get("vw", 1920), "vh": p.get("vh", 1080)})
+        elif p.get("frames"): L.update({"cap": p["cap"], "frames": [{"at": 0 if i == 0 else round(t0 + a, 3), "label": lab(p["cap"], l)} for i, (a, l) in enumerate(p["frames"])]})
         else: L.update({"cap": p["cap"], "frames": [{"at": 0, "label": lab(p["cap"], p["label"])}]})
         if p.get("page"): L["page"] = p["page"]
         layers.append(L)
@@ -215,16 +234,16 @@ for kind, dur, p, t0, bname in seq:
                             (7.8, 1.9, "Ledger benchmark", "<em>50,000</em> atomic decisions in 11.1 s<br>cap breaches: <em>0</em>"), (10.9, 1.6, "Full test suite", "<em>3030 passed</em> in 74 s"),
                             (13.5, 2.3, "Off-policy evaluation · CN10 fixed schedule · SIMULATED", "From logs: <em>18.2</em>. Truth: <em>18.4</em>.")]:
             layers.append({"kind": "callout", "t0": a + o * ks, "t1": a + o * ks + dd * ks, "dark": True, "x": 260, "y": 560, "maxw": 1500, "kicker": k, "mono": True, "html": h, "stagger": 0, "enterDur": 0.2})
-NEB_LEN = {"comp/NEB1.mov": 19.8, "comp/NEB2.mov": 30.4}
+NEB_LEN = {"comp/NEB1.mov": 16.4, "comp/NEB2.mov": 30.4}
 merged = []
 for t0, t1, src, frm in sorted(neb_spans):
-    if merged and abs(merged[-1][1] - t0) < 1e-3: merged[-1][1] = t1           # adjacent platform shots share one background
+    if merged and abs(merged[-1][1] - t0) < 2e-2: merged[-1][1] = t1           # adjacent platform shots share one background
     else: merged.append([t0, t1, src, frm])
 for t0, t1, src, frm in merged:
     n, dur = NEB_LEN[src], t1 - t0
     if dur <= n - 0.3: rate, frm = 1.0, min(frm, n - dur - 0.2)               # real-time playback: every frame a new frame, no stutter
     else: rate, frm = (n - 0.3) / dur, 0.0
-    layers.insert(0, {"kind": "nebula", "t0": t0, "t1": round(t1, 3), "src": src, "from": round(frm, 3), "rate": round(rate, 4), "dim": 0.45, "zoom": [1.04, 1.04 + 0.004 * dur], "enter": {"dur": 0}, "exit": {"dur": 0}})
+    layers.insert(0, {"kind": "nebula", "t0": max(0, t0 - 0.05), "t1": round(t1 + 0.05, 3), "src": src, "from": round(frm, 3), "rate": round(rate, 4), "dim": 0.45, "zoom": [1.04, 1.04 + 0.004 * dur], "enter": {"dur": 0}, "exit": {"dur": 0}})
 # a glass window that cuts to another glass window crossfades (the old one stays under the new one), no dip to the background
 gl = [L for L in layers if L.get("kind") == "glass"]
 for a, b in zip(gl, gl[1:]):
