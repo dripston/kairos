@@ -556,7 +556,7 @@ class World:
         return trace
 
     def _understand(self, u_ent, otp_check, fraud, stop, human_owned, st_before, replies) -> dict:
-        prism_note = "off: no Sarvam key" if not self.flags["prism"] else "not needed"
+        prism_note = "off in this demo" if not self.flags["prism"] else "not needed"
         if u_ent is None:
             if human_owned:
                 why = "Not needed: a person owns this chat, so the bot does not interpret it"
@@ -578,7 +578,7 @@ class World:
             decided = "rules"
             ladder = [{"tier": "Rules", "status": "hit", "note": INTENT_WORDS.get(intent, intent)},
                       {"tier": "Small model", "status": "skip", "note": "not needed"},
-                      {"tier": "Prism", "status": "skip", "note": prism_note},
+                      {"tier": "Decision model", "status": "skip", "note": prism_note},
                       {"tier": "Person", "status": "skip", "note": "not needed"}]
             detail = {"source": "CM-03 servicing + K09 safety rules"}
         else:
@@ -596,9 +596,9 @@ class World:
             else:
                 ladder.append({"tier": "Small model", "status": "skip", "note": "not needed"})
             if "prism" in esc or tier == "prism":
-                ladder.append({"tier": "Prism", "status": "hit" if tier == "prism" else "unsure", "note": "sarvam-prism"})
+                ladder.append({"tier": "Decision model", "status": "hit" if tier == "prism" else "unsure", "note": "decision model"})
             else:
-                ladder.append({"tier": "Prism", "status": "skip", "note": prism_note if tier in ("abstain",) or not self.flags["prism"] else "not needed"})
+                ladder.append({"tier": "Decision model", "status": "skip", "note": prism_note if tier in ("abstain",) or not self.flags["prism"] else "not needed"})
             ladder.append({"tier": "Person", "status": "hit" if tier == "abstain" else "skip",
                            "note": "nobody is sure: ask again, then a person" if tier == "abstain" else "not needed"})
             detail = {"source": f"K09 intent stack ({tier})", "confidence": u.k09.confidence, "stack_label": st.get("label"),

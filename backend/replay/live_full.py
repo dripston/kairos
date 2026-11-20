@@ -943,7 +943,7 @@ class FullStackRun(k09.StackRun):
         meaningful = bool(p.get("meaningful_reply"))
         review = action in ("REVIEW", "SUPERVISOR_HOLD_AND_REVIEW") or (p.get("accepted") is False and disp != "NO_RESPONSE")
         self.ev("voice", "call_ended", ended, bid,
-                f"Sarvam call-end: {disp.replace('_', ' ').lower()} @ {conf:.2f} → "
+                f"Call-end: {disp.replace('_', ' ').lower()} @ {conf:.2f} → "
                 f"{(action or 'none').replace('_', ' ').lower()}"
                 + (" (unsure: a person reviews it, nothing automatic)" if review else "") + ".",
                 links=[("voice", "aladdin"), ("voice", "outcomes")], disposition=disp, confidence=conf, effective=eff,
@@ -982,7 +982,7 @@ class FullStackRun(k09.StackRun):
             again = self.voice.ingest(dict(payload))
             if again.get("status") == "DUPLICATE":
                 self.ev("voice", "duplicate_ignored", ended + timedelta(minutes=3), bid,
-                        f"Sarvam sent the same call-end webhook for {nm} again: ignored, nothing changed.",
+                        f"The AI voice agent sent the same call-end webhook for {nm} again: ignored, nothing changed.",
                         call_id=payload["attempt_id"])
 
     # ---------- CM-03 ----------
@@ -1419,7 +1419,7 @@ class FullCampaign(L.LiveCampaign):
                 rep = r.report()
                 self.summary = {"report": L._report_view(rep), "k27": rep.get("k27"),
                                 "cm03": r.cm03.metrics(), "extra_payments": r.extra_paid,
-                                "sarvam_model_tiers": "skipped: no Sarvam model tier is configured in this branch"}
+                                "sarvam_model_tiers": "skipped: no AI model tier is configured in this branch"}
                 self.learning = r.snapshot if hasattr(r, "snapshot") else None
                 self.status = "finished"
         except L._Stopped:

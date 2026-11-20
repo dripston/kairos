@@ -75,7 +75,7 @@ starts from the same place.
 | Set up | Cohorts | Group borrowers (risk, region, DPD, EMI, bounces…) |
 | Set up | Campaigns | Plug campaigns into cohorts; set channels, budget and caps |
 | Prove | Learning & Proof | Show that the learning policy beats fixed cadence |
-| Demo | Live journey, Voice bots | Story-mode replay of one borrower; the Sarvam voice bots |
+| Demo | Live journey, Voice bots | Story-mode replay of one borrower; the AI voice agents |
 | Show | Live collections | The full-screen live view served by the backend |
 | CM-03 | WhatsApp console | The inbound WhatsApp servicing agent (appears when the backend is live) |
 
@@ -206,7 +206,7 @@ play the borrower:
 | 3–4 | Smart CRM → a borrower → ✨ Explain | "Every decision has a reason and a rule, and AI explains it in plain words. It never decides." |
 | 4–5 | Learning & Proof | "On unseen seeds it gets 48–61% more replies per rupee than fixed cadence, and it learns per cohort, channel and region." |
 | 5–6 | WhatsApp console | "Inbound servicing: OTP first, Hinglish, promises to pay, fakes caught." |
-| 6–7 | Budget & channels → System health → Test models live | "Live backend, three Sarvam-hosted models answering now. Everything is labelled SIMULATED." |
+| 6–7 | Budget & channels → System health → Test models live | "Live backend, three hosted AI models (decision, conversation, explanation) answering now. Everything is labelled SIMULATED." |
 
 ## 9. Useful URL options
 

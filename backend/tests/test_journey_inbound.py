@@ -70,7 +70,7 @@ def test_pay_link_and_devanagari_question_after_verification(w):
     assert tr["understand"]["intent"] == "BALANCE" and tr["understand"]["decided_by"] == "small_model"
     assert "BALANCE" in _keys(tr)
     rungs = {r["tier"]: r["status"] for r in tr["understand"]["ladder"]}
-    assert rungs["Rules"] == "unsure" and rungs["Small model"] == "hit" and rungs["Prism"] == "skip"
+    assert rungs["Rules"] == "unsure" and rungs["Small model"] == "hit" and rungs["Decision model"] == "skip"
 
 
 # ---------------------------------------------------------------- payment claims

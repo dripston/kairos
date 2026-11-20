@@ -301,7 +301,7 @@ export default function CrmLive({ b, res }) {
 
           <Card className="p-5">
             <div className="mb-2 flex items-center gap-1.5 text-[13.5px] font-semibold"><Bot size={14} /> Voice bot</div>
-            <div className="mb-2 text-[12px] text-muted">Which Sarvam bot, voice and language Kairos would use now. Selection only — the K01 Gate still decides whether a call may happen.</div>
+            <div className="mb-2 text-[12px] text-muted">Which AI voice agent, voice and language Kairos would use now. Selection only — the K01 Gate still decides whether a call may happen.</div>
             <Button icon={AudioLines} onClick={pickBot} disabled={bot?.loading}>Pick bot for borrower</Button>
             {bot?.error && <div className="mt-2 text-[12px] text-bad">{bot.error}</div>}
             {bot?.data && <BotResult r={bot.data} />}

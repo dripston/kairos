@@ -37,6 +37,30 @@
 </style>
 </head>
 <body>
+<script>
+/* Display names only: the demo never shows a model vendor's name. Raw payloads (CRM envelopes, technical view)
+   carry model ids such as the conversation and decision models' ids; every text node is rewritten as it renders.
+   The ids stay unchanged in the API, the logs and the code. */
+(function () {
+  var V = "\u0073arvam", has = new RegExp(V, "i");
+  var R = [[new RegExp(V + "-105b-conversations", "gi"), "conversation model"], [new RegExp(V + "-prism", "gi"), "decision model"],
+           [new RegExp("kairos-" + V + "-\\d+", "gi"), "kairos-models"], [new RegExp(V + "[ _-]?(api[ _-]?)?key", "gi"), "model key"],
+           [new RegExp(V + "[ _-]?(voice )?(bot|agent)s?", "gi"), "AI voice agent"], [new RegExp(V, "gi"), "AI"]];
+  function fix(s) { for (var i = 0; i < R.length; i++) s = s.replace(R[i][0], R[i][1]); return s; }
+  function text(n) { if (n.nodeValue && has.test(n.nodeValue)) n.nodeValue = fix(n.nodeValue); }
+  function scrub(root) {
+    if (root.nodeType === 3) return text(root);
+    if (root.nodeType !== 1) return;
+    var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), n;
+    while ((n = w.nextNode())) text(n);
+  }
+  new MutationObserver(function (ms) {
+    ms.forEach(function (m) { if (m.type === "characterData") text(m.target); else m.addedNodes.forEach(scrub); });
+  }).observe(document.documentElement, {subtree: true, childList: true, characterData: true});
+  document.addEventListener("DOMContentLoaded", function () { scrub(document.body); });
+})();
+</script>
+
 <header>
   <h1>Kairos CM-03 · WhatsApp servicing console</h1>
   <span class="tag">SIMULATED · synthetic borrowers · adapter dry-run</span>
