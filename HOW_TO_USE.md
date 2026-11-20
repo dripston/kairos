@@ -27,7 +27,10 @@ mode** is switched on for one allow-listed phone (section 7).
 | **The app** | https://dripston.github.io/kairos/ |
 | Backend API (interactive docs) | https://kairos-backend-5ifc.onrender.com/docs |
 | Backend health | https://kairos-backend-5ifc.onrender.com/health/details |
+| Journey 1 · Outbound collections (presenter page) | https://kairos-backend-5ifc.onrender.com/demo/journey/outbound |
+| Journey 2 · Inbound WhatsApp (presenter page) | https://kairos-backend-5ifc.onrender.com/demo/journey/inbound |
 | Live collections view | https://kairos-backend-5ifc.onrender.com/demo/live |
+| Engine room (churn engine + learning loop) | https://kairos-backend-5ifc.onrender.com/demo/engines |
 | WhatsApp servicing console (CM-03) | https://kairos-backend-5ifc.onrender.com/cm03/console |
 
 The app opens on the **Control Room**. If the header says **API live · policy v1.1.1**, the app is
@@ -77,7 +80,10 @@ starts from the same place.
 | Set up | Campaigns | Plug campaigns into cohorts; set channels, budget and caps |
 | Prove | Learning & Proof | Show that the learning policy beats fixed cadence |
 | Demo | Live journey, Voice bots | Story-mode replay of one borrower; the AI voice agents |
-| Show | Live collections | The full-screen live view served by the backend |
+| Show | Journey 1 · Outbound | Presenter page: outbound collections running live; pause, approve or reject, override, hold, STOP |
+| Show | Journey 2 · WhatsApp | Presenter page: inbound WhatsApp servicing with the borrower's phone, OTP, fraud checks, hand-off |
+| Show | Live collections | Kairos vs the fixed schedule, side by side |
+| Show | Engine room | The churn engine and the learning loop, live |
 | CM-03 | WhatsApp console | The inbound WhatsApp servicing agent (appears when the backend is live) |
 
 **Acting as** (bottom left): Operator, Supervisor or Policy owner. The role decides what you may do;

@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   Gauge, Megaphone, Database, TrendingUp, Layers, Search, FlaskConical, ChevronRight, RotateCcw,
-  CircleCheck, TriangleAlert, Info, CircleX, X, Pause, Play, Sun, Moon, AudioLines, MessagesSquare, ExternalLink, Route,
+  CircleCheck, TriangleAlert, Info, CircleX, X, Pause, Play, Sun, Moon, AudioLines, MessagesSquare, ExternalLink, Route, Send, MessageCircle, Cpu,
 } from 'lucide-react'
 import { useKairos, fmtClock } from '../lib/store'
 import { CAMPAIGN_DAYS, CHANNEL_META, HERO_ID } from '../lib/mock'
@@ -9,7 +9,8 @@ import { Button, Chip, Dot, cx, Segmented } from './ui'
 import { ApiStatusPill } from './live'
 import { toggleTheme, useTheme } from '../lib/theme'
 import { useApi, useApiStatus, useHealthPoll } from '../api/hooks'
-import { CM03_CONSOLE_URL, LIVE_COLLECTIONS_URL, getRoutes } from '../api/kairos'
+import { CM03_CONSOLE_URL, ENGINE_ROOM_URL, JOURNEY_INBOUND_URL, JOURNEY_OUTBOUND_URL, LIVE_COLLECTIONS_URL, getRoutes } from '../api/kairos'
+import { STATIC_DEMO } from '../api/config'
 import { ROLE_ACTOR, ROLE_LABEL } from '../api/config'
 
 // Run the day → set it up → prove it works. Demo-only pages sit at the bottom.
@@ -29,6 +30,14 @@ const NAV = [
     { to: '/journey', label: 'Live journey', icon: Route },
     { to: '/voice', label: 'Voice bots', icon: AudioLines },
   ] },
+]
+
+// Presenter pages served by the backend (open in a new tab)
+const SHOW_LINKS = [
+  { href: JOURNEY_OUTBOUND_URL, label: 'Journey 1 · Outbound', icon: Send, title: 'Outbound collections, live: pause, approve or reject, override, hold, STOP' },
+  { href: JOURNEY_INBOUND_URL, label: 'Journey 2 · WhatsApp', icon: MessageCircle, title: 'Inbound WhatsApp servicing: borrower phone, OTP, fraud checks, hand-off' },
+  { href: LIVE_COLLECTIONS_URL, label: 'Live collections', icon: Play, title: 'Kairos vs fixed schedule, side by side' },
+  { href: ENGINE_ROOM_URL, label: 'Engine room', icon: Cpu, title: 'The churn engine and the learning loop, live' },
 ]
 
 function Logo() {
@@ -70,13 +79,17 @@ function Sidebar() {
             ))}
           </div>
         ))}
-        <div className="mb-4">
-          <div className="px-2.5 pb-2 text-[11px] font-semibold uppercase tracking-wider text-faint">Show</div>
-          <a href={LIVE_COLLECTIONS_URL} target="_blank" rel="noreferrer"
-            className="mb-0.5 flex items-center gap-3 rounded-lg border border-transparent px-2.5 py-2 text-[14.5px] text-fg/85 hover:bg-raised">
-            <Play size={16} strokeWidth={1.8} /> Live collections <ExternalLink size={12} className="ml-auto text-faint" />
-          </a>
-        </div>
+        {!STATIC_DEMO && (
+          <div className="mb-6">
+            <div className="px-2.5 pb-2 text-[11px] font-semibold uppercase tracking-wider text-faint">Show</div>
+            {SHOW_LINKS.map((l) => (
+              <a key={l.href} href={l.href} target="_blank" rel="noreferrer" title={l.title}
+                className="mb-0.5 flex items-center gap-3 rounded-lg border border-transparent px-2.5 py-2 text-[14.5px] text-fg/85 hover:bg-raised">
+                <l.icon size={16} strokeWidth={1.8} /> {l.label} <ExternalLink size={12} className="ml-auto text-faint" />
+              </a>
+            ))}
+          </div>
+        )}
         {cm03 && (
           <div className="mb-4">
             <div className="px-2.5 pb-2 text-[11px] font-semibold uppercase tracking-wider text-faint">CM-03</div>
