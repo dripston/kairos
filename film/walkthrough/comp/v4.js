@@ -86,7 +86,6 @@
       if (type === "push") { ty += (1 - e.p) * 0; sc *= A.lerp(1.18, 1, e.p); }
       if (xt === "zoom") { sc *= A.lerp(1.25, 1, e.q); }
       if (xt === "push") { sc *= A.lerp(0.9, 1, e.q); }
-      sc *= 1 + 0.012 * life;                          // a slow breath, never static
       L.win.style.opacity = op;
       L.win.style.transform = "translateY(" + ty + "px) scale(" + sc + ")";
       // inner camera: view rect in page coords, eased between keys (log zoom)
@@ -226,8 +225,7 @@
         L.plate.style.left = (m.x - 14) + "px"; L.plate.style.top = (m.y - 14) + "px";
         L.plate.style.width = (A.W * s + 28) + "px"; L.plate.style.height = ((m.h || A.H) * s + 28) + "px";
       } else {
-        var life = A.clamp((t - L.t0) / Math.max(1, L.t1 - L.t0), 0, 1), cz = L.zoom || [1, 1.03];
-        L.wrap.style.transformOrigin = "50% 50%"; L.wrap.style.transform = "scale(" + A.lerp(cz[0], cz[1], A.E.move(life)) + ")";
+        L.wrap.style.transform = "none";
       }
       var lit = {}; (L.lit || []).forEach(function (k) { if (t >= k.t0 && t < k.t1) k.nodes.forEach(function (id) { lit[id] = Math.min(1, (t - k.t0) / 0.3, (k.t1 - t) / 0.3); }); });
       L.nodeEls.forEach(function (ne) {
@@ -331,7 +329,7 @@
       L.root.style.opacity = L.bg ? 1 : 1;
       L.box.style.opacity = e.q;
       var life = A.clamp((t - L.t0) / Math.max(1, L.t1 - L.t0), 0, 1);
-      L.box.style.transform = "translate(-50%,-50%) scale(" + (1 + (L.drift != null ? L.drift : 0.02) * life) + ")";
+      L.box.style.transform = "translate(-50%,-50%)";   // text holds still (no sub-pixel scale drift)
       L.parts.forEach(function (p, i) {
         var t0 = p.ln.t != null ? p.ln.t : L.t0 - 0.3 + i * (L.stagger != null ? L.stagger : 0.18);
         var k = A.E.enter(A.clamp((t - t0) / (p.ln.dur || 0.6), 0, 1));
@@ -382,7 +380,7 @@
     update: function (L, t, A) {
       var e = enterT(A, L, t), k = A.E.enter(A.clamp((t - L.t0) / 0.9, 0, 1));
       L.box.style.opacity = e.q;
-      L.box.style.transform = "translate(-50%,-50%) scale(" + A.lerp(L.from || 0.92, 1, k) * (1 + 0.015 * A.clamp((t - L.t0) / Math.max(1, L.t1 - L.t0), 0, 1)) + ")";
+      L.box.style.transform = "translate(-50%,-50%) scale(" + A.lerp(L.from || 0.92, 1, k) + ")";
       L.logo.style.opacity = k; L.logo.style.filter = "blur(" + (1 - k) * 10 + "px)";
       L.lns.forEach(function (d, i) { var kk = A.E.enter(A.clamp((t - L.t0 - (L.lineAt || 0.7) - i * 0.5) / 0.6, 0, 1)); d.style.opacity = kk; d.style.transform = "translateY(" + (1 - kk) * 14 + "px)"; });
       if (L.cr) L.cr.style.opacity = A.clamp((t - L.t0 - 1.0) / 0.6, 0, 1) * e.q;

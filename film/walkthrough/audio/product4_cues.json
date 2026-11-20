@@ -1,41 +1,33 @@
 [
  {
   "t0": 8.5,
-  "t1": 12.456,
+  "t1": 12.167,
   "who": "",
   "lines": [
-   "Every month, millions of people",
-   "in India pay back a loan."
+   "Every month,",
+   "millions of Indians repay a loan,"
   ]
  },
  {
-  "t0": 12.476,
-  "t1": 16.572,
+  "t0": 12.187,
+  "t1": 17.407,
   "who": "",
   "lines": [
-   "And every month,",
-   "their lender sends them the same reminder,"
-  ]
- },
- {
-  "t0": 16.592,
-  "t1": 19.283,
-  "who": "",
-  "lines": [
+   "and get the same reminder,",
    "at the same time, as everyone else."
   ]
  },
  {
-  "t0": 19.643,
-  "t1": 22.061,
+  "t0": 17.667,
+  "t1": 20.085,
   "who": "",
   "lines": [
    "In one simulated campaign,"
   ]
  },
  {
-  "t0": 22.081,
-  "t1": 28.061,
+  "t0": 20.105,
+  "t1": 26.085,
   "who": "",
   "lines": [
    "that fixed schedule sent 1,262 messages,",
@@ -43,24 +35,24 @@
   ]
  },
  {
-  "t0": 28.081,
-  "t1": 30.768,
+  "t0": 26.105,
+  "t1": 28.792,
   "who": "",
   "lines": [
    "Only 23 replies came back."
   ]
  },
  {
-  "t0": 33.148,
-  "t1": 34.818,
+  "t0": 31.172,
+  "t1": 32.842,
   "who": "",
   "lines": [
    "Kairos works differently."
   ]
  },
  {
-  "t0": 34.838,
-  "t1": 38.876,
+  "t0": 32.862,
+  "t1": 36.9,
   "who": "",
   "lines": [
    "Every morning, it looks at each borrower:",
@@ -68,8 +60,8 @@
   ]
  },
  {
-  "t0": 38.896,
-  "t1": 43.27,
+  "t0": 36.92,
+  "t1": 41.294,
   "who": "",
   "lines": [
    "how they replied before,",
@@ -77,16 +69,16 @@
   ]
  },
  {
-  "t0": 43.511,
-  "t1": 46.587,
+  "t0": 41.534,
+  "t1": 44.61,
   "who": "",
   "lines": [
    "Then it decides: reach out today, or wait."
   ]
  },
  {
-  "t0": 46.607,
-  "t1": 50.912,
+  "t0": 44.63,
+  "t1": 48.935,
   "who": "",
   "lines": [
    "And if it reaches out,",
@@ -94,8 +86,8 @@
   ]
  },
  {
-  "t0": 51.162,
-  "t1": 55.995,
+  "t0": 49.186,
+  "t1": 54.019,
   "who": "",
   "lines": [
    "All within a fixed daily budget,",
@@ -103,8 +95,8 @@
   ]
  },
  {
-  "t0": 58.715,
-  "t1": 64.513,
+  "t0": 56.738,
+  "t1": 62.536,
   "who": "",
   "lines": [
    "Before any message goes out, it has",
@@ -112,8 +104,8 @@
   ]
  },
  {
-  "t0": 64.543,
-  "t1": 67.951,
+  "t0": 62.566,
+  "t1": 65.974,
   "who": "",
   "lines": [
    "Has this person agreed to this channel?",
@@ -121,8 +113,8 @@
   ]
  },
  {
-  "t0": 67.971,
-  "t1": 71.078,
+  "t0": 65.994,
+  "t1": 69.101,
   "who": "",
   "lines": [
    "Is it between 8 in the morning",
@@ -130,16 +122,16 @@
   ]
  },
  {
-  "t0": 71.098,
-  "t1": 73.484,
+  "t0": 69.121,
+  "t1": 71.507,
   "who": "",
   "lines": [
    "Have we contacted them enough this week?"
   ]
  },
  {
-  "t0": 73.504,
-  "t1": 76.46,
+  "t0": 71.527,
+  "t1": 74.483,
   "who": "",
   "lines": [
    "Is there budget left?",
@@ -147,8 +139,8 @@
   ]
  },
  {
-  "t0": 76.49,
-  "t1": 82.004,
+  "t0": 74.514,
+  "t1": 80.028,
   "who": "",
   "lines": [
    "Aladdin checks when the message is planned,",
@@ -156,8 +148,8 @@
   ]
  },
  {
-  "t0": 82.024,
-  "t1": 85.467,
+  "t0": 80.048,
+  "t1": 83.491,
   "who": "",
   "lines": [
    "If any answer is no,",
@@ -165,8 +157,8 @@
   ]
  },
  {
-  "t0": 86.427,
-  "t1": 91.454,
+  "t0": 84.451,
+  "t1": 89.478,
   "who": "",
   "lines": [
    "This is Vikram.",
@@ -174,8 +166,8 @@
   ]
  },
  {
-  "t0": 91.474,
-  "t1": 97.176,
+  "t0": 89.498,
+  "t1": 95.2,
   "who": "",
   "lines": [
    "Kairos sends one SMS at 9:30",
@@ -183,16 +175,16 @@
   ]
  },
  {
-  "t0": 97.556,
-  "t1": 99.465,
+  "t0": 95.58,
+  "t1": 97.489,
   "who": "",
   "lines": [
    "So the next day, it waits."
   ]
  },
  {
-  "t0": 99.485,
-  "t1": 102.036,
+  "t0": 97.509,
+  "t1": 100.06,
   "who": "",
   "lines": [
    "On day 3, it tries WhatsApp,",
@@ -200,24 +192,24 @@
   ]
  },
  {
-  "t0": 102.056,
-  "t1": 104.006,
+  "t0": 100.08,
+  "t1": 102.03,
   "who": "Vikram",
   "lines": [
    "I'll pay by the 29th."
   ]
  },
  {
-  "t0": 105.456,
-  "t1": 108.553,
+  "t0": 103.48,
+  "t1": 106.577,
   "who": "",
   "lines": [
    "Kairos sees a promise to pay and goes quiet."
   ]
  },
  {
-  "t0": 108.573,
-  "t1": 113.64,
+  "t0": 106.597,
+  "t1": 111.664,
   "who": "",
   "lines": [
    "On day 7, the bank confirms the payment.",
@@ -225,16 +217,16 @@
   ]
  },
  {
-  "t0": 114.05,
-  "t1": 116.479,
+  "t0": 112.073,
+  "t1": 114.502,
   "who": "",
   "lines": [
    "Kairos learns from every reply."
   ]
  },
  {
-  "t0": 116.499,
-  "t1": 122.957,
+  "t0": 114.522,
+  "t1": 120.98,
   "who": "",
   "lines": [
    "Midway through, we made WhatsApp work worse",
@@ -242,8 +234,8 @@
   ]
  },
  {
-  "t0": 122.977,
-  "t1": 128.046,
+  "t0": 121.0,
+  "t1": 126.069,
   "who": "",
   "lines": [
    "Its estimate fell,",
@@ -251,33 +243,24 @@
   ]
  },
  {
-  "t0": 129.985,
-  "t1": 136.77,
-  "who": "",
-  "lines": [
-   "Borrowers also write in on WhatsApp,",
-   "at any hour. Kairos replies in seconds."
-  ]
- },
- {
-  "t0": 136.91,
-  "t1": 138.742,
+  "t0": 132.659,
+  "t1": 134.491,
   "who": "Sunita",
   "lines": [
    "When is my EMI due?"
   ]
  },
  {
-  "t0": 139.002,
-  "t1": 140.258,
+  "t0": 134.751,
+  "t1": 136.007,
   "who": "Kairos",
   "lines": [
    "To protect your account,"
   ]
  },
  {
-  "t0": 140.278,
-  "t1": 143.825,
+  "t0": 136.027,
+  "t1": 139.574,
   "who": "Kairos",
   "lines": [
    "I have sent a 6-digit code",
@@ -285,16 +268,16 @@
   ]
  },
  {
-  "t0": 144.025,
-  "t1": 145.932,
+  "t0": 139.774,
+  "t1": 141.681,
   "who": "Kairos",
   "lines": [
    "Thank you, you are verified."
   ]
  },
  {
-  "t0": 146.292,
-  "t1": 152.021,
+  "t0": 142.041,
+  "t1": 147.77,
   "who": "",
   "lines": [
    "Notice: nothing about her loan is shared",
@@ -302,8 +285,8 @@
   ]
  },
  {
-  "t0": 152.211,
-  "t1": 155.062,
+  "t0": 147.96,
+  "t1": 150.811,
   "who": "Sunita",
   "lines": [
    "I already paid,",
@@ -311,8 +294,8 @@
   ]
  },
  {
-  "t0": 155.242,
-  "t1": 158.438,
+  "t0": 150.991,
+  "t1": 154.187,
   "who": "Kairos",
   "lines": [
    "For your security,",
@@ -320,8 +303,8 @@
   ]
  },
  {
-  "t0": 158.458,
-  "t1": 161.037,
+  "t0": 154.207,
+  "t1": 156.786,
   "who": "Kairos",
   "lines": [
    "A specialist",
@@ -329,16 +312,16 @@
   ]
  },
  {
-  "t0": 161.347,
-  "t1": 163.105,
+  "t0": 157.096,
+  "t1": 158.854,
   "who": "",
   "lines": [
    "That screenshot was edited."
   ]
  },
  {
-  "t0": 163.125,
-  "t1": 166.596,
+  "t0": 158.874,
+  "t1": 162.345,
   "who": "",
   "lines": [
    "Kairos checks every proof",
@@ -346,8 +329,8 @@
   ]
  },
  {
-  "t0": 166.616,
-  "t1": 170.685,
+  "t0": 162.365,
+  "t1": 166.434,
   "who": "",
   "lines": [
    "so a fake one goes to a person,",
@@ -355,8 +338,8 @@
   ]
  },
  {
-  "t0": 171.095,
-  "t1": 174.56,
+  "t0": 166.844,
+  "t1": 170.309,
   "who": "",
   "lines": [
    "When another borrower",
@@ -364,8 +347,8 @@
   ]
  },
  {
-  "t0": 174.58,
-  "t1": 178.751,
+  "t0": 170.329,
+  "t1": 174.5,
   "who": "",
   "lines": [
    "Kairos pauses her reminders",
@@ -373,16 +356,16 @@
   ]
  },
  {
-  "t0": 178.922,
-  "t1": 179.828,
+  "t0": 174.671,
+  "t1": 175.577,
   "who": "Sunita",
   "lines": [
    "Stop."
   ]
  },
  {
-  "t0": 180.808,
-  "t1": 184.651,
+  "t0": 176.557,
+  "t1": 180.4,
   "who": "Kairos",
   "lines": [
    "You will not receive further",
@@ -390,8 +373,8 @@
   ]
  },
  {
-  "t0": 185.051,
-  "t1": 188.601,
+  "t0": 180.8,
+  "t1": 184.35,
   "who": "",
   "lines": [
    "And when someone says stop,",
@@ -399,16 +382,16 @@
   ]
  },
  {
-  "t0": 188.621,
-  "t1": 192.362,
+  "t0": 184.37,
+  "t1": 188.111,
   "who": "",
   "lines": [
    "SMS, WhatsApp, email and calls, all at once."
   ]
  },
  {
-  "t0": 192.701,
-  "t1": 198.1,
+  "t0": 188.45,
+  "t1": 193.849,
   "who": "",
   "lines": [
    "The team stays in charge: approve a call,",
@@ -416,16 +399,16 @@
   ]
  },
  {
-  "t0": 198.12,
-  "t1": 200.07,
+  "t0": 193.869,
+  "t1": 195.819,
   "who": "",
   "lines": [
    "And Aladdin checks them too."
   ]
  },
  {
-  "t0": 200.09,
-  "t1": 204.21,
+  "t0": 195.839,
+  "t1": 199.959,
   "who": "",
   "lines": [
    "Not even a supervisor can send a message",
@@ -433,16 +416,16 @@
   ]
  },
  {
-  "t0": 204.551,
-  "t1": 206.04,
+  "t0": 200.3,
+  "t1": 201.789,
   "who": "",
   "lines": [
    "In our simulated tests,"
   ]
  },
  {
-  "t0": 206.06,
-  "t1": 210.37,
+  "t0": 201.809,
+  "t1": 206.119,
   "who": "",
   "lines": [
    "Kairos recovered more",
@@ -450,8 +433,8 @@
   ]
  },
  {
-  "t0": 210.39,
-  "t1": 212.674,
+  "t0": 206.139,
+  "t1": 208.423,
   "who": "",
   "lines": [
    "without breaking a single rule."

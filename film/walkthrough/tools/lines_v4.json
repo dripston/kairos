@@ -28,7 +28,7 @@
   "who": "Kairos"
  },
  "p01": {
-  "text": "Every month, millions of people in India pay back a loan. And every month, their lender sends them the same reminder, at the same time, as everyone else.",
+  "text": "Every month, millions of Indians repay a loan, and get the same reminder, at the same time, as everyone else.",
   "who": ""
  },
  "p02": {
@@ -69,10 +69,6 @@
  },
  "p13": {
   "text": "Kairos learns from every reply. Midway through, we made WhatsApp work worse for one group and told Kairos nothing. Its estimate fell, and it moved that group to SMS on its own.",
-  "who": ""
- },
- "p15": {
-  "text": "Borrowers also write in on WhatsApp, at any hour. Kairos replies in seconds.",
   "who": ""
  },
  "p16": {

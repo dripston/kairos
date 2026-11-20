@@ -364,8 +364,8 @@
   "pace": 1.3,
   "model": "bulbul:v3",
   "lang": "en-IN",
-  "text": "Every month, millions of people in India pay back a loan. And every month, their lender sends them the same reminder, at the same time, as everyone else.",
-  "tts": "Every month, millions of people in India pay back a loan. And every month, their lender sends them the same reminder, at the same time, as everyone else.",
+  "text": "Every month, millions of Indians repay a loan, and get the same reminder, at the same time, as everyone else.",
+  "tts": "Every month, millions of Indians repay a loan, and get the same reminder, at the same time, as everyone else.",
   "who": "",
   "ok": true
  },

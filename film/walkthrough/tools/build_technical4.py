@@ -135,7 +135,7 @@ if os.environ.get("REAL_WA"):
     beat([("glass", 12.0, dict(video=os.environ["REAL_WA"], vw=1920, vh=1080, title="Real WhatsApp · Meta Cloud API test number", neb=("comp/NEB2.mov", 1.0)))], name="realwa")
 beat([chapter("07", "Human in the loop", "people decide; Aladdin still checks"), other("flow", 4.0, key="hitl", neb=("comp/NEB2.mov", 4.0)),
       clip("P16a_asha_close", 1.6),
-      ("glass", 4.4, dict(video=F02, frm=36.0, rate=1.6, vw=1920, vh=1080, title="Kairos · Control Room · approvals", cam=[(0.6, [380, 90, 1100, 230], 1.4)], neb=("comp/NEB2.mov", 9.0))),
+      ("glass", 4.4, dict(video=F02, frm=36.0, rate=2.0, vw=1920, vh=1080, title="Kairos · Control Room · approvals", cam=[(0.6, [380, 90, 1100, 230], 1.4)], neb=("comp/NEB2.mov", 9.0))),
       ("glass", 5.6, dict(video=F03, frm=50.0, rate=1.0, vw=1920, vh=1080, title="Kairos · Smart CRM · manual send at 20:00", cam=[(0.6, [1540, 560, 380, 490], 1.4)], neb=("comp/NEB2.mov", 14.0)))],
      voice=["c08"], at=AT, name="07")
 beat([chapter("08", "Determinism and testing", "same seed, same decisions"), other("terminal", 20.0, neb=("comp/NEB1.mov", 2.0))],
@@ -215,8 +215,21 @@ for kind, dur, p, t0, bname in seq:
                             (7.8, 1.9, "Ledger benchmark", "<em>50,000</em> atomic decisions in 11.1 s<br>cap breaches: <em>0</em>"), (10.9, 1.6, "Full test suite", "<em>3030 passed</em> in 74 s"),
                             (13.5, 2.3, "Off-policy evaluation · CN10 fixed schedule · SIMULATED", "From logs: <em>18.2</em>. Truth: <em>18.4</em>.")]:
             layers.append({"kind": "callout", "t0": a + o * ks, "t1": a + o * ks + dd * ks, "dark": True, "x": 260, "y": 560, "maxw": 1500, "kicker": k, "mono": True, "html": h, "stagger": 0, "enterDur": 0.2})
-for t0, t1, src, frm in neb_spans:
-    layers.insert(0, {"kind": "nebula", "t0": t0, "t1": t1, "src": src, "from": frm, "rate": 0.35, "dim": 0.45, "enter": {"dur": 0}, "exit": {"dur": 0}})
+NEB_LEN = {"comp/NEB1.mov": 19.8, "comp/NEB2.mov": 30.4}
+merged = []
+for t0, t1, src, frm in sorted(neb_spans):
+    if merged and abs(merged[-1][1] - t0) < 1e-3: merged[-1][1] = t1           # adjacent platform shots share one background
+    else: merged.append([t0, t1, src, frm])
+for t0, t1, src, frm in merged:
+    n, dur = NEB_LEN[src], t1 - t0
+    if dur <= n - 0.3: rate, frm = 1.0, min(frm, n - dur - 0.2)               # real-time playback: every frame a new frame, no stutter
+    else: rate, frm = (n - 0.3) / dur, 0.0
+    layers.insert(0, {"kind": "nebula", "t0": t0, "t1": round(t1, 3), "src": src, "from": round(frm, 3), "rate": round(rate, 4), "dim": 0.45, "zoom": [1.04, 1.04 + 0.004 * dur], "enter": {"dur": 0}, "exit": {"dur": 0}})
+# a glass window that cuts to another glass window crossfades (the old one stays under the new one), no dip to the background
+gl = [L for L in layers if L.get("kind") == "glass"]
+for a, b in zip(gl, gl[1:]):
+    if abs(a["t1"] - b["t0"]) < 1e-3:
+        a["t1"] = round(a["t1"] + 0.35, 3); a["exit"] = {"type": "fade", "dur": 0.0}; b["enter"] = {"type": "fade", "dur": 0.35}
 film = {"duration": round(END, 3), "ccStyle": "v4", "cues": "audio/technical4_cues.json", "bg": "#02040a", "captures": CAPS,
         "terms": {"redteam": "term/redteam.json", "bench": "term/bench.json", "determinism": "term/determinism.json", "pytest": "term/pytest.json", "ope": "term/ope.json"}, "layers": layers}
 for L in layers:

@@ -20,132 +20,16 @@ window.FILM = {
  "layers": [
   {
    "kind": "nebula",
-   "t0": 198.347,
-   "t1": 204.02,
-   "src": "comp/NEB1.mov",
-   "from": 10.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 196.147,
-   "t1": 198.347,
-   "src": "comp/NEB2.mov",
-   "from": 6.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 192.26,
-   "t1": 196.147,
-   "src": "comp/NEB2.mov",
-   "from": 2.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 172.26,
-   "t1": 192.26,
-   "src": "comp/NEB1.mov",
-   "from": 2.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 170.96,
-   "t1": 172.26,
-   "src": "comp/NEB2.mov",
-   "from": 13.6,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 165.065,
-   "t1": 170.96,
-   "src": "comp/NEB2.mov",
-   "from": 14.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
    "t0": 160.37,
-   "t1": 165.065,
+   "t1": 204.02,
    "src": "comp/NEB2.mov",
-   "from": 9.0,
-   "rate": 0.35,
+   "from": 0.0,
+   "rate": 0.7171,
    "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 154.475,
-   "t1": 158.77,
-   "src": "comp/NEB2.mov",
-   "from": 4.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 153.175,
-   "t1": 154.475,
-   "src": "comp/NEB2.mov",
-   "from": 11.9,
-   "rate": 0.35,
-   "dim": 0.45,
+   "zoom": [
+    1.04,
+    1.207908
+   ],
    "enter": {
     "dur": 0
    },
@@ -156,146 +40,15 @@ window.FILM = {
   {
    "kind": "nebula",
    "t0": 145.572,
-   "t1": 153.175,
+   "t1": 158.77,
    "src": "comp/NEB2.mov",
    "from": 10.0,
-   "rate": 0.35,
+   "rate": 1.0,
    "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 137.968,
-   "t1": 145.571,
-   "src": "comp/NEB2.mov",
-   "from": 6.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 128.365,
-   "t1": 137.968,
-   "src": "comp/NEB2.mov",
-   "from": 2.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 127.065,
-   "t1": 128.365,
-   "src": "comp/NEB2.mov",
-   "from": 10.2,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 121.535,
-   "t1": 127.065,
-   "src": "comp/NEB1.mov",
-   "from": 8.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 116.005,
-   "t1": 121.535,
-   "src": "comp/NEB2.mov",
-   "from": 3.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 111.474,
-   "t1": 116.004,
-   "src": "comp/NEB1.mov",
-   "from": 7.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 103.944,
-   "t1": 111.474,
-   "src": "comp/NEB1.mov",
-   "from": 3.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 102.644,
-   "t1": 103.944,
-   "src": "comp/NEB2.mov",
-   "from": 8.5,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 100.044,
-   "t1": 102.644,
-   "src": "comp/NEB1.mov",
-   "from": 3.0,
-   "rate": 0.35,
-   "dim": 0.45,
+   "zoom": [
+    1.04,
+    1.092792
+   ],
    "enter": {
     "dur": 0
    },
@@ -306,26 +59,15 @@ window.FILM = {
   {
    "kind": "nebula",
    "t0": 90.922,
-   "t1": 100.044,
+   "t1": 145.571,
    "src": "comp/NEB2.mov",
-   "from": 7.0,
-   "rate": 0.35,
+   "from": 0.0,
+   "rate": 0.5508,
    "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 77.801,
-   "t1": 90.923,
-   "src": "comp/NEB2.mov",
-   "from": 2.0,
-   "rate": 0.35,
-   "dim": 0.45,
+   "zoom": [
+    1.04,
+    1.258596
+   ],
    "enter": {
     "dur": 0
    },
@@ -336,206 +78,15 @@ window.FILM = {
   {
    "kind": "nebula",
    "t0": 76.501,
-   "t1": 77.801,
+   "t1": 90.923,
    "src": "comp/NEB2.mov",
    "from": 6.8,
-   "rate": 0.35,
+   "rate": 1.0,
    "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 68.872,
-   "t1": 76.5,
-   "src": "comp/NEB1.mov",
-   "from": 12.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 61.244,
-   "t1": 68.872,
-   "src": "comp/NEB1.mov",
-   "from": 8.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 51.616,
-   "t1": 61.244,
-   "src": "comp/NEB1.mov",
-   "from": 4.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 50.316,
-   "t1": 51.616,
-   "src": "comp/NEB2.mov",
-   "from": 5.1,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 44.126,
-   "t1": 50.316,
-   "src": "comp/NEB2.mov",
-   "from": 9.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 37.936,
-   "t1": 44.126,
-   "src": "comp/NEB2.mov",
-   "from": 6.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 30.746,
-   "t1": 37.936,
-   "src": "comp/NEB2.mov",
-   "from": 3.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 29.446,
-   "t1": 30.746,
-   "src": "comp/NEB2.mov",
-   "from": 3.4,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 27.246,
-   "t1": 29.446,
-   "src": "comp/NEB1.mov",
-   "from": 3.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 21.139,
-   "t1": 27.246,
-   "src": "comp/NEB1.mov",
-   "from": 6.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 14.531,
-   "t1": 21.138,
-   "src": "comp/NEB1.mov",
-   "from": 2.0,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 13.231,
-   "t1": 14.531,
-   "src": "comp/NEB2.mov",
-   "from": 1.7,
-   "rate": 0.35,
-   "dim": 0.45,
-   "enter": {
-    "dur": 0
-   },
-   "exit": {
-    "dur": 0
-   }
-  },
-  {
-   "kind": "nebula",
-   "t0": 4.0,
-   "t1": 13.231,
-   "src": "comp/NEB2.mov",
-   "from": 3.0,
-   "rate": 0.35,
-   "dim": 0.45,
+   "zoom": [
+    1.04,
+    1.097688
+   ],
    "enter": {
     "dur": 0
    },
@@ -546,11 +97,15 @@ window.FILM = {
   {
    "kind": "nebula",
    "t0": 2.0,
-   "t1": 4.0,
+   "t1": 76.5,
    "src": "comp/NEB2.mov",
-   "from": 1.0,
-   "rate": 0.35,
+   "from": 0.0,
+   "rate": 0.404,
    "dim": 0.45,
+   "zoom": [
+    1.04,
+    1.338
+   ],
    "enter": {
     "dur": 0
    },
@@ -1399,7 +954,7 @@ window.FILM = {
   {
    "kind": "glass",
    "t0": 37.936,
-   "t1": 44.126,
+   "t1": 44.476,
    "title": "Kairos · Engine Room · churn · SIMULATED",
    "cam": [
     {
@@ -1419,7 +974,7 @@ window.FILM = {
    },
    "exit": {
     "type": "fade",
-    "dur": 0.25
+    "dur": 0.0
    },
    "cap": "er",
    "frames": [
@@ -1448,7 +1003,7 @@ window.FILM = {
    ],
    "enter": {
     "type": "fade",
-    "dur": 0.3
+    "dur": 0.35
    },
    "exit": {
     "type": "fade",
@@ -1632,7 +1187,7 @@ window.FILM = {
   {
    "kind": "glass",
    "t0": 61.244,
-   "t1": 68.872,
+   "t1": 69.222,
    "title": "Kairos · Engine Room · day 7 · SIMULATED",
    "cam": [
     {
@@ -1652,7 +1207,7 @@ window.FILM = {
    },
    "exit": {
     "type": "fade",
-    "dur": 0.25
+    "dur": 0.0
    },
    "cap": "er",
    "frames": [
@@ -1681,7 +1236,7 @@ window.FILM = {
    ],
    "enter": {
     "type": "fade",
-    "dur": 0.4
+    "dur": 0.35
    },
    "exit": {
     "type": "fade",
@@ -2694,7 +2249,7 @@ window.FILM = {
   {
    "kind": "glass",
    "t0": 160.37,
-   "t1": 165.065,
+   "t1": 165.415,
    "title": "Kairos · Control Room · approvals",
    "cam": [
     {
@@ -2714,11 +2269,11 @@ window.FILM = {
    },
    "exit": {
     "type": "fade",
-    "dur": 0.25
+    "dur": 0.0
    },
    "video": "rec/F02_approvals_supervisor_clean.mp4",
    "from": 36.0,
-   "rate": 1.6,
+   "rate": 2.0,
    "vw": 1920,
    "vh": 1080
   },
@@ -2740,8 +2295,8 @@ window.FILM = {
     }
    ],
    "enter": {
-    "type": "rise",
-    "dur": 0.6
+    "type": "fade",
+    "dur": 0.35
    },
    "exit": {
     "type": "fade",

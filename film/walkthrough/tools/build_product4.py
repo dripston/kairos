@@ -82,9 +82,9 @@ beat([glass("er", "d7", 4.0, title="Kairos · Engine Room · SIMULATED", cam=[(0
       glass("er", "d14", 4.0, title="Kairos · Engine Room · SIMULATED", cam=[(0.0, [640, 190, 620, 260], 0.01)], neb=("comp/NEB2.mov", 20.0), enter={"type": "fade", "dur": 0.4})],
      voice=["p13"], at=0.4, name="learning")
 # 6 · Part 2 · When borrowers write in (CM-03)
-beat([other("title", 1.6, lines=[{"text": "Part 2", "size": 40, "cls": "kicker"}, {"text": "When borrowers write in", "size": 110, "mt": 10}], neb=("comp/NEB1.mov", 9.0))], name="part2")
-beat([clip("P17a_sunita", 2.4),
-      glass("in", "tabA", 4.0, title="Kairos · Inbound WhatsApp", cam=[(1.2, IN_PHONE, 1.6)], neb=("comp/NEB1.mov", 12.0))], voice=["p15"], at=0.3, tail=0.2, name="writein")
+beat([other("title", 2.2, lines=[{"text": "Part 2", "size": 40, "cls": "kicker"}, {"text": "When borrowers write in", "size": 110, "mt": 10}, {"text": "any hour · replies in seconds", "size": 46, "cls": "soft", "mt": 16}], neb=("comp/NEB1.mov", 9.0))], name="part2")
+beat([clip("P17a_sunita", 1.8),
+      glass("in", "tabA", 2.4, title="Kairos · Inbound WhatsApp", cam=[(0.5, IN_PHONE, 1.2)], neb=("comp/NEB1.mov", 12.0))], name="writein")
 beat([glass("in", "emi", 6.0, title="Kairos · Inbound WhatsApp", frames=[(0, "tabA"), ("@d2", "emi"), ("@d3", "otp")], cam=[(0.0, IN_PHONE, 0.01)], neb=("comp/NEB1.mov", 14.0), enter={"type": "fade", "dur": 0.2})],
      voice=["d1", "d2", "d3"], at=0.15, gap=0.3, tail=0.25, name="otp")
 beat([glass("in", "otp", 3.0, title="Kairos · Inbound WhatsApp", cam=[(0.0, IN_PHONE, 0.01), (0.6, [380, 60, 560, 360], 1.4)], neb=("comp/NEB1.mov", 18.0))], voice=["p16"], at=0.3, name="identity")
@@ -102,18 +102,18 @@ beat([glass("in", "stop", 4.0, title="Kairos · Inbound WhatsApp", cam=[(0.0, IN
 # 7 · the team stays in charge (the real deployed dashboard, recorded at 60 fps)
 F02, F03 = "rec/F02_approvals_supervisor_clean.mp4", "rec/F03_crm_explain_manual_preview_clean.mp4"
 beat([clip("P06_asha_typing", 2.0),
-      ("glass", 4.4, dict(video=F02, frm=36.0, rate=1.6, vw=1920, vh=1080, title="Kairos · Control Room · approvals", cam=[(0.6, [380, 90, 1100, 230], 1.4)], neb=("comp/NEB2.mov", 12.0))),
+      ("glass", 4.4, dict(video=F02, frm=36.0, rate=2.0, vw=1920, vh=1080, title="Kairos · Control Room · approvals", cam=[(0.6, [380, 90, 1100, 230], 1.4)], neb=("comp/NEB2.mov", 12.0))),
       ("glass", 5.0, dict(video=F03, frm=53.0, rate=1.0, vw=1920, vh=1080, title="Kairos · Smart CRM · manual send", cam=[(0.6, [1540, 560, 380, 490], 1.4)], neb=("comp/NEB2.mov", 16.0), mini=["aladdin", "block"]))],
      voice=["p20"], at=0.3, name="team")
 # 8 · results and ending
 beat([clip("X_rajesh", 2.4),
-      other("panel", 6.0, heading="In our simulated tests", items=[
+      other("panel", 4.0, heading="In our simulated tests", items=[
           {"big": "More money recovered per rupee spent", "small": "vs a fixed reminder schedule"},
           {"html": "<em>0</em> rule breaches"},
           {"html": "<em>73%</em> of WhatsApp chats resolved without a person"},
           {"html": "Every fake payment proof caught"}],
           fine="SIMULATED · synthetic borrowers · 3 unseen seeds · 1,000 seeded test conversations", neb=("comp/NEB1.mov", 2.0))],
-     voice=["p22"], at=0.3, tail=1.0, name="results")
+     voice=["p22"], at=0.3, tail=0.3, name="results")
 beat([other("title", 2.4, lines=[{"text": "The right message, at the right time.", "size": 84}, {"text": "Or none at all.", "size": 84, "t_off": 0.7}], neb=("comp/NEB2.mov", 22.0)),
       other("title", 2.2, lines=[{"text": "Collections that decide", "size": 84}, {"text": "who, when and how.", "size": 84, "t_off": 0.5}], neb=("comp/NEB2.mov", 24.0)),
       other("title", 2.2, lines=[{"text": "Built to be trusted", "size": 84}, {"text": "with every rupee.", "size": 84, "t_off": 0.5}], neb=("comp/NEB2.mov", 26.0))], name="slogans")
@@ -232,8 +232,21 @@ for kind, dur, p, t0, bname in seq:
         layers.append(loop_layer(t0, t1, built=t0 + 0.3, voice_t={"checks": checks, "rest": c + 0.6, "pulse": c + 4.2}))
 
 # one nebula per contiguous span (cuts to footage hide the joins); rate keeps inside the clip
-for t0, t1, src, frm in neb_spans:
-    layers.insert(0, {"kind": "nebula", "t0": t0, "t1": round(t1, 3), "src": src, "from": frm, "rate": 0.35, "dim": 0.42, "enter": {"dur": 0}, "exit": {"dur": 0}})
+NEB_LEN = {"comp/NEB1.mov": 19.8, "comp/NEB2.mov": 30.4}
+merged = []
+for t0, t1, src, frm in sorted(neb_spans):
+    if merged and abs(merged[-1][1] - t0) < 1e-3: merged[-1][1] = t1           # adjacent platform shots share one background
+    else: merged.append([t0, t1, src, frm])
+for t0, t1, src, frm in merged:
+    n, dur = NEB_LEN[src], t1 - t0
+    if dur <= n - 0.3: rate, frm = 1.0, min(frm, n - dur - 0.2)               # real-time playback: every frame a new frame, no stutter
+    else: rate, frm = (n - 0.3) / dur, 0.0
+    layers.insert(0, {"kind": "nebula", "t0": t0, "t1": round(t1, 3), "src": src, "from": round(frm, 3), "rate": round(rate, 4), "dim": 0.45, "zoom": [1.04, 1.04 + 0.004 * dur], "enter": {"dur": 0}, "exit": {"dur": 0}})
+# a glass window that cuts to another glass window crossfades (the old one stays under the new one), no dip to the background
+gl = [L for L in layers if L.get("kind") == "glass"]
+for a, b in zip(gl, gl[1:]):
+    if abs(a["t1"] - b["t0"]) < 1e-3:
+        a["t1"] = round(a["t1"] + 0.35, 3); a["exit"] = {"type": "fade", "dur": 0.0}; b["enter"] = {"type": "fade", "dur": 0.35}
 for t0, t1, lit in mini_lit:
     layers.append(loop_layer(t0 + 0.2, t1, built=True, mini=True, lit=[{"t0": t0 + 0.6, "t1": t1, "nodes": lit}]))
 
@@ -253,23 +266,25 @@ best = None
 for n32 in range(0, 6):
     for n16 in range(0, 3):
         for n8 in range(0, 2):
-            for outro in (B(68) - B(64), B(72) - B(64), B(73) - B(64)):
-                tot = B(64) + n32 * (B(64) - B(32)) + n16 * (B(64) - B(48)) + n8 * (B(64) - B(56)) + outro
-                if tot >= target and (best is None or tot < best[0]): best = (tot, n32, n16, n8, outro)
-total, n32, n16, n8, outro = best
+            for n4 in range(0, 2):
+                for outro in (B(68) - B(64), B(72) - B(64), B(73) - B(64)):
+                    tot = B(64) + n32 * (B(64) - B(32)) + n16 * (B(64) - B(48)) + n8 * (B(64) - B(56)) + n4 * (B(64) - B(60)) + outro
+                    if tot >= target and (best is None or tot < best[0]): best = (tot, n32, n16, n8, n4, outro)
+total, n32, n16, n8, n4, outro = best
 segs = [{"src": 0.0, "len": round(B(64), 3)}] + [{"src": round(B(32), 3), "len": round(B(64) - B(32), 3)}] * n32 \
-       + [{"src": round(B(48), 3), "len": round(B(64) - B(48), 3)}] * n16 + [{"src": round(B(56), 3), "len": round(B(64) - B(56), 3)}] * n8 \
+       + [{"src": round(B(48), 3), "len": round(B(64) - B(48), 3)}] * n16 + [{"src": round(B(56), 3), "len": round(B(64) - B(56), 3)}] * n8 + [{"src": round(B(60), 3), "len": round(B(64) - B(60), 3)}] * n4 \
        + [{"src": round(B(64), 3), "len": round(outro, 3)}]
 at = MUSIC_AT
 segs = [dict(x) for x in segs]
 for i, sg in enumerate(segs): sg["at"] = round(at, 3); sg["fadeIn"] = 0.02 if i else 0; sg["fadeOut"] = 0.03; at += sg["len"]
 # stretch the lockup so the picture's last card starts exactly when the music stops
-grow = MUSIC_AT + total - (seq[ib][3] + seq[ib][1])
+old_end = seq[ib][3] + seq[ib][1]
+grow = MUSIC_AT + total - old_end
 seq[ib] = (seq[ib][0], round(seq[ib][1] + grow, 3), seq[ib][2], seq[ib][3], seq[ib][4])
 for L in layers:
     if L.get("kind") == "brand" and abs(L["t0"] - seq[ib][3]) < 1e-3: L["t1"] = round(L["t1"] + grow, 3)
+    elif L.get("kind") == "nebula" and abs(L["t1"] - old_end) < 1e-2: L["t1"] = round(L["t1"] + grow, 3)
     elif L["t0"] >= seq[ib][3] + 1e-3 and L.get("kind") != "nebula": L["t0"] = round(L["t0"] + grow, 3); L["t1"] = round(L["t1"] + grow, 3)
-    elif L.get("kind") == "nebula" and abs(L["t0"] - seq[ib][3]) < 1e-3: L["t1"] = round(L["t1"] + grow, 3)
 END = round(END + grow, 3); film["duration"] = END
 open("films/product4.js", "w").write("/* generated by tools/build_product4.py */\nwindow.FILM = " + json.dumps(film, ensure_ascii=False, indent=1) + ";\n")
 print("music %.2f s (base + %d×32 + %d×16 + %d×8 bars + outro %.1f s) from %.2f; film %.2f s (%d:%02d)" % (total, n32, n16, n8, outro, MUSIC_AT, END, END // 60, END % 60))

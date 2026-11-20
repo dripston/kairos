@@ -1,6 +1,6 @@
 {
  "out": "audio/product4_mix.wav",
- "duration": 226.87,
+ "duration": 221.728,
  "lufs": -14,
  "ceiling": -1.0,
  "music": {
@@ -28,16 +28,16 @@
     "fadeOut": 0.03
    },
    {
-    "src": 96.241,
-    "len": 13.714,
+    "src": 103.098,
+    "len": 6.857,
     "at": 197.242,
     "fadeIn": 0.02,
     "fadeOut": 0.03
    },
    {
     "src": 109.955,
-    "len": 13.714,
-    "at": 210.956,
+    "len": 15.429,
+    "at": 204.099,
     "fadeIn": 0.02,
     "fadeOut": 0.03
    }
@@ -55,181 +55,174 @@
   {
    "file": "audio/v4/p01.wav",
    "at": 8.5,
-   "text": "Every month, millions of people in India pay back a loan. And every month, their lender sends them the same reminder, at the same time, as everyone else.",
+   "text": "Every month, millions of Indians repay a loan, and get the same reminder, at the same time, as everyone else.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/p02.wav",
-   "at": 19.643,
+   "at": 17.667,
    "text": "In one simulated campaign, that fixed schedule sent 1,262 messages, and paid for every one. Only 23 replies came back.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/p04.wav",
-   "at": 33.148,
+   "at": 31.172,
    "text": "Kairos works differently. Every morning, it looks at each borrower: how late they are, how they replied before, and when they usually read messages.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/p05.wav",
-   "at": 43.511,
+   "at": 41.534,
    "text": "Then it decides: reach out today, or wait. And if it reaches out, which channel, and at what hour.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/p06.wav",
-   "at": 51.162,
+   "at": 49.186,
    "text": "All within a fixed daily budget, with a report every evening on what worked.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/p07.wav",
-   "at": 58.715,
+   "at": 56.738,
    "text": "Before any message goes out, it has to get past Aladdin, our safety supervisor.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/p08.wav",
-   "at": 64.543,
+   "at": 62.566,
    "text": "Has this person agreed to this channel? Asked us to stop? Is it between 8 in the morning and 7 in the evening? Have we contacted them enough this week? Is there budget left? Is the account on hold?",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/p09.wav",
-   "at": 76.49,
+   "at": 74.514,
    "text": "Aladdin checks when the message is planned, and again right before it is sent. If any answer is no, the message does not go.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/p10.wav",
-   "at": 86.427,
+   "at": 84.451,
    "text": "This is Vikram. His EMI of ₹7,409 is 10 days late. Kairos sends one SMS at 9:30 in the morning. No reply.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/p11.wav",
-   "at": 97.556,
+   "at": 95.58,
    "text": "So the next day, it waits. On day 3, it tries WhatsApp, and Vikram replies: he'll pay by the 29th.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/p12.wav",
-   "at": 105.456,
+   "at": 103.48,
    "text": "Kairos sees a promise to pay and goes quiet. On day 7, the bank confirms the payment. Reaching him cost 65 paise.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/p13.wav",
-   "at": 114.05,
+   "at": 112.073,
    "text": "Kairos learns from every reply. Midway through, we made WhatsApp work worse for one group and told Kairos nothing. Its estimate fell, and it moved that group to SMS on its own.",
    "who": "",
    "gain": 0
   },
   {
-   "file": "audio/v4/p15.wav",
-   "at": 129.985,
-   "text": "Borrowers also write in on WhatsApp, at any hour. Kairos replies in seconds.",
-   "who": "",
-   "gain": 0
-  },
-  {
    "file": "audio/v4/d1.wav",
-   "at": 136.91,
+   "at": 132.659,
    "text": "When is my EMI due?",
    "who": "Sunita",
    "gain": -1.0
   },
   {
    "file": "audio/v4/d2.wav",
-   "at": 139.002,
+   "at": 134.751,
    "text": "To protect your account, I have sent a 6-digit code to your registered WhatsApp number.",
    "who": "Kairos",
    "gain": -1.0
   },
   {
    "file": "audio/v4/d3.wav",
-   "at": 144.025,
+   "at": 139.774,
    "text": "Thank you, you are verified.",
    "who": "Kairos",
    "gain": -1.0
   },
   {
    "file": "audio/v4/p16.wav",
-   "at": 146.292,
+   "at": 142.041,
    "text": "Notice: nothing about her loan is shared until she proves who she is.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/d4.wav",
-   "at": 152.211,
+   "at": 147.96,
    "text": "I already paid, here is the screenshot.",
    "who": "Sunita",
    "gain": -1.0
   },
   {
    "file": "audio/v4/d5.wav",
-   "at": 155.242,
+   "at": 150.991,
    "text": "For your security, I can't help with this request in chat. A specialist from our team will review it.",
    "who": "Kairos",
    "gain": -1.0
   },
   {
    "file": "audio/v4/p17.wav",
-   "at": 161.347,
+   "at": 157.096,
    "text": "That screenshot was edited. Kairos checks every proof against the bank's records, so a fake one goes to a person, never marks the loan paid.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/p18.wav",
-   "at": 171.095,
+   "at": 166.844,
    "text": "When another borrower says she has lost her job, Kairos pauses her reminders and hands her to a person.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/d6.wav",
-   "at": 178.922,
+   "at": 174.671,
    "text": "Stop.",
    "who": "Sunita",
    "gain": -1.0
   },
   {
    "file": "audio/v4/d7.wav",
-   "at": 180.808,
+   "at": 176.557,
    "text": "You will not receive further automated reminders from us on any channel.",
    "who": "Kairos",
    "gain": -1.0
   },
   {
    "file": "audio/v4/p19.wav",
-   "at": 185.051,
+   "at": 180.8,
    "text": "And when someone says stop, everything stops. SMS, WhatsApp, email and calls, all at once.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/p20.wav",
-   "at": 192.701,
+   "at": 188.45,
    "text": "The team stays in charge: approve a call, pause a borrower, take over a chat. And Aladdin checks them too. Not even a supervisor can send a message at 8 at night.",
    "who": "",
    "gain": 0
   },
   {
    "file": "audio/v4/p22.wav",
-   "at": 204.551,
+   "at": 200.3,
    "text": "In our simulated tests, Kairos recovered more for every rupee spent than a fixed schedule, without breaking a single rule.",
    "who": "",
    "gain": 0
