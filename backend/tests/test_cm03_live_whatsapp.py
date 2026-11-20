@@ -377,3 +377,33 @@ def test_story_otp_answer_fake_screenshot_takeover_stop_reset(world, caplog):
         assert digits not in blob and digits[-10:] not in blob
         assert TOKEN not in blob and APP_SECRET not in blob
     assert "wamid.TEST" in caplog.text and "+*******1234" in caplog.text            # the masked form is what is logged
+
+
+# ------------------------------------------------------------------ scripts/live_wa_check.py (read-only, injected GET)
+def test_live_wa_check_prints_masked_number_and_never_the_token(env):
+    import importlib.util
+    from pathlib import Path
+    spec = importlib.util.spec_from_file_location("live_wa_check", Path(__file__).resolve().parents[1] / "scripts" / "live_wa_check.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    seen, lines = [], []
+
+    def get(url, headers, timeout):
+        seen.append((url, headers))
+        if "webhook_configuration" in url:
+            return 200, {"webhook_configuration": {"phone_number": mod.EXPECTED_CALLBACK, "application": "https://x.example/wh"}}
+        return 200, {"display_phone_number": "+1 555-000-4321", "verified_name": "Demo Co", "quality_rating": "GREEN"}
+
+    import os
+    assert mod.check(dict(os.environ), get=get, out=lines.append) == 0
+    text = "\n".join(lines)
+    assert "*******4321" in text and "5550004321" not in text and "GREEN" in text and "phone-number override" in text
+    assert TOKEN not in text and all(TOKEN not in u for u, _ in seen)               # token only in the header
+    assert all(h == {"Authorization": f"Bearer {TOKEN}"} for _, h in seen)
+    assert all(u.startswith(f"https://graph.facebook.com/v23.0/{PNID}?fields=") for u, _ in seen)
+
+    def denied(url, headers, timeout):
+        return 401, {"error": {"code": 190, "type": "OAuthException", "message": f"Invalid token {TOKEN}"}}
+    lines.clear()
+    assert mod.check(dict(os.environ), get=denied, out=lines.append) == 1
+    assert TOKEN not in "\n".join(lines) and "190" in "\n".join(lines)

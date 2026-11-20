@@ -45,8 +45,8 @@ class DryRunWhatsAppAdapter:
     """WhatsApp Cloud API stand-in. dry_run is always on here: send() builds the message, keeps it in
     a bounded in-memory outbox per recipient (the SIMULATED phone that eval/demo borrowers read their
     OTP from) and returns DRY_RUN. Logs and envelopes only ever see the masked number.
-    The K07 phone-demo adapter (branch k07-k08/channel-adapters) sends approved templates only; free
-    text session replies are not wired to it, so CM-03 stays dry-run."""
+    The K07 phone-demo adapter sends approved templates only. CM-03's free-text session replies go out for
+    real only through live.LiveWhatsAppAdapter (live WhatsApp mode, off by default), which wraps this one."""
 
     provenance = PROVENANCE
 
