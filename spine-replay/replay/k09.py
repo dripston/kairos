@@ -127,7 +127,8 @@ class StackRun:
 
     def __init__(self, arm: str, portfolio, seed: int, days: int, db_path: str,
                  budget_per_case_inr: float, drift_day: Optional[int] = None, context: bool = True,
-                 explore: bool = True):
+                 explore: bool = True, min_reply_prob: Optional[float] = None,
+                 min_replies_per_inr: float = 0.0):
         self.arm, self.seed, self.days = arm, seed, days
         self.explore = explore   # seeded Thompson sampling on arm choice (SIMULATOR); False = posterior mean
         self.portfolio = copy.deepcopy(portfolio)
@@ -137,8 +138,10 @@ class StackRun:
         self.providers = {ch: FakeProvider(ch, cost_inr=COST_INR[ch]) for ch in S.CHANNELS}
         self.executor = Executor(self.ledger, self.providers)
         if arm == "kairos":
-            base = BetaBernoulliLearner(self.ledger)
-            self.ranker = ContextualLearner(base, BorrowerContextModel(self.ledger)) if context else base
+            kw = {} if min_reply_prob is None else {"min_reply_prob": min_reply_prob}
+            base = BetaBernoulliLearner(self.ledger, **kw)
+            self.ranker = (ContextualLearner(base, BorrowerContextModel(self.ledger), min_replies_per_inr)
+                           if context else base)
         else:
             self.ranker = FixedCadenceRanker()
         self.fsm = SupervisorFSM(self.ledger, self.executor, self.ranker, self.sink, mode=Mode.SIMULATOR)

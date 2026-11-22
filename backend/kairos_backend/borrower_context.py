@@ -145,10 +145,15 @@ class ContextualLearner:
     binding budget ranks likelier repliers first. Thompson sampling stays where it was: on the arm
     estimate, only in SANDBOX/SIMULATOR."""
 
-    def __init__(self, base: BetaBernoulliLearner, context: BorrowerContextModel):
+    def __init__(self, base: BetaBernoulliLearner, context: BorrowerContextModel,
+                 min_replies_per_inr: float = 0.0):
+        """min_replies_per_inr: K09 spec "rank by expected replies per rupee and WAIT below the
+        threshold" — a touch whose borrower-adjusted expected replies per ₹ is below this WAITs,
+        even if it is cheap. 0 disables it (only the reply-probability floor applies)."""
         self.base = base
         self.context = context
         self.min_reply_prob = base.min_reply_prob
+        self.min_replies_per_inr = float(min_replies_per_inr)
         self.ledger = base.ledger
 
     @property
@@ -169,7 +174,8 @@ class ContextualLearner:
         scores = []
         for s in base.scores:
             p = s.p_used * m
-            q = s.qualifies and p >= self.min_reply_prob
+            rpi = p / s.est_cost_inr if s.est_cost_inr > 0 else 0.0
+            q = s.qualifies and p >= self.min_reply_prob and rpi >= self.min_replies_per_inr
             scores.append(replace(s, p_used=p, posterior_mean=s.posterior_mean * m,
                                   sampled_p=None if s.sampled_p is None else s.sampled_p * m,
                                   replies_per_inr=p / s.est_cost_inr if s.est_cost_inr > 0 else 0.0,
@@ -178,7 +184,8 @@ class ContextualLearner:
         qual = [(i, s) for i, s in enumerate(scores) if s.qualifies]
         if not qual:
             ranking = Ranking("WAIT", None, scores, version, Mode(mode),
-                              f"WAIT: borrower {bucket} (×{m:.2f}) leaves no arm above {self.min_reply_prob}")
+                              f"WAIT: borrower {bucket} (×{m:.2f}) leaves no arm above p {self.min_reply_prob}"
+                              f" and {self.min_replies_per_inr} replies/INR")
         else:
             _, best = min(qual, key=lambda t: (-t[1].replies_per_inr, t[0]))
             ranking = Ranking("SEND", best, scores, version, Mode(mode),
